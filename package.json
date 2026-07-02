@@ -1,0 +1,23 @@
+{
+  "name": "elgora-ui",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/elgora-ui.umd.cjs",
+  "module": "./dist/elgora-ui.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "typescript": "^5.x",
+    "vite": "^8.x",
+    "vite-plugin-dts": "^5.x"
+  },
+  "dependencies": {
+    "remixicon": "^4.9.1"
+  }
+}

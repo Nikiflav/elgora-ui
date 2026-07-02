@@ -1,0 +1,97 @@
+/* ==========================================================================
+       GENERIC UTILITY-READY LOADERS
+       These depend entirely on parent/local 'color' and 'font-size' properties.
+       ========================================================================== */
+
+/* 1. The Standard Ring Spinner */
+.elg-spinner-ring {
+    display: inline-block;
+    width: 1em;
+    /* Dynamically scales with font-size classes like .fs-1 */
+    height: 1em;
+    border: 0.15em solid currentColor;
+    /* Automatically matches text-primary, text-danger etc. */
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: util-spin 0.75s linear infinite;
+    vertical-align: text-bottom;
+}
+
+/* 2. The Minimalist Dual Arcs */
+.elg-spinner-arcs {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 0.12em solid transparent;
+    border-top-color: currentColor;
+    border-bottom-color: currentColor;
+    border-radius: 50%;
+    animation: util-spin 0.6s linear infinite;
+    vertical-align: text-bottom;
+}
+
+/* 3. The Modern Thinner Gauge Dot Ring */
+.elg-spinner-gauge {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 0.08em solid rgba(0, 0, 0, 0.05);
+    /* Soft background ring track */
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: util-spin 0.5s linear infinite;
+    vertical-align: text-bottom;
+}
+
+/* Dark mode accommodation for the gauge track background ring if text color changes */
+.text-white .elg-spinner-gauge,
+.text-light .elg-spinner-gauge {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: currentColor;
+}
+
+/* 4. Three Bouncing Dots Line */
+.elg-spinner-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+    height: 1em;
+}
+
+.elg-spinner-dots span {
+    width: 0.25em;
+    height: 0.25em;
+    background-color: currentColor;
+    border-radius: 50%;
+    animation: util-dots 1.4s infinite ease-in-out both;
+}
+
+.elg-spinner-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.elg-spinner-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+/* Animation Definitions */
+@keyframes util-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes util-dots {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+        opacity: 0.3;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

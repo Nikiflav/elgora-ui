@@ -1,0 +1,212 @@
+// ======================================================
+// c() Typed Component Factory
+// ======================================================
+
+import { Component, ComponentChild, ComponentLifecycleProps } from "./Component"
+import { UiStyle } from "./UiStyle"
+
+
+
+// ======================================================
+// Remove function members from DOM element props
+// ======================================================
+
+type NativePropKeys<T> = {
+    [K in keyof T]:
+        T[K] extends Function ? never :
+        K extends `on${string}` ? never :
+        K extends "style" ? never :
+        K
+}[keyof T]
+
+type NativeProps<T> = {
+    [K in NativePropKeys<T>]?: T[K]
+}
+
+// ======================================================
+// Typed DOM events -> onclick, oninput ...
+// event + component + typed element
+// ======================================================
+
+type ComponentEvents<T extends HTMLElement> = {
+    [K in keyof GlobalEventHandlersEventMap as `on${K}`]?: (
+        event: GlobalEventHandlersEventMap[K],
+        com: Component,
+        el: T
+    ) => void
+}
+// ======================================================
+// Extra props
+// ======================================================
+
+
+type StyleValue =
+    string |
+    number |
+    undefined
+
+type StyleObject = {
+    [key: string]: StyleValue
+}
+
+type ExtraProps = {
+    key?: any
+    ui?: UiStyle | UiStyle[]
+    class?: string
+    className?: string
+    style?: StyleObject
+}
+
+// ======================================================
+// Final typed props
+// ======================================================
+
+export type ComponentProps<
+    T extends HTMLElement
+> =
+    NativeProps<T> &
+    ComponentEvents<T> &
+    ComponentLifecycleProps &
+    ExtraProps
+
+// ======================================================
+// Args
+// ======================================================
+
+export type ComponentArgs<
+    T extends HTMLElement
+> =
+    [props?: ComponentProps<T>, ...children: ComponentChild[]]
+    | ComponentChild[]
+
+// ======================================================
+// c() declaration
+// ======================================================
+
+export function c<
+    K extends keyof HTMLElementTagNameMap
+>(
+    tag: K,
+    ...args: ComponentArgs<HTMLElementTagNameMap[K]>
+): Component
+
+// ======================================================
+// c() implementation
+// ======================================================
+
+export function c(
+    tag: string,
+    ...args: any[]
+): Component {
+
+    let props: any = {}
+    let children: any[] = []
+
+    if (isProps(args[0])) {
+        props = args[0]
+        children = args.slice(1)
+    }
+    else {
+        children = args
+    }
+
+    return new Component({
+        tag,
+        ...props,
+        children
+    })
+}
+
+// ======================================================
+// Helpers
+// ======================================================
+
+function isProps(v: any): boolean {
+    return v &&
+        typeof v === "object" &&
+        !(v instanceof Node) &&
+        !(v instanceof Component) &&
+        !Array.isArray(v)
+}
+
+// ======================================================
+// Generic helper creator
+// ======================================================
+
+type ComponentFactory<
+    K extends keyof HTMLElementTagNameMap
+> =
+(
+    ...args: ComponentArgs<
+        HTMLElementTagNameMap[K]
+    >
+) => Component
+
+function ctag<
+    K extends keyof HTMLElementTagNameMap
+>(
+    tag: K
+): ComponentFactory<K> {
+
+    return (...args) => c(tag, ...args)
+}
+
+// ======================================================
+// Major helpers
+// ======================================================
+
+// Layout
+export const cdiv     = ctag("div")
+export const cspan    = ctag("span")
+export const csection = ctag("section")
+export const carticle = ctag("article")
+export const cheader  = ctag("header")
+export const cfooter  = ctag("footer")
+export const cmain    = ctag("main")
+export const cnav     = ctag("nav")
+export const caside   = ctag("aside")
+
+// Headings
+export const ch1 = ctag("h1")
+export const ch2 = ctag("h2")
+export const ch3 = ctag("h3")
+export const ch4 = ctag("h4")
+export const ch5 = ctag("h5")
+export const ch6 = ctag("h6")
+
+// Text
+export const cp      = ctag("p")
+export const cstrong = ctag("strong")
+export const cem     = ctag("em")
+export const csmall  = ctag("small")
+export const clabel  = ctag("label")
+export const cpre    = ctag("pre")
+export const ccode   = ctag("code")
+
+// Forms
+export const cform     = ctag("form")
+export const cinput    = ctag("input")
+export const ctextarea = ctag("textarea")
+export const cselect   = ctag("select")
+export const coption   = ctag("option")
+export const cbutton   = ctag("button")
+
+// Lists
+export const cul = ctag("ul")
+export const col = ctag("ol")
+export const cli = ctag("li")
+
+// Tables
+export const ctable = ctag("table")
+export const cthead = ctag("thead")
+export const ctbody = ctag("tbody")
+export const ctr    = ctag("tr")
+export const ctd    = ctag("td")
+export const cth    = ctag("th")
+
+// Media
+export const caudio  = ctag("audio")
+export const cvideo  = ctag("video")
+export const ccanvas = ctag("canvas")
+export const cimg    = ctag("img")
+export const ca      = ctag("a")

@@ -1,0 +1,97 @@
+.elg-grid {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.elg-grid .elg-icon {
+    font-size: 16px;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.elg-gridcell {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--elg-border-color);
+    border-right: 1px solid var(--elg-border-color);
+    background-color: var(--elg-bg-color);
+    color: var(--elg-text-color);
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 100px;
+    white-space: nowrap;
+    word-break: keep-all;
+}
+
+.elg-gridcell:first-child {
+    border-left: 1px solid var(--elg-border-color);
+}
+
+.elg-gridrow-loading .elg-gridcell-data {
+    position: relative;
+}
+
+.elg-gridrow-loading .elg-gridcell-data::after {
+    content: "";
+    position: absolute;
+    top: 20%;
+    left: 5px;
+    right: var(--elg-empty-right, 5px);
+    bottom: 20%;
+    background-color: var(--elg-border-color);
+}
+
+.elg-gridrow-footer .elg-gridcell {
+    border-top: 2px solid var(--elg-border-color);
+}
+
+.elg-gridrow-header .elg-gridcell {
+    border-top: 1px solid var(--elg-border-color);
+}
+
+
+.elg-gridcell-rowheader {
+    background-color: var(--elg-surface-color);
+}
+
+thead .elg-gridcell,
+tfoot .elg-gridcell {
+    background-color: var(--elg-surface-color);
+}
+
+thead .elg-gridcell {
+    position: relative;
+}
+
+thead .elg-gridcell .elg-grid-header-resizer {
+    position: absolute;
+    width: 4px;
+    right: 0;
+    top: 0;
+    height: 100%;
+    cursor: ew-resize;
+}
+
+.elg-gridcell.elg-active-col {
+    --elg-text-color: gray;
+    --elg-bg-color: var(--elg-surface-color);
+}
+
+.elg-grid-header {
+    display: flex;
+    padding: 6px;
+    align-items: center;
+}
+
+.elg-grid-header .elg-gridcell {
+    border: 1px solid var(--elg-border-color);
+    border-radius: 6px;
+    padding: 2px 6px;
+    background-color: var(--elg-surface-color-2);
+}

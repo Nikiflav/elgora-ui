@@ -1,0 +1,100 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 16px;
+}
+
+.elg-btn {
+  padding: 0.5em 1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid var(--elg-border-color);
+}
+
+.elg-btn:hover {
+  --elg-state-s-3: var(--elg-hover-s);
+  --elg-state-l-3: var(--elg-hover-l);
+}
+
+.elg-box {
+  border-radius: 6px;
+  border: 1px solid var(--elg-border-color);
+  box-shadow: 0 3px 6px -1px rgb(0, 0, 0, 0.2);
+}
+
+.elg-shadow {
+  box-shadow: 0 3px 6px -1px rgb(0, 0, 0, 0.2);
+}
+
+/** -------------------- */
+
+.elg-scrollable {
+  scrollbar-width: none;
+}
+
+.elg-scrollable::-webkit-scrollbar {
+  display: none;
+}
+
+.elg-scrollbar {
+  z-index: 1000;
+  position: absolute;
+  overflow: hidden;
+
+
+  opacity: 0;
+  transition: opacity 0.2s;
+  background-color: transparent;
+
+}
+
+.elg-scroll-container:hover .elg-scrollbar {
+  opacity: 1;
+}
+
+.elg-scrollbar-thumb {
+  position: absolute;
+  width: 100%;
+  border-radius: 0;
+  background: hsl(var(--elg-text-h) var(--elg-text-s) var(--elg-text-l) / 0.3);
+}
+
+
+.elg-scrolling .elg-scrollbar {
+  opacity: 1;
+}
+
+
+/* vertical */
+
+.elg-scrollbar-y {
+  top: 0;
+  bottom: 0;
+  right: 2px;
+  width: 12px;
+}
+
+.elg-scrollbar-y .elg-scrollbar-thumb {
+  width: 100%;
+}
+
+/* horizontal */
+
+.elg-scrollbar-x {
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 12px;
+}
+
+.elg-scrollbar-x .elg-scrollbar-thumb {
+  height: 100%;
+}
+
+.elg-scrollbar-both .elg-scrollbar-x {
+  right: 14px;
+}
+
+.elg-scrollbar-both .elg-scrollbar-y {
+  bottom: 14px;
+}

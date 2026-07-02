@@ -1,0 +1,389 @@
+/* =========================================================
+   ELG DESIGN SYSTEM (3-SLOT STATE MODEL)
+   - slot 1: persistent (selected)
+   - slot 2: semantic emphasis (active / contextual)
+   - slot 3: interaction (hover / focus / active)
+========================================================= */
+
+/* =========================================================
+   LIGHT THEME BASE TOKENS
+========================================================= */
+:root {
+    /* core theme hue */
+    --elg-theme-h: 220;
+
+    /* alpha */
+    --elg-bg-a: 1;
+    --elg-text-a: 1;
+
+    /* ======================================================
+     STATE SLOTS (S + L AXES)
+  ====================================================== */
+    --elg-state-s-1: 0;
+    --elg-state-l-1: 0;
+
+    --elg-state-s-2: 0;
+    --elg-state-l-2: 0;
+
+    --elg-state-s-3: 0;
+    --elg-state-l-3: 0;
+
+    /* ======================================================
+     STATE PRESETS
+  ====================================================== */
+    --elg-hover-s: 0;
+    --elg-hover-l: -8;
+
+    --elg-focus-s: 3;
+    --elg-focus-l: 6;
+
+    --elg-selected-s: 8;
+    --elg-selected-l: -6;
+
+    --elg-active-s: 5;
+    --elg-active-l: -10;
+
+    /* ======================================================
+     SEMANTIC COLORS
+  ====================================================== */
+
+    /* PRIMARY */
+    --elg-primary-h: 230;
+    --elg-primary-s: 85;
+    --elg-primary-l: 56;
+
+    /* SUCCESS */
+    --elg-success-h: 145;
+    --elg-success-s: 70;
+    --elg-success-l: 42;
+
+    /* WARNING */
+    --elg-warning-h: 42;
+    --elg-warning-s: 100;
+    --elg-warning-l: 56;
+
+    /* DANGER */
+    --elg-danger-h: 0;
+    --elg-danger-s: 78;
+    --elg-danger-l: 56;
+
+    /* NEUTRAL */
+    --elg-neutral-h: var(--elg-theme-h);
+    --elg-neutral-s: 10;
+    --elg-neutral-l: 50;
+
+    /* ======================================================
+     SURFACES
+  ====================================================== */
+    --elg-bg-h: var(--elg-theme-h);
+    --elg-bg-s: 10;
+    --elg-bg-l: 100;
+
+    --elg-surface-h: var(--elg-theme-h);
+    --elg-surface-s: 5;
+    --elg-surface-l: 97;
+
+    --elg-surface-2-h: var(--elg-theme-h);
+    --elg-surface-2-s: 5;
+    --elg-surface-2-l: 93;
+
+    --elg-surface-3-h: var(--elg-theme-h);
+    --elg-surface-3-s: 5;
+    --elg-surface-3-l: 90;
+
+    /* ======================================================
+     TEXT
+  ====================================================== */
+    --elg-text-h: var(--elg-theme-h);
+    --elg-text-s: 18;
+    --elg-text-l: 14;
+
+    --elg-text-muted-h: var(--elg-theme-h);
+    --elg-text-muted-s: 12;
+    --elg-text-muted-l: 40;
+
+    --elg-text-soft-h: var(--elg-theme-h);
+    --elg-text-soft-s: 10;
+    --elg-text-soft-l: 55;
+
+    --elg-text-inverse-h: 0;
+    --elg-text-inverse-s: 0;
+    --elg-text-inverse-l: 100;
+
+    /* ======================================================
+     BORDERS
+  ====================================================== */
+    --elg-border-h: var(--elg-theme-h);
+    --elg-border-s: 16;
+    --elg-border-l: 92;
+
+    --elg-border-strong-h: var(--elg-theme-h);
+    --elg-border-strong-s: 14;
+    --elg-border-strong-l: 72;
+
+    /* =============
+        HSL
+    ============= */
+    --elg-bg-hsl: var(--elg-bg-h) var(--elg-bg-s) var(--elg-bg-l);
+    --elg-text-hsl: var(--elg-text-h) var(--elg-text-s) var(--elg-text-l);
+
+    --elg-surface-hsl: var(--elg-surface-h) var(--elg-surface-s) var(--elg-surface-l);
+    --elg-surface-2-hsl: var(--elg-surface-2-h) var(--elg-surface-2-s) var(--elg-surface-2-l);
+    --elg-surface-3-hsl: var(--elg-surface-3-h) var(--elg-surface-3-s) var(--elg-surface-3-l);
+
+    --elg-border-hsl: var(--elg-border-h) var(--elg-border-s) var(--elg-border-l);
+    --elg-border-strong-hsl: var(--elg-border-strong-h) var(--elg-border-strong-s) var(--elg-border-strong-l);
+
+    --elg-primary-hsl: var(--elg-primary-h) var(--elg-primary-s) var(--elg-primary-l);
+    --elg-neutral-hsl: var(--elg-neutral-h) var(--elg-neutral-s) var(--elg-neutral-l);
+    --elg-success-hsl: var(--elg-success-h) var(--elg-success-s) var(--elg-success-l);
+    --elg-warning-hsl: var(--elg-warning-h) var(--elg-warning-s) var(--elg-warning-l);
+    --elg-danger-hsl: var(--elg-danger-h) var(--elg-danger-s) var(--elg-danger-l);
+
+    /* =============
+        COLORS
+    ============= */
+    --elg-bg-color: hsl(var(--elg-bg-hsl) / var(--elg-bg-a));
+    --elg-text-color: hsl(var(--elg-text-hsl) / var(--elg-text-a));
+
+    --elg-surface-color: hsl(var(--elg-surface-hsl) / var(--elg-bg-a));
+    --elg-surface-color-2: hsl(var(--elg-surface-2-hsl) / var(--elg-bg-a));
+    --elg-surface-color-3: hsl(var(--elg-surface-3-hsl) / var(--elg-bg-a));
+
+    --elg-border-color: hsl(var(--elg-border-hsl));
+    --elg-border-strong: hsl(var(--elg-border-strong-hsl));
+
+    --elg-primary-color: hsl(var(--elg-primary-hsl));
+    --elg-neutral-color: hsl(var(--elg-neutral-hsl));
+    --elg-success-color: hsl(var(--elg-success-hsl));
+    --elg-warning-color: hsl(var(--elg-warning-hsl));
+    --elg-danger-color: hsl(var(--elg-danger-hsl));
+
+
+}
+
+
+
+
+/* =========================================================
+   DARK THEME OVERRIDES
+========================================================= */
+[data-theme="dark"] {
+    --elg-bg-s: 18;
+    --elg-bg-l: 8;
+
+    --elg-surface-s: 16;
+    --elg-surface-l: 12;
+
+    --elg-surface-2-s: 15;
+    --elg-surface-2-l: 16;
+
+    --elg-surface-3-s: 14;
+    --elg-surface-3-l: 20;
+
+    --elg-text-s: 20;
+    --elg-text-l: 94;
+
+    --elg-text-muted-s: 14;
+    --elg-text-muted-l: 72;
+
+    --elg-text-soft-s: 10;
+    --elg-text-soft-l: 58;
+
+    --elg-text-inverse-h: var(--elg-theme-h);
+    --elg-text-inverse-s: 18;
+    --elg-text-inverse-l: 8;
+
+    --elg-border-s: 14;
+    --elg-border-l: 24;
+
+    --elg-hover-l: 8;
+    --elg-focus-l: 8;
+}
+
+/* =========================================================
+   CORE RENDER ENGINE
+========================================================= */
+.elg {
+
+    /* Background color */
+    --elg-bg-final-s: clamp(0, calc(var(--elg-bg-s) + var(--elg-state-s-1) + var(--elg-state-s-2) + var(--elg-state-s-3)), 100);
+    --elg-bg-final-l: clamp(0, calc(var(--elg-bg-l) + var(--elg-state-l-1) + var(--elg-state-l-2) + var(--elg-state-l-3)), 100);
+    --elg-bg-color: hsl(var(--elg-bg-h) var(--elg-bg-final-s) var(--elg-bg-final-l) / var(--elg-bg-a));
+    background-color: var(--elg-bg-color);
+    transition: background-color 0.4s ease;
+}
+
+/* =========================================================
+   SURFACES
+========================================================= */
+.elg-page {
+    --elg-bg-h: var(--elg-bg-h);
+    --elg-bg-s: var(--elg-bg-s);
+    --elg-bg-l: var(--elg-bg-l);
+}
+
+.elg-surface {
+    --elg-bg-h: var(--elg-surface-h);
+    --elg-bg-s: var(--elg-surface-s);
+    --elg-bg-l: var(--elg-surface-l);
+}
+
+.elg-surface-2 {
+    --elg-bg-h: var(--elg-surface-2-h);
+    --elg-bg-s: var(--elg-surface-2-s);
+    --elg-bg-l: var(--elg-surface-2-l);
+}
+
+.elg-surface-3 {
+    --elg-bg-h: var(--elg-surface-3-h);
+    --elg-bg-s: var(--elg-surface-3-s);
+    --elg-bg-l: var(--elg-surface-3-l);
+}
+
+/* =========================================================
+   SEMANTIC COLORS
+========================================================= */
+.elg-primary {
+    --elg-bg-h: var(--elg-primary-h);
+    --elg-bg-s: var(--elg-primary-s);
+    --elg-bg-l: var(--elg-primary-l);
+
+    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
+}
+
+.elg-neutral {
+    --elg-bg-h: var(--elg-neutral-h);
+    --elg-bg-s: var(--elg-neutral-s);
+    --elg-bg-l: var(--elg-neutral-l);
+
+    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
+}
+
+.elg-success {
+    --elg-bg-h: var(--elg-success-h);
+    --elg-bg-s: var(--elg-success-s);
+    --elg-bg-l: var(--elg-success-l);
+
+    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
+}
+
+.elg-warning {
+    --elg-bg-h: var(--elg-warning-h);
+    --elg-bg-s: var(--elg-warning-s);
+    --elg-bg-l: var(--elg-warning-l);
+
+    color: hsl(var(--elg-text-h) var(--elg-text-s) var(--elg-text-l));
+}
+
+.elg-danger {
+    --elg-bg-h: var(--elg-danger-h);
+    --elg-bg-s: var(--elg-danger-s);
+    --elg-bg-l: var(--elg-danger-l);
+
+    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
+}
+
+
+.elg-text-primary {
+    color: hsl(var(--elg-primary-hsl))
+}
+
+.elg-text-neutral {
+    color: hsl(var(--elg-neutral-hsl))
+}
+
+
+.elg-text-success {
+    color: hsl(var(--elg-success-hsl))
+}
+
+.elg-text-warning {
+    color: hsl(var(--elg-warning-hsl))
+}
+
+.elg-text-danger {
+    color: hsl(var(--elg-danger-hsl))
+}
+
+
+/* =========================================================
+   STATE SLOT 1 (PERSISTENT)
+========================================================= */
+.elg-selected {
+    --elg-state-s-1: var(--elg-selected-s);
+    --elg-state-l-1: var(--elg-selected-l);
+}
+
+/* =========================================================
+   STATE SLOT 2 (SEMANTIC / CONTEXT)
+========================================================= */
+.elg-active {
+    --elg-state-s-2: var(--elg-active-s);
+    --elg-state-l-2: var(--elg-active-l);
+}
+
+/* =========================================================
+   STATE SLOT 3 (INTERACTION)
+========================================================= */
+.elg-hover:hover {
+    --elg-state-s-3: var(--elg-hover-s);
+    --elg-state-l-3: var(--elg-hover-l);
+}
+
+.elg-focus:focus-visible {
+    --elg-state-s-3: var(--elg-focus-s);
+    --elg-state-l-3: var(--elg-focus-l);
+}
+
+.elg-active:active {
+    --elg-state-s-3: 6;
+    --elg-state-l-3: -8;
+}
+
+/* =========================================================
+   BORDERS
+========================================================= */
+.elg-border {
+    border: 1px solid hsl(var(--elg-border-h) var(--elg-border-s) var(--elg-border-l));
+}
+
+.elg-border-strong {
+    border: 1px solid hsl(var(--elg-border-strong-h) var(--elg-border-strong-s) var(--elg-border-strong-l));
+}
+
+/* =========================================================
+   ELG BG ALPHA UTILITIES (MINIMAL SET)
+========================================================= */
+
+.elg-bg-a-05 {
+    --elg-bg-a: 0.05;
+}
+
+.elg-bg-a-10 {
+    --elg-bg-a: 0.10;
+}
+
+.elg-bg-a-25 {
+    --elg-bg-a: 0.25;
+}
+
+.elg-bg-a-50 {
+    --elg-bg-a: 0.50;
+}
+
+.elg-bg-a-75 {
+    --elg-bg-a: 0.75;
+}
+
+.elg-bg-a-100 {
+    --elg-bg-a: 1;
+}
+
+.elg-gradient {
+    --elg-bg-l: 50;
+    --elg-bg-color-2: transparent;
+
+    background-image: linear-gradient(300deg, var(--elg-bg-color), var(--elg-bg-color-2));
+    background-color: transparent;
+}
