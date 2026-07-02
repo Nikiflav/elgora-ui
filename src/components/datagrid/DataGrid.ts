@@ -14,6 +14,9 @@ import { VirtualGridRows } from "./VirtualGridRows";
 
 import "./DataGrid.css"
 import { c, cli } from "../../core/c";
+import { trackGesture } from "../../core/interact/DragGesture";
+import { DragDropController, DragPayload, DropTarget } from "../../core/interact/DragDropController";
+import { createListDropZone } from "../../core/interact/ListDropZone";
 
 
 export type GridDataSource<TRow> = DataSource<TRow> | TRow[];
@@ -118,6 +121,10 @@ export class DataGrid<TRow> extends Component {
     private _footerHeight = 0
     private _groupPadding = 10
     private _activeColIndex = -1
+    private _activeGroupColumn?: string
+
+    private _dragDrop: DragDropController;
+    private static readonly HEADER_OFFSET = 1; // _gridColumns[0] is always the row-header column
 
     private readonly _MAX_ROWS = 100
 
@@ -226,6 +233,30 @@ export class DataGrid<TRow> extends Component {
         this._scrollEngine = new ScrollEngine(this._tableContainer);
         this._scrollEngine.onScroll(this.updateLayout);
         this._scrollEngine.onResize(this.updateLayout)
+
+        this._dragDrop = new DragDropController({ onDrop: this.handleColumnDrop });
+
+        this._dragDrop.registerZone(createListDropZone({
+            id: "grid-header",
+            kind: "column",
+            // Hit-test/indicator against the whole scrollable table (header+body+footer), matching
+            // the old reorder behavior where dragging anywhere over the grid - not just the thin
+            // header strip - still tracked the drop column. Slots still come from the header row only.
+            element: this._tableContainer,
+            itemsElement: this._contentTable.tHead!,
+            axis: "x",
+            itemSelector: "td.elg-gridcell-data",
+            scrollBy: delta => this._scrollEngine.scrollLeft += delta
+        }));
+
+        this._dragDrop.registerZone(createListDropZone({
+            id: "group-panel",
+            kind: "column",
+            element: this._headerPanel,
+            axis: "x",
+            itemSelector: ".elg-gridcell",
+            scrollBy: delta => this._headerPanel.scrollLeft += delta
+        }));
 
         this._tableContainer.append(this._contentTable);
 
@@ -687,14 +718,12 @@ export class DataGrid<TRow> extends Component {
                         v("span", String(col.dataColumn.caption ?? col.dataColumn.name)),
                         v("em", {
                             class: "elg-grid-header-resizer",
-                            onpointerdown: (e, el) => {
-                                this.resizeColumn(e, col);
-                            }
+                            onmousedown: (e, el) => this.resizeColumn(e, col),
+                            ontouchstart: (e, el) => this.resizeColumn(e, col),
                         }),
                     ]
-                    props.onpointerdown = (e: PointerEvent, td: HTMLTableCellElement) => {
-                        this.reorderColumn(e, td, col);
-                    }
+                    props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
+                    props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
                     break;
                 case "footer":
                     //props.textContent = col.caption ?? col.name;
@@ -716,194 +745,159 @@ export class DataGrid<TRow> extends Component {
         return { col, props };
     }
 
-    private resizeColumn = (e: PointerEvent, col: GridColumn<TRow>) => {
+    private resizeColumn = (e: MouseEvent | TouchEvent, col: GridColumn<TRow>) => {
 
         e.preventDefault();
         e.stopPropagation();
 
-        const resizer = e.currentTarget as HTMLElement;
-        resizer.setPointerCapture(e.pointerId);
-
-        const startX = e.clientX;
         const startWidth = col.width;
-        const onmove = (e: PointerEvent) => {
-            const newWidth = startWidth + (e.clientX - startX);
-            col.width = Math.floor(Math.max(40, Math.min(800, newWidth)));
-            this.render(this.renderColGroup);
-        };
-        const onup = (e: PointerEvent) => {
-            resizer.releasePointerCapture(e.pointerId);
-            window.removeEventListener("pointerup", onup);
-            window.removeEventListener("pointermove", onmove);
-        }
 
-        window.addEventListener("pointerup", onup);
-        window.addEventListener("pointermove", onmove);
-
+        trackGesture(e, {
+            axis: "x",
+            onMove: (dx) => {
+                col.width = Math.floor(Math.max(40, Math.min(800, startWidth + dx)));
+                this.render(this.renderColGroup);
+            },
+            onEnd: () => { },
+            onCancel: () => {
+                col.width = startWidth;
+                this.render(this.renderColGroup);
+            }
+        });
     }
 
-    
-    private reorderColumn = (pe: PointerEvent, headerTd: HTMLTableCellElement, col: GridColumn<TRow>) => {
+    private startColumnDrag = (e: MouseEvent | TouchEvent, headerTd: HTMLTableCellElement, col: GridColumn<TRow>) => {
 
-        // Ensure we only trigger on primary click
-        if (pe.button !== 0) return;
+        if (e instanceof MouseEvent && e.button !== 0) return;
+        if (!col.dataColumn) return;
 
-        pe.preventDefault();
+        e.preventDefault();
 
-        headerTd.setPointerCapture(pe.pointerId);
-        const headerRect = headerTd.getBoundingClientRect();
-
-        // Record initial mouse positions
-        const startX = pe.clientX;
-        const startY = pe.clientY;
-        let lastX = startX;
-        let lastY = startY;
-
-        const containerRect = this.dom.getBoundingClientRect();
-        let offset = 0;
-        let scrollLoop = 0;
-        const cells = this._gridColumns.map((col, ix) => {
-            const cell = {
-                col: col,
-                left: offset,
-                right: offset + col.width,
-                mid: offset + col.width / 2
-            }
-            offset += col.width;
-            return cell;
-        })
-        let lastCell = cells.find(c => c.col == col);
+        const sourceIndex = this._gridColumns.filter(c => c.type == "data").indexOf(col);
 
         this._activeColIndex = col.visibleIndex;
+        this.refresh();
 
-        const line = e("div", {
-            style: {
-                position: "absolute",
-                top: "0",
-                bottom: "0",
-                width: "2px",
-                backgroundColor: "orangered",
-                left: (headerRect.left - containerRect.left) + "px",
-                zIndex: "998",
-                opacity: "0"
+        this._dragDrop.beginDrag(
+            {
+                kind: "column",
+                id: col.dataColumn.name,
+                label: col.dataColumn.caption ?? col.dataColumn.name,
+                ghostClassName: "elg-box elg-gridcell",
+                sourceZoneId: "grid-header",
+                sourceIndex
+            },
+            e,
+            headerTd.getBoundingClientRect(),
+            "x",
+            () => {
+                this._activeColIndex = -1;
+                this.refresh();
             }
-        })
+        );
+    }
 
-        const overlay = e("div", {
-            class: "elg-box elg-gridcell",
-            style: {
-                position: "absolute",
-                overflow: "hidden",
-                top: (headerRect.top - containerRect.top) + "px",
-                left: (headerRect.left - containerRect.left) + "px",
-                width: headerRect.width + "px",
-                height: headerRect.height + "px",
-                zIndex: 999,
-                pointerEvents: "none"
+    private startGroupChipDrag = (e: MouseEvent | TouchEvent, chipEl: HTMLElement, columnName: string, sourceIndex: number) => {
+
+        if (e instanceof MouseEvent && e.button !== 0) return;
+
+        e.preventDefault();
+
+        const col = this._columns.get(columnName);
+        if (!col) return;
+
+        this._activeGroupColumn = columnName;
+        this.refresh();
+
+        // Ghost should read as an actual grid header cell, not the (much smaller) chip it's dragged from.
+        // Height comes from the header row itself, not _headerHeight (which is tHead's total height and
+        // would include a filter row too, once DataGridLayoutInfo.showFilterRow is implemented).
+        const chipRect = chipEl.getBoundingClientRect();
+        const gridCol = this._gridColumns.find(c => c.dataColumn?.name == columnName);
+        const headerRowHeight = this._contentTable.tHead?.rows[0]?.offsetHeight;
+        const anchorRect = new DOMRect(
+            chipRect.left,
+            chipRect.top,
+            gridCol?.width ?? chipRect.width,
+            headerRowHeight || chipRect.height
+        );
+
+        this._dragDrop.beginDrag(
+            {
+                kind: "column",
+                id: columnName,
+                label: col.caption ?? col.name,
+                ghostClassName: "elg-box elg-gridcell",
+                sourceZoneId: "group-panel",
+                sourceIndex
+            },
+            e,
+            anchorRect,
+            "x",
+            () => {
+                this._activeGroupColumn = undefined;
+                this.refresh();
             }
-        }, e("span", (col.dataColumn?.caption ?? col.dataColumn?.name ?? "")))
+        );
+    }
 
-        this.dom.append(line, overlay);
+    private removeGroupColumn(name: string) {
+        const ix = this._groupColumns.indexOf(name);
+        if (ix < 0) return;
+        this._groupColumns.splice(ix, 1);
+        this.recomputeGroupIndexes();
+        this.refresh();
+    }
 
-        const update = () => {
-            let dx = lastX - startX;
-            let dy = lastY - startY;
+    private recomputeGroupIndexes() {
+        for (const col of this._gridColumns) {
+            if (col.dataColumn)
+                col.groupIndex = this._groupColumns.indexOf(col.dataColumn.name);
+        }
+    }
 
-            assignElementProps(overlay, {
-                style: {
-                    transform: `translate(${dx}px, ${dy}px)`
-                }
-            })
+    /**
+     * Applies a completed column drag: repositions within _gridColumns when dropped on the header,
+     * or adds/reorders _groupColumns when dropped on the group panel. Doesn't (yet) trigger a real
+     * row re-group - DataGridState is only ever read once at construction, so grouping changes
+     * here only affect the header/panel presentation, same pre-existing limitation as filter/orderBy.
+     */
+    private handleColumnDrop = (payload: DragPayload, target: DropTarget) => {
 
-            let x = lastX - containerRect.left + this._scrollEngine.scrollLeft;
-            let cellIndex = -1;
-            for (let ix = 0; ix < cells.length; ix++) {
-                if (cells[ix].left < x && x <= cells[ix].mid) {
-                    cellIndex = ix;
-                    break;
-                }
-                if (cells[ix].mid < x && x <= cells[ix].right) {
-                    cellIndex = ix + 1;
-                    break;
-                }
-            }
-            if (cellIndex >= cells.length)
-                cellIndex--;
+        const columnName = payload.id;
 
-            if (cellIndex >= 0) {
-                const cell = cells[cellIndex];
-                if (cell.col.type == "data") {
-                    lastCell = cell
-                    assignElementProps(line, {
-                        style: {
-                            left: (cell.left - this._scrollEngine.scrollLeft) + "px",
-                            opacity: cell.col.visibleIndex == col.visibleIndex || cell.col.visibleIndex == col.visibleIndex + 1 ? "0" : "1",
-                        }
-                    });
-                }
-            }
-
-            x = lastX - containerRect.left;
-            if (x < 40 || containerRect.width - x < 40) {
-                // Start scroll right.
-                let SCROLL_STEP = x < 40 ? -1 : 1;
-                if (this._scrollEngine.maxScrollLeft >= this._scrollEngine.scrollLeft + SCROLL_STEP)
-                    scrollLoop = setTimeout(() => {
-                        if (!scrollLoop)
-                            return;
-                        let old = this._scrollEngine.scrollLeft;
-                        this._scrollEngine.scrollLeft += SCROLL_STEP;
-                        if (this._scrollEngine.scrollLeft == old)
-                            return;
-                        //lastX = SCROLL_STEP;
-                        update()
-                    }, 200);
-            }
-
-            this.refresh();
-
+        if (payload.sourceZoneId == "group-panel" && target.zoneId != "group-panel") {
+            const gi = this._groupColumns.indexOf(columnName);
+            if (gi > -1) this._groupColumns.splice(gi, 1);
         }
 
-        const onmove = (pe: PointerEvent) => {
-
-            lastX = pe.pageX;
-            lastY = pe.pageY;
-            update();
-        };
-        const onup = (e: PointerEvent) => {
-            headerTd.releasePointerCapture(e.pointerId);
-
-            overlay.remove();
-            line.remove();
-            if (scrollLoop)
-                clearTimeout(scrollLoop)
-            scrollLoop = 0;
-            window.removeEventListener("pointerup", onup);
-            window.removeEventListener("pointermove", onmove);
-
-            // Move column.
-            if (lastCell) {
-                if (lastCell.col !== col) {
-                    let ix = this._gridColumns.indexOf(col);
-                    //if (ix < lastCell.col.visibleIndex)
-                    //    lastCell.col.visibleIndex--;
-                    this._gridColumns.splice(ix, 1)
-                    ix = this._gridColumns.indexOf(lastCell.col);
-                    this._gridColumns.splice(ix, 0, col)
-                    this._gridColumns.forEach((c, ix) => {
-                        c.visibleIndex = ix
-                    })
-                    this.refresh();
-                }
+        if (target.zoneId == "grid-header") {
+            const gridCol = this._gridColumns.find(c => c.dataColumn?.name == columnName);
+            if (gridCol) {
+                const fromIx = this._gridColumns.indexOf(gridCol);
+                this._gridColumns.splice(fromIx, 1);
+                let toIx = target.index + DataGrid.HEADER_OFFSET;
+                if (fromIx < toIx) toIx--;
+                this._gridColumns.splice(Math.max(DataGrid.HEADER_OFFSET, toIx), 0, gridCol);
+                this._gridColumns.forEach((c, ix) => c.visibleIndex = ix);
             }
-            this._activeColIndex = -1;
-            this.refresh();
-
+        }
+        else if (target.zoneId == "group-panel") {
+            if (payload.sourceZoneId == "group-panel") {
+                const fromIx = this._groupColumns.indexOf(columnName);
+                if (fromIx > -1) {
+                    this._groupColumns.splice(fromIx, 1);
+                    let toIx = target.index;
+                    if (fromIx < toIx) toIx--;
+                    this._groupColumns.splice(toIx, 0, columnName);
+                }
+            } else if (!this._groupColumns.includes(columnName)) {
+                this._groupColumns.splice(target.index, 0, columnName);
+            }
         }
 
-        window.addEventListener("pointerup", onup);
-        window.addEventListener("pointermove", onmove);
-
+        this.recomputeGroupIndexes();
+        this.refresh();
     }
 
     private renderGridRow = (row: GridViewRow) => {
@@ -1029,7 +1023,7 @@ export class DataGrid<TRow> extends Component {
             class: "elg-grid-header",
             vnodes: []
         };
-        for (let cn of this._groupColumns) {
+        this._groupColumns.forEach((cn, sourceIndex) => {
             let col = this._columns.get(cn);
             if (col) {
 
@@ -1040,16 +1034,22 @@ export class DataGrid<TRow> extends Component {
 
                 props.vnodes!.push(v("div",
                     {
-                        class: "elg-gridcell"
+                        class: "elg-gridcell" + (this._activeGroupColumn === cn ? " elg-active-col" : ""),
+                        onmousedown: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
+                        ontouchstart: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
                     },
                     v("span", col.caption ?? col.name),
                     v("i", {
                         style: { float: "right", marginRight: "0" },
-                        class: "elg-icon ri-close-line"
+                        class: "elg-icon ri-close-line",
+                        onclick: (e, el) => {
+                            e.stopPropagation();
+                            this.removeGroupColumn(cn);
+                        }
                     })
                 ))
             }
-        }
+        });
 
         setElementProps(this._headerPanel, props)
 
