@@ -846,7 +846,7 @@ export class DataGrid<TRow> extends Component {
         if (ix < 0) return;
         this._groupColumns.splice(ix, 1);
         this.recomputeGroupIndexes();
-        this.refresh();
+        this.reloadRows();
     }
 
     private recomputeGroupIndexes() {
@@ -857,14 +857,26 @@ export class DataGrid<TRow> extends Component {
     }
 
     /**
+     * Rebuilds the rows pipeline from scratch against the current DataGridState (grouping,
+     * filter, orderBy, ...). Used any time a data-shaping option changes - the DataSource
+     * decides internally how "hard" the reload actually is (e.g. a local array source just
+     * re-buckets in memory). Resets expand/collapse state and scroll position, since the
+     * previous row tree no longer matches the new shape.
+     */
+    private reloadRows() {
+        this._gridRows = this.createGridRows();
+        this.refresh();
+    }
+
+    /**
      * Applies a completed column drag: repositions within _gridColumns when dropped on the header,
-     * or adds/reorders _groupColumns when dropped on the group panel. Doesn't (yet) trigger a real
-     * row re-group - DataGridState is only ever read once at construction, so grouping changes
-     * here only affect the header/panel presentation, same pre-existing limitation as filter/orderBy.
+     * or adds/reorders _groupColumns when dropped on the group panel. Triggers a real row reload
+     * when the grouping actually changed.
      */
     private handleColumnDrop = (payload: DragPayload, target: DropTarget) => {
 
         const columnName = payload.id;
+        const groupColumnsBefore = this._groupColumns.slice();
 
         if (payload.sourceZoneId == "group-panel" && target.zoneId != "group-panel") {
             const gi = this._groupColumns.indexOf(columnName);
@@ -897,7 +909,15 @@ export class DataGrid<TRow> extends Component {
         }
 
         this.recomputeGroupIndexes();
-        this.refresh();
+
+        const groupColumnsChanged = groupColumnsBefore.length !== this._groupColumns.length
+            || groupColumnsBefore.some((name, ix) => name !== this._groupColumns[ix]);
+
+        if (groupColumnsChanged) {
+            this.reloadRows();
+        } else {
+            this.refresh();
+        }
     }
 
     private renderGridRow = (row: GridViewRow) => {
