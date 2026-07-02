@@ -1,5 +1,6 @@
 import { Utils } from "../../core/Utils";
 
+/** One selectable option for a column's allowed-value list (e.g. a dropdown item). */
 export type DisplayValue = {
     value: any,
     text: string,
@@ -10,6 +11,7 @@ export type DisplayValue = {
 
 
 
+/** Lightweight per-column override, e.g. for persisted layout/visible-column state. */
 export type DataColumnOption = {
     name: string,
     width?: number;
@@ -17,6 +19,7 @@ export type DataColumnOption = {
     userState?: any;
 }
 
+/** A sort instruction: either a bare field name, or a [field, direction] pair. */
 export type OrderByToken = string | [string, "asc" | "desc"];
 
 export function orderByTokenToString(tok: OrderByToken) {
@@ -27,20 +30,25 @@ export function orderByTokenToString(tok: OrderByToken) {
 
 
 
+/** Aggregation kind applied to a group column's summary value. */
 export type SummaryType = "count" | "sum" | "min" | "max" | "distinct" | string;
 
 
+/** Input control used to edit a column's value. */
 export type EditorType = "text" | "number" | "date" | "datetime-local" | "time" | "checkbox" | "file" | "password" | "textarea" | "color";
 
 
+/** Contract for a component hosting data-bound UI (e.g. a grid) that can be told to reload. */
 export interface DataComponent {
     supportsFilter?: boolean;
+    /** Reloads the component's data, optionally preserving scroll position. */
     refreshData: (keepScrollPosition: boolean) => Promise<any>;
 
     //getActiveEditor?: () => DataEditor | undefined;
 }
 
 
+/** A single resolved (value, text) pair for one column on one row. */
 export type DataCell<TRow> = {
     column: DataColumn<TRow>
     rowData: TRow
@@ -48,6 +56,7 @@ export type DataCell<TRow> = {
     text: string
 };
 
+/** Per-cell visual overrides, e.g. from DataColumn.customCellStyle. */
 export type DataCellStyle = {
     /** Mithril class selector */
     cssClass?: string;
@@ -64,18 +73,26 @@ export type DataCellStyle = {
 };
 
 
+/** Defines one grid/view column: its data access, display, editing and layout behavior. */
 export type DataColumn<TRow> = {
+    /** Field name; also used as the column's unique identifier. */
     name: string;
+    /** Display label; falls back to `name` when unset. */
     caption?: string;
+    /** Column description, shown as a tooltip. */
     description?: string;
+    /** When set, this column contributes an aggregate value to group rows. */
     summaryType?: SummaryType;
+    /** The fixed width of the column, in pixels. */
     width?: number;
+    /** Opaque, caller-defined data attached to the column (not used internally). */
     userState?: any;
     textAlign?: "start" | "center" | "end";
     editorType?: EditorType;
     hidden?: boolean;
     readonly?: boolean;
     required?: boolean;
+    /** Relative ordering hint among columns. */
     logicalOrder?: number;
     /** True to skip the cell label in DataView. */
     hideLabel?: boolean,
@@ -84,12 +101,19 @@ export type DataColumn<TRow> = {
     /** Provides custom cell style for data cells */
     customCellStyle?(row: any): DataCellStyle | undefined | null;
 
+    /** Custom cell rendering; overrides the default value/text display. */
     renderCell?(cell: DataCell<TRow>): void;
+    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */
     getValue?(row: TRow): Promise<any>;
+    /** Reads this column's display text for a row; defaults to stringifying getValue(). */
     getText?(row: TRow): Promise<string>;
+    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */
     setValue?(row: TRow, value: any): Promise<any>;
+    /** Parses and writes a display-text edit onto a row. */
     setText?(row: TRow, text: string): Promise<any>;
+    /** Fetches the allowed-value list for dropdown-style editing/filtering. */
     getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;
+    /** Resolves display text for a given value, without loading the full allowed-value list. */
     getAllowedValueText?(value?: TRow): Promise<string | undefined>;
     /** List of data cell actions displayed as popup menu for data cell. */
     //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;

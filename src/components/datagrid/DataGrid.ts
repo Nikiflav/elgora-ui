@@ -11,6 +11,7 @@ import { ArrayDataSource, DataSource, LocalGroupingDataSource } from "./DataSour
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
 import { GridRow, GridRowsProvider } from "./GridRow";
 import { VirtualGridRows } from "./VirtualGridRows";
+import { DataGridTexts, DEFAULT_GRID_TEXTS } from "./DataGridTexts";
 
 import "./DataGrid.css"
 import { c, cli } from "../../core/c";
@@ -19,8 +20,10 @@ import { DragDropController, DragPayload, DropTarget } from "../../core/interact
 import { createListDropZone } from "../../core/interact/ListDropZone";
 
 
+/** Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource. */
 export type GridDataSource<TRow> = DataSource<TRow> | TRow[];
 
+/** Persisted view state (e.g. for save/restore of a user's layout customizations). */
 export interface DataGridLayoutInfo {
     showFilterRow?: boolean;
     visibleColumns?: (string | DataColumnOption)[],
@@ -36,14 +39,23 @@ type SelectionCell = { rowIndex: number, colIndex: number, wholeRow?: true };
 //=================
 
 
+/** Construction-time configuration for a DataGrid instance. */
 export type DataGridOptions<TRow> = {
+    /** Row data; defaults to an empty array if omitted. */
     data?: GridDataSource<TRow>,
     columns: DataColumn<TRow>[],
+    /** Number of leading columns kept sticky, in addition to the row-header column. */
     fixedLeftColumns?: number,
+    /** Number of trailing columns kept sticky. */
     fixedRightColumns?: number,
+    /** Row page size used when querying the DataSource. */
     pageSize?: number,
+    /** Names of columns to show as data columns; defaults to all `columns`. */
     visibleColumns?: string[],
+    /** Ordered column names to group by (outermost first). */
     groupColumns?: string[],
+    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */
+    texts?: Partial<DataGridTexts>,
 }
 
 type GridViewRow = {
@@ -88,6 +100,7 @@ export class DataGrid<TRow> extends Component {
     private _columns: Map<string, DataColumn<TRow>> = new Map();
     private _fixedLeftColumns: number = 0;
     private _fixedRightColumns: number = 0;
+    private _texts: DataGridTexts = DEFAULT_GRID_TEXTS;
 
 
     // Data shaping.
@@ -144,6 +157,7 @@ export class DataGrid<TRow> extends Component {
 
         this._visibleColumnNames = options.visibleColumns || options.columns.map(col => col.name);
         this._groupColumns = options.groupColumns || [];
+        this._texts = { ...DEFAULT_GRID_TEXTS, ...options.texts };
 
         // Initialize columns
         this._gridColumns = this.getGridColumns();
@@ -809,16 +823,15 @@ export class DataGrid<TRow> extends Component {
         this._activeGroupColumn = columnName;
         this.refresh();
 
-        // Ghost should read as an actual grid header cell, not the (much smaller) chip it's dragged from.
-        // Height comes from the header row itself, not _headerHeight (which is tHead's total height and
-        // would include a filter row too, once DataGridLayoutInfo.showFilterRow is implemented).
+        // Ghost keeps the chip's own width, but reads as a header cell height-wise. Height comes
+        // from the header row itself, not _headerHeight (which is tHead's total height and would
+        // include a filter row too, once DataGridLayoutInfo.showFilterRow is implemented).
         const chipRect = chipEl.getBoundingClientRect();
-        const gridCol = this._gridColumns.find(c => c.dataColumn?.name == columnName);
         const headerRowHeight = this._contentTable.tHead?.rows[0]?.offsetHeight;
         const anchorRect = new DOMRect(
             chipRect.left,
             chipRect.top,
-            gridCol?.width ?? chipRect.width,
+            chipRect.width,
             headerRowHeight || chipRect.height
         );
 
@@ -1043,6 +1056,13 @@ export class DataGrid<TRow> extends Component {
             class: "elg-grid-header",
             vnodes: []
         };
+
+        if (this._groupColumns.length === 0) {
+            props.vnodes!.push(v("span", {
+                class: "elg-grid-header-empty"
+            }, this._texts.groupPanelEmptyText));
+        }
+
         this._groupColumns.forEach((cn, sourceIndex) => {
             let col = this._columns.get(cn);
             if (col) {

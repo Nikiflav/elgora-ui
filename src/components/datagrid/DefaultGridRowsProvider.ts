@@ -142,12 +142,19 @@ class Paginator {
     }
 }
 
+/** Snapshot of everything that shapes the row tree: data, visible/grouped columns, filter and order. */
 export type DataGridState<TRow> = {
+    /** Underlying data access layer queried for each page/level of the tree. */
     dataSource: DataSource<TRow>,
+    /** All defined columns, keyed by name. */
     columns: Map<string, DataColumn<TRow>>,
+    /** Names of the columns currently shown as data columns. */
     visibleColumns: string[],
+    /** Ordered column names defining the grouping levels (outermost first). */
     groupColumns?: string[],
+    /** Aggregations to compute per group, per column. */
     groupSummary?: { field: string, summaryType: SummaryType }[],
+    /** Filter applied in addition to any per-group filter. */
     baseFilter?: DataFilter,
     orderBy?: OrderByToken[]
 }

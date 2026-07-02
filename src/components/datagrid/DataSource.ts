@@ -4,35 +4,47 @@ import { DataColumn, OrderByToken, SummaryType } from "./DataColumn";
 
 
 
+/** A single page/query request made against a DataSource. */
 export interface QueryArgs {
     filter?: DataFilter;
     orderby?: OrderByToken[];
+    /** Field names to include; omit to fetch all fields. */
     select?: string[];
     skip?: number;
     top?: number;
+    /** Column to bucket rows by; when set, the result carries `groups` instead of `dataItems`. */
     groupColumn?: string;
+    /** Aggregations to compute per group, per field. */
     groupSummary?: { field: string, summaryType: SummaryType }[];
+    /** Whether the caller needs an accurate total row/group count back. */
     requireTotalCount?: boolean;
     abortSignal?: AbortSignal;
 }
 
+/** A single group bucket produced when a QueryArgs.groupColumn is set. */
 export type GroupItem = {
     groupField: string;
     groupValue: any;
     count: number;
+    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */
     summaryValues?: Record<string, any>;
 };
 
+/** The response to a QueryArgs request: either flat data rows or, when grouping, group buckets. */
 export interface DataResult<TRow> {
     totalCount?: number;
     args: QueryArgs;
     dataItems?: TRow[];
-    groups?: GroupItem[]; // Used exclusively when args.groupBy is present
+    /** Used exclusively when args.groupColumn is set. */
+    groups?: GroupItem[];
 }
 
+/** Query-level access to row data, with optional native grouping support. */
 export interface DataSource<TRow> {
     loadData(args: QueryArgs): Promise<DataResult<TRow>>;
+    /** Returns a stable identity for a row, used as its render key. */
     getRowKey?(row: TRow): any;
+    /** Whether this source can bucket rows into groups itself (vs. relying on LocalGroupingDataSource). */
     get supportsGrouping(): boolean;
 }
 

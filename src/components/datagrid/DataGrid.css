@@ -99,6 +99,11 @@ thead .elg-gridcell .elg-grid-header-resizer {
     flex: none;
 }
 
+.elg-grid-header-empty {
+    color: var(--elg-text-color);
+    opacity: 0.6;
+}
+
 thead .elg-gridcell-data {
     cursor: grab;
 }
