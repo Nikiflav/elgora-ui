@@ -4,10 +4,16 @@ import { VirtualList } from '../src/components/virtual-list/VirtualList';
 import { c, cbutton, cdiv } from '../src/core/c';
 import { a, div, e, nav } from '../src/core/e';
 import { dataGridRouterHandler } from './data-grid-demo';
+import { dataGridTreeRouterHandler } from './data-grid-tree-demo';
 
 const routes: RouterHandler[] = [
+
+    // Data Grid - Tree
+    dataGridTreeRouterHandler,
+
     // Data Grid
     dataGridRouterHandler,
+
 
     // Simple Button Demo
     {
@@ -134,10 +140,10 @@ const app = cdiv(
         },
         a({ href: "?!=/" }, "Home"),
         a({ href: "?!=/btn" }, "Button"),
-        a({ href: "?!=/virtual-list" }, "Virtual List"),
-        a({ href: "?!=/virtual-grid" }, "Virtual Grid"), // Added menu item
-        a({ href: "?!=/data-grid" }, "Data Grid"),
         a({ href: "?!=/scroll" }, "Scroll Engine"),
+        a({ href: "?!=/virtual-list" }, "Virtual List"),
+        a({ href: "?!=/data-grid" }, "Data Grid"),
+        a({ href: "?!=/data-grid-tree" }, "Data Grid - Tree"),        
     ),
     // Page Content
     div({ ui: ["grow-1", "d-flex", "p-4"] },

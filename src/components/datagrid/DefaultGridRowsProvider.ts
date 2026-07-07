@@ -21,6 +21,7 @@ interface GridNode {
     totalExpandedChildren: number; // Combined footprint of all open sub-descendants
     visibleIndex: number;          // Absolute monotonic index in the viewport grid
     expandedChildren: GridNode[];  // Fast local tracking to avoid global array filtering
+    canExpand?: boolean;           // type: "node" only - from DataSource.hasChildren(row); childrenCount is unknown until first expand
 }
 
 // ========================================================
@@ -35,17 +36,22 @@ class Paginator {
     private _totalCount = -1;
     private _loadingPages = new Set<number>();
     private _groupFilter?: DataFilter;
+    private _parentId?: any;
+    private _isHierarchy: boolean;
 
     constructor(args: {
         node: GridNode,
         state: DataGridState<any>,
         groupIndex?: number,
-        groupFilter?: DataFilter
+        groupFilter?: DataFilter,
+        parentId?: any
     }) {
         this._node = args.node;
         this._gridState = args.state;
         this._groupIndex = args.groupIndex ?? -1;
         this._groupFilter = args.groupFilter;
+        this._parentId = args.parentId;
+        this._isHierarchy = !!this._gridState.dataSource.hasChildren;
     }
 
     get groupColumn() {
@@ -74,18 +80,45 @@ class Paginator {
                 orderby: this._gridState.orderBy,
                 groupColumn: this.groupColumn,
                 groupSummary: this._gridState.groupSummary,
+                parentId: this._isHierarchy ? this._parentId : undefined,
                 requireTotalCount: requireTotalCount
             });
 
             let page: GridNode[];
-            if (result.dataItems) {
+            if (this._isHierarchy && result.dataItems) {
+                page = await Promise.all(result.dataItems.map(async (x, ix) => {
+                    const node: GridNode = {
+                        type: "node",
+                        level: this._node.level + 1,
+                        parent: this._node,
+                        localIndex: ix + pageOffset,
+                        visibleIndex: -1,
+                        key: JSON.stringify(this._gridState.dataSource.getRowId?.(x) ?? x),
+                        data: x,
+                        expanded: false,
+                        childrenCount: 0,
+                        totalExpandedChildren: 0,
+                        expandedChildren: []
+                    };
+                    node.canExpand = await this._gridState.dataSource.hasChildren!(x);
+                    if (node.canExpand) {
+                        const parentId = this._gridState.dataSource.getRowId?.(x);
+                        node.createPaginator = () => new Paginator({
+                            node,
+                            state: this._gridState,
+                            parentId
+                        });
+                    }
+                    return node;
+                }));
+            } else if (result.dataItems) {
                 page = result.dataItems.map((x, ix) => ({
                     type: "data",
                     level: this._node.level + 1,
                     parent: this._node,
                     localIndex: ix + pageOffset,
                     visibleIndex: -1,
-                    key: JSON.stringify(this._gridState.dataSource.getRowKey?.(x) ?? x),
+                    key: JSON.stringify(this._gridState.dataSource.getRowId?.(x) ?? x),
                     data: x,
                     expanded: false,
                     childrenCount: 0,
@@ -156,7 +189,9 @@ export type DataGridState<TRow> = {
     groupSummary?: { field: string, summaryType: SummaryType }[],
     /** Filter applied in addition to any per-group filter. */
     baseFilter?: DataFilter,
-    orderBy?: OrderByToken[]
+    orderBy?: OrderByToken[],
+    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */
+    hierarchyRootId?: any
 }
 
 // ========================================================
@@ -196,11 +231,17 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
                 totalExpandedChildren: 0,
                 expandedChildren: []
             };
-            this._rootNode.children = new Paginator({
-                node: this._rootNode,
-                state: this._state,
-                groupIndex: 0
-            });
+            this._rootNode.children = this._state.dataSource.hasChildren
+                ? new Paginator({
+                    node: this._rootNode,
+                    state: this._state,
+                    parentId: this._state.hierarchyRootId ?? null
+                })
+                : new Paginator({
+                    node: this._rootNode,
+                    state: this._state,
+                    groupIndex: 0
+                });
 
             await this._rootNode.children.getAsync(0);
             this._rootNode.childrenCount = this._rootNode.children.count;
@@ -232,7 +273,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
 
         for (let node of nodes) {
             let cells = undefined;
-            if (node.type === "data") {
+            if (node.type === "data" || node.type === "node") {
                 cells = await DataColumnUtils.getDataCells(visibleColumns, node.data);
             } else if (node.type === "group") {
                 let group = <GroupItem>node.data;
@@ -251,7 +292,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
                 key: node.key,
                 level: node.level,
                 text: node.text,
-                expandable: !!node.childrenCount,
+                expandable: node.type === "node" ? !!node.canExpand : !!node.childrenCount,
                 data: node,
                 expanded: node.expanded,
                 cells: cells

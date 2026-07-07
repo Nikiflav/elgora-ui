@@ -16,6 +16,8 @@ export interface QueryArgs {
     groupColumn?: string;
     /** Aggregations to compute per group, per field. */
     groupSummary?: { field: string, summaryType: SummaryType }[];
+    /** Value to match against the data source's parent-reference field; present only in hierarchical (parent/child) mode. */
+    parentId?: any;
     /** Whether the caller needs an accurate total row/group count back. */
     requireTotalCount?: boolean;
     abortSignal?: AbortSignal;
@@ -42,10 +44,15 @@ export interface DataResult<TRow> {
 /** Query-level access to row data, with optional native grouping support. */
 export interface DataSource<TRow> {
     loadData(args: QueryArgs): Promise<DataResult<TRow>>;
-    /** Returns a stable identity for a row, used as its render key. */
-    getRowKey?(row: TRow): any;
+    
     /** Whether this source can bucket rows into groups itself (vs. relying on LocalGroupingDataSource). */
     get supportsGrouping(): boolean;
+
+    /** Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children. */
+    getRowId?(row: TRow): any;
+
+    /** Presence marks this source as hierarchical (parent/child) and disables groupColumns; answers per-row expandability. */
+    hasChildren?(row: TRow): Promise<boolean>;
 }
 
 export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
@@ -120,8 +127,8 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         return this.ds.loadData(args);
     }
 
-    getRowKey(row: TRow): any {
-        return this.ds.getRowKey?.(row);
+    getRowId(row: TRow): any {
+        return this.ds.getRowId?.(row);
     }
 
     get supportsGrouping(): boolean {
@@ -131,19 +138,37 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
 
 export class ArrayDataSource<T> implements DataSource<T> {
     readonly array: Array<T>;
+    private _parentField?: string;
 
     // Switch to true so the grid can natively group local arrays!
     get supportsGrouping(): boolean {
         return false;
     }
 
-    constructor(array: Array<T>) {
+    /** Only assigned when `options.parentField` is given, so plain flat arrays don't get flagged as hierarchical. */
+    getRowId?: (row: T) => any;
+    hasChildren?: (row: T) => Promise<boolean>;
+
+    constructor(array: Array<T>, options?: { parentField?: string, idField?: string }) {
         this.array = array;
+
+        const idField = options?.idField ?? "id";
+        if (options?.parentField) {
+            const parentField = this._parentField = options.parentField;
+            this.getRowId = (row: T) => (row as any)[idField];
+            this.hasChildren = async (row: T) => {
+                const id = this.getRowId!(row);
+                return this.array.some(item => (item as any)[parentField] === id);
+            };
+        }
     }
 
     async loadData(args: QueryArgs): Promise<DataResult<T>> {
         // 1. Filter and sort.
-        let workingSet = args.filter ? this.array.filter(item => evalFilter(<any>item, args.filter!)) : [...this.array];
+        let workingSet = this._parentField && args.parentId !== undefined
+            ? this.array.filter(item => (item as any)[this._parentField!] === args.parentId)
+            : [...this.array];
+        if (args.filter) workingSet = workingSet.filter(item => evalFilter(<any>item, args.filter!));
         if (args.orderby) {
             workingSet.sort((a, b) => {
                 for (const token of args.orderby!) {

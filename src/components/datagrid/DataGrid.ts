@@ -52,8 +52,12 @@ export type DataGridOptions<TRow> = {
     pageSize?: number,
     /** Names of columns to show as data columns; defaults to all `columns`. */
     visibleColumns?: string[],
-    /** Ordered column names to group by (outermost first). */
+    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */
     groupColumns?: string[],
+    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */
+    hierarchyRootId?: any,
+    /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */
+    autoFillViewportWidth?: boolean,
     /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */
     texts?: Partial<DataGridTexts>,
 }
@@ -87,6 +91,14 @@ type GridColumn<T> = {
     groupIndex: number;
     textAlign: "left" | "center" | "right";
     fixedPosition: "none" | "left" | "right";
+    /** True for columns with no configured width; participates in redistributeColumnWidths() until manually resized. */
+    isAutoWidth: boolean;
+    /**
+     * Un-stretched baseline for an auto column - col.width = col.naturalWidth * scale;
+     */
+    naturalWidth: number;
+    /** True once the one-time content-measurement pass has resolved this auto column's naturalWidth. */
+    widthMeasured: boolean;
 }
 
 /*
@@ -95,11 +107,12 @@ type GridColumn<T> = {
 export class DataGrid<TRow> extends Component {
 
     // Options.
-    private _dataSource: LocalGroupingDataSource<TRow>;
+    private _dataSource: DataSource<TRow>;
     private _pageSize = 50;
     private _columns: Map<string, DataColumn<TRow>> = new Map();
     private _fixedLeftColumns: number = 0;
     private _fixedRightColumns: number = 0;
+    private _autoFillViewportWidth: boolean = true;
     private _texts: DataGridTexts = DEFAULT_GRID_TEXTS;
 
 
@@ -107,6 +120,8 @@ export class DataGrid<TRow> extends Component {
     private _filter?: DataFilter;
     private _orderBy?: OrderByToken[];
     private _groupColumns: string[] = [];
+    private _isHierarchicalData: boolean = false;
+    private _hierarchyRootId: any = null;
     private _visibleColumnNames: string[] = [];
     private _gridColumns: GridColumn<TRow>[] = [];
 
@@ -119,8 +134,6 @@ export class DataGrid<TRow> extends Component {
     private _scrollEngine: ScrollEngine;
     private _sizeManager = new VariableSizeManager(30)
     private _defaultRowSize = 0
-    // Array of columns that need auto width measurement.
-    private _autoWidthColumns?: GridColumn<TRow>[]
     private _rowsPool: HTMLTableRowElement[] = []
 
 
@@ -149,6 +162,7 @@ export class DataGrid<TRow> extends Component {
         // Show row header.
         this._fixedLeftColumns = 1 + (options.fixedLeftColumns || 0);
         this._fixedRightColumns = options.fixedRightColumns || 0;
+        this._autoFillViewportWidth = options.autoFillViewportWidth ?? true;
 
         // Initialize columns map
         for (const col of options.columns) {
@@ -156,14 +170,8 @@ export class DataGrid<TRow> extends Component {
         }
 
         this._visibleColumnNames = options.visibleColumns || options.columns.map(col => col.name);
-        this._groupColumns = options.groupColumns || [];
-        this._texts = { ...DEFAULT_GRID_TEXTS, ...options.texts };
 
-        // Initialize columns
-        this._gridColumns = this.getGridColumns();
-        this._autoWidthColumns = this._gridColumns.filter(c => c.dataColumn && !c.dataColumn.width);
-
-        // Data source.        
+        // Data source.
         let ds: DataSource<TRow>;
         if (options.data == undefined || options.data instanceof Array) {
             const array = options.data || [];
@@ -172,19 +180,37 @@ export class DataGrid<TRow> extends Component {
         } else {
             ds = options.data;
         }
-        this._dataSource = new LocalGroupingDataSource(ds, (row, column) => {
-            const col = this._columns.get(column);
-            if (!col)
-                return Promise.resolve((row as any)[column]);
-            return DataColumnUtils.getValue(col, row);
-        });
+
+        this._isHierarchicalData = !!ds.hasChildren;
+        this._hierarchyRootId = options.hierarchyRootId ?? null;
+
+        if (this._isHierarchicalData) {
+            if (options.groupColumns?.length) {
+                console.warn("DataGrid: groupColumns is ignored when the data source is hierarchical (defines hasChildren).");
+            }
+            this._groupColumns = [];
+            this._dataSource = ds;
+        } else {
+            this._groupColumns = options.groupColumns || [];
+            this._dataSource = new LocalGroupingDataSource(ds, (row, column) => {
+                const col = this._columns.get(column);
+                if (!col)
+                    return Promise.resolve((row as any)[column]);
+                return DataColumnUtils.getValue(col, row);
+            });
+        }
+
+        this._texts = { ...DEFAULT_GRID_TEXTS, ...options.texts };
+
+        // Initialize columns
+        this._gridColumns = this.getGridColumns();
 
         // DOM
         this.dom.classList.add("elg-grid");
         this.dom.style.position = "relative";
         this.dom.style.boxSizing = "border-box";
 
-        
+
         this._headerPanel = e("div", {
             class: "elg-grid-header"
         });
@@ -246,7 +272,11 @@ export class DataGrid<TRow> extends Component {
 
         this._scrollEngine = new ScrollEngine(this._tableContainer);
         this._scrollEngine.onScroll(this.updateLayout);
-        this._scrollEngine.onResize(this.updateLayout)
+        this._scrollEngine.onResize(() => {
+            this.updateLayout();
+            this.redistributeColumnWidths();
+            this.render(this.renderColGroup);
+        })
 
         this._dragDrop = new DragDropController({ onDrop: this.handleColumnDrop });
 
@@ -303,7 +333,8 @@ export class DataGrid<TRow> extends Component {
             baseFilter: this._filter,
             groupColumns: this._groupColumns,
             groupSummary: this.getVisibleColumns().filter(c => c.summaryType).map(c => ({ field: c.name, summaryType: c.summaryType })),
-            orderBy: this._orderBy
+            orderBy: this._orderBy,
+            hierarchyRootId: this._hierarchyRootId
         } as DataGridState<TRow>;
     }
 
@@ -335,7 +366,10 @@ export class DataGrid<TRow> extends Component {
                 groupIndex: -1,
                 textAlign: "right",
                 width: 80,
-                fixedPosition: "left"
+                fixedPosition: "left",
+                isAutoWidth: false,
+                naturalWidth: 80,
+                widthMeasured: true
             }
         ];
 
@@ -355,6 +389,8 @@ export class DataGrid<TRow> extends Component {
             else if (totalColumns - this._fixedRightColumns > gridColumns.length)
                 fixedPosition = "right"
 
+            const isAutoWidth = !dataCol?.width;
+
             const col: GridColumn<TRow> = {
                 type: "data",
                 dataColumn: dataCol,
@@ -362,7 +398,10 @@ export class DataGrid<TRow> extends Component {
                 groupIndex,
                 textAlign: "left",
                 width: this._defaultColumnWidth,
-                fixedPosition
+                fixedPosition,
+                isAutoWidth,
+                naturalWidth: this._defaultColumnWidth,
+                widthMeasured: false
             };
             gridColumns.push(col)
 
@@ -381,7 +420,8 @@ export class DataGrid<TRow> extends Component {
                 }
 
                 col.width = width;
-
+                if (isAutoWidth)
+                    col.naturalWidth = width;
             }
         }
 
@@ -551,6 +591,7 @@ export class DataGrid<TRow> extends Component {
         let columnWidths: Map<GridColumn<TRow>, number> | undefined;
         let canvasContext: CanvasRenderingContext2D | undefined;
 
+        const pendingWidthColumns = this._gridColumns.filter(c => c.isAutoWidth && !c.widthMeasured);
 
         for (const row of view.rows) {
 
@@ -566,13 +607,15 @@ export class DataGrid<TRow> extends Component {
                 }
             }
 
-            if (this._autoWidthColumns?.length) {
+            if (pendingWidthColumns.length) {
                 if (!columnWidths) {
                     columnWidths = new Map();
                 }
                 // Measure column widths
-                for (let col of this._autoWidthColumns) {
+                for (let col of pendingWidthColumns) {
                     let txt = this.getCellText(row.gridRow, col);
+                    if(!txt)
+                        txt = col.dataColumn?.caption ?? col.dataColumn?.name ?? "";
                     let estimatedWidth = col.width;
                     if (txt) {
 
@@ -600,9 +643,11 @@ export class DataGrid<TRow> extends Component {
 
         if (columnWidths) {
             for (let [col, width] of columnWidths) {
-                col.width = width
+                col.width = width;
+                col.naturalWidth = width;
+                col.widthMeasured = true;
             }
-            this._autoWidthColumns = undefined;
+            this.redistributeColumnWidths();
             // Needs refresh
             this.refresh();
         }
@@ -682,6 +727,7 @@ export class DataGrid<TRow> extends Component {
             switch (gridRow.type) {
                 case "group":
                 case "data":
+                case "node":
                 case "summary": {
                     let cellText = this.getCellText(gridRow, col);
 
@@ -694,7 +740,7 @@ export class DataGrid<TRow> extends Component {
                             props.vnodes = [
                                 v("i", {
                                     class: "elg-icon " + (gridRow.expanded ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line"),
-                                    ui: ["elg", "hover", "me-2"],
+                                    ui: ["elg", "hover", "me-1"],
                                     style: {
                                         marginLeft: (this._groupPadding * gridRow.level) + "px",
                                     },
@@ -702,7 +748,7 @@ export class DataGrid<TRow> extends Component {
 
                                         assignElementProps(el, {
                                             class: "elg-spinner-ring",
-                                            ui: ["elg", "me-2", "text-primary"]
+                                            ui: ["elg", "me-1", "text-primary"]
                                         })
 
                                         await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
@@ -712,13 +758,18 @@ export class DataGrid<TRow> extends Component {
                                 v("span", cellText)
                             ]
                         } else {
+                            // Reserve the same width as the expand arrow (hidden, not just omitted) so leaf
+                            // rows' text lines up with their expandable siblings' text at the same level.
                             props.vnodes = [
-                                v("span", {
+                                v("i", {
+                                    class: "elg-icon ri-arrow-right-s-line",
+                                    ui: ["elg", "me-1"],
                                     style: {
                                         marginLeft: (this._groupPadding * gridRow.level) + "px",
-                                    },
-
-                                }, cellText)
+                                        visibility: "hidden"
+                                    }
+                                }),
+                                v("span", cellText)
                             ]
                         }
 
@@ -765,16 +816,23 @@ export class DataGrid<TRow> extends Component {
         e.stopPropagation();
 
         const startWidth = col.width;
+        const startIsAutoWidth = col.isAutoWidth;
+
+        // Manually resizing a column takes it out of the auto-fill pool permanently.
+        col.isAutoWidth = false;
 
         trackGesture(e, {
             axis: "x",
             onMove: (dx) => {
                 col.width = Math.floor(Math.max(40, Math.min(800, startWidth + dx)));
+                this.redistributeColumnWidths();
                 this.render(this.renderColGroup);
             },
             onEnd: () => { },
             onCancel: () => {
                 col.width = startWidth;
+                col.isAutoWidth = startIsAutoWidth;
+                this.redistributeColumnWidths();
                 this.render(this.renderColGroup);
             }
         });
@@ -1052,10 +1110,17 @@ export class DataGrid<TRow> extends Component {
 
     private renderHeaderPanel = () => {
 
+        if (this._isHierarchicalData) {
+            setElementProps(this._headerPanel, { class: "elg-grid-header", style: { display: "none" }, vnodes: [] });
+            return;
+        }
+
         const props: ElementProps<HTMLElement> = {
             class: "elg-grid-header",
             vnodes: []
         };
+
+        // Render group chips or empty text if no group columns are defined.
 
         if (this._groupColumns.length === 0) {
             props.vnodes!.push(v("span", {
@@ -1095,6 +1160,38 @@ export class DataGrid<TRow> extends Component {
 
     }
 
+    /**
+     * Recomputes width for all "auto" columns (no configured width, not yet manually resized) so
+     * they fill any leftover viewport space, scaled from each column's naturalWidth baseline - never
+     * from the current (possibly already-scaled) width, which would drift on repeated calls. Pure
+     * width mutation; callers are responsible for triggering a render afterward.
+     */
+    private redistributeColumnWidths() {
+
+        const autoColumns = this._gridColumns.filter(c => c.isAutoWidth);
+        if (autoColumns.length === 0) return;
+
+        if (!this._autoFillViewportWidth) {
+            for (const col of autoColumns) col.width = col.naturalWidth;
+            return;
+        }
+
+        // Falls back to a direct (one-time) measurement if the ResizeObserver-driven _viewportWidth
+        // hasn't reported yet - avoids a first-paint flash of unstretched columns.
+        const viewportWidth = this._viewportWidth || this._tableContainer.clientWidth;
+
+        const fixedTotal = this._gridColumns
+            .filter(c => !c.isAutoWidth)
+            .reduce((sum, c) => sum + c.width, 0);
+        const naturalTotal = autoColumns.reduce((sum, c) => sum + c.naturalWidth, 0);
+        const available = viewportWidth - fixedTotal;
+
+        const scale = naturalTotal > 0 && available > naturalTotal ? available / naturalTotal : 1;
+        for (const col of autoColumns) {
+            col.width = col.naturalWidth * scale;
+        }
+    }
+
     private renderColGroup = () => {
 
         const colGroup = this._contentTable.querySelector("colgroup")!;
@@ -1103,6 +1200,7 @@ export class DataGrid<TRow> extends Component {
         }
 
         let ix = 0;
+        let totalWidth = 0;
 
         for (let col of this._gridColumns) {
             let colElement = colGroup.children[ix] as HTMLElement;
@@ -1111,16 +1209,13 @@ export class DataGrid<TRow> extends Component {
                 colGroup.appendChild(colElement);
             }
 
-            const width = typeof col.width == "number"
-                ? col.width + "px"
-                : col.width ?? "";
-
             setElementProps(colElement, {
                 style: {
-                    width: width
+                    width: col.width + "px"
                 }
             });
 
+            totalWidth += col.width;
             ix++;
         }
 
@@ -1128,9 +1223,9 @@ export class DataGrid<TRow> extends Component {
             colGroup.removeChild(colGroup.children[j]);
         }
 
-        const totalWidth = this._contentTable.offsetWidth;
         if (this._totalWidth != totalWidth) {
             this._totalWidth = totalWidth
+            assignElementProps(this._contentTable, { style: { width: totalWidth + "px" } });
             this._scrollEngine.updateDimensions(
                 this._totalWidth,
                 this._scrollEngine.scrollHeight)
