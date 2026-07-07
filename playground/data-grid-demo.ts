@@ -40,12 +40,16 @@ const grid = new DataGrid({
         { name: "customer", editorType: "text" },
         { name: "region", editorType: "text" },
         { name: "status", editorType: "text" },
-        { name: "quantity", editorType: "number", summaryType: "sum" },
+        { name: "quantity", editorType: "number" },
         { name: "unitPrice", editorType: "number" },
-        { name: "totalAmount", editorType: "number", summaryType: "sum" },
+        { name: "totalAmount", editorType: "number" },
         { name: "orderDate", editorType: "date" }
     ],
-    groupColumns: ["customer", "region", "status"]
+    groupColumns: ["customer", "region", "status"],
+    groupSummary: [
+        { field: "quantity", summaryType: "sum" },
+        { field: "totalAmount", summaryType: "sum" }
+    ],
 });
 
 grid.dom.classList.add("elg-h-100");

@@ -6,7 +6,7 @@ import { ScrollEngine } from "../scrollbar/scroll-engine";
 import { Scrollbar } from "../scrollbar/scrollbar";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
-import { DataCell, DataColumn, DataColumnOption, DataColumnUtils, OrderByToken, orderByTokenToString, SummaryType } from "./DataColumn";
+import { DataCell, DataColumn, DataColumnLayoutInfo, DataColumnUtils, OrderByToken, orderByTokenToString, SummaryType } from "./DataColumn";
 import { ArrayDataSource, DataSource, LocalGroupingDataSource } from "./DataSource";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
 import { GridRow, GridRowsProvider } from "./GridRow";
@@ -26,9 +26,9 @@ export type GridDataSource<TRow> = DataSource<TRow> | TRow[];
 /** Persisted view state (e.g. for save/restore of a user's layout customizations). */
 export interface DataGridLayoutInfo {
     showFilterRow?: boolean;
-    visibleColumns?: (string | DataColumnOption)[],
+    visibleColumns?: (string | DataColumnLayoutInfo)[],
     orderBy?: OrderByToken[],
-    groupBy?: string[]
+    groupColumns?: string[]
 }
 
 type SelectionCell = { rowIndex: number, colIndex: number, wholeRow?: true };
@@ -48,18 +48,31 @@ export type DataGridOptions<TRow> = {
     fixedLeftColumns?: number,
     /** Number of trailing columns kept sticky. */
     fixedRightColumns?: number,
-    /** Row page size used when querying the DataSource. */
+    /** Row page size used when querying the DataSource. Defaults to 100. */
     pageSize?: number,
     /** Names of columns to show as data columns; defaults to all `columns`. */
     visibleColumns?: string[],
+    /** The sort order for the data rows. */
+    orderBy?: OrderByToken[],
+    /** Filter applied to the data rows. */
+    filter?: DataFilter,
     /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */
     groupColumns?: string[],
+    /** The aggregation summary for group rows. */
+    groupSummary?: { field: string, summaryType: SummaryType }[],
     /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */
     hierarchyRootId?: any,
-    /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */
-    autoFillViewportWidth?: boolean,
     /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */
     texts?: Partial<DataGridTexts>,
+
+    /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */
+    autoFillViewportWidth?: boolean,
+    /** Whether to show the row header column. Defaults to true. */
+    showRowHeader?: boolean,
+    /** Whether to show the column header row. Defaults to true. */
+    showColumnHeaders?: boolean,
+    /** The default options for each column. Can be specified to provide default column behavior. */
+    defaultColumnOptions?: Partial<DataColumn<TRow>>
 }
 
 type GridViewRow = {
@@ -107,26 +120,18 @@ type GridColumn<T> = {
 export class DataGrid<TRow> extends Component {
 
     // Options.
-    private _dataSource: DataSource<TRow>;
-    private _pageSize = 50;
-    private _columns: Map<string, DataColumn<TRow>> = new Map();
-    private _fixedLeftColumns: number = 0;
-    private _fixedRightColumns: number = 0;
-    private _autoFillViewportWidth: boolean = true;
-    private _texts: DataGridTexts = DEFAULT_GRID_TEXTS;
-
-
-    // Data shaping.
-    private _filter?: DataFilter;
-    private _orderBy?: OrderByToken[];
-    private _groupColumns: string[] = [];
+    private _gridOptions: DataGridOptions<TRow> = { columns: [] };
+    private _columnsIndex: Map<string, DataColumn<TRow>> = new Map();
+    private _dataSource!: DataSource<TRow>;
     private _isHierarchicalData: boolean = false;
-    private _hierarchyRootId: any = null;
-    private _visibleColumnNames: string[] = [];
     private _gridColumns: GridColumn<TRow>[] = [];
+    /** False until setOptions() has completed its first (constructor-time) call. Used only to
+     *  decide whether there's anything mounted yet to refresh - all option handling itself always
+     *  goes through setOptions(). */
+    private _initialized = false;
 
     // Internal state.
-    private _gridRows: VirtualGridRows<TRow>;
+    private _gridRows!: VirtualGridRows<TRow>;
     private _defaultColumnWidth = 150;
     private _contentTable: HTMLTableElement;
     private _headerPanel: HTMLDivElement;
@@ -150,60 +155,11 @@ export class DataGrid<TRow> extends Component {
     private _activeGroupColumn?: string
 
     private _dragDrop: DragDropController;
-    private static readonly HEADER_OFFSET = 1; // _gridColumns[0] is always the row-header column
 
     private readonly _MAX_ROWS = 100
 
     constructor(options: DataGridOptions<TRow>) {
         super({ ui: "h-100" })
-
-        // Options.
-        this._pageSize = options.pageSize ?? 50;
-        // Show row header.
-        this._fixedLeftColumns = 1 + (options.fixedLeftColumns || 0);
-        this._fixedRightColumns = options.fixedRightColumns || 0;
-        this._autoFillViewportWidth = options.autoFillViewportWidth ?? true;
-
-        // Initialize columns map
-        for (const col of options.columns) {
-            this._columns.set(col.name, col);
-        }
-
-        this._visibleColumnNames = options.visibleColumns || options.columns.map(col => col.name);
-
-        // Data source.
-        let ds: DataSource<TRow>;
-        if (options.data == undefined || options.data instanceof Array) {
-            const array = options.data || [];
-            ds = new ArrayDataSource<TRow>(array);
-
-        } else {
-            ds = options.data;
-        }
-
-        this._isHierarchicalData = !!ds.hasChildren;
-        this._hierarchyRootId = options.hierarchyRootId ?? null;
-
-        if (this._isHierarchicalData) {
-            if (options.groupColumns?.length) {
-                console.warn("DataGrid: groupColumns is ignored when the data source is hierarchical (defines hasChildren).");
-            }
-            this._groupColumns = [];
-            this._dataSource = ds;
-        } else {
-            this._groupColumns = options.groupColumns || [];
-            this._dataSource = new LocalGroupingDataSource(ds, (row, column) => {
-                const col = this._columns.get(column);
-                if (!col)
-                    return Promise.resolve((row as any)[column]);
-                return DataColumnUtils.getValue(col, row);
-            });
-        }
-
-        this._texts = { ...DEFAULT_GRID_TEXTS, ...options.texts };
-
-        // Initialize columns
-        this._gridColumns = this.getGridColumns();
 
         // DOM
         this.dom.classList.add("elg-grid");
@@ -264,12 +220,6 @@ export class DataGrid<TRow> extends Component {
                     }
                 }),)
 
-
-        this._gridRows = this.createGridRows();
-
-
-
-
         this._scrollEngine = new ScrollEngine(this._tableContainer);
         this._scrollEngine.onScroll(this.updateLayout);
         this._scrollEngine.onResize(() => {
@@ -322,26 +272,178 @@ export class DataGrid<TRow> extends Component {
         this.renderTasks.push(() => this.renderHeaderAndFooter())
         this.renderTasks.push(() => this.renderBody())
 
+        // Every option - at construction time and for every later change - goes through the same
+        // setOptions() path. On this first call there's nothing mounted yet to render (see _initialized).
+        this.setOptions(options);
     }
 
+    /** Number of leading sticky columns, including the row-header column when it's shown. */
+    private get fixedLeftColumnCount(): number {
+        return (this._gridOptions.showRowHeader !== false ? 1 : 0) + (this._gridOptions.fixedLeftColumns || 0);
+    }
+
+    /** Number of trailing sticky columns. */
+    private get fixedRightColumnCount(): number {
+        return this._gridOptions.fixedRightColumns || 0;
+    }
+
+    /** 1 if the row-header pseudo-column is shown, else 0 - the index offset of the first data column in _gridColumns. */
+    private get rowHeaderOffset(): number {
+        return this._gridOptions.showRowHeader !== false ? 1 : 0;
+    }
+
+    /** Resolved user-facing texts, merging configured overrides onto DEFAULT_GRID_TEXTS. */
+    private get texts(): DataGridTexts {
+        return { ...DEFAULT_GRID_TEXTS, ...this._gridOptions.texts };
+    }
+
+    /** (Re)builds _dataSource/_isHierarchicalData from _gridOptions.data. */
+    private _rebuildDataSource() {
+
+        const data = this._gridOptions.data;
+        let ds: DataSource<TRow>;
+        if (data == undefined || data instanceof Array) {
+            ds = new ArrayDataSource<TRow>(data || []);
+        } else {
+            ds = data;
+        }
+
+        this._isHierarchicalData = !!ds.hasChildren;
+
+        if (this._isHierarchicalData) {
+            if (this._gridOptions.groupColumns?.length) {
+                console.warn("DataGrid: groupColumns is ignored when the data source is hierarchical (defines hasChildren).");
+            }
+            this._dataSource = ds;
+        } else {
+            this._dataSource = new LocalGroupingDataSource(ds, (row, column) => {
+                const col = this._columnsIndex.get(column);
+                if (!col)
+                    return Promise.resolve((row as any)[column]);
+                return DataColumnUtils.getValue(col, row);
+            });
+        }
+    }
+
+    /** Merges a column patch onto the existing DataColumn of the same name (preserving its object
+     *  identity, since it's shared with _gridOptions.columns and _gridColumns[i].dataColumn), or adds
+     *  it as a new column if no such name exists yet. */
+    private _mergeColumnPatch(patch: Partial<DataColumn<TRow>> & { name: string }) {
+        const existing = this._columnsIndex.get(patch.name);
+        if (existing) {
+            Object.assign(existing, patch);
+        } else {
+            const col = patch as DataColumn<TRow>;
+            this._columnsIndex.set(col.name, col);
+            this._gridOptions.columns.push(col);
+        }
+    }
+
+    /**
+     * Sets (patches) the grid's options. Only the provided keys are changed; everything else is
+     * left as-is. This is the single path for both the constructor's initial options and every
+     * later change - fires an "optionChanged" DOM event on this.dom with the applied patch as detail.
+     */
+    public setOptions = (options: Partial<DataGridOptions<TRow>>) => {
+
+        // Reconcile columns by name instead of replacing the array wholesale, so DataColumn object
+        // identity is preserved for objects already referenced by _gridColumns[i].dataColumn.
+        if (options.columns) {
+            const keepNames = new Set(options.columns.map(c => c.name));
+            for (const name of [...this._columnsIndex.keys()]) {
+                if (!keepNames.has(name)) {
+                    this._columnsIndex.delete(name);
+                    const ix = this._gridOptions.columns.findIndex(c => c.name === name);
+                    if (ix > -1) this._gridOptions.columns.splice(ix, 1);
+                }
+            }
+            for (const col of options.columns) {
+                this._mergeColumnPatch(col);
+            }
+        }
+
+        const { columns, ...rest } = options;
+        Object.assign(this._gridOptions, rest);
+
+        // Resolve every optional field to a concrete default, once, so the rest of the grid (and
+        // getOptions()) never has to special-case "unset".
+        this._gridOptions.visibleColumns ??= this._gridOptions.columns.map(c => c.name);
+        this._gridOptions.groupColumns ??= [];
+        this._gridOptions.groupSummary ??= [];
+        this._gridOptions.pageSize ??= 100;
+        this._gridOptions.fixedLeftColumns ??= 0;
+        this._gridOptions.fixedRightColumns ??= 0;
+        this._gridOptions.autoFillViewportWidth ??= true;
+        this._gridOptions.showRowHeader ??= true;
+        this._gridOptions.showColumnHeaders ??= true;
+        this._gridOptions.hierarchyRootId ??= null;
+        this._gridOptions.texts ??= {};
+
+        this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: options }));
+
+        const firstCall = !this._initialized;
+
+        if (firstCall || "data" in options) {
+            this._rebuildDataSource();
+        }
+
+        if (firstCall) {
+            // Nothing mounted yet - build the initial layout/rows directly, without the render()
+            // that layoutChanged()/reloadRows() would otherwise trigger.
+            this._gridColumns = this.getGridColumns();
+            this._gridRows = this.createGridRows();
+            this._initialized = true;
+            return;
+        }
+
+        const reloadsRows = "data" in options || "groupColumns" in options || "hierarchyRootId" in options
+            || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options;
+        const changesLayout = "columns" in options || "visibleColumns" in options || "fixedLeftColumns" in options
+            || "fixedRightColumns" in options || "autoFillViewportWidth" in options || "showRowHeader" in options;
+
+        if (changesLayout) this.layoutChanged();
+        if (reloadsRows) this.reloadRows();
+        if (!changesLayout && !reloadsRows && "texts" in options) this.refresh();
+    }
+
+    /** Returns a shallow copy of the grid's current, fully-resolved options. */
+    getOptions(): DataGridOptions<TRow> {
+        return { ...this._gridOptions };
+    }
+
+    /** Returns the column definition for the given name, or undefined if no such column exists. */
+    getColumn(name: string): DataColumn<TRow> | undefined {
+        return this._columnsIndex.get(name);
+    }
+
+    /** Patches an existing column's definition in place and updates the grid's layout accordingly. */
+    setColumnOptions(name: string, patch: Partial<DataColumn<TRow>>) {
+        if (!this._columnsIndex.has(name)) {
+            console.warn(`DataGrid.setColumnOptions: no column named "${name}".`);
+            return;
+        }
+        this._mergeColumnPatch({ ...patch, name });
+        this.layoutChanged();
+    }
 
     private getState(): DataGridState<TRow> {
         return {
             dataSource: this._dataSource,
-            columns: this._columns,
+            pageSize: this._gridOptions.pageSize!,
+            columns: this._columnsIndex,
             visibleColumns: this.getVisibleColumns().map(c => c.name),
-            baseFilter: this._filter,
-            groupColumns: this._groupColumns,
-            groupSummary: this.getVisibleColumns().filter(c => c.summaryType).map(c => ({ field: c.name, summaryType: c.summaryType })),
-            orderBy: this._orderBy,
-            hierarchyRootId: this._hierarchyRootId
-        } as DataGridState<TRow>;
+            baseFilter: this._gridOptions.filter,
+            groupColumns: this._gridOptions.groupColumns,
+            groupSummary: this._gridOptions.groupSummary,
+            orderBy: this._gridOptions.orderBy,
+            hierarchyRootId: this._gridOptions.hierarchyRootId,
+        };
     }
 
     private createGridRows() {
 
         var provider = new DefaultGridRowsProvider<TRow>(this.getState());
-        return new VirtualGridRows(provider, (args, result) => {
+        return new VirtualGridRows(provider, this._gridOptions.pageSize!, (args, result) => {
             this.refresh();
         })
     }
@@ -359,8 +461,10 @@ export class DataGrid<TRow> extends Component {
 
     private getGridColumns(): GridColumn<TRow>[] {
 
-        const gridColumns: GridColumn<TRow>[] = [
-            {
+        const gridColumns: GridColumn<TRow>[] = [];
+
+        if (this._gridOptions.showRowHeader !== false) {
+            gridColumns.push({
                 type: "rowheader",
                 visibleIndex: 0,
                 groupIndex: -1,
@@ -370,23 +474,25 @@ export class DataGrid<TRow> extends Component {
                 isAutoWidth: false,
                 naturalWidth: 80,
                 widthMeasured: true
-            }
-        ];
+            });
+        }
 
         //let sampleRows: GridRow[] | undefined;
         //let canvasContext: CanvasRenderingContext2D | undefined;
 
-        const totalColumns = gridColumns.length + this._visibleColumnNames.length;
+        const visibleColumnNames = this._gridOptions.visibleColumns!;
+        const groupColumns = this._gridOptions.groupColumns!;
+        const totalColumns = gridColumns.length + visibleColumnNames.length;
 
-        for (let name of this._visibleColumnNames) {
-            const dataCol = this._columns.get(name);
+        for (let name of visibleColumnNames) {
+            const dataCol = this._columnsIndex.get(name);
 
-            const groupIndex = dataCol ? this._groupColumns.indexOf(dataCol.name) : -1;
+            const groupIndex = dataCol ? groupColumns.indexOf(dataCol.name) : -1;
 
             let fixedPosition: "none" | "left" | "right" = "none";
-            if (this._fixedLeftColumns > gridColumns.length)
+            if (this.fixedLeftColumnCount > gridColumns.length)
                 fixedPosition = "left";
-            else if (totalColumns - this._fixedRightColumns > gridColumns.length)
+            else if (totalColumns - this.fixedRightColumnCount > gridColumns.length)
                 fixedPosition = "right"
 
             const isAutoWidth = !dataCol?.width;
@@ -614,7 +720,7 @@ export class DataGrid<TRow> extends Component {
                 // Measure column widths
                 for (let col of pendingWidthColumns) {
                     let txt = this.getCellText(row.gridRow, col);
-                    if(!txt)
+                    if (!txt)
                         txt = col.dataColumn?.caption ?? col.dataColumn?.name ?? "";
                     let estimatedWidth = col.width;
                     if (txt) {
@@ -676,7 +782,7 @@ export class DataGrid<TRow> extends Component {
         props.style.maxWidth = width + "px";
         props.style.left = (offsetLeft) + "px";
 
-        if (visibleIndex == this._fixedLeftColumns - 1) {
+        if (visibleIndex == this.fixedLeftColumnCount - 1) {
             props.style.borderRightWidth = "2px";
         }
     }
@@ -690,7 +796,7 @@ export class DataGrid<TRow> extends Component {
         props.style.maxWidth = width + "px";
         props.style.right = (offsetRight) + "px";
 
-        if (visibleIndex == this._visibleColumnNames.length - this._fixedRightColumns) {
+        if (visibleIndex == this._gridColumns.length - 1 - this.fixedRightColumnCount) {
             props.style.borderLeft = "2px solid var(--elg-border-color)";
         }
     }
@@ -828,7 +934,12 @@ export class DataGrid<TRow> extends Component {
                 this.redistributeColumnWidths();
                 this.render(this.renderColGroup);
             },
-            onEnd: () => { },
+            onEnd: () => {
+                // Sync the resolved width back onto the column definition (same object referenced by
+                // _gridOptions.columns) so getColumn()/getOptions() reflect what's on screen.
+                if (col.dataColumn)
+                    col.dataColumn.width = col.width;
+            },
             onCancel: () => {
                 col.width = startWidth;
                 col.isAutoWidth = startIsAutoWidth;
@@ -875,7 +986,7 @@ export class DataGrid<TRow> extends Component {
 
         e.preventDefault();
 
-        const col = this._columns.get(columnName);
+        const col = this._columnsIndex.get(columnName);
         if (!col) return;
 
         this._activeGroupColumn = columnName;
@@ -913,17 +1024,19 @@ export class DataGrid<TRow> extends Component {
     }
 
     private removeGroupColumn(name: string) {
-        const ix = this._groupColumns.indexOf(name);
+        const groupColumns = this._gridOptions.groupColumns!;
+        const ix = groupColumns.indexOf(name);
         if (ix < 0) return;
-        this._groupColumns.splice(ix, 1);
+        groupColumns.splice(ix, 1);
         this.recomputeGroupIndexes();
         this.reloadRows();
     }
 
     private recomputeGroupIndexes() {
+        const groupColumns = this._gridOptions.groupColumns!;
         for (const col of this._gridColumns) {
             if (col.dataColumn)
-                col.groupIndex = this._groupColumns.indexOf(col.dataColumn.name);
+                col.groupIndex = groupColumns.indexOf(col.dataColumn.name);
         }
     }
 
@@ -947,11 +1060,13 @@ export class DataGrid<TRow> extends Component {
     private handleColumnDrop = (payload: DragPayload, target: DropTarget) => {
 
         const columnName = payload.id;
-        const groupColumnsBefore = this._groupColumns.slice();
+        const groupColumns = this._gridOptions.groupColumns!;
+        const groupColumnsBefore = groupColumns.slice();
+        const headerOffset = this.rowHeaderOffset;
 
         if (payload.sourceZoneId == "group-panel" && target.zoneId != "group-panel") {
-            const gi = this._groupColumns.indexOf(columnName);
-            if (gi > -1) this._groupColumns.splice(gi, 1);
+            const gi = groupColumns.indexOf(columnName);
+            if (gi > -1) groupColumns.splice(gi, 1);
         }
 
         if (target.zoneId == "grid-header") {
@@ -959,30 +1074,36 @@ export class DataGrid<TRow> extends Component {
             if (gridCol) {
                 const fromIx = this._gridColumns.indexOf(gridCol);
                 this._gridColumns.splice(fromIx, 1);
-                let toIx = target.index + DataGrid.HEADER_OFFSET;
+                let toIx = target.index + headerOffset;
                 if (fromIx < toIx) toIx--;
-                this._gridColumns.splice(Math.max(DataGrid.HEADER_OFFSET, toIx), 0, gridCol);
+                this._gridColumns.splice(Math.max(headerOffset, toIx), 0, gridCol);
                 this._gridColumns.forEach((c, ix) => c.visibleIndex = ix);
+
+                // Keep visibleColumns in sync with the live drag-reordered order, since getOptions()
+                // must reflect reality, not just what was last passed to setOptions().
+                this._gridOptions.visibleColumns = this._gridColumns
+                    .filter(c => c.dataColumn)
+                    .map(c => c.dataColumn!.name);
             }
         }
         else if (target.zoneId == "group-panel") {
             if (payload.sourceZoneId == "group-panel") {
-                const fromIx = this._groupColumns.indexOf(columnName);
+                const fromIx = groupColumns.indexOf(columnName);
                 if (fromIx > -1) {
-                    this._groupColumns.splice(fromIx, 1);
+                    groupColumns.splice(fromIx, 1);
                     let toIx = target.index;
                     if (fromIx < toIx) toIx--;
-                    this._groupColumns.splice(toIx, 0, columnName);
+                    groupColumns.splice(toIx, 0, columnName);
                 }
-            } else if (!this._groupColumns.includes(columnName)) {
-                this._groupColumns.splice(target.index, 0, columnName);
+            } else if (!groupColumns.includes(columnName)) {
+                groupColumns.splice(target.index, 0, columnName);
             }
         }
 
         this.recomputeGroupIndexes();
 
-        const groupColumnsChanged = groupColumnsBefore.length !== this._groupColumns.length
-            || groupColumnsBefore.some((name, ix) => name !== this._groupColumns[ix]);
+        const groupColumnsChanged = groupColumnsBefore.length !== groupColumns.length
+            || groupColumnsBefore.some((name, ix) => name !== groupColumns[ix]);
 
         if (groupColumnsChanged) {
             this.reloadRows();
@@ -1014,7 +1135,7 @@ export class DataGrid<TRow> extends Component {
             cellElements.push(cellElement);
 
 
-            if (ix < this._fixedLeftColumns) {
+            if (ix < this.fixedLeftColumnCount) {
                 this.applyLeftStickyStyles(ix, cell.props, offsetLeft, cell.col.width);
             }
             offsetLeft += cell.col.width;
@@ -1022,9 +1143,9 @@ export class DataGrid<TRow> extends Component {
         }
 
         // Apply right sticky styles
-        if (this._fixedRightColumns > 0) {
+        if (this.fixedRightColumnCount > 0) {
             let offsetRight = 0;
-            for (let k = cells.length - 1; k >= cells.length - this._fixedRightColumns; k--) {
+            for (let k = cells.length - 1; k >= cells.length - this.fixedRightColumnCount; k--) {
                 const cell = cells[k];
                 this.applyRightStickyStyles(k, cell.props, offsetRight, cell.col.width);
                 offsetRight += cell.col.width;
@@ -1122,14 +1243,16 @@ export class DataGrid<TRow> extends Component {
 
         // Render group chips or empty text if no group columns are defined.
 
-        if (this._groupColumns.length === 0) {
+        const groupColumns = this._gridOptions.groupColumns!;
+
+        if (groupColumns.length === 0) {
             props.vnodes!.push(v("span", {
                 class: "elg-grid-header-empty"
-            }, this._texts.groupPanelEmptyText));
+            }, this.texts.groupPanelEmptyText));
         }
 
-        this._groupColumns.forEach((cn, sourceIndex) => {
-            let col = this._columns.get(cn);
+        groupColumns.forEach((cn: string, sourceIndex: number) => {
+            let col = this._columnsIndex.get(cn);
             if (col) {
 
                 if (props.vnodes!.length)
@@ -1171,7 +1294,7 @@ export class DataGrid<TRow> extends Component {
         const autoColumns = this._gridColumns.filter(c => c.isAutoWidth);
         if (autoColumns.length === 0) return;
 
-        if (!this._autoFillViewportWidth) {
+        if (!this._gridOptions.autoFillViewportWidth) {
             for (const col of autoColumns) col.width = col.naturalWidth;
             return;
         }

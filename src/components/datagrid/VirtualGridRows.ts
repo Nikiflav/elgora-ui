@@ -16,9 +16,9 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
     private readonly MAX_PAGE_COUNT = 100;
 
 
-    constructor(source: GridRowsProvider<T>, onLoad?: (args: GridViewportArgs, result: GridResult) => void) {
+    constructor(source: GridRowsProvider<T>, pageSize = 100, onLoad?: (args: GridViewportArgs, result: GridResult) => void) {
         this._source = source;
-        this._pageSize = 100;
+        this._pageSize = pageSize;
         this._onLoad = onLoad;
 
         // Perform initial load

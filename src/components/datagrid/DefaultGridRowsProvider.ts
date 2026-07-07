@@ -32,7 +32,7 @@ class Paginator {
     private _gridState: DataGridState<any>;
     private _groupIndex = -1;
     private _pages: Map<number, GridNode[]> = new Map();
-    private _pageSize = 100;
+    private _pageSize: number;
     private _totalCount = -1;
     private _loadingPages = new Set<number>();
     private _groupFilter?: DataFilter;
@@ -52,6 +52,7 @@ class Paginator {
         this._groupFilter = args.groupFilter;
         this._parentId = args.parentId;
         this._isHierarchy = !!this._gridState.dataSource.hasChildren;
+        this._pageSize = args.state.pageSize;
     }
 
     get groupColumn() {
@@ -179,6 +180,8 @@ class Paginator {
 export type DataGridState<TRow> = {
     /** Underlying data access layer queried for each page/level of the tree. */
     dataSource: DataSource<TRow>,
+    /** Page size used when querying the DataSource. */
+    pageSize: number,
     /** All defined columns, keyed by name. */
     columns: Map<string, DataColumn<TRow>>,
     /** Names of the columns currently shown as data columns. */

@@ -12,7 +12,7 @@ export type DisplayValue = {
 
 
 /** Lightweight per-column override, e.g. for persisted layout/visible-column state. */
-export type DataColumnOption = {
+export type DataColumnLayoutInfo = {
     name: string,
     width?: number;
     summaryType?: SummaryType;
@@ -81,17 +81,16 @@ export type DataColumn<TRow> = {
     caption?: string;
     /** Column description, shown as a tooltip. */
     description?: string;
-    /** When set, this column contributes an aggregate value to group rows. */
-    summaryType?: SummaryType;
-    /** The fixed width of the column, in pixels. */
+    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */
     width?: number;
     /** Opaque, caller-defined data attached to the column (not used internally). */
     userState?: any;
     textAlign?: "start" | "center" | "end";
     editorType?: EditorType;
-    hidden?: boolean;
     readonly?: boolean;
     required?: boolean;
+    resizable?: boolean;
+    reorderable?: boolean;
     /** Relative ordering hint among columns. */
     logicalOrder?: number;
     /** True to skip the cell label in DataView. */
