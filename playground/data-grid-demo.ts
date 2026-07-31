@@ -50,6 +50,7 @@ const grid = new DataGrid({
         { field: "quantity", summaryType: "sum" },
         { field: "totalAmount", summaryType: "sum" }
     ],
+    stickyGroupRows: true,
 });
 
 grid.dom.classList.add("elg-h-100");

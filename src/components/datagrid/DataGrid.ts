@@ -26,6 +26,8 @@ export type GridDataSource<TRow> = DataSource<TRow> | TRow[];
 /** Persisted view state (e.g. for save/restore of a user's layout customizations). */
 export interface DataGridLayoutInfo {
     showFilterRow?: boolean;
+    showColumnHeaders?: boolean;
+    showColumnFooters?: boolean;
     visibleColumns?: (string | DataColumnLayoutInfo)[],
     orderBy?: OrderByToken[],
     groupColumns?: string[]
@@ -62,6 +64,10 @@ export type DataGridOptions<TRow> = {
     groupSummary?: { field: string, summaryType: SummaryType }[],
     /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */
     hierarchyRootId?: any,
+    /** Pins active group/tree ancestors below the static table header. Defaults to false. */
+    stickyGroupRows?: boolean,
+    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */
+    stickyGroupRowsMaxLevels?: number,
     /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */
     texts?: Partial<DataGridTexts>,
 
@@ -71,6 +77,10 @@ export type DataGridOptions<TRow> = {
     showRowHeader?: boolean,
     /** Whether to show the column header row. Defaults to true. */
     showColumnHeaders?: boolean,
+    /** Whether to show the filter row below the column headers. Defaults to false. */
+    showFilterRow?: boolean,
+    /** Whether to show the column footer row. Defaults to true. */
+    showColumnFooters?: boolean,
     /** The default options for each column. Can be specified to provide default column behavior. */
     defaultColumnOptions?: Partial<DataColumn<TRow>>
 }
@@ -140,6 +150,9 @@ export class DataGrid<TRow> extends Component {
     private _sizeManager = new VariableSizeManager(30)
     private _defaultRowSize = 0
     private _rowsPool: HTMLTableRowElement[] = []
+    private _tHeadRowsPool: HTMLTableRowElement[] = []
+    private _renderedStickyGroupRows: GridRow[] = []
+    private _stickyGroupRowsDirty = true
 
 
     private _scrollTop = 0
@@ -239,7 +252,7 @@ export class DataGrid<TRow> extends Component {
             element: this._tableContainer,
             itemsElement: this._contentTable.tHead!,
             axis: "x",
-            itemSelector: "td.elg-gridcell-data",
+            itemSelector: "tr.elg-gridrow-header td.elg-gridcell-data",
             scrollBy: delta => this._scrollEngine.scrollLeft += delta
         }));
 
@@ -376,7 +389,10 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.autoFillViewportWidth ??= true;
         this._gridOptions.showRowHeader ??= true;
         this._gridOptions.showColumnHeaders ??= true;
+        this._gridOptions.showFilterRow ??= false;
+        this._gridOptions.showColumnFooters ??= true;
         this._gridOptions.hierarchyRootId ??= null;
+        this._gridOptions.stickyGroupRows ??= false;
         this._gridOptions.texts ??= {};
 
         this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: options }));
@@ -400,10 +416,11 @@ export class DataGrid<TRow> extends Component {
             || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options;
         const changesLayout = "columns" in options || "visibleColumns" in options || "fixedLeftColumns" in options
             || "fixedRightColumns" in options || "autoFillViewportWidth" in options || "showRowHeader" in options;
+        const changesStaticRows = "showColumnHeaders" in options || "showFilterRow" in options || "showColumnFooters" in options;
 
         if (changesLayout) this.layoutChanged();
         if (reloadsRows) this.reloadRows();
-        if (!changesLayout && !reloadsRows && "texts" in options) this.refresh();
+        if (!changesLayout && !reloadsRows && ("texts" in options || "stickyGroupRows" in options || changesStaticRows)) this.refresh();
     }
 
     /** Returns a shallow copy of the grid's current, fully-resolved options. */
@@ -595,6 +612,7 @@ export class DataGrid<TRow> extends Component {
 
 
         // Phase 3: WRITE (mutate DOM, no reads!)
+        this.renderStickyGroupRows(view)
         this.renderView(view)
 
         // Phase 4: MEASURE (deferred to next frame to avoid forced reflow)
@@ -847,71 +865,71 @@ export class DataGrid<TRow> extends Component {
 
         const props: any = {
             className: `elg-gridcell elg-gridcell-${col.type}`,
-
         };
 
+        switch (gridRow.type) {
 
-        if (col.type == "rowheader" && gridRow.type != "footer" && gridRow.type != "header") {
-            props.textContent = this.getCellText(gridRow, col);
-        }
+            case "group":
+            case "data":
+            case "node":
+            case "summary": {
+                if (col.type == "rowheader") {
+                    props.textContent = this.getCellText(gridRow, col);
+                    break;
+                }
+                if (!col.dataColumn) break;
 
-        if (col.type == "data" && col.dataColumn) {
+                let cellText = this.getCellText(gridRow, col);
 
-            switch (gridRow.type) {
-                case "group":
-                case "data":
-                case "node":
-                case "summary": {
-                    let cellText = this.getCellText(gridRow, col);
+                if (col.visibleIndex == 1) {
 
-                    if (col.visibleIndex == 1) {
+                    if (gridRow.expandable) {
+                        if (gridRow.type == "group")
+                            cellText = gridRow.text ?? "";
 
-                        if (gridRow.expandable) {
-                            if (gridRow.type == "group")
-                                cellText = gridRow.text ?? "";
+                        props.vnodes = [
+                            v("i", {
+                                class: "elg-icon " + (gridRow.expanded ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line"),
+                                ui: ["elg", "hover", "me-1"],
+                                style: {
+                                    marginLeft: (this._groupPadding * gridRow.level) + "px",
+                                },
+                                onclick: async (e, el) => {
 
-                            props.vnodes = [
-                                v("i", {
-                                    class: "elg-icon " + (gridRow.expanded ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line"),
-                                    ui: ["elg", "hover", "me-1"],
-                                    style: {
-                                        marginLeft: (this._groupPadding * gridRow.level) + "px",
-                                    },
-                                    onclick: async (e, el) => {
+                                    assignElementProps(el, {
+                                        class: "elg-spinner-ring",
+                                        ui: ["elg", "me-1", "text-primary"]
+                                    })
 
-                                        assignElementProps(el, {
-                                            class: "elg-spinner-ring",
-                                            ui: ["elg", "me-1", "text-primary"]
-                                        })
-
-                                        await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
-                                        this.render(this.renderBody);
-                                    }
-                                }),
-                                v("span", cellText)
-                            ]
-                        } else {
-                            // Reserve the same width as the expand arrow (hidden, not just omitted) so leaf
-                            // rows' text lines up with their expandable siblings' text at the same level.
-                            props.vnodes = [
-                                v("i", {
-                                    class: "elg-icon ri-arrow-right-s-line",
-                                    ui: ["elg", "me-1"],
-                                    style: {
-                                        marginLeft: (this._groupPadding * gridRow.level) + "px",
-                                        visibility: "hidden"
-                                    }
-                                }),
-                                v("span", cellText)
-                            ]
-                        }
-
+                                    await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
+                                    this.render(this.renderBody);
+                                }
+                            }),
+                            v("span", cellText)
+                        ]
+                    } else {
+                        // Reserve the same width as the expand arrow (hidden, not just omitted) so leaf
+                        // rows' text lines up with their expandable siblings' text at the same level.
+                        props.vnodes = [
+                            v("i", {
+                                class: "elg-icon ri-arrow-right-s-line",
+                                ui: ["elg", "me-1"],
+                                style: {
+                                    marginLeft: (this._groupPadding * gridRow.level) + "px",
+                                    visibility: "hidden"
+                                }
+                            }),
+                            v("span", cellText)
+                        ]
                     }
-                    else {
-                        props.textContent = cellText;
-                    }
-                } break;
-                case "header":
+
+                } else {
+                    props.textContent = cellText;
+                }
+            } break;
+
+            case "header":
+                if (col.type == "data" && col.dataColumn) {
                     props.vnodes = [
                         v("span", String(col.dataColumn.caption ?? col.dataColumn.name)),
                         v("em", {
@@ -928,19 +946,21 @@ export class DataGrid<TRow> extends Component {
                     ]
                     props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
                     props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
-                    break;
-                case "footer":
-                    //props.textContent = col.caption ?? col.name;
-                    props.innerHTML = "&#8203;";
-                    break;
+                }
+                break;
 
-                default:
-                    props.innerHTML = "&#8203;";
-                    break;
-            }
+            case "footer":
+            case "filter":
+                // Placeholder cells; footer summaries and per-column filter controls land later.
+                if (col.type == "data") props.innerHTML = "&#8203;";
+                break;
+
+            default:
+                // loading / empty / error / detail rows: still show a row number, placeholder data cell.
+                if (col.type == "rowheader") props.textContent = this.getCellText(gridRow, col);
+                else if (col.type == "data") props.innerHTML = "&#8203;";
+                break;
         }
-
-
 
         if (this._activeColIndex === col.visibleIndex) {
             props.className += " elg-active-col";
@@ -1198,55 +1218,165 @@ export class DataGrid<TRow> extends Component {
         });
     }
 
+    /** Number of static (non-sticky) rows currently occupying the front of the <thead> pool. */
+    private get staticTHeadRowCount(): number {
+        return (this._gridOptions.showColumnHeaders ? 1 : 0)
+            + (this._gridOptions.showFilterRow ? 1 : 0);
+    }
+
+    /** Resolves the expanded group/node chain above the first visible body row. */
+    private getStickyGroupRows(view: GridView): GridRow[] {
+        const rows: GridRow[] = [];
+        const visited = new Set<number>();
+        let row = view.rows[0]?.gridRow;
+
+        while (row?.parentRowIndex !== undefined) {
+            const parentRowIndex = row.parentRowIndex;
+            if (parentRowIndex < 0 || visited.has(parentRowIndex)) break;
+            visited.add(parentRowIndex);
+
+            const parent = this._gridRows.getAt(parentRowIndex);
+            if (parent.type !== "group" && parent.type !== "node") break;
+
+            rows.push(parent);
+            row = parent;
+        }
+
+        rows.reverse();
+
+        const maxLevels = this._gridOptions.stickyGroupRowsMaxLevels;
+        if (maxLevels !== undefined && rows.length > maxLevels) {
+            // Keep the innermost (closest to the viewport) ancestors - they're the most relevant context.
+            return rows.slice(rows.length - maxLevels);
+        }
+
+        return rows;
+    }
+
+    /** Returns a reusable row slot in the shared pool for all <thead> row types. */
+    private getTHeadRow(index: number): HTMLTableRowElement {
+        const tHead = this._contentTable.tHead!;
+        while (this._tHeadRowsPool.length <= index) {
+            const tr = document.createElement("tr");
+            this._tHeadRowsPool.push(tr);
+            tHead.appendChild(tr);
+        }
+        const tr = this._tHeadRowsPool[index];
+        if (tr.parentElement !== tHead) {
+            tHead.appendChild(tr);
+        }
+        return tr;
+    }
+
+    /** Renders the current group/node ancestry after the static table-header rows. */
+    private renderStickyGroupRows(view: GridView) {
+        const rows = this._gridOptions.stickyGroupRows
+            ? this.getStickyGroupRows(view)
+            : [];
+        const rowsChanged = this._stickyGroupRowsDirty
+            || rows.length !== this._renderedStickyGroupRows.length
+            || rows.some((row, index) => row !== this._renderedStickyGroupRows[index]);
+
+        if (!rowsChanged) return;
+
+        const staticCount = this.staticTHeadRowCount;
+
+        for (let i = 0; i < rows.length; i++) {
+            const tr = this.getTHeadRow(staticCount + i);
+            this.renderGridRow({ gridRow: rows[i], tr, index: rows[i].visibleIndex });
+            tr.classList.add("elg-gridrow-sticky");
+            tr.style.display = "";
+        }
+
+        for (let i = staticCount + rows.length; i < this._tHeadRowsPool.length; i++) {
+            this._tHeadRowsPool[i].style.display = "none";
+        }
+
+        if (rowsChanged) {
+            this._renderedStickyGroupRows = rows;
+            this._stickyGroupRowsDirty = false;
+            this.updateHeaderAndFooterDimensions();
+        }
+    }
+
+    /** Placeholder for the per-column filter row; real filter controls land later. */
+    private renderFilterRow(index: number) {
+        if (!this._gridOptions.showFilterRow) {
+            if (this._tHeadRowsPool[index]) {
+                this._tHeadRowsPool[index].style.display = "none";
+            }
+            return;
+        }
+
+        const tr = this.getTHeadRow(index);
+        this.renderGridRow({
+            gridRow: {
+                type: "filter",
+                visibleIndex: 0,
+                level: 0,
+                cells: {}
+            },
+            tr,
+            index: 0
+        });
+        tr.style.display = "";
+    }
+
     private renderHeaderAndFooter() {
 
-        if (!this._contentTable.tHead)
-            return;
+        let nextIndex = 0;
 
-        let hr = this._contentTable.tHead.rows.length > 0 ?
-            this._contentTable.tHead.rows[0] :
-            null;
-        if (!hr) {
-            hr = document.createElement("tr")
-            this._contentTable.tHead.appendChild(hr)
+        if (this._gridOptions.showColumnHeaders) {
+            const hr = this.getTHeadRow(nextIndex++);
+            this.renderGridRow({
+                gridRow: {
+                    type: "header",
+                    visibleIndex: 0,
+                    level: 0,
+                    cells: {}
+                },
+                tr: hr,
+                index: 0
+            });
+            hr.style.display = "";
+        } else if (this._tHeadRowsPool[0]) {
+            this._tHeadRowsPool[0].style.display = "none";
         }
 
-        this.renderGridRow({
-            gridRow: {
-                type: "header",
-                visibleIndex: 0,
-                level: 0,
-                cells: {}
-            },
-            tr: hr,
-            index: 0
-        });
+        this.renderFilterRow(nextIndex);
+        if (this._gridOptions.showFilterRow) nextIndex++;
 
+        this._stickyGroupRowsDirty = true;
 
+        const tFoot = this._contentTable.tFoot!;
+        let fr = tFoot.rows[0];
 
-        if (!this._contentTable.tFoot)
-            return;
+        if (this._gridOptions.showColumnFooters) {
+            if (!fr) {
+                fr = document.createElement("tr")
+                tFoot.appendChild(fr)
+            }
 
-        let fr = this._contentTable.tFoot.rows.length > 0 ?
-            this._contentTable.tFoot.rows[0] :
-            null;
-        if (!fr) {
-            fr = document.createElement("tr")
-            this._contentTable.tFoot.appendChild(fr)
+            this.renderGridRow({
+                gridRow: {
+                    type: "footer",
+                    visibleIndex: 0,
+                    level: 0,
+                    cells: {}
+                },
+                tr: fr,
+                index: 0
+            });
+            fr.style.display = "";
+        } else if (fr) {
+            fr.style.display = "none";
         }
 
-        this.renderGridRow({
-            gridRow: {
-                type: "footer",
-                visibleIndex: 0,
-                level: 0,
-                cells: {}
-            },
-            tr: fr,
-            index: 0
-        });
+        this.updateHeaderAndFooterDimensions();
+    }
 
-        // Measure header and footer.
+    /** Reconciles the virtual scroll range after a static or sticky table section changes height. */
+    private updateHeaderAndFooterDimensions() {
         const headerHeight = this._contentTable.tHead?.offsetHeight || 0;
         const footerHeight = this._contentTable.tFoot?.offsetHeight || 0;
         if (headerHeight != this._headerHeight || footerHeight != this._footerHeight) {

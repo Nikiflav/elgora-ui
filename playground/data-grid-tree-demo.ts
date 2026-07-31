@@ -95,7 +95,8 @@ const grid = new DataGrid({
             getText: async (row) => row.type === "folder" ? "" : formatSize(row.size)
         },
         { name: "modified", caption: "Modified", editorType: "date" }
-    ]
+    ],
+    stickyGroupRows: true,
 });
 
 grid.dom.classList.add("elg-h-100");

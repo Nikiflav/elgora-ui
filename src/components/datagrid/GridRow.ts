@@ -3,7 +3,7 @@ import { DataColumn, DataColumnUtils, OrderByToken } from "./DataColumn";
 import { DataSource } from "./DataSource";
 
 /** Discriminates how a GridRow should be rendered. */
-export type RowType = 'data' | 'group' | 'node' | 'summary' | 'loading' | 'error' | 'empty' | 'header' | 'footer' | 'detail';
+export type RowType = 'data' | 'group' | 'node' | 'summary' | 'loading' | 'error' | 'empty' | 'header' | 'filter' | 'footer' | 'detail';
 
 /** A single flattened, render-ready row produced by a GridRowsProvider. */
 export interface GridRow {
@@ -13,6 +13,8 @@ export interface GridRow {
     type: RowType;
     /** Absolute, monotonic row index within the flattened result set. */
     visibleIndex: number;
+    /** The visible index of the parent row in the flattened result set, if this row is a child of a group or tree node. */
+    parentRowIndex?: number;
     /** The raw business data or group metadata. */
     data?: any;
     /** Indentation depth for tree UI positioning. */

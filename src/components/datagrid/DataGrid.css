@@ -104,6 +104,6 @@ thead .elg-gridcell .elg-grid-header-resizer {
     opacity: 0.6;
 }
 
-thead .elg-gridcell-data {
+thead .elg-gridrow-header .elg-gridcell-data {
     cursor: grab;
 }

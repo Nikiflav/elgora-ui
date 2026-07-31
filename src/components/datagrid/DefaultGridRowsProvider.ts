@@ -292,6 +292,9 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
             gridRows.push({
                 type: node.type,
                 visibleIndex: args.skip + gridRows.length,
+                parentRowIndex: !node.parent || node.parent.type === "root"
+                    ? undefined
+                    : node.parent.visibleIndex - 1,
                 key: node.key,
                 level: node.level,
                 text: node.text,
