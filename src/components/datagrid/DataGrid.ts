@@ -390,7 +390,7 @@ export class DataGrid<TRow> extends Component {
         if (firstCall) {
             // Nothing mounted yet - build the initial layout/rows directly, without the render()
             // that layoutChanged()/reloadRows() would otherwise trigger.
-            this._gridColumns = this.getGridColumns();
+            this._gridColumns = this.rebuildGridColumns();
             this._gridRows = this.createGridRows();
             this._initialized = true;
             return;
@@ -423,7 +423,18 @@ export class DataGrid<TRow> extends Component {
             return;
         }
         this._mergeColumnPatch({ ...patch, name });
+        this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: { columns: [{ ...patch, name }] } }));
         this.layoutChanged();
+    }
+
+    /**
+     * Clears a column's configured width and puts it back into the auto-width pool. getGridColumns()
+     * already treats any column with no configured width as auto-width and unmeasured, so the next
+     * layoutChanged()/render picks it up and re-measures it against the currently visible rows'
+     * content (see measureAndAdjustScroll()) - same as a column that was never given a fixed width.
+     */
+    autoSizeColumn(name: string) {
+        this.setColumnOptions(name, { width: undefined });
     }
 
     private getState(): DataGridState<TRow> {
@@ -459,7 +470,16 @@ export class DataGrid<TRow> extends Component {
     }
 
 
-    private getGridColumns(): GridColumn<TRow>[] {
+    private rebuildGridColumns(): GridColumn<TRow>[] {
+
+        // Rebuilding _gridColumns from scratch would otherwise reset every auto-width column back
+        // to an unmeasured default, even ones that already had a correctly measured width and
+        // didn't actually change - carry those over instead of re-measuring them for no reason.
+        const previousByName = new Map(
+            this._gridColumns
+                .filter(c => c.dataColumn)
+                .map(c => [c.dataColumn!.name, c] as const)
+        );
 
         const gridColumns: GridColumn<TRow>[] = [];
 
@@ -529,6 +549,13 @@ export class DataGrid<TRow> extends Component {
                 if (isAutoWidth)
                     col.naturalWidth = width;
             }
+
+            const previous = previousByName.get(name);
+            if (isAutoWidth && previous?.isAutoWidth && previous.widthMeasured) {
+                col.width = previous.width;
+                col.naturalWidth = previous.naturalWidth;
+                col.widthMeasured = true;
+            }
         }
 
         return gridColumns;
@@ -538,7 +565,7 @@ export class DataGrid<TRow> extends Component {
      * Tells the grid to update internal cache and redraw
      */
     layoutChanged = async () => {
-        this._gridColumns = await this.getGridColumns();
+        this._gridColumns = await this.rebuildGridColumns();
 
         this.refresh();
     }
@@ -891,6 +918,12 @@ export class DataGrid<TRow> extends Component {
                             class: "elg-grid-header-resizer",
                             onmousedown: (e, el) => this.resizeColumn(e, col),
                             ontouchstart: (e, el) => this.resizeColumn(e, col),
+                            ondblclick: (e, el) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (col.dataColumn)
+                                    this.autoSizeColumn(col.dataColumn.name);
+                            },
                         }),
                     ]
                     props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
