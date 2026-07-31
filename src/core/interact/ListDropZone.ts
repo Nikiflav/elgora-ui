@@ -1,5 +1,5 @@
 import { e } from "../e";
-import { DropSlot, DropZone } from "./DragDropController";
+import { DragPayload, DropSlot, DropZone } from "./DragDropController";
 import { ScrollByFn } from "./EdgeAutoScroll";
 
 export interface ListDropZoneOptions {
@@ -72,6 +72,14 @@ export function createListDropZone(opts: ListDropZoneOptions): DropZone {
                 .map((el, index) => ({ index, rect: el.getBoundingClientRect() }));
         },
 
-        onDragOver: showIndicator
+        onDragOver(payload, slot) {
+            // Inserting immediately before or after an item in its source list leaves its
+            // position unchanged after the source item is removed, so no insertion marker is
+            // needed even though the target remains valid for a drop.
+            const isNoOpInsertion = slot
+                && payload.sourceZoneId === opts.id
+                && (slot.index === payload.sourceIndex || slot.index === payload.sourceIndex + 1);
+            showIndicator(isNoOpInsertion ? null : slot);
+        }
     };
 }

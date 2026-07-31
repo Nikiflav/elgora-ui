@@ -31,7 +31,7 @@ export interface DropZone {
     /** Called live, not cached - may be asked again mid-drag (e.g. after an autoscroll tick). */
     getSlots(): DropSlot[];
     /** Draws (or clears, on null) this zone's own insertion indicator. */
-    onDragOver(slot: DropSlot | null): void;
+    onDragOver(payload: DragPayload, slot: DropSlot | null): void;
 }
 
 /** Nearest slot whose midpoint the pointer hasn't reached yet; past the last one, appends after it. Falls back to the zone's own rect when it has no items (e.g. an empty group panel). */
@@ -92,7 +92,7 @@ export class DragDropController {
         let lastX = 0, lastY = 0;
 
         const leave = () => {
-            hovered?.zone.onDragOver(null);
+            hovered?.zone.onDragOver(payload, null);
             autoScroll?.stop();
             autoScroll = undefined;
             hovered = undefined;
@@ -113,7 +113,7 @@ export class DragDropController {
 
             if (zone) {
                 const slot = nearestSlot(zone, x, y);
-                zone.onDragOver(slot);
+                zone.onDragOver(payload, slot);
                 hovered = { zone, slot };
 
                 const r = zone.element.getBoundingClientRect();
