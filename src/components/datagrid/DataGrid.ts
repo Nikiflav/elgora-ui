@@ -454,6 +454,48 @@ export class DataGrid<TRow> extends Component {
         this.setColumnOptions(name, { width: undefined });
     }
 
+
+    /** 
+    * Scrolls the grid to the row at the given visible index.
+    * Resolves after internal layout adjustments (and their rAF frames) have stabilized.
+    */
+    public async scrollToRow(rowIndex: number): Promise<void> {
+        const maxIndex = this._gridRows.count() - 1;
+        const targetIndex = Math.max(0, Math.min(rowIndex, maxIndex));
+
+        let attempts = 0;
+        const maxAttempts = 5;
+        let delta = 0;
+
+        do {
+            attempts++;
+
+            // 1. Get current best-guess offset
+            const targetOffset = this._sizeManager.getOffset(targetIndex);
+
+            // 2. Set scroll position
+            this._scrollEngine.scrollTop = targetOffset;
+
+            // 3. Trigger updateLayout (which queues its own internal rAF)
+            this.updateLayout();
+
+            // 4. Wait for the rAF scheduled by updateLayout to execute and settle the DOM/measurements
+            await Utils.nextFrame();
+
+            // 5. Check if newly measured rows changed sizeManager's calculated offset
+            const correctedOffset = this._sizeManager.getOffset(targetIndex);
+            delta = Math.abs(this._scrollEngine.scrollTop - correctedOffset);
+
+        } while (delta > 1 && attempts < maxAttempts);
+
+        // Final precision cleanup frame if a tiny pixel offset remains
+        if (delta > 0) {
+            this._scrollEngine.scrollTop = this._sizeManager.getOffset(targetIndex);
+            this.updateLayout();
+            await Utils.nextFrame();
+        }
+    }
+
     private getState(): DataGridState<TRow> {
         return {
             dataSource: this._dataSource,
@@ -901,8 +943,18 @@ export class DataGrid<TRow> extends Component {
                                         ui: ["elg", "me-1", "text-primary"]
                                     })
 
+                                    const rowIndex = gridRow.visibleIndex;
+
                                     await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
-                                    this.render(this.renderBody);
+
+                                    // If current row is sticky group row - scroll to that row in the grid body.
+                                    if (el.closest(".elg-gridrow-sticky")) {
+                                        this.scrollToRow(rowIndex);
+                                    }
+                                    else {
+                                        // Refresh grid rows.
+                                        this.render(this.renderBody);
+                                    }
                                 }
                             }),
                             v("span", cellText)
@@ -1383,10 +1435,13 @@ export class DataGrid<TRow> extends Component {
 
             this._headerHeight = headerHeight;
             this._footerHeight = footerHeight;
-
+            // No need to update scroll dimensions. 
+            // The scroll engine uses ResizeObserver to update.
+            /*
             this._scrollEngine.updateDimensions(
                 this._scrollEngine.scrollWidth,
-                this._totalBodyHeight + this._headerHeight + this._footerHeight)
+                this._totalBodyHeight + this._headerHeight + this._footerHeight) 
+            */
         }
     }
 

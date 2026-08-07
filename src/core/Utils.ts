@@ -18,6 +18,7 @@ export class Utils {
         });
     }
 
+    /** Converts blob to base64 string */
     static blobToBase64(blob: Blob) {
         return new Promise<string>((resolve, _) => {
             const reader = new FileReader();
@@ -26,7 +27,7 @@ export class Utils {
             reader.readAsDataURL(blob);
         });
     }
-
+    /** Tries to convert a plural word to singular */
     static singular(word: string): string {
         return word.replace(/ies$/, "y").replace(/s$/, "");
     }
@@ -753,6 +754,11 @@ export class Utils {
             func();
         }
     }
+
+    /** Resolves when the next animation frame is ready */
+    static nextFrame = (): Promise<number> =>
+        new Promise((resolve) => requestAnimationFrame(resolve));
+
 }
 
 
