@@ -20,7 +20,8 @@ interface GridNode {
     expanded: boolean;
     totalExpandedChildren: number; // Combined footprint of all open sub-descendants
     visibleIndex: number;          // Absolute monotonic index in the viewport grid
-    expandedChildren: GridNode[];  // Fast local tracking to avoid global array filtering
+    /** Direct children whose expanded state is retained even while this node is collapsed. */
+    expandedChildren: GridNode[];
     canExpand?: boolean;           // type: "node" only - from DataSource.hasChildren(row); childrenCount is unknown until first expand
 }
 
@@ -405,6 +406,9 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
                 node.childrenCount = node.children.count;
             }
             node.totalExpandedChildren = node.childrenCount;
+            for (const child of node.expandedChildren) {
+                node.totalExpandedChildren += child.totalExpandedChildren;
+            }
 
             // OPTIMIZED: High-speed binary slice placement instead of sorting an entire array
             if (node.parent) {
@@ -414,7 +418,6 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         } else {
             node.expanded = false;
             node.totalExpandedChildren = 0;
-            node.expandedChildren = [];
 
             if (node.parent) {
                 // Direct reference filtering equality check (fastest possible native exclusion match)
