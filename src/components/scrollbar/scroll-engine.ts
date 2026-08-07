@@ -394,7 +394,10 @@ export class ScrollEngine {
         const viewWidth = this._clientWidth;
         const viewHeight = this._clientHeight;
 
-        const showH = this._scrollWidth > viewWidth;
+        // Ignore subpixel overflow caused by fractional layout calculations. There is no useful
+        // horizontal distance to scroll in that range, and exposing it causes a one-frame flash
+        // while the browser rounds the rendered element width.
+        const showH = this._scrollWidth > viewWidth + 0.5;
         const showV = this._scrollHeight > viewHeight;
 
         this._hTrack.style.display = showH ? 'block' : 'none';

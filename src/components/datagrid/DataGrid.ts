@@ -1564,9 +1564,14 @@ export class DataGrid<TRow> extends Component {
             colGroup.removeChild(colGroup.children[j]);
         }
 
-        if (this._totalWidth != totalWidth) {
-            this._totalWidth = totalWidth
-            assignElementProps(this._contentTable, { style: { width: totalWidth + "px" } });
+        // Keep the virtual scroll width aligned with the browser's whole-pixel table width.
+        // Fractional column sums can otherwise exceed the viewport by a tiny floating-point
+        // amount for one frame, briefly showing the horizontal scrollbar.
+        const renderedWidth = Math.round(totalWidth);
+
+        if (this._totalWidth != renderedWidth) {
+            this._totalWidth = renderedWidth
+            assignElementProps(this._contentTable, { style: { width: renderedWidth + "px" } });
             this._scrollEngine.updateDimensions(
                 this._totalWidth,
                 this._scrollEngine.scrollHeight)
