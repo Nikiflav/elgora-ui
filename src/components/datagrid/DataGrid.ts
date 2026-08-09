@@ -7,7 +7,7 @@ import { Scrollbar } from "../scrollbar/scrollbar";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
 import { DataCell, DataColumn, DataColumnLayoutInfo, DataColumnUtils, OrderByToken, orderByTokenToString, SummaryType } from "./DataColumn";
-import { ArrayDataSource, DataSource, LocalGroupingDataSource } from "./DataSource";
+import { ArrayDataSource, DataSource, LocalGroupingDataSource, RowIdentity } from "./DataSource";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
 import { GridRow, GridRowsProvider } from "./GridRow";
 import { VirtualGridRows } from "./VirtualGridRows";
@@ -18,6 +18,7 @@ import { c, cli } from "../../core/c";
 import { trackGesture } from "../../core/interact/DragGesture";
 import { DragDropController, DragPayload, DropTarget } from "../../core/interact/DragDropController";
 import { createListDropZone } from "../../core/interact/ListDropZone";
+import { SelectionManager, GridContext } from "./SelectionManager";
 
 
 /** Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource. */
@@ -153,6 +154,8 @@ export class DataGrid<TRow> extends Component {
     private _tHeadRowsPool: HTMLTableRowElement[] = []
     private _renderedStickyGroupRows: GridRow[] = []
     private _stickyGroupRowsDirty = true
+    // Current computed view.
+    private _view?: GridView;
 
 
     private _scrollTop = 0
@@ -166,6 +169,9 @@ export class DataGrid<TRow> extends Component {
     private _groupPadding = 10
     private _activeColIndex = -1
     private _activeGroupColumn?: string
+    private _selection = new SelectionManager();
+    private _selectionMouseDown = false;
+    private _selectionWholeRowDrag = false;
 
     private _dragDrop: DragDropController;
 
@@ -197,6 +203,10 @@ export class DataGrid<TRow> extends Component {
                     boxSizing: "border-box"
                 }
             });
+
+        this._tableContainer.addEventListener("keydown", this.handleSelectionKeyDown, true);
+        this._tableContainer.addEventListener("mouseup", this.endSelectionDrag);
+        this._tableContainer.addEventListener("mouseleave", this.endSelectionDrag);
 
         this._contentTable = e("table",
             {
@@ -290,6 +300,85 @@ export class DataGrid<TRow> extends Component {
         this.setOptions(options);
     }
 
+    private isSelectableGridRow(row: GridRow | undefined): boolean {
+        return !!row && (row.type === "data" || row.type === "node");
+    }
+
+    private getSelectionContext = (): GridContext => ({
+        totalRows: this._gridRows?.count() ?? 0,
+        columns: this._gridColumns.filter(c => c.type === "data").map(c => c.dataColumn!.name),
+        isRowSelectable: index => this.isSelectableGridRow(this._gridRows?.getAt(index)),
+        findNextSelectableRow: (index, direction) => {
+            let next = index + direction;
+            const total = this._gridRows?.count() ?? 0;
+            let checked = 0;
+            while (next >= 0 && next < total && checked < 20) {
+                if (this.isSelectableGridRow(this._gridRows.getAt(next))) return next;
+                next += direction;
+                checked++;
+            }
+            return index;
+        }
+    });
+
+    private handleSelectionKeyDown = (event: KeyboardEvent) => {
+        const previous = this._selection.getActiveCell();
+        if (this._selection.handleKeyDown(event, this.getSelectionContext())) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.refresh();
+
+            const active = this._selection.getActiveCell();
+            if (active && (!previous || previous.rowIndex !== active.rowIndex || previous.colIndex !== active.colIndex)) {
+                this.ensureKeyboardCellVisible(active.rowIndex, active.colIndex);
+            }
+        }
+    };
+
+    private ensureKeyboardCellVisible(rowIndex: number, colIndex: number): void {
+        const rowTop = this._sizeManager.getOffset(rowIndex);
+        const rowBottom = rowTop + this._sizeManager.getSize(rowIndex);
+        const viewBottom = this._scrollTop + this._viewportHeight - this._headerHeight - this._footerHeight;
+        if (rowTop < this._scrollTop) {
+            this._scrollEngine.scrollTop = rowTop;
+        } else if (rowBottom > viewBottom) {
+            this._scrollEngine.scrollTop = rowBottom - this._viewportHeight + this._headerHeight + this._footerHeight;
+        }
+        this.scrollToColumn(colIndex);
+    }
+
+    private endSelectionDrag = () => {
+        this._selectionMouseDown = false;
+        this._selectionWholeRowDrag = false;
+    };
+
+    private beginCellSelection = (event: MouseEvent, row: GridRow, colIndex: number) => {
+        if (event.button !== 0 || !this.isSelectableGridRow(row)) return;
+        event.preventDefault();
+        this._tableContainer.focus();
+        this._selectionMouseDown = true;
+        this._selectionWholeRowDrag = false;
+        this._selection.handleCellClick(row.visibleIndex, colIndex - this.rowHeaderOffset, event);
+        this.refresh();
+    };
+
+    private beginRowSelection = (event: MouseEvent, row: GridRow) => {
+        if (event.button !== 0 || !this.isSelectableGridRow(row)) return;
+        event.preventDefault();
+        this._tableContainer.focus();
+        this._selectionMouseDown = true;
+        this._selectionWholeRowDrag = true;
+        this._selection.handleRowHeaderClick(row.visibleIndex, event);
+        this.refresh();
+    };
+
+    private enterSelection = (row: GridRow, colIndex: number) => {
+        if (!this._selectionMouseDown || !this.isSelectableGridRow(row)) return;
+        if (this._selectionWholeRowDrag) this._selection.extendRowSelection(row.visibleIndex);
+        else this._selection.handleCellMouseEnter(row.visibleIndex, colIndex - this.rowHeaderOffset, true);
+        this.refresh();
+    };
+
     /** Number of leading sticky columns, including the row-header column when it's shown. */
     private get fixedLeftColumnCount(): number {
         return (this._gridOptions.showRowHeader !== false ? 1 : 0) + (this._gridOptions.fixedLeftColumns || 0);
@@ -358,6 +447,11 @@ export class DataGrid<TRow> extends Component {
      * later change - fires an "optionChanged" DOM event on this.dom with the applied patch as detail.
      */
     public setOptions = (options: Partial<DataGridOptions<TRow>>) => {
+
+        if (this._initialized && ("data" in options || "groupColumns" in options || "hierarchyRootId" in options
+            || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options)) {
+            this._selection.clear();
+        }
 
         // Reconcile columns by name instead of replacing the array wholesale, so DataColumn object
         // identity is preserved for objects already referenced by _gridColumns[i].dataColumn.
@@ -433,6 +527,11 @@ export class DataGrid<TRow> extends Component {
         return this._columnsIndex.get(name);
     }
 
+    public getSelectionManager(): SelectionManager { return this._selection; }
+    public getSelectedRanges() { return this._selection.getRanges(); }
+    public getActiveSelectionCell() { return this._selection.getActiveCell(); }
+    public clearSelection() { this._selection.clear(); this.refresh(); }
+
     /** Patches an existing column's definition in place and updates the grid's layout accordingly. */
     setColumnOptions(name: string, patch: Partial<DataColumn<TRow>>) {
         if (!this._columnsIndex.has(name)) {
@@ -452,6 +551,71 @@ export class DataGrid<TRow> extends Component {
      */
     autoSizeColumn(name: string) {
         this.setColumnOptions(name, { width: undefined });
+    }
+
+
+    /** Tries to find the row index that corresponds to the given key, or -1 if not found.
+     * The method traverses the currently loaded visible rows plus a few rows around the viewport.
+     */
+    public async tryGetRowIndexByKey(key: RowIdentity): Promise<number> {
+        const view = this._view;
+        const getRowId = this._dataSource?.getRowId;
+
+        if (!view || !getRowId || key == null) {
+            return -1;
+        }
+
+        // 1. Direct Hit: Search the currently rendered viewport rows first (Fastest)
+        for (const row of view.rows) {
+            if (row?.gridRow?.data != null && getRowId(row.gridRow.data) === key) {
+                return row.index;
+            }
+        }
+
+        const lookupCount = 500;
+        const totalRows = this._gridRows.count(); // Ensure you use your grid rows count getter
+
+        // Resolve bounds around current viewport
+        const minBefore = Math.max(0, view.firstVisibleIndex - lookupCount);
+
+        const lastVisibleIndex = view.firstVisibleIndex + view.rows.length - 1;
+        const maxAfter = Math.min(totalRows - 1, lastVisibleIndex + lookupCount);
+
+        const maxOffset = Math.max(
+            view.firstVisibleIndex - minBefore,
+            maxAfter - lastVisibleIndex
+        );
+
+        // Helper method to validate a given row index asynchronously
+        const checkRowAtIndex = async (idx: number): Promise<boolean> => {
+            const row = await this._gridRows.getAt(idx);
+            if (row && row.type === "data" && row.data != null) {
+                return getRowId(row.data) === key;
+            }
+            return false;
+        };
+
+        // 2. Concentric Ripple Search: Step outward simultaneously before and after the view
+        for (let offset = 1; offset <= maxOffset; offset++) {
+            const beforeIdx = view.firstVisibleIndex - offset;
+            const afterIdx = lastVisibleIndex + offset;
+
+            // Check the row BEFORE current viewport
+            if (beforeIdx >= minBefore) {
+                if (await checkRowAtIndex(beforeIdx)) {
+                    return beforeIdx;
+                }
+            }
+
+            // Check the row AFTER current viewport
+            if (afterIdx <= maxAfter) {
+                if (await checkRowAtIndex(afterIdx)) {
+                    return afterIdx;
+                }
+            }
+        }
+
+        return -1;
     }
 
 
@@ -494,6 +658,39 @@ export class DataGrid<TRow> extends Component {
             this.updateLayout();
             await Utils.nextFrame();
         }
+    }
+
+    /**
+     * Scrolls horizontally only when a data column is outside the usable viewport.
+     * The index is relative to data columns, matching SelectionManager's cell index.
+     */
+    public scrollToColumn(colIndex: number): void {
+        const dataColumns = this._gridColumns.filter(col => col.type === "data");
+        const column = dataColumns[colIndex];
+        if (!column) return;
+
+        let columnLeft = 0;
+        for (const col of this._gridColumns) {
+            if (col === column) break;
+            columnLeft += col.width;
+        }
+        const columnRight = columnLeft + column.width;
+
+        const fixedLeftWidth = this._gridColumns
+            .slice(0, this.fixedLeftColumnCount)
+            .reduce((sum, col) => sum + col.width, 0);
+        const fixedRightWidth = this._gridColumns
+            .slice(this._gridColumns.length - this.fixedRightColumnCount)
+            .reduce((sum, col) => sum + col.width, 0);
+        const viewportLeft = this._scrollLeft + fixedLeftWidth;
+        const viewportRight = this._scrollLeft + this._viewportWidth - fixedRightWidth;
+
+        if (column.fixedPosition !== "none" || (columnLeft >= viewportLeft && columnRight <= viewportRight)) return;
+
+        const targetLeft = columnLeft < viewportLeft
+            ? columnLeft - fixedLeftWidth
+            : columnRight - this._viewportWidth + fixedRightWidth;
+        this._scrollEngine.scrollLeft = targetLeft;
     }
 
     private getState(): DataGridState<TRow> {
@@ -540,9 +737,15 @@ export class DataGrid<TRow> extends Component {
                 .map(c => [c.dataColumn!.name, c] as const)
         );
 
+        const visibleColumnNames = this._gridOptions.visibleColumns!;
+        const groupColumns = this._gridOptions.groupColumns!;
+
+
         const gridColumns: GridColumn<TRow>[] = [];
+        let totalColumns = visibleColumnNames.length;
 
         if (this._gridOptions.showRowHeader !== false) {
+            totalColumns++;
             gridColumns.push({
                 type: "rowheader",
                 visibleIndex: 0,
@@ -559,9 +762,6 @@ export class DataGrid<TRow> extends Component {
         //let sampleRows: GridRow[] | undefined;
         //let canvasContext: CanvasRenderingContext2D | undefined;
 
-        const visibleColumnNames = this._gridOptions.visibleColumns!;
-        const groupColumns = this._gridOptions.groupColumns!;
-        const totalColumns = gridColumns.length + visibleColumnNames.length;
 
         for (let name of visibleColumnNames) {
             const dataCol = this._columnsIndex.get(name);
@@ -571,7 +771,7 @@ export class DataGrid<TRow> extends Component {
             let fixedPosition: "none" | "left" | "right" = "none";
             if (this.fixedLeftColumnCount > gridColumns.length)
                 fixedPosition = "left";
-            else if (totalColumns - this.fixedRightColumnCount > gridColumns.length)
+            else if (totalColumns - this.fixedRightColumnCount < gridColumns.length)
                 fixedPosition = "right"
 
             const isAutoWidth = !dataCol?.width;
@@ -651,8 +851,7 @@ export class DataGrid<TRow> extends Component {
 
         // Phase 2: COMPUTE (pure, no DOM access)
         const view = this.computeView()
-
-
+        this._view = view;
         // Phase 3: WRITE (mutate DOM, no reads!)
         this.renderStickyGroupRows(view)
         this.renderView(view)
@@ -917,11 +1116,18 @@ export class DataGrid<TRow> extends Component {
             case "summary": {
                 if (col.type == "rowheader") {
                     props.textContent = this.getCellText(gridRow, col);
+                    if (this.isSelectableGridRow(gridRow)) {
+                        props.onmousedown = (e: MouseEvent) => this.beginRowSelection(e, gridRow);
+                        props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
+                    }
                     break;
                 }
                 if (!col.dataColumn) break;
 
                 let cellText = this.getCellText(gridRow, col);
+
+                props.onmousedown = (e: MouseEvent) => this.beginCellSelection(e, gridRow, col.visibleIndex);
+                props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
 
                 if (col.visibleIndex == 1) {
 
@@ -1016,6 +1222,23 @@ export class DataGrid<TRow> extends Component {
 
         if (this._activeColIndex === col.visibleIndex) {
             props.className += " elg-active-col";
+        }
+
+        const selectionColIndex = col.type === "data"
+            ? col.visibleIndex - this.rowHeaderOffset
+            : 0;
+        if (this.isSelectableGridRow(gridRow)
+            && col.type === "data"
+            && this._selection.isSelected(gridRow.visibleIndex, selectionColIndex)) {
+            props.className += " elg-selected-cell";
+        }
+        if (this._selection.isWholeRowSelected(gridRow.visibleIndex) && col.type === "rowheader") {
+            props.className += " elg-selected-row-header";
+        }
+        if (this.isSelectableGridRow(gridRow)
+            && col.type === "data"
+            && this._selection.isActive(gridRow.visibleIndex, selectionColIndex)) {
+            props.className += " elg-active-cell";
         }
 
         return { col, props };
@@ -1578,5 +1801,14 @@ export class DataGrid<TRow> extends Component {
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
 

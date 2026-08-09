@@ -83,6 +83,21 @@ thead .elg-gridcell .elg-grid-header-resizer {
     --elg-bg-color: var(--elg-surface-color);
 }
 
+.elg-gridcell.elg-selected-cell {
+    background-color: color-mix(in srgb, var(--elg-primary-color, #3b82f6) 12%, var(--elg-bg-color));
+}
+
+.elg-gridcell.elg-active-cell {
+    outline: 1px solid var(--elg-primary-color, #3b82f6);
+    outline-offset: -1px;
+}
+
+.elg-gridcell.elg-selected-row-header {
+    font-weight: 600;
+    background: var(--elg-primary-color, #3b82f6);
+    color: var(--elg-text-inverse);
+}
+
 .elg-grid-header {
     display: flex;
     padding: 6px;
@@ -106,4 +121,8 @@ thead .elg-gridcell .elg-grid-header-resizer {
 
 thead .elg-gridrow-header .elg-gridcell-data {
     cursor: grab;
+}
+
+.elg-gridrow-group .elg-gridcell-data:not(:last-child) {
+    border-right: none;
 }

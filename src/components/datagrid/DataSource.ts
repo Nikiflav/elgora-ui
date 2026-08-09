@@ -40,6 +40,8 @@ export interface DataResult<TRow> {
     /** Used exclusively when args.groupColumn is set. */
     groups?: GroupItem[];
 }
+/** Represents data row ID. */
+export type RowIdentity = string | number;
 
 /** Query-level access to row data, with optional native grouping support. */
 export interface DataSource<TRow> {
@@ -49,7 +51,7 @@ export interface DataSource<TRow> {
     get supportsGrouping(): boolean;
 
     /** Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children. */
-    getRowId?(row: TRow): any;
+    getRowId?(row: TRow): RowIdentity;
 
     /** Presence marks this source as hierarchical (parent/child) and disables groupColumns; answers per-row expandability. */
     hasChildren?(row: TRow): Promise<boolean>;

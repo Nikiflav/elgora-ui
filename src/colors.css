@@ -146,6 +146,10 @@
     --elg-bg-color: hsl(var(--elg-bg-hsl) / var(--elg-bg-a));
     --elg-text-color: hsl(var(--elg-text-hsl) / var(--elg-text-a));
 
+    --elg-text-muted: hsl(var(--elg-text-muted-h) var(--elg-text-muted-s) var(--elg-text-muted-l) / var(--elg-text-a));
+    --elg-text-soft: hsl(var(--elg-text-soft-h) var(--elg-text-soft-s) var(--elg-text-soft-l) / var(--elg-text-a));
+    --elg-text-inverse: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l) / var(--elg-text-a));
+
     --elg-surface-color: hsl(var(--elg-surface-hsl) / var(--elg-bg-a));
     --elg-surface-color-2: hsl(var(--elg-surface-2-hsl) / var(--elg-bg-a));
     --elg-surface-color-3: hsl(var(--elg-surface-3-hsl) / var(--elg-bg-a));
@@ -209,8 +213,8 @@
     /* Background color */
     --elg-bg-final-s: clamp(0, calc(var(--elg-bg-s) + var(--elg-state-s-1) + var(--elg-state-s-2) + var(--elg-state-s-3)), 100);
     --elg-bg-final-l: clamp(0, calc(var(--elg-bg-l) + var(--elg-state-l-1) + var(--elg-state-l-2) + var(--elg-state-l-3)), 100);
-    --elg-bg-color: hsl(var(--elg-bg-h) var(--elg-bg-final-s) var(--elg-bg-final-l) / var(--elg-bg-a));
-    background-color: var(--elg-bg-color);
+    --elg-bg-rendered-color: hsl(var(--elg-bg-h) var(--elg-bg-final-s) var(--elg-bg-final-l) / var(--elg-bg-a));
+    background-color: var(--elg-bg-rendered-color);
     transition: background-color 0.4s ease;
 }
 
@@ -218,9 +222,7 @@
    SURFACES
 ========================================================= */
 .elg-page {
-    --elg-bg-h: var(--elg-bg-h);
-    --elg-bg-s: var(--elg-bg-s);
-    --elg-bg-l: var(--elg-bg-l);
+    /* The base background variables are inherited from :root. */
 }
 
 .elg-surface {
