@@ -63,6 +63,10 @@ export type DataGridOptions<TRow> = {
     groupColumns?: string[],
     /** The aggregation summary for group rows. */
     groupSummary?: { field: string, summaryType: SummaryType }[],
+    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */
+    selectableGroupRows?: boolean,
+    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */
+    selectableHierarchyNodes?: boolean,
     /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */
     hierarchyRootId?: any,
     /** Pins active group/tree ancestors below the static table header. Defaults to false. */
@@ -301,7 +305,11 @@ export class DataGrid<TRow> extends Component {
     }
 
     private isSelectableGridRow(row: GridRow | undefined): boolean {
-        return !!row && (row.type === "data" || row.type === "node");
+        if (!row) return false;
+        if (row.type === "data") return true;
+        if (row.type === "group") return this._gridOptions.selectableGroupRows !== false;
+        if (row.type === "node") return this._gridOptions.selectableHierarchyNodes === true;
+        return false;
     }
 
     private getSelectionContext = (): GridContext => ({
@@ -487,6 +495,8 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.showColumnFooters ??= true;
         this._gridOptions.hierarchyRootId ??= null;
         this._gridOptions.stickyGroupRows ??= false;
+        this._gridOptions.selectableGroupRows ??= true;
+        this._gridOptions.selectableHierarchyNodes ??= false;
         this._gridOptions.texts ??= {};
 
         this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: options }));
@@ -514,7 +524,7 @@ export class DataGrid<TRow> extends Component {
 
         if (changesLayout) this.layoutChanged();
         if (reloadsRows) this.reloadRows();
-        if (!changesLayout && !reloadsRows && ("texts" in options || "stickyGroupRows" in options || changesStaticRows)) this.refresh();
+        if (!changesLayout && !reloadsRows && ("texts" in options || "stickyGroupRows" in options || "selectableGroupRows" in options || "selectableHierarchyNodes" in options || changesStaticRows)) this.refresh();
     }
 
     /** Returns a shallow copy of the grid's current, fully-resolved options. */
