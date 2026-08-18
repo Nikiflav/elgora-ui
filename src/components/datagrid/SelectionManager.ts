@@ -22,6 +22,21 @@ export interface GridContext {
     findNextSelectableRow?: (rowIndex: number, direction: 1 | -1) => number;
 }
 
+/**
+ * The cardinal sides of a selection box a selected cell can sit on.
+ * A cell is marked with every side it touches (e.g. a lone cell is on all four,
+ * a single-row selection marks its cells as both top and bottom), so the renderer
+ * can paint a complete border around any selection shape.
+ */
+export type SelectionEdge = "t" | "r" | "b" | "l";
+
+export interface CellSelectionState {
+    /** Whether the cell falls inside any active selection range. */
+    selected: boolean;
+    /** The selection-box sides the cell sits on; empty array for interior cells. */
+    edges: SelectionEdge[];
+}
+
 export class SelectionManager {
     private _ranges: SelectionRange[] = [];
     private _activeCell: SelectionCell | null = null;
@@ -385,6 +400,49 @@ export class SelectionManager {
         }
 
         return false;
+    }
+
+    /** 2D hit test that also reports which selection-box sides the cell sits on.
+     * A selected cell is marked with every edge it touches (top/right/bottom/left),
+     * so thin selections (single row/column/single cell) still get a full border.
+     * `ctx` is required to resolve the full column span of whole-row ranges.
+     */
+    public getSelectionState(
+        rowIndex: number,
+        colIndex: number,
+        ctx?: GridContext
+    ): CellSelectionState {
+        if (this._ranges.length === 0) return { selected: false, edges: [] };
+
+        for (const range of this._ranges) {
+            const { anchor, focus } = range;
+
+            const minRow = Math.min(anchor.rowIndex, focus.rowIndex);
+            const maxRow = Math.max(anchor.rowIndex, focus.rowIndex);
+            if (rowIndex < minRow || rowIndex > maxRow) continue;
+
+            // Whole-row ranges span every data column.
+            let minCol: number;
+            let maxCol: number;
+            if (anchor.wholeRow || focus.wholeRow) {
+                minCol = 0;
+                maxCol = (ctx?.columns.length ?? 0) - 1;
+            } else {
+                minCol = Math.min(anchor.colIndex, focus.colIndex);
+                maxCol = Math.max(anchor.colIndex, focus.colIndex);
+            }
+            if (colIndex < minCol || colIndex > maxCol) continue;
+
+            const edges: SelectionEdge[] = [];
+            if (rowIndex === minRow) edges.push("t");
+            if (colIndex === maxCol) edges.push("r");
+            if (rowIndex === maxRow) edges.push("b");
+            if (colIndex === minCol) edges.push("l");
+
+            return { selected: true, edges };
+        }
+
+        return { selected: false, edges: [] };
     }
 
     /**

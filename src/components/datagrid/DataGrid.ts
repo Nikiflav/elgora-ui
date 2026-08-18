@@ -1237,10 +1237,18 @@ export class DataGrid<TRow> extends Component {
         const selectionColIndex = col.type === "data"
             ? col.visibleIndex - this.rowHeaderOffset
             : 0;
-        if (this.isSelectableGridRow(gridRow)
-            && col.type === "data"
-            && this._selection.isSelected(gridRow.visibleIndex, selectionColIndex)) {
-            props.className += " elg-selected-cell";
+        if (this.isSelectableGridRow(gridRow) && col.type === "data") {
+            const state = this._selection.getSelectionState(
+                gridRow.visibleIndex,
+                selectionColIndex,
+                this.getSelectionContext()
+            );
+            if (state.selected) {
+                props.className += " elg-selected-cell";
+                for (const side of state.edges) {
+                    props.className += " elg-selected-cell-" + side;
+                }
+            }
         }
         if (this._selection.isWholeRowSelected(gridRow.visibleIndex) && col.type === "rowheader") {
             props.className += " elg-selected-row-header";
