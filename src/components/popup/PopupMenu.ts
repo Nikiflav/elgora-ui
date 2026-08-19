@@ -96,7 +96,7 @@ function itemProps(item: MenuItem, id: string, hasSubmenu: boolean, open: boolea
     const disabled = isDisabled(item);
     const label = item.ariaLabel || item.hint || item.text;
     const props: Record<string, any> = {
-        className: "elg elg-menu-item",
+        className: "elg-menu-item",
         ui: item.ui,
         "data-menu-key": id,
         "aria-label": label,
@@ -214,7 +214,7 @@ export class PopupMenu extends Component {
             if (item.isDivider) {
                 return v("div", {
                     key: id,
-                    className: "elg elg-menu-divider",
+                    className: "elg-menu-divider",
                     role: "separator"
                 } as any);
             }
@@ -222,14 +222,14 @@ export class PopupMenu extends Component {
             const children = subItems || [];
             const hasSubmenu = subItems !== null;
             const open = this.openItems.has(id);
-            const icon = item.icon ? v("i", { className: `elg ${item.icon}`, ariaHidden: "true" } as any) : null;
-            const text = item.showText === false ? null : v("span", { className: "elg elg-menu-item-text", vnodes: [item.text || ""] });
+            const icon = item.icon ? v("i", { className: `${item.icon}`, ariaHidden: "true" } as any) : null;
+            const text = item.showText === false ? null : v("span", { className: "elg-menu-item-text", vnodes: [item.text || ""] });
             const arrow = hasSubmenu ? v("i", {
-                className: "elg elg-menu-item-arrow ri-arrow-right-s-line",
+                className: "elg-menu-item-arrow ri-arrow-right-s-line",
                 ariaHidden: "true"
             } as any) : null;
             const check = item.checked?.() ? v("i", {
-                className: "elg elg-menu-item-check ri-check-line",
+                className: "elg-menu-item-check ri-check-line",
                 ariaHidden: "true"
             } as any) : null;
             const control = item.url && !hasSubmenu ? "a" : "button";
@@ -243,7 +243,7 @@ export class PopupMenu extends Component {
                 key: `${id}:control`
             } as any, icon, text, check, arrow), hasSubmenu ? v("div", {
                 key: `${id}:submenu`,
-                className: "elg elg-menu-submenu",
+                className: "elg-menu-submenu",
                 role: "menu",
                 "aria-hidden": String(!open),
                 vnodes: await this.renderItemList(children, id, states)
