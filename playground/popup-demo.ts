@@ -1,4 +1,5 @@
 import { Popup, PopupPlacement } from "../src/components/popup/popup";
+import { MenuItem, PopupMenu } from "../src/components/popup/PopupMenu";
 import { div, e } from "../src/core/e";
 
 const placements: PopupPlacement[] = ["bottom-start", "bottom", "bottom-end", "top-start", "top", "top-end", "right-start", "right", "right-end", "left-start", "left", "left-end"];
@@ -88,6 +89,106 @@ export const popupRouterHandler = {
         ));
         root.mount(page);
         root.append(nested);
+
+        let compactMode = false;
+        const popupMenuAnchor = button("Open PopupMenu");
+        const popupMenu = new PopupMenu();
+        popupMenu.mount(page);
+
+        const createPopupMenuItems = (): MenuItem[] => [
+            {
+                key: "edit",
+                text: "Edit",
+                icon: "ri-edit-line",
+                action: () => alert("Edit selected")
+            },
+            {
+                key: "view",
+                text: "View options",
+                icon: "ri-eye-line",
+                subItems: async () => [
+                    {
+                        key: "compact",
+                        text: "Compact mode",
+                        icon: "ri-layout-column-line",
+                        checked: () => compactMode,
+                        closeOnAction: false,
+                        action: () => { compactMode = !compactMode; }
+                    },
+                    {
+                        key: "details",
+                        text: "Show details",
+                        icon: "ri-information-line",
+                        action: () => alert("Details selected")
+                    }
+                ]
+            },
+            {
+                key: "share",
+                text: "Share",
+                icon: "ri-share-line",
+                subItems: async () => [
+                    {
+                        key: "copy-link",
+                        text: "Copy link",
+                        icon: "ri-link",
+                        action: () => alert("Link copied")
+                    },
+                    {
+                        key: "send-email",
+                        text: "Send by email",
+                        icon: "ri-mail-line",
+                        action: () => alert("Email sharing selected")
+                    }
+                ]
+            },
+            { isDivider: true },
+            {
+                key: "delete",
+                text: "Delete",
+                icon: "ri-delete-bin-line",
+                className: "danger-action",
+                action: () => alert("Delete selected")
+            }
+        ];
+        popupMenuAnchor.addEventListener("click", () => popupMenu.toggle({
+            anchor: popupMenuAnchor,
+            placement: "bottom-start",
+            gap: 8,
+            items: createPopupMenuItems()
+        }));
+
+        const contextMenuTarget = div({
+            ui: ["p-4", "border", "border-dashed", "rounded-1", "user-select-none"]
+        }, "Right-click for a dynamic PopupMenu");
+        const dynamicContextMenu = new PopupMenu();
+        dynamicContextMenu.mount(page);
+        contextMenuTarget.addEventListener("contextmenu", event => {
+            event.preventDefault();
+            dynamicContextMenu.show({
+                point: { x: event.clientX, y: event.clientY },
+                items: [
+                    {
+                        key: "refresh",
+                        text: "Refresh target",
+                        icon: "ri-refresh-line",
+                        action: () => contextMenuTarget.textContent = "Target refreshed"
+                    },
+                    {
+                        key: "copy",
+                        text: "Copy target",
+                        icon: "ri-file-copy-line",
+                        action: () => alert("Target copied")
+                    }
+                ]
+            });
+        });
+
+        page.appendChild(div({ ui: ["elg", "box", "p-2", "d-flex", "flex-col", "gap-2"] },
+            e("h3", "PopupMenu"),
+            e("p", "Menus can be generated at show time, use Remix Icon classes, and contain nested items."),
+            div({ ui: ["d-flex", "gap-2", "flex-wrap"] }, popupMenuAnchor, contextMenuTarget)
+        ));
 
         page.appendChild(div({ className: "text-muted", style: { fontSize: "0.85em" } }, "Native Popover API is required. Dropdown uses closeMode: auto; outside clicks and Escape are handled by the browser."));
         return { title: "Popup", description: "Popup positioning and nested menu demo", dom: page };

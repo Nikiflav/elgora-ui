@@ -45,6 +45,95 @@
     cursor: pointer;
 }
 
+.elg-popup-menu {
+    min-width: 180px;
+    overflow: visible;
+    --elg-popup-submenu-gap: 2px;
+}
+
+.elg-menu-item-container {
+    position: relative;
+}
+
+.elg-popup-menu .elg-menu-item {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    color: inherit;
+    font: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.elg-popup-menu .elg-menu-item:hover,
+.elg-popup-menu .elg-menu-item:focus-visible,
+.elg-menu-item-container.is-open > .elg-menu-item {
+    background: var(--elg-popup-hover);
+    outline: none;
+}
+
+.elg-popup-menu .elg-menu-item:disabled,
+.elg-popup-menu .elg-menu-item[aria-disabled="true"] {
+    cursor: default;
+    opacity: .55;
+}
+
+.elg-menu-item-text {
+    flex: 1 1 auto;
+}
+
+.elg-menu-item-arrow,
+.elg-menu-item-check {
+    flex: 0 0 auto;
+}
+
+.elg-menu-item-check {
+    order: 3;
+}
+
+.elg-menu-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--elg-popup-border);
+}
+
+.elg-menu-submenu {
+    position: absolute;
+    top: -5px;
+    left: calc(100% + var(--elg-popup-submenu-gap, 2px));
+    z-index: 1;
+    display: none;
+    min-width: 180px;
+    padding: 4px;
+    color: var(--elg-popup-color);
+    background: var(--elg-popup-background);
+    border: 1px solid var(--elg-popup-border);
+    border-radius: var(--elg-popup-radius);
+    box-shadow: var(--elg-popup-shadow);
+}
+
+/* Keep the submenu hover state connected across the visual gap. */
+.elg-menu-submenu::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(-1 * var(--elg-popup-submenu-gap, 2px));
+    width: var(--elg-popup-submenu-gap, 2px);
+    content: "";
+}
+
+.elg-menu-item-container.is-open > .elg-menu-submenu {
+    display: block;
+}
+
 .elg-popup > button:hover,
 .elg-popup > button:focus-visible {
     background: var(--elg-popup-hover);

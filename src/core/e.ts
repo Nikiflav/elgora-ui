@@ -53,6 +53,7 @@ export type StyleObject = Partial<
 type ExtraProps = {
     class?: string
     className?: string
+    key?: any
     style?: StyleObject
     ui?: UiStyle | UiStyle[]
     vnodes?: VNodeChild[]
@@ -87,6 +88,7 @@ export type ElementArgs<T extends HTMLElement> =
 
 export type VNode<T extends HTMLElement> = {
     tag: keyof HTMLElementTagNameMap,
+    key?: any,
     props: ElementProps<T>
 }
 
@@ -102,10 +104,13 @@ export function v<K extends keyof HTMLElementTagNameMap>(
 ): VNode<HTMLElementTagNameMap[K]> {
 
     if (isProps(args[0])) {
-        const props = args[0] as ElementProps<HTMLElementTagNameMap[K]>
-        props.vnodes = args.slice(1) as any[]
+        const input = args[0] as ElementProps<HTMLElementTagNameMap[K]>
+        const { key, ...props } = input as any
+        if (args.length > 1)
+            props.vnodes = args.slice(1) as any[]
         return {
             tag,
+            key,
             props
         }
     }
@@ -252,16 +257,7 @@ export function setElementProps<T extends HTMLElement>(
         const oldValue = stored?.[key]
 
         if (key == "vnodes") {
-            const newNodes = value as (VNode<HTMLElement> | null)[]
-
-            const newCount = newNodes?.length ?? 0
-
-            for (let i = 0; i < newCount; i++) {
-                patch(el, newNodes[i], i)
-            }
-            while (el.childNodes.length > newCount) {
-                el.removeChild(el.lastChild!)
-            }
+            patchChildren(el, Array.isArray(value) ? value as PatchableVNode[] : [])
 
             continue;
         }
@@ -432,46 +428,108 @@ function removeProp<T extends HTMLElement>(
 }
 
 
-function patch(parent: HTMLElement, newVNode: VNode<HTMLElement> | null, index = 0): void {
-    const currentDom = parent.childNodes[index] as HTMLElement
+const VNODE_KEY = Symbol("_elgVNodeKey")
 
-    // 1. Cleanup removed elements and wipe active structural subscriptions
-    if (newVNode == null) {
-        if (currentDom) {
-            parent.removeChild(currentDom)
-        }
-        return
-    }
+type PatchableVNode = VNode<HTMLElement> | string | number | null | undefined
 
-    // 2. Handle simple text strings/numbers
-    if (typeof newVNode !== "object" || !("tag" in newVNode)) {
-        const text = String(newVNode)
-        if (!currentDom) {
-            parent.appendChild(document.createTextNode(text))
-        } else if (currentDom.nodeType === Node.TEXT_NODE) {
-            if (currentDom.nodeValue !== text) currentDom.nodeValue = text
-        } else {
-            parent.replaceChild(document.createTextNode(text), currentDom)
-        }
-        return
-    }
-
-    // 4. Handle Native Element tags ("div", "span", "button", etc.)
-    if (typeof newVNode.tag === "string") {
-        if (!currentDom || currentDom.nodeName.toLowerCase() !== newVNode.tag.toLowerCase()) {
-            const el = e(newVNode.tag, newVNode.props)
-
-            if (currentDom) {
-                parent.replaceChild(el, currentDom)
-            } else {
-                parent.appendChild(el)
-            }
-        } else {
-            setElementProps(currentDom, newVNode.props)
-        }
-    }
+function vnodeKey(node: ChildNode): any {
+    return (node as any)[VNODE_KEY]
 }
 
+function setVNodeKey(node: ChildNode, key: any): void {
+    if (key === undefined || key === null) {
+        delete (node as any)[VNODE_KEY]
+        return
+    }
+    ; (node as any)[VNODE_KEY] = key
+}
+
+function isElementVNode(value: PatchableVNode): value is VNode<HTMLElement> {
+    return !!value && typeof value === "object" && "tag" in value
+}
+
+function canPatchNode(node: ChildNode, vnode: PatchableVNode): boolean {
+    if (isElementVNode(vnode)) {
+        return node.nodeType === Node.ELEMENT_NODE
+            && node.nodeName.toLowerCase() === String(vnode.tag).toLowerCase()
+    }
+    return node.nodeType === Node.TEXT_NODE
+}
+
+function createVNodeNode(vnode: PatchableVNode): ChildNode {
+    if (isElementVNode(vnode)) {
+        const element = e(vnode.tag, vnode.props)
+        setVNodeKey(element, vnode.key)
+        return element
+    }
+    return document.createTextNode(vnode == null ? "" : String(vnode))
+}
+
+function patchVNodeNode(node: ChildNode, vnode: PatchableVNode): ChildNode {
+    if (isElementVNode(vnode)) {
+        setVNodeKey(node, vnode.key)
+        setElementProps(node as HTMLElement, vnode.props)
+        return node
+    }
+
+    const text = String(vnode == null ? "" : vnode)
+    if (node.nodeValue !== text) node.nodeValue = text
+    return node
+}
+
+/** Patches VNode children while preserving keyed DOM nodes across inserts, removals, and reorders. */
+function patchChildren(parent: HTMLElement, nextChildren: PatchableVNode[]): void {
+    const oldChildren = Array.from(parent.childNodes)
+    const used = new Set<ChildNode>()
+    const keyed = new Map<any, ChildNode>()
+
+    for (const child of oldChildren) {
+        const key = vnodeKey(child)
+        if (key !== undefined && key !== null) keyed.set(key, child)
+    }
+
+    let unkeyedCursor = 0
+    const nextDom: ChildNode[] = []
+
+    for (const vnode of nextChildren) {
+        if (vnode == null) continue
+
+        let existing: ChildNode | undefined
+        const key = isElementVNode(vnode) ? vnode.key : undefined
+
+        if (key !== undefined && key !== null) {
+            const keyedChild = keyed.get(key)
+            if (keyedChild && !used.has(keyedChild) && canPatchNode(keyedChild, vnode)) {
+                existing = keyedChild
+            }
+        } else {
+            while (unkeyedCursor < oldChildren.length) {
+                const candidate = oldChildren[unkeyedCursor++]
+                if (!used.has(candidate) && vnodeKey(candidate) === undefined && canPatchNode(candidate, vnode)) {
+                    existing = candidate
+                    break
+                }
+            }
+        }
+
+        if (existing) {
+            used.add(existing)
+            nextDom.push(patchVNodeNode(existing, vnode))
+        } else {
+            nextDom.push(createVNodeNode(vnode))
+        }
+    }
+
+    for (const child of oldChildren) {
+        if (!used.has(child) && child.parentNode === parent) parent.removeChild(child)
+    }
+
+    for (let index = 0; index < nextDom.length; index++) {
+        const child = nextDom[index]
+        const current = parent.childNodes[index]
+        if (current !== child) parent.insertBefore(child, current || null)
+    }
+}
 
 // ======================================================
 // HTML Tag Helpers for e()
