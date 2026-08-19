@@ -4,7 +4,7 @@ import { div, e } from "../src/core/e";
 const placements: PopupPlacement[] = ["bottom-start", "bottom", "bottom-end", "top-start", "top", "top-end", "right-start", "right", "right-end", "left-start", "left", "left-end"];
 
 function button(label: string, onclick?: (event: MouseEvent, el: HTMLButtonElement) => void): HTMLButtonElement {
-    return e("button", { ui: ["elg", "btn", "primary"], onclick }, label);
+    return e("button", { ui: ["elg", "btn", "neutral"], onclick }, label);
 }
 
 function menuItem(label: string, onclick?: () => void): HTMLButtonElement {

@@ -7,13 +7,18 @@ body {
   padding: 0.5em 1em;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   border: 1px solid var(--elg-border-color);
 }
 
 .elg-btn:hover {
   --elg-state-s-3: var(--elg-hover-s);
   --elg-state-l-3: var(--elg-hover-l);
+}
+
+.elg-btn:disabled {
+  cursor: not-allowed;
+  filter: saturate(0.35) brightness(1.2);
 }
 
 .elg-box {

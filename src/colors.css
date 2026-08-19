@@ -31,17 +31,17 @@
     /* ======================================================
      STATE PRESETS
   ====================================================== */
-    --elg-hover-s: 0;
+    --elg-hover-s: 10;
     --elg-hover-l: -8;
 
     --elg-focus-s: 3;
     --elg-focus-l: 6;
 
-    --elg-selected-s: 8;
+    --elg-selected-s: -20;
     --elg-selected-l: -6;
 
-    --elg-active-s: 5;
-    --elg-active-l: -10;
+    --elg-active-s: 10;
+    --elg-active-l: -15;
 
     /* ======================================================
      SEMANTIC COLORS
@@ -70,7 +70,7 @@
     /* NEUTRAL */
     --elg-neutral-h: var(--elg-theme-h);
     --elg-neutral-s: 10;
-    --elg-neutral-l: 50;
+    --elg-neutral-l: 60;
 
     /* ======================================================
      SURFACES
@@ -252,12 +252,8 @@
     --elg-bg-s: var(--elg-primary-s);
     --elg-bg-l: var(--elg-primary-l);
 
-    --elg-border-h: var(--elg-primary-h);
-    --elg-border-s: var(--elg-primary-s);
-    --elg-border-l: clamp(0, calc(var(--elg-primary-l) - 10));
-
+    background-color: var(--elg-bg-rendered-color);
     color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
-    border-color: hsl(var(--elg-border-hsl));
 }
 
 .elg-neutral {
@@ -265,7 +261,9 @@
     --elg-bg-s: var(--elg-neutral-s);
     --elg-bg-l: var(--elg-neutral-l);
 
+    background-color: var(--elg-bg-rendered-color);
     color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
+    border-color: hsl(var(--elg-border-hsl));
 }
 
 .elg-success {
@@ -273,6 +271,7 @@
     --elg-bg-s: var(--elg-success-s);
     --elg-bg-l: var(--elg-success-l);
 
+    background-color: var(--elg-bg-rendered-color);
     color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
 }
 
@@ -281,7 +280,9 @@
     --elg-bg-s: var(--elg-warning-s);
     --elg-bg-l: var(--elg-warning-l);
 
+    background-color: var(--elg-bg-rendered-color);
     color: hsl(var(--elg-text-h) var(--elg-text-s) var(--elg-text-l));
+    border-color: hsl(var(--elg-border-hsl));
 }
 
 .elg-danger {
@@ -289,6 +290,7 @@
     --elg-bg-s: var(--elg-danger-s);
     --elg-bg-l: var(--elg-danger-l);
 
+    background-color: var(--elg-bg-rendered-color);
     color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
 }
 
@@ -312,6 +314,17 @@
 
 .elg-text-danger {
     color: hsl(var(--elg-danger-hsl))
+}
+
+.elg-primary,
+.elg-success,
+.elg-warning,
+.elg-danger,
+.elg-neutral {
+    --elg-border-h: var(--elg-bg-h);
+    --elg-border-s: var(--elg-bg-s);
+    --elg-border-l: clamp(0, calc(var(--elg-bg-l) - 12), 100);
+    --elg-border-color: hsl(var(--elg-border-h) var(--elg-border-s) var(--elg-border-l));
 }
 
 

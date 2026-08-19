@@ -27,7 +27,24 @@ const routes: RouterHandler[] = [
                 title: 'Button',
                 description: 'Learn more about buttons',
                 dom: div({ ui: ["p-4"] },
-                    div({ ui: ["elg", "box", "p-2"] },
+                    div({ ui: ["elg", "box", "p-4"] },
+                        div({ ui: ["fs-150", "fw-500", "mb-3"] }, "Semantic styles"),
+                        div({ ui: ["d-flex", "flex-wrap", "gap-2"] },
+                            cbutton({ ui: ["elg", "btn", "primary"] }, "Primary"),
+                            cbutton({ ui: ["elg", "btn", "success"] }, "Success"),
+                            cbutton({ ui: ["elg", "btn", "warning"] }, "Warning"),
+                            cbutton({ ui: ["elg", "btn", "danger"] }, "Danger"),
+                            cbutton({ ui: ["elg", "btn", "neutral"] }, "Neutral")
+                        ),
+                        div({ ui: ["fs-150", "fw-500", "mt-4", "mb-3"] }, "State styles"),
+                        div({ ui: ["d-flex", "flex-wrap", "gap-2"] },
+                            cbutton({ ui: ["elg", "btn", "primary", "selected"] }, "Selected"),
+                            cbutton({ ui: ["elg", "btn", "primary", "active"] }, "Active"),
+                            cbutton({ ui: ["elg", "btn", "primary", "hover"] }, "Hover"),
+                            cbutton({ ui: ["elg", "btn", "primary", "focus"] }, "Focus"),
+                            cbutton({ ui: ["elg", "btn", "primary"], disabled: true }, "Disabled")
+                        ),
+                        div({ ui: ["fs-150", "fw-500", "mt-4", "mb-3"] }, "Interactive"),
                         cbutton({
                             ui: ["elg", "btn", "primary"],
                             comcreate(com) {
