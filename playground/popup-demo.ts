@@ -1,8 +1,8 @@
-import { Popup, PopupPlacement } from "../src/components/popup/popup";
+import { Popover, PopoverPlacement } from "../src/components/popup/popover";
 import { MenuItem, PopupMenu } from "../src/components/popup/PopupMenu";
 import { div, e } from "../src/core/e";
 
-const placements: PopupPlacement[] = ["bottom-start", "bottom", "bottom-end", "top-start", "top", "top-end", "right-start", "right", "right-end", "left-start", "left", "left-end"];
+const placements: PopoverPlacement[] = ["bottom-start", "bottom", "bottom-end", "top-start", "top", "top-end", "right-start", "right", "right-end", "left-start", "left", "left-end"];
 
 function button(label: string, onclick?: (event: MouseEvent, el: HTMLButtonElement) => void): HTMLButtonElement {
     return e("button", { ui: ["elg", "btn", "neutral"], onclick }, label);
@@ -36,7 +36,7 @@ export const popupRouterHandler = {
         for (const placement of placements) {
             const anchor = button(placement);
             //anchor.style.maxWidth = "100px";
-            const popup = new Popup({
+            const popup = new Popover({
                 anchorElement: anchor,
                 placement,
                 children: [menuItem(`Placement: ${placement}`), menuItem("Popup item", () => popup.hide())]
@@ -50,7 +50,7 @@ export const popupRouterHandler = {
         ));
 
         const dropdownAnchor = button("Open dropdown");
-        const dropdown = new Popup({
+        const dropdown = new Popover({
             anchorElement: dropdownAnchor,
             placement: "bottom-start",
             gap: 8,
@@ -66,7 +66,7 @@ export const popupRouterHandler = {
         dropdown.mount(page);
 
         const contextTarget = div({ ui: ["p-4", "border", "border-dashed", "rounded-1", "user-select-none"] }, "Right-click here for a context menu");
-        const contextMenu = new Popup({ point: { x: 0, y: 0 }, placement: "bottom-start", children: [menuItem("Refresh", () => contextMenu.hide()), menuItem("Inspect", () => contextMenu.hide())] });
+        const contextMenu = new Popover({ point: { x: 0, y: 0 }, placement: "bottom-start", children: [menuItem("Refresh", () => contextMenu.hide()), menuItem("Inspect", () => contextMenu.hide())] });
         contextTarget.addEventListener("contextmenu", event => {
             event.preventDefault();
             contextMenu.setPoint(event.clientX, event.clientY);
@@ -79,9 +79,9 @@ export const popupRouterHandler = {
         contextMenu.mount(page);
 
         const nestedAnchor = button("More actions");
-        const nested = new Popup({ anchorElement: nestedAnchor, placement: "right-start", children: [menuItem("Nested action 1"), menuItem("Nested action 2")] });
+        const nested = new Popover({ anchorElement: nestedAnchor, placement: "right-start", children: [menuItem("Nested action 1"), menuItem("Nested action 2")] });
         const rootAnchor = button("Open nested menu");
-        const root = new Popup({ anchorElement: rootAnchor, placement: "bottom-start", children: [menuItem("First action"), nestedAnchor] });
+        const root = new Popover({ anchorElement: rootAnchor, placement: "bottom-start", children: [menuItem("First action"), nestedAnchor] });
         nestedAnchor.addEventListener("mouseenter", () => nested.show());
         page.appendChild(div({ ui: ["elg", "box", "p-2", "d-flex", "flex-col", "gap-2"] },
             e("h3", "Nested context-style menu"),
@@ -147,7 +147,7 @@ export const popupRouterHandler = {
                 key: "delete",
                 text: "Delete",
                 icon: "ri-delete-bin-line",
-                className: "danger-action",
+                className: "elg danger-action",
                 action: () => alert("Delete selected")
             }
         ];
@@ -190,7 +190,7 @@ export const popupRouterHandler = {
             div({ ui: ["d-flex", "gap-2", "flex-wrap"] }, popupMenuAnchor, contextMenuTarget)
         ));
 
-        page.appendChild(div({ className: "text-muted", style: { fontSize: "0.85em" } }, "Native Popover API is required. Dropdown uses closeMode: auto; outside clicks and Escape are handled by the browser."));
+        page.appendChild(div({ className: "elg text-muted", style: { fontSize: "0.85em" } }, "Native Popover API is required. Dropdown uses closeMode: auto; outside clicks and Escape are handled by the browser."));
         return { title: "Popup", description: "Popup positioning and nested menu demo", dom: page };
     }
 };

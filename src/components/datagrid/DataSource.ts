@@ -138,6 +138,7 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
     }
 }
 
+/** DataSource implementation backed by an in-memory array. */
 export class ArrayDataSource<T> implements DataSource<T> {
     readonly array: Array<T>;
     private _parentField?: string;

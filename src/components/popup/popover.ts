@@ -1,62 +1,65 @@
 import { Component, ComponentChild, ComponentOptions } from "../../core/Component";
-import "./Popup.css";
+import "./Popover.css";
 
 let popupId = 0;
 
 /** Preferred side and alignment of a popup relative to its anchor element. */
-export type PopupPlacement = "bottom-start" | "bottom" | "bottom-end" | "top-start" | "top" | "top-end" | "right-start" | "right" | "right-end" | "left-start" | "left" | "left-end";
+export type PopoverPlacement = "bottom-start" | "bottom" | "bottom-end" | "top-start" | "top" | "top-end" | "right-start" | "right" | "right-end" | "left-start" | "left" | "left-end";
 
 /** Controls whether the browser or the caller controls popup dismissal. */
-export type PopupCloseMode = "auto" | "manual";
+export type PopoverCloseMode = "auto" | "manual";
 
 /** A viewport point used to position a popup without an anchor element. */
-export interface PopupPoint { x: number; y: number; }
+export interface PopoverPoint { x: number; y: number; }
 
 /** Configuration for a native Popover API popup. */
-export interface PopupOptions extends Omit<ComponentOptions, "onclose"> {
+export interface PopoverOptions extends Omit<ComponentOptions, "onclose"> {
     /** Element used as the popup's positioning reference. */
     anchorElement?: HTMLElement;
     /** Point used as the popup's positioning reference when no anchor exists. */
-    point?: PopupPoint;
+    point?: PopoverPoint;
     /** Content rendered inside the popup. */
     children?: ComponentChild;
     /** Preferred side and alignment relative to the anchor. */
-    placement?: PopupPlacement;
+    placement?: PopoverPlacement;
     /** Distance from the anchor in pixels. */
     gap?: number;
     /** Whether the popup is initially opened. */
     open?: boolean;
     /** Native Popover API dismissal mode. */
-    closeMode?: PopupCloseMode;
+    closeMode?: PopoverCloseMode;
+    /** Whether to bind the native `popovertarget` attribute to the anchor. */
+    bindAnchorTarget?: boolean;
     /** Called when the native popup closes. */
-    onclose?: (event: Event, popup: Popup) => void;
+    onclose?: (event: Event, popup: Popover) => void;
 }
 
 /** A native top-layer popup positioned relative to an anchor element. */
-export class Popup extends Component {
+export class Popover extends Component {
     private anchor?: HTMLElement;
-    private point?: PopupPoint;
-    private readonly placement: PopupPlacement;
-    private readonly gap: number;
-    private readonly closeMode: PopupCloseMode;
+    private point?: PopoverPoint;
+    private placement: PopoverPlacement;
+    private gap: number;
+    private readonly closeMode: PopoverCloseMode;
+    private readonly bindAnchorTarget: boolean;
     private readonly reposition = () => this.updatePosition();
 
-    constructor(options: PopupOptions) {
+    constructor(options: PopoverOptions) {
         if (!("showPopover" in HTMLElement.prototype))
-            throw new Error("Popup requires the native Popover API.");
+            throw new Error("Popover requires the native Popover API.");
 
-        const { anchorElement, point, children, placement = "bottom-start", gap = 4, open, closeMode = "auto", onclose, ...rest } = options;
+        const { anchorElement, point, children, placement = "bottom-start", gap = 4, open, closeMode = "auto", bindAnchorTarget = true, onclose, ...rest } = options;
         if (!anchorElement && !point)
-            throw new Error("Popup requires either anchorElement or point.");
+            throw new Error("Popover requires either anchorElement or point.");
         super({ ...rest, tag: options.tag || "div", children });
-        this.anchor = anchorElement; this.point = point; this.placement = placement; this.gap = gap; this.closeMode = closeMode;
-        this.dom.classList.add("elg-popup");
+        this.anchor = anchorElement; this.point = point; this.placement = placement; this.gap = gap; this.closeMode = closeMode; this.bindAnchorTarget = bindAnchorTarget;
+        this.dom.classList.add("elg", "elg-popover");
         Object.assign(this.dom.style, { position: "fixed", zIndex: "1000", maxWidth: "calc(100vw - 8px)", maxHeight: "calc(100vh - 8px)" });
         this.dom.setAttribute("role", this.dom.getAttribute("role") || "menu");
-        this.dom.style.setProperty("--elg-popup-gap", `${gap}px`);
+        this.dom.style.setProperty("--elg-popover-gap", `${gap}px`);
         this.dom.setAttribute("popover", closeMode);
         this.dom.id ||= `elg-popup-${++popupId}`;
-        if (this.anchor) this.anchor.setAttribute("popovertarget", this.dom.id);
+        if (this.anchor && this.bindAnchorTarget) this.anchor.setAttribute("popovertarget", this.dom.id);
 
         this.dom.addEventListener("close", event => onclose?.(event, this));
         this.dom.addEventListener("toggle", this.reposition);
@@ -65,9 +68,29 @@ export class Popup extends Component {
 
     /** Changes the element used as the popup's positioning anchor. */
     setAnchor(anchor: HTMLElement): void {
-        this.anchor?.removeAttribute("popovertarget");
+        if (this.bindAnchorTarget) this.anchor?.removeAttribute("popovertarget");
         this.anchor = anchor;
-        anchor.setAttribute("popovertarget", this.dom.id);
+        if (this.bindAnchorTarget) anchor.setAttribute("popovertarget", this.dom.id);
+        this.updatePosition();
+    }
+
+    /** Replaces the content rendered inside the popover. */
+    setContent(children: ComponentChild): void {
+        this.dom.replaceChildren();
+        this.append(children);
+        this.updatePosition();
+    }
+
+    /** Changes the preferred placement of the popover. */
+    setPlacement(placement: PopoverPlacement): void {
+        this.placement = placement;
+        this.updatePosition();
+    }
+
+    /** Changes the distance from the anchor or point. */
+    setGap(gap: number): void {
+        this.gap = gap;
+        this.dom.style.setProperty("--elg-popover-gap", `${gap}px`);
         this.updatePosition();
     }
 
@@ -137,4 +160,4 @@ export class Popup extends Component {
     }
 
 }
-export default Popup;
+export default Popover;

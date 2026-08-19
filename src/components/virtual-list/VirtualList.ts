@@ -9,6 +9,7 @@ import { VariableSizeManager } from "./SizeManager"
 /**
  * Interface for a virtual list data source.
  */
+/** Random-access data source consumed by a VirtualList. */
 export interface VirtualDataSource<T> {
     count(): number
     getAt(index: number): T | undefined
@@ -34,6 +35,7 @@ export type RenderRowArgs<T> = {
 /**
  * Options for the virtual list component.
  */
+/** Construction options for a virtualized list component. */
 export interface VirtualListOptions<T> {
     /** A virtual list data source. The data items are rendered as rows in the list.  */
     data: VirtualDataSource<T>
@@ -93,6 +95,7 @@ type ViewInfo<T> = {
 // VirtualList
 // --------------------------------------
 
+/** Efficiently renders only the visible portion of a large data collection. */
 export class VirtualList<T> extends Component {
 
     private container: HTMLElement

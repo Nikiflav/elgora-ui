@@ -1,0 +1,81 @@
+:root {
+    --elg-popover-background: var(--elg-bg-color, #ffffff);
+    --elg-popover-color: var(--elg-text-color, #1f2937);
+    --elg-popover-border: var(--elg-border-color, #d1d5db);
+    --elg-popover-hover: var(--elg-surface-color-2, #f3f4f6);
+    --elg-popover-radius: 6px;
+    --elg-popover-shadow: 0 8px 24px rgb(0 0 0 / 16%);
+}
+
+.elg-popover {
+    box-sizing: border-box;
+    position: fixed;
+    z-index: 1000;
+    display: block;
+    margin: 0;
+    padding: 4px;
+    min-width: 160px;
+    max-width: calc(100vw - 8px);
+    max-height: calc(100vh - 8px);
+    overflow: auto;
+    color: var(--elg-popover-color);
+    background: var(--elg-popover-background);
+    border: 1px solid var(--elg-popover-border);
+    border-radius: var(--elg-popover-radius);
+    box-shadow: var(--elg-popover-shadow);
+    inset: auto;
+}
+
+.elg-popover[popover] {
+    color: var(--elg-popover-color);
+    background: var(--elg-popover-background);
+}
+
+.elg-popover:not(:popover-open)[popover] {
+    display: none;
+}
+
+.elg-popover::backdrop {
+    background: transparent;
+}
+
+.elg-popover > button {
+    box-sizing: border-box;
+    font: inherit;
+    cursor: pointer;
+}
+
+.elg-popover > button:hover,
+.elg-popover > button:focus-visible {
+    background: var(--elg-popover-hover);
+    outline: none;
+}
+
+.elg-popover > button {
+    display: block;
+    width: 100%;
+    padding: 7px 10px;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .elg-popover {
+        animation: elg-popover-enter 120ms ease-out;
+    }
+}
+
+@keyframes elg-popover-enter {
+    from {
+        opacity: 0;
+        transform: scale(.98) translateY(-2px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

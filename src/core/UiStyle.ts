@@ -2,6 +2,7 @@
 // ElgoraUI Utility Styles (typed)
 // ======================================================
 
+/** Typed Elgora UI utility class name without the `elg-` prefix. */
 export type UiStyle =
   // ------------------
   // Display
@@ -184,6 +185,7 @@ export type UiStyle =
   // SEMANTIC COLORS
   // ======================================================
   | "primary"
+  | "accent"
   | "success"
   | "warning"
   | "danger"

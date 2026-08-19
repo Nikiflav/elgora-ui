@@ -132,6 +132,7 @@ type GridColumn<T> = {
 /*
 -------------------------------------------------------
 */
+/** Virtualized, selectable, and optionally grouped data grid component. */
 export class DataGrid<TRow> extends Component {
 
     // Options.

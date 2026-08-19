@@ -1,3 +1,4 @@
+/** Measures virtual-list rows and maps between indexes and scroll offsets. */
 export interface SizeManager {
     get defaultSize(): number;
     set defaultSize(value: number);
@@ -7,6 +8,7 @@ export interface SizeManager {
     findIndex(offset: number): number;
 }
 
+/** Size manager for lists whose rows share one fixed height. */
 export class FixedSizeManager implements SizeManager {
     private _defaultSize: number;
     constructor(defaultSize: number) {

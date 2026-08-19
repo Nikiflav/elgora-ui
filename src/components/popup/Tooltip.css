@@ -1,0 +1,8 @@
+.elg-tooltip {
+    min-width: 0;
+    max-width: min(360px, calc(100vw - 16px));
+    padding: 6px 8px;
+    font-size: .875rem;
+    line-height: 1.35;
+    pointer-events: none;
+}

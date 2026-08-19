@@ -1,7 +1,9 @@
 import { div } from "../../core/e";
 
 
+/** Custom scroll container supporting virtual dimensions and multiple input modes. */
 export class ScrollEngine {
+    /** The viewport element enhanced by this scroll engine. */
     public readonly dom: HTMLElement;
 
     // Virtual Dimensions & Coordinates (Can be billions of pixels)
@@ -46,6 +48,7 @@ export class ScrollEngine {
     private _inertiaFrameId: number | null = null;
     private _isTouching: boolean = false;
 
+    /** Creates a scroll engine for an existing viewport element. */
     constructor(dom: HTMLElement) {
         this.dom = dom;
         this._clientWidth = dom.clientWidth;
@@ -55,22 +58,33 @@ export class ScrollEngine {
         this.bindEvents();
     }
 
-    // Public getters for scroll state
+    /** Total virtual content width configured for the viewport. */
     public get scrollWidth(): number { return this._scrollWidth; }
+    /** Total virtual content height configured for the viewport. */
     public get scrollHeight(): number { return this._scrollHeight; }
+    /** Current horizontal virtual scroll position. */
     public get scrollLeft(): number { return this._scrollLeft; }
+    /** Sets the horizontal virtual scroll position, clamped to valid bounds. */
     public set scrollLeft(left: number) { this.scrollTo(left, this._scrollTop); }
 
+    /** Current vertical virtual scroll position. */
     public get scrollTop(): number { return this._scrollTop; }
+    /** Sets the vertical virtual scroll position, clamped to valid bounds. */
     public set scrollTop(top: number) { this.scrollTo(this._scrollLeft, top); }
+    /** Maximum horizontal virtual scroll position. */
     public get maxScrollLeft(): number { return this._maxScrollLeft; }
+    /** Maximum vertical virtual scroll position. */
     public get maxScrollTop(): number { return this._maxScrollTop; }
+    /** Current physical viewport width in CSS pixels. */
     public get clientWidth(): number { return this._clientWidth; }
+    /** Current physical viewport height in CSS pixels. */
     public get clientHeight(): number { return this._clientHeight; }
 
     /**
-     * Updates the engine with virtual sizes. If size exceeds max physical size,
-     * it calculates an amplification ratio.
+     * Updates the engine with virtual content dimensions. If a dimension exceeds
+     * the browser-safe physical limit, the engine calculates an amplification ratio.
+     * @param scrollWidth Total virtual content width.
+     * @param scrollHeight Total virtual content height.
      */
     public updateDimensions(scrollWidth: number, scrollHeight: number): void {
         this._scrollWidth = scrollWidth;
@@ -108,7 +122,9 @@ export class ScrollEngine {
     }
 
     /**
-     * Scroll programmatically using Virtual coordinates
+     * Scrolls programmatically using virtual coordinates.
+     * @param left Target horizontal virtual position.
+     * @param top Target vertical virtual position.
      */
     public scrollTo(left: number, top: number): void {
         const maxLeft = this.getMaxScrollLeft();
@@ -131,10 +147,12 @@ export class ScrollEngine {
 
 
 
+    /** Registers a callback invoked after the virtual scroll position changes. */
     public onScroll(callback: () => void): void {
         this._onScrollCallback = callback;
     }
 
+    /** Registers a callback invoked after the physical viewport is resized. */
     public onResize(callback: () => void): void {
         this._onResizeCallback = callback;
     }

@@ -1,5 +1,6 @@
 import { RowIdentity } from "./DataSource";
 
+/** Coordinates and selection metadata for a visible grid cell. */
 export interface SelectionCell {
     /** The actual visual row index on screen at the moment of selection */
     rowIndex: number;
@@ -8,6 +9,7 @@ export interface SelectionCell {
     wholeRow?: boolean;
 }
 
+/** Rectangular range between an anchor cell and a focus cell. */
 export interface SelectionRange {
     /** The origin cell where interaction (mouse down / click) started for this box */
     anchor: SelectionCell;
@@ -15,6 +17,7 @@ export interface SelectionRange {
     focus: SelectionCell;
 }
 
+/** Grid callbacks and dimensions used by selection navigation. */
 export interface GridContext {
     totalRows: number;
     columns: string[];
@@ -30,6 +33,7 @@ export interface GridContext {
  */
 export type SelectionEdge = "t" | "r" | "b" | "l";
 
+/** Render state for a cell participating in one or more selection ranges. */
 export interface CellSelectionState {
     /** Whether the cell falls inside any active selection range. */
     selected: boolean;
@@ -37,6 +41,7 @@ export interface CellSelectionState {
     edges: SelectionEdge[];
 }
 
+/** Manages keyboard, pointer, and range-based grid selection state. */
 export class SelectionManager {
     private _ranges: SelectionRange[] = [];
     private _activeCell: SelectionCell | null = null;

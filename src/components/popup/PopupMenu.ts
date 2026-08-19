@@ -1,8 +1,9 @@
 import { Component, ComponentOptions } from "../../core/Component";
 import { setElementProps, v, VNodeChild } from "../../core/e";
 import type { RemixIcon } from "../../core/RemixIcon";
-import { PopupCloseMode, PopupPlacement, PopupPoint } from "./popup";
-import "./Popup.css";
+import { PopoverCloseMode, PopoverPlacement, PopoverPoint } from "./popover";
+import "./Popover.css";
+import "./PopupMenu.css";
 
 export type { RemixIcon } from "../../core/RemixIcon";
 
@@ -55,13 +56,13 @@ export interface PopupMenuShowOptions {
     /** Element used as the menu's positioning reference. */
     anchor?: HTMLElement;
     /** Viewport point used when showing a context menu. */
-    point?: PopupPoint;
+    point?: PopoverPoint;
     /** Preferred side and alignment relative to the anchor or point. */
-    placement?: PopupPlacement;
+    placement?: PopoverPlacement;
     /** Distance from the positioning reference in pixels. */
     gap?: number;
     /** Native popover dismissal mode. */
-    closeMode?: PopupCloseMode;
+    closeMode?: PopoverCloseMode;
 }
 
 const menuId = (() => {
@@ -85,7 +86,7 @@ function itemId(item: MenuItem, path: string): string {
 
 function itemClass(item: MenuItem, open: boolean): string {
     return [
-        "elg-menu-item-container",
+        "elg", "elg-menu-item-container",
         item.className,
         open ? "is-open" : ""
     ].filter(Boolean).join(" ");
@@ -95,7 +96,7 @@ function itemProps(item: MenuItem, id: string, hasSubmenu: boolean, open: boolea
     const disabled = isDisabled(item);
     const label = item.ariaLabel || item.hint || item.text;
     const props: Record<string, any> = {
-        className: "elg-menu-item",
+        className: "elg elg-menu-item",
         ui: item.ui,
         "data-menu-key": id,
         "aria-label": label,
@@ -124,10 +125,10 @@ export class PopupMenu extends Component {
     private openItems = new Set<string>();
     private renderVersion = 0;
     private anchor?: HTMLElement;
-    private point?: PopupPoint;
-    private placement: PopupPlacement = "bottom-start";
+    private point?: PopoverPoint;
+    private placement: PopoverPlacement = "bottom-start";
     private gap = 4;
-    private closeMode: PopupCloseMode = "auto";
+    private closeMode: PopoverCloseMode = "auto";
     private readonly reposition = () => this.updatePosition();
     private readonly onClose = () => this.stopTracking();
 
@@ -136,7 +137,7 @@ export class PopupMenu extends Component {
         super({ ...rest, tag: options.tag || "div" });
 
         this.closeOnAction = closeOnAction;
-        this.dom.classList.add("elg-popup", "elg-popup-menu");
+        this.dom.classList.add("elg", "elg-popover", "elg-popup-menu");
         this.dom.setAttribute("role", "menu");
         this.dom.setAttribute("popover", this.closeMode);
         this.dom.id ||= menuId();
@@ -162,7 +163,7 @@ export class PopupMenu extends Component {
         this.closeMode = options.closeMode || "auto";
         this.openItems.clear();
         this.dom.setAttribute("popover", this.closeMode);
-        this.dom.style.setProperty("--elg-popup-gap", `${this.gap}px`);
+        this.dom.style.setProperty("--elg-popover-gap", `${this.gap}px`);
         const wasOpen = this.isOpen();
         const rendered = await this.renderItems();
         if (!rendered) return;
@@ -213,7 +214,7 @@ export class PopupMenu extends Component {
             if (item.isDivider) {
                 return v("div", {
                     key: id,
-                    className: "elg-menu-divider",
+                    className: "elg elg-menu-divider",
                     role: "separator"
                 } as any);
             }
@@ -221,14 +222,14 @@ export class PopupMenu extends Component {
             const children = subItems || [];
             const hasSubmenu = subItems !== null;
             const open = this.openItems.has(id);
-            const icon = item.icon ? v("i", { className: item.icon, ariaHidden: "true" } as any) : null;
-            const text = item.showText === false ? null : v("span", { className: "elg-menu-item-text", vnodes: [item.text || ""] });
+            const icon = item.icon ? v("i", { className: `elg ${item.icon}`, ariaHidden: "true" } as any) : null;
+            const text = item.showText === false ? null : v("span", { className: "elg elg-menu-item-text", vnodes: [item.text || ""] });
             const arrow = hasSubmenu ? v("i", {
-                className: "elg-menu-item-arrow ri-arrow-right-s-line",
+                className: "elg elg-menu-item-arrow ri-arrow-right-s-line",
                 ariaHidden: "true"
             } as any) : null;
             const check = item.checked?.() ? v("i", {
-                className: "elg-menu-item-check ri-check-line",
+                className: "elg elg-menu-item-check ri-check-line",
                 ariaHidden: "true"
             } as any) : null;
             const control = item.url && !hasSubmenu ? "a" : "button";
@@ -242,7 +243,7 @@ export class PopupMenu extends Component {
                 key: `${id}:control`
             } as any, icon, text, check, arrow), hasSubmenu ? v("div", {
                 key: `${id}:submenu`,
-                className: "elg-menu-submenu",
+                className: "elg elg-menu-submenu",
                 role: "menu",
                 "aria-hidden": String(!open),
                 vnodes: await this.renderItemList(children, id, states)

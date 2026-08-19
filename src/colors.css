@@ -52,6 +52,11 @@
     --elg-primary-s: 85;
     --elg-primary-l: 56;
 
+    /* ACCENT */
+    --elg-accent-h: 310;
+    --elg-accent-s: 75;
+    --elg-accent-l: 60;
+
     /* SUCCESS */
     --elg-success-h: 145;
     --elg-success-s: 70;
@@ -135,6 +140,7 @@
     --elg-border-strong-hsl: var(--elg-border-strong-h) var(--elg-border-strong-s) var(--elg-border-strong-l);
 
     --elg-primary-hsl: var(--elg-primary-h) var(--elg-primary-s) var(--elg-primary-l);
+    --elg-accent-hsl: var(--elg-accent-h) var(--elg-accent-s) var(--elg-accent-l);
     --elg-neutral-hsl: var(--elg-neutral-h) var(--elg-neutral-s) var(--elg-neutral-l);
     --elg-success-hsl: var(--elg-success-h) var(--elg-success-s) var(--elg-success-l);
     --elg-warning-hsl: var(--elg-warning-h) var(--elg-warning-s) var(--elg-warning-l);
@@ -158,6 +164,7 @@
     --elg-border-strong: hsl(var(--elg-border-strong-hsl));
 
     --elg-primary-color: hsl(var(--elg-primary-hsl));
+    --elg-accent-color: hsl(var(--elg-accent-hsl));
     --elg-neutral-color: hsl(var(--elg-neutral-hsl));
     --elg-success-color: hsl(var(--elg-success-hsl));
     --elg-warning-color: hsl(var(--elg-warning-hsl));
@@ -256,6 +263,15 @@
     color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
 }
 
+.elg-accent {
+    --elg-bg-h: var(--elg-accent-h);
+    --elg-bg-s: var(--elg-accent-s);
+    --elg-bg-l: var(--elg-accent-l);
+
+    background-color: var(--elg-bg-rendered-color);
+    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
+}
+
 .elg-neutral {
     --elg-bg-h: var(--elg-neutral-h);
     --elg-bg-s: var(--elg-neutral-s);
@@ -317,6 +333,7 @@
 }
 
 .elg-primary,
+.elg-accent,
 .elg-success,
 .elg-warning,
 .elg-danger,

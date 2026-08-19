@@ -5,19 +5,52 @@ import { c, cbutton, cdiv } from '../src/core/c';
 import { a, div, e, nav } from '../src/core/e';
 import { dataGridRouterHandler } from './data-grid-demo';
 import { dataGridTreeRouterHandler } from './data-grid-tree-demo';
-import { popupRouterHandler } from './popup-demo';
+import { overviewRouterHandler } from './overview-demo';
+import { buttonRouterHandler } from './topics/button-topic';
+import { componentsRouterHandler } from './topics/components-topic';
+import { coreRouterHandler } from './topics/core-topic';
+import { popoverRouterHandler } from './topics/popover-topic';
+import { popupMenuRouterHandler } from './topics/popup-menu-topic';
+import { scrollRouterHandler } from './topics/scroll-topic';
+import { tooltipRouterHandler } from './topics/tooltip-topic';
+import { virtualListRouterHandler } from './topics/virtual-list-topic';
+
+function topicPlaceholder(path: string, title: string, description: string): RouterHandler {
+    return {
+        path,
+        createPage() {
+            return {
+                title,
+                description,
+                dom: div({ ui: ["elg", "box", "p-4", "d-flex", "flex-col", "gap-2"] },
+                    e("h2", title),
+                    e("p", description),
+                    e("p", { className: "elg text-muted" }, "This documentation topic will be expanded with API reference, live examples, and editable code.")
+                )
+            };
+        }
+    };
+}
 
 const routes: RouterHandler[] = [
+
+    coreRouterHandler,
+    componentsRouterHandler,
+    tooltipRouterHandler,
+    topicPlaceholder('/router', 'Browser Router', 'Client-side routing without full page reloads.'),
+
+    // Documentation topics
+    popoverRouterHandler,
+    popupMenuRouterHandler,
+    buttonRouterHandler,
+    scrollRouterHandler,
+    virtualListRouterHandler,
 
     // Data Grid - Tree
     dataGridTreeRouterHandler,
 
     // Data Grid
     dataGridRouterHandler,
-
-    // Popup Demo
-    popupRouterHandler,
-
 
     // Simple Button Demo
     {
@@ -34,7 +67,8 @@ const routes: RouterHandler[] = [
                             cbutton({ ui: ["elg", "btn", "success"] }, "Success"),
                             cbutton({ ui: ["elg", "btn", "warning"] }, "Warning"),
                             cbutton({ ui: ["elg", "btn", "danger"] }, "Danger"),
-                            cbutton({ ui: ["elg", "btn", "neutral"] }, "Neutral")
+                            cbutton({ ui: ["elg", "btn", "neutral"] }, "Neutral"),
+                            cbutton({ ui: ["elg", "btn", "accent"] }, "Accent")
                         ),
                         div({ ui: ["fs-150", "fw-500", "mt-4", "mb-3"] }, "State styles"),
                         div({ ui: ["d-flex", "flex-wrap", "gap-2"] },
@@ -128,24 +162,8 @@ const routes: RouterHandler[] = [
             };
         }
     },
-    // Home - fallback page
-    {
-        path: '/',
-        createPage(urlParams) {
-            return {
-                title: 'Elgora UI Demo',
-                description: 'Welcome to the Elgora UI demo page',
-                dom: div(
-                    {
-                        class: 'home-page',
-                        ui: ["elg", "box"],
-                        style: { padding: '20px' }
-                    },
-                    "Welcome to the Elgora UI demo page. Use the links on the left to navigate through different components and features of Elgora UI."
-                ),
-            };
-        }
-    },
+    // Documentation overview / fallback
+    overviewRouterHandler,
 ];
 
 const router = new BrowserRouter(routes);
@@ -159,13 +177,17 @@ const app = cdiv(
             ui: ["elg", "surface", "flex-none", "p-4",
                 "border-end", "d-flex", "flex-col", "gap-1"]
         },
-        a({ href: "?!=/" }, "Home"),
+        a({ href: "?!=/" }, "Overview"),
+        a({ href: "?!=/core" }, "Core"),
+        a({ href: "?!=/components" }, "Components"),
         a({ href: "?!=/btn" }, "Button"),
         a({ href: "?!=/scroll" }, "Scroll Engine"),
         a({ href: "?!=/virtual-list" }, "Virtual List"),
         a({ href: "?!=/data-grid" }, "Data Grid"),
         a({ href: "?!=/data-grid-tree" }, "Data Grid - Tree"),        
-        a({ href: "?!=/popup" }, "Popup"),
+        a({ href: "?!=/popover" }, "Popover"),
+        a({ href: "?!=/popup" }, "PopupMenu"),
+        a({ href: "?!=/tooltip" }, "Tooltip"),
     ),
     // Page Content
     div({ ui: ["grow-1", "d-flex", "p-4" ] },

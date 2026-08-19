@@ -17,6 +17,7 @@ export interface Disposable {
 export type ObservableHandler<T> = (value: T) => void
 
 
+/** A subscribable source of values or events. */
 export interface Observable<T> extends Disposable {
   subscribe(fn: ObservableHandler<T>): Disposable
 }
@@ -26,6 +27,7 @@ export interface ReadOnlyObservableValue<T> extends Observable<T> {
 }
 
 
+/** Mutable observable value that notifies subscribers when its value changes. */
 export class ObservableValue<T> implements ReadOnlyObservableValue<T> {
   private _value: T
   private subscribers = new Set<ObservableHandler<T>>()
@@ -90,6 +92,7 @@ export class ObservableValue<T> implements ReadOnlyObservableValue<T> {
 }
 
 
+/** Observable event stream whose payload is emitted explicitly by the caller. */
 export class ObservableEvent<T = void> implements Observable<T> {
   private handlers = new Set<ObservableHandler<T>>()
 
@@ -132,6 +135,7 @@ export type RenderTask = () => void
 // ======================================================
 
 
+/** Frame-batched task scheduler that deduplicates the same task reference. */
 export class Scheduler {
   private tasks = new Set<RenderTask>()
   private rafId: number | null = null

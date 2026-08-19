@@ -10,7 +10,10 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "predev": "npm run docs:api",
+    "prebuild": "npm run docs:api",
+    "docs:api": "node tools/generate-api-docs.mjs"
   },
   "devDependencies": {
     "typescript": "^5.x",

@@ -61,6 +61,7 @@ type ExtraProps = {
 // Final typed props
 // ======================================================
 
+/** Typed properties accepted by a Component-backed HTML element factory. */
 export type ComponentProps<
     T extends HTMLElement
 > =
@@ -73,6 +74,7 @@ export type ComponentProps<
 // Args
 // ======================================================
 
+/** Arguments accepted by a Component-backed HTML element factory. */
 export type ComponentArgs<
     T extends HTMLElement
 > =
@@ -83,6 +85,7 @@ export type ComponentArgs<
 // c() declaration
 // ======================================================
 
+/** Creates a Component backed by the requested HTML tag. */
 export function c<
     K extends keyof HTMLElementTagNameMap
 >(
@@ -156,6 +159,7 @@ function ctag<
 // ======================================================
 
 // Layout
+/** Creates a Component backed by a div element. */
 export const cdiv     = ctag("div")
 export const cspan    = ctag("span")
 export const csection = ctag("section")
@@ -189,6 +193,7 @@ export const cinput    = ctag("input")
 export const ctextarea = ctag("textarea")
 export const cselect   = ctag("select")
 export const coption   = ctag("option")
+/** Creates a Component backed by a button element. */
 export const cbutton   = ctag("button")
 
 // Lists

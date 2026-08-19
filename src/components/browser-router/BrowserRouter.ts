@@ -133,15 +133,16 @@ export class BrowserRouter extends Component {
         // get the route object from the urlRoutes object
         var route: RouterHandler | undefined = undefined;
         var routeParams: object | undefined = undefined;
+        var matchedLength = -1;
         for (const r of this.routes) {
 
             const rx = this.getRouteRegex(r);
             const match = rx && rx.exec(location);
-            if (match) {
+            if (match && match[0].length > matchedLength) {
                 route = r;
                 // @ts-ignore
                 routeParams = match.groups;
-                break;
+                matchedLength = match[0].length;
             }
         }
         // create page

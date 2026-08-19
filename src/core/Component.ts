@@ -16,6 +16,7 @@ type DOMProps = {
   [K in `on${string}`]?: ComponentEventHandler
 }
 
+/** A value that can be mounted as a Component child. */
 export type ComponentChild =
   | string
   | number
@@ -40,6 +41,7 @@ export type ComponentLifecycleProps = {
   (com: Component) => void
 }
 
+/** Configuration for a Component instance, including DOM and lifecycle props. */
 export type ComponentOptions = {
   tag?: string
   key?: any
@@ -54,6 +56,7 @@ export type ComponentOptions = {
 
 const ELEMENT_COMPONENT_KEY = "_elgComponent"
 
+/** Base class for composable DOM components with lifecycle and observable state support. */
 export class Component implements Disposable {
   dom: HTMLElement
 

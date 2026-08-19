@@ -46,6 +46,7 @@ type WritableCSSProperties = {
     : never
 }[keyof CSSStyleDeclaration]
 
+/** Inline CSS properties accepted by the typed element helpers. */
 export type StyleObject = Partial<
     Record<WritableCSSProperties, string | number>
 >
@@ -63,6 +64,7 @@ type ExtraProps = {
 // Final props for each tag
 // --------------------------------------------------
 
+/** Typed native, event, class, style, and Elgora UI properties for an element. */
 export type ElementProps<T extends HTMLElement> =
     NativeProps<T> &
     DOMEvents<T> &
@@ -78,6 +80,7 @@ export type ElementProps<T extends HTMLElement> =
 // e("div", { class:"x" }, child1, child2)
 // ------------------------------------------------------
 
+/** Arguments accepted by the typed element factory. */
 export type ElementArgs<T extends HTMLElement> =
     [props?: ElementProps<T>, ...children: ComponentChild[]] |
     ComponentChild[]
@@ -86,18 +89,22 @@ export type ElementArgs<T extends HTMLElement> =
 // VNode
 // ------------------------------------------------------
 
+/** Lightweight virtual element description used by the keyed patcher. */
 export type VNode<T extends HTMLElement> = {
     tag: keyof HTMLElementTagNameMap,
     key?: any,
     props: ElementProps<T>
 }
 
+/** A virtual node child accepted by the VNode factory. */
 export type VNodeChild = VNode<any> | string | number | null | undefined
 
+/** Arguments accepted by the VNode factory. */
 export type VNodeArgs<T extends HTMLElement> =
     [props?: ElementProps<T>, ...children: VNodeChild[]] |
     VNodeChild[]
 
+/** Creates a virtual element description for keyed or deferred DOM rendering. */
 export function v<K extends keyof HTMLElementTagNameMap>(
     tag: K,
     ...args: VNodeArgs<HTMLElementTagNameMap[K]>
@@ -125,6 +132,7 @@ export function v<K extends keyof HTMLElementTagNameMap>(
 // Main declaration
 // ------------------------------------------------------
 
+/** Creates a native HTML element, applies typed properties, and appends children. */
 export function e<K extends keyof HTMLElementTagNameMap>(
     tag: K,
     ...args: ElementArgs<HTMLElementTagNameMap[K]>

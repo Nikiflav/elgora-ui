@@ -1,0 +1,2428 @@
+{
+  "schemaVersion": 1,
+  "package": "elgora-ui",
+  "entry": "src/index.ts",
+  "generatedBy": "tools/generate-api-docs.mjs",
+  "exports": [
+    {
+      "name": "ArrayDataSource",
+      "kind": "class",
+      "type": "ArrayDataSource<T>",
+      "description": "DataSource implementation backed by an in-memory array.",
+      "tags": [],
+      "source": "src/components/datagrid/DataSource.ts",
+      "members": [
+        {
+          "name": "array",
+          "type": "T[]",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "supportsGrouping",
+          "type": "boolean",
+          "description": "Whether this source can bucket rows into groups itself (vs. relying on LocalGroupingDataSource).",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getRowId",
+          "type": "((row: T) => any) | undefined",
+          "description": "Only assigned when `options.parentField` is given, so plain flat arrays don't get flagged as hierarchical.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "hasChildren",
+          "type": "((row: T) => Promise<boolean>) | undefined",
+          "description": "Presence marks this source as hierarchical (parent/child) and disables groupColumns; answers per-row expandability.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "loadData",
+          "type": "(args: QueryArgs) => Promise<DataResult<T>>",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "method",
+          "signature": "(args: QueryArgs) => Promise<DataResult<T>>"
+        },
+        {
+          "name": "indexOfRow",
+          "type": "(row: T) => Promise<number>",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "method",
+          "signature": "(row: T) => Promise<number>"
+        }
+      ]
+    },
+    {
+      "name": "BrowserRouter",
+      "kind": "class",
+      "type": "BrowserRouter",
+      "description": "A simple client-side router that uses the browser's history API to manage navigation without hard page reloads. It listens for URL changes and updates the displayed page accordingly based on a set of defined routes.\r\nThe url path is stored as url parameter named '!'. Example ?!=/home/sub1/sub2\r\nUrl parameter is used instead of hash to allow better support for server-side redirects.\r\nThe router also supports dynamic route parameters and provides a default 404 page if no matching route is found. It also handles navigation through anchor tags and the browser's back/forward buttons.\r\nTo use the router, create an instance of `BrowserRouter` with an array of route handlers and optionally a custom 404 page. Each route handler defines a URL pattern and a function to create the corresponding page component. The router will automatically manage the displayed content based on the current URL.\r\nOnly one instance of `BrowserRouter` should be created in the application, and it should be mounted to a container element where the page content will be displayed.",
+      "tags": [],
+      "source": "src/components/browser-router/BrowserRouter.ts",
+      "members": [
+        {
+          "name": "routes",
+          "type": "RouterHandler[]",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/browser-router/BrowserRouter.ts",
+          "kind": "property"
+        },
+        {
+          "name": "page404",
+          "type": "RouterPage",
+          "description": "The currently active page",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/browser-router/BrowserRouter.ts",
+          "kind": "property"
+        },
+        {
+          "name": "lastUrl",
+          "type": "string | undefined",
+          "description": "The last handled URL",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/browser-router/BrowserRouter.ts",
+          "kind": "property"
+        },
+        {
+          "name": "currentPage",
+          "type": "RouterPage | undefined",
+          "description": "Gets or sets the current page. Setting a new page will replace the content of the router container with the new page's DOM element.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/browser-router/BrowserRouter.ts",
+          "kind": "property"
+        },
+        {
+          "name": "currentPage",
+          "type": "RouterPage | undefined",
+          "description": "Gets or sets the current page. Setting a new page will replace the content of the router container with the new page's DOM element.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/browser-router/BrowserRouter.ts",
+          "kind": "property"
+        },
+        {
+          "name": "currentRoute",
+          "type": "RouterHandler | undefined",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/browser-router/BrowserRouter.ts",
+          "kind": "property"
+        },
+        {
+          "name": "navigate",
+          "type": "(url: string, replaceHistory?: boolean) => void",
+          "description": "Navigates the browser to the specified url without hard reload.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/browser-router/BrowserRouter.ts",
+          "kind": "method",
+          "signature": "(url: string, replaceHistory?: boolean) => void"
+        }
+      ]
+    },
+    {
+      "name": "c",
+      "kind": "function",
+      "type": "<K extends keyof HTMLElementTagNameMap>(tag: K, ...args: ComponentArgs<HTMLElementTagNameMap[K]>) => Component",
+      "description": "Creates a Component backed by the requested HTML tag.",
+      "tags": [],
+      "source": "src/core/c.ts"
+    },
+    {
+      "name": "cbutton",
+      "kind": "variable",
+      "type": "ComponentFactory<\"button\">",
+      "description": "Creates a Component backed by a button element.",
+      "tags": [],
+      "source": "src/core/c.ts"
+    },
+    {
+      "name": "cdiv",
+      "kind": "variable",
+      "type": "ComponentFactory<\"div\">",
+      "description": "Creates a Component backed by a div element.",
+      "tags": [],
+      "source": "src/core/c.ts"
+    },
+    {
+      "name": "CellSelectionState",
+      "kind": "interface",
+      "type": "CellSelectionState",
+      "description": "Render state for a cell participating in one or more selection ranges.",
+      "tags": [],
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "members": [
+        {
+          "name": "selected",
+          "type": "boolean",
+          "description": "Whether the cell falls inside any active selection range.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "edges",
+          "type": "SelectionEdge[]",
+          "description": "The selection-box sides the cell sits on; empty array for interior cells.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "Component",
+      "kind": "class",
+      "type": "Component",
+      "description": "Base class for composable DOM components with lifecycle and observable state support.",
+      "tags": [],
+      "source": "src/core/Component.ts",
+      "members": [
+        {
+          "name": "dom",
+          "type": "HTMLElement",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "property"
+        },
+        {
+          "name": "state",
+          "type": "any",
+          "description": "User state.",
+          "tags": [],
+          "optional": true,
+          "source": "src/core/Component.ts",
+          "kind": "property"
+        },
+        {
+          "name": "locked",
+          "type": "boolean",
+          "description": "Indicates whether the component is locked. When a component is locked, it cannot accept new children, and any attempt to append a child will result in an error. Locking a component is useful for preventing further modifications to the component's structure after it has been fully constructed and mounted. This ensures the integrity of the component tree and prevents unintended side effects from adding new children after the component is in use.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "property"
+        },
+        {
+          "name": "lock",
+          "type": "() => void",
+          "description": "Locks the component, preventing further structure modifications.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "append",
+          "type": "(child: ComponentChild) => void",
+          "description": "Appends a child or multiple children to this component. The child can be a string, number, DOM node, another Component instance, or an array of any of these types. When a Component instance is appended as a child, it will be automatically detached from its previous parent (if any) before being added to this component. This ensures that a Component can only have one parent at a time, maintaining the integrity of the component tree. If the child is null or undefined, this method will have no effect.\r\nIf the component is locked, an error will be thrown and the child will not be appended. Always use this method to add children to the component, as it ensures that the component tree remains consistent and that lifecycle events are properly handled. Do not directly manipulate the component's dom to add children, as this may lead to inconsistent state and missed lifecycle events.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "child The child to append."
+            },
+            {
+              "name": "returns",
+              "text": "void"
+            }
+          ],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "(child: ComponentChild) => void"
+        },
+        {
+          "name": "mount",
+          "type": "(container: HTMLElement) => void",
+          "description": "Appends the dom to the provided container.\r\nAlways use this method to attach the component to the document, as it ensures that 'mount' lifecycle events are properly handled. Do not directly append the component's dom to the document or other containers, as this may lead to inconsistent state and missed lifecycle events.\r\nThis will trigger the onMount lifecycle event for this component and all of its descendants. If the component is already mounted, calling this method again will have no effect.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "container The DOM element to which the component's dom will be appended."
+            },
+            {
+              "name": "example",
+              "text": "const myComponent = new Component({ tag: \"div\", children: \"Hello, world!\" })\r\n myComponent.mount(document.body) // Appends the component's dom to the body and triggers onMount events."
+            }
+          ],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "(container: HTMLElement) => void"
+        },
+        {
+          "name": "unmount",
+          "type": "() => void",
+          "description": "Unmounts the component from the DOM. This will trigger the onUnmount lifecycle event for this component and all of its descendants. After unmounting, the component's dom will be removed from its parent element, but the component instance will still exist in memory and can be re-mounted later if needed. Always use this method to unmount the component, as it ensures that 'unmount' lifecycle events are properly handled. Do not directly remove the component's dom from the document or other containers, as this may lead to inconsistent state and missed lifecycle events.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "observable",
+          "type": "<T>(value: T) => ObservableValue<T>",
+          "description": "Create an observable value that is automatically disposed when the component is disposed. The returned ObservableValue can be used to create reactive components by subscribing to it or using it in renderOnChange(). When the component is disposed, all created observable values will be automatically disposed as well, preventing memory leaks and ensuring proper cleanup of resources.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "value The initial value of the observable."
+            },
+            {
+              "name": "returns",
+              "text": "The created ObservableValue instance, which is automatically disposed when the component is disposed. The returned ObservableValue can be used to create reactive components by subscribing to it or using it in renderOnChange(). When the component is disposed, all created observable values will be automatically disposed as well, preventing memory leaks and ensuring proper cleanup of resources."
+            },
+            {
+              "name": "example",
+              "text": "const count = this.observable(0)"
+            }
+          ],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "<T>(value: T) => ObservableValue<T>"
+        },
+        {
+          "name": "subscribe",
+          "type": "<T>(obs: Observable<T>, callback: (v: T) => void) => void",
+          "description": "Subscribe to an observable value. The callback will be called whenever the observable value changes, and also immediately with the current value upon subscription.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "obs An observable to subscribe to."
+            },
+            {
+              "name": "param",
+              "text": "callback A function to be called whenever the observable value changes."
+            }
+          ],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "<T>(obs: Observable<T>, callback: (v: T) => void) => void"
+        },
+        {
+          "name": "renderOnChange",
+          "type": "<T>(obs: ObservableValue<T>, renderTask: RenderTask) => void",
+          "description": "Register a render task that will be automatically scheduled to run whenever the given observable value changes. The current value of the observable will also be used to perform an initial render when this method is called.\r\nThe subscribtion is automatically disposed when the component is disposed. Multiple calls to renderOnChange() with the same renderTask will result in multiple subscribtions, and each subscription will trigger the renderTask independently when the observable changes.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "obs An observable value to subscribe to."
+            },
+            {
+              "name": "param",
+              "text": "renderTask A function that performs DOM updates."
+            }
+          ],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "<T>(obs: ObservableValue<T>, renderTask: RenderTask) => void"
+        },
+        {
+          "name": "render",
+          "type": "(renderTask: RenderTask) => void",
+          "description": "Schedule a render task to run on the next animation frame. Multiple calls to render() for the same task within the same frame will be coalesced into a single call.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "renderTask A function that performs DOM updates. Will be scheduled to run on the next animation frame. Multiple calls to render() within the same frame will be coalesced into a single call."
+            }
+          ],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "(renderTask: RenderTask) => void"
+        },
+        {
+          "name": "refresh",
+          "type": "() => void",
+          "description": "Schedules all registered render tasks to run on the next animation frame.\r\nUsed when hard refresh is needed.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "attached",
+          "type": "boolean",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "property"
+        },
+        {
+          "name": "mounted",
+          "type": "boolean",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "property"
+        },
+        {
+          "name": "disposed",
+          "type": "ObservableValue<boolean>",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "property"
+        },
+        {
+          "name": "dispose",
+          "type": "() => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Component.ts",
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "ComponentChild",
+      "kind": "type",
+      "type": "any",
+      "description": "A value that can be mounted as a Component child.",
+      "tags": [],
+      "source": "src/core/Component.ts",
+      "definition": "| string\r\n  | number\r\n  | Node\r\n  | Component\r\n  | null\r\n  | undefined\r\n  | ComponentChild[]"
+    },
+    {
+      "name": "ComponentOptions",
+      "kind": "type",
+      "type": "any",
+      "description": "Configuration for a Component instance, including DOM and lifecycle props.",
+      "tags": [],
+      "source": "src/core/Component.ts",
+      "definition": "{\n  tag?: string\r\n  key?: any\r\n  ui?: UiStyle | UiStyle[]\r\n\r\n  children?: ComponentChild\r\n} & ComponentLifecycleProps & DOMProps"
+    },
+    {
+      "name": "DataGrid",
+      "kind": "class",
+      "type": "DataGrid<TRow>",
+      "description": "Virtualized, selectable, and optionally grouped data grid component.",
+      "tags": [],
+      "source": "src/components/datagrid/DataGrid.ts",
+      "members": [
+        {
+          "name": "setOptions",
+          "type": "(options: Partial<DataGridOptions<TRow>>) => void",
+          "description": "Sets (patches) the grid's options. Only the provided keys are changed; everything else is\r\nleft as-is. This is the single path for both the constructor's initial options and every\r\nlater change - fires an \"optionChanged\" DOM event on this.dom with the applied patch as detail.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getOptions",
+          "type": "() => DataGridOptions<TRow>",
+          "description": "Returns a shallow copy of the grid's current, fully-resolved options.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "() => DataGridOptions<TRow>"
+        },
+        {
+          "name": "getColumn",
+          "type": "(name: string) => DataColumn<TRow> | undefined",
+          "description": "Returns the column definition for the given name, or undefined if no such column exists.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "(name: string) => DataColumn<TRow> | undefined"
+        },
+        {
+          "name": "getSelectionManager",
+          "type": "() => SelectionManager",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "() => SelectionManager"
+        },
+        {
+          "name": "getSelectedRanges",
+          "type": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionRange[]",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionRange[]"
+        },
+        {
+          "name": "getActiveSelectionCell",
+          "type": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionCell | null",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionCell | null"
+        },
+        {
+          "name": "clearSelection",
+          "type": "() => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "setColumnOptions",
+          "type": "(name: string, patch: Partial<DataColumn<TRow>>) => void",
+          "description": "Patches an existing column's definition in place and updates the grid's layout accordingly.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "(name: string, patch: Partial<DataColumn<TRow>>) => void"
+        },
+        {
+          "name": "autoSizeColumn",
+          "type": "(name: string) => void",
+          "description": "Clears a column's configured width and puts it back into the auto-width pool. getGridColumns()\r\nalready treats any column with no configured width as auto-width and unmeasured, so the next\r\nlayoutChanged()/render picks it up and re-measures it against the currently visible rows'\r\ncontent (see measureAndAdjustScroll()) - same as a column that was never given a fixed width.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "(name: string) => void"
+        },
+        {
+          "name": "tryGetRowIndexByKey",
+          "type": "(key: RowIdentity) => Promise<number>",
+          "description": "Tries to find the row index that corresponds to the given key, or -1 if not found.\r\nThe method traverses the currently loaded visible rows plus a few rows around the viewport.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "(key: RowIdentity) => Promise<number>"
+        },
+        {
+          "name": "scrollToRow",
+          "type": "(rowIndex: number) => Promise<void>",
+          "description": "Scrolls the grid to the row at the given visible index.\r\nResolves after internal layout adjustments (and their rAF frames) have stabilized.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number) => Promise<void>"
+        },
+        {
+          "name": "scrollToColumn",
+          "type": "(colIndex: number) => void",
+          "description": "Scrolls horizontally only when a data column is outside the usable viewport.\r\nThe index is relative to data columns, matching SelectionManager's cell index.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "(colIndex: number) => void"
+        },
+        {
+          "name": "getVisibleColumns",
+          "type": "() => DataColumn<TRow>[]",
+          "description": "Returns the currently visible columns",
+          "tags": [
+            {
+              "name": "returns",
+              "text": "Array of visible columns"
+            }
+          ],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "() => DataColumn<TRow>[]"
+        },
+        {
+          "name": "layoutChanged",
+          "type": "() => Promise<void>",
+          "description": "Tells the grid to update internal cache and redraw",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "DataGridOptions",
+      "kind": "type",
+      "type": "any",
+      "description": "Construction-time configuration for a DataGrid instance.",
+      "tags": [],
+      "source": "src/components/datagrid/DataGrid.ts",
+      "definition": "{\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */\r\n    autoFillViewportWidth?: boolean,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataColumn<TRow>>\r\n}"
+    },
+    {
+      "name": "DataList",
+      "kind": "interface",
+      "type": "VirtualDataSource<T>",
+      "description": "Random-access data source consumed by a VirtualList.",
+      "tags": [],
+      "source": "src/components/virtual-list/VirtualList.ts",
+      "members": [
+        {
+          "name": "count",
+          "type": "() => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "method",
+          "signature": "() => number"
+        },
+        {
+          "name": "getAt",
+          "type": "(index: number) => T | undefined",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "method",
+          "signature": "(index: number) => T | undefined"
+        }
+      ]
+    },
+    {
+      "name": "DataSource",
+      "kind": "interface",
+      "type": "DataSource<TRow>",
+      "description": "Query-level access to row data, with optional native grouping support.",
+      "tags": [],
+      "source": "src/components/datagrid/DataSource.ts",
+      "members": [
+        {
+          "name": "loadData",
+          "type": "(args: QueryArgs) => Promise<DataResult<TRow>>",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "method",
+          "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
+        },
+        {
+          "name": "supportsGrouping",
+          "type": "boolean",
+          "description": "Whether this source can bucket rows into groups itself (vs. relying on LocalGroupingDataSource).",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getRowId",
+          "type": "((row: TRow) => RowIdentity) | undefined",
+          "description": "Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "method",
+          "signature": "((row: TRow) => RowIdentity) | undefined"
+        },
+        {
+          "name": "hasChildren",
+          "type": "((row: TRow) => Promise<boolean>) | undefined",
+          "description": "Presence marks this source as hierarchical (parent/child) and disables groupColumns; answers per-row expandability.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataSource.ts",
+          "kind": "method",
+          "signature": "((row: TRow) => Promise<boolean>) | undefined"
+        }
+      ]
+    },
+    {
+      "name": "e",
+      "kind": "function",
+      "type": "<K extends keyof HTMLElementTagNameMap>(tag: K, ...args: ElementArgs<HTMLElementTagNameMap[K]>) => HTMLElementTagNameMap[K]",
+      "description": "Creates a native HTML element, applies typed properties, and appends children.",
+      "tags": [],
+      "source": "src/core/e.ts"
+    },
+    {
+      "name": "ElgoraUI",
+      "kind": "variable",
+      "type": "{ scheduler: Scheduler; }",
+      "description": "Global UI runtime instance.\r\nUsed to invalidate components and manage scheduling.",
+      "tags": [],
+      "source": "src/core/ElgoraUI.ts"
+    },
+    {
+      "name": "FixedSizeManager",
+      "kind": "class",
+      "type": "FixedSizeManager",
+      "description": "Size manager for lists whose rows share one fixed height.",
+      "tags": [],
+      "source": "src/components/virtual-list/SizeManager.ts",
+      "members": [
+        {
+          "name": "defaultSize",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaultSize",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getSize",
+          "type": "(index: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number) => number"
+        },
+        {
+          "name": "update",
+          "type": "(index: number, newSize: number) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number, newSize: number) => void"
+        },
+        {
+          "name": "findIndex",
+          "type": "(offset: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(offset: number) => number"
+        },
+        {
+          "name": "getOffset",
+          "type": "(index: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number) => number"
+        }
+      ]
+    },
+    {
+      "name": "GridContext",
+      "kind": "interface",
+      "type": "GridContext",
+      "description": "Grid callbacks and dimensions used by selection navigation.",
+      "tags": [],
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "members": [
+        {
+          "name": "totalRows",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "columns",
+          "type": "string[]",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "isRowSelectable",
+          "type": "((rowIndex: number) => boolean) | undefined",
+          "description": "",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "findNextSelectableRow",
+          "type": "((rowIndex: number, direction: 1 | -1) => number) | undefined",
+          "description": "",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "GridDataSource",
+      "kind": "type",
+      "type": "any",
+      "description": "Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource.",
+      "tags": [],
+      "source": "src/components/datagrid/DataGrid.ts",
+      "definition": "DataSource<TRow> | TRow[]"
+    },
+    {
+      "name": "MenuItem",
+      "kind": "interface",
+      "type": "MenuItem",
+      "description": "A declarative action, link, divider, or nested submenu entry.",
+      "tags": [],
+      "source": "src/components/popup/PopupMenu.ts",
+      "members": [
+        {
+          "name": "key",
+          "type": "string | number | undefined",
+          "description": "Stable identity used by the VNode reconciler when menu items change.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "text",
+          "type": "string | undefined",
+          "description": "Visible item label.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "icon",
+          "type": "RemixIcon | undefined",
+          "description": "Remix Icon class name rendered before the label.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "url",
+          "type": "string | undefined",
+          "description": "Destination URL for a leaf item.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "urlTarget",
+          "type": "string | undefined",
+          "description": "Target browsing context used with `url`.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "action",
+          "type": "((event?: Event) => any) | undefined",
+          "description": "Callback invoked when a leaf item is activated.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "closeOnAction",
+          "type": "boolean | undefined",
+          "description": "Overrides the menu default for whether this item closes the menu after activation.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "isDivider",
+          "type": "boolean | undefined",
+          "description": "Renders a non-interactive separator instead of an action item.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "className",
+          "type": "string | undefined",
+          "description": "Custom CSS class names applied to the item container.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "ui",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").UiStyle | import(\"D:/Dev/github/elgora-ui/src/index\").UiStyle[] | undefined",
+          "description": "Elgora UI utility styles applied to the item control.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "showText",
+          "type": "boolean | undefined",
+          "description": "Whether to omit the visible label and render an icon-only item.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "hint",
+          "type": "string | undefined",
+          "description": "Tooltip text and fallback accessible label.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "ariaLabel",
+          "type": "string | undefined",
+          "description": "Explicit accessible label for icon-only items.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "checked",
+          "type": "(() => boolean) | undefined",
+          "description": "Returns the current checked state for a menu item.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean | (() => boolean) | undefined",
+          "description": "Whether the item is unavailable; may be evaluated dynamically.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "subItems",
+          "type": "(() => Promise<MenuItem[] | null>) | undefined",
+          "description": "Asynchronously returns child entries rendered as a nested submenu, or `null` when there is no submenu.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "Observable",
+      "kind": "interface",
+      "type": "Observable<T>",
+      "description": "A subscribable source of values or events.",
+      "tags": [],
+      "source": "src/core/ElgoraUI.ts",
+      "members": [
+        {
+          "name": "subscribe",
+          "type": "(fn: ObservableHandler<T>) => Disposable",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "(fn: ObservableHandler<T>) => Disposable"
+        }
+      ]
+    },
+    {
+      "name": "ObservableEvent",
+      "kind": "class",
+      "type": "ObservableEvent<T>",
+      "description": "Observable event stream whose payload is emitted explicitly by the caller.",
+      "tags": [],
+      "source": "src/core/ElgoraUI.ts",
+      "members": [
+        {
+          "name": "subscribe",
+          "type": "(fn: ObservableHandler<T>) => Disposable",
+          "description": "Subscribe to event",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "(fn: ObservableHandler<T>) => Disposable"
+        },
+        {
+          "name": "invoke",
+          "type": "(payload: T) => void",
+          "description": "Invoke event",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "(payload: T) => void"
+        },
+        {
+          "name": "dispose",
+          "type": "() => void",
+          "description": "Clear all handlers",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "ObservableValue",
+      "kind": "class",
+      "type": "ObservableValue<T>",
+      "description": "Mutable observable value that notifies subscribers when its value changes.",
+      "tags": [],
+      "source": "src/core/ElgoraUI.ts",
+      "members": [
+        {
+          "name": "Value",
+          "type": "T",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "property"
+        },
+        {
+          "name": "Value",
+          "type": "T",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "property"
+        },
+        {
+          "name": "subscribe",
+          "type": "(fn: ObservableHandler<T>) => Disposable",
+          "description": "Subscribe to value changes.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "fn Subscriber function to be called on value changes. Will be called immediately with the current value upon subscription."
+            },
+            {
+              "name": "returns",
+              "text": "A disposable subscription object. Dispose to unsubscribe."
+            }
+          ],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "(fn: ObservableHandler<T>) => Disposable"
+        },
+        {
+          "name": "dispose",
+          "type": "() => void",
+          "description": "Clear all subscribers",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "__@toPrimitive@55",
+          "type": "() => any",
+          "description": "Controls how object is converted to primitive",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "() => any"
+        },
+        {
+          "name": "toString",
+          "type": "() => string",
+          "description": "Fallback for string conversion",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "() => string"
+        },
+        {
+          "name": "valueOf",
+          "type": "() => any",
+          "description": "Returns the primitive value of the specified object.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "() => any"
+        }
+      ]
+    },
+    {
+      "name": "Popover",
+      "kind": "class",
+      "type": "Popover",
+      "description": "A native top-layer popup positioned relative to an anchor element.",
+      "tags": [],
+      "source": "src/components/popup/popover.ts",
+      "members": [
+        {
+          "name": "setAnchor",
+          "type": "(anchor: HTMLElement) => void",
+          "description": "Changes the element used as the popup's positioning anchor.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "(anchor: HTMLElement) => void"
+        },
+        {
+          "name": "setContent",
+          "type": "(children: ComponentChild) => void",
+          "description": "Replaces the content rendered inside the popover.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "(children: ComponentChild) => void"
+        },
+        {
+          "name": "setPlacement",
+          "type": "(placement: PopoverPlacement) => void",
+          "description": "Changes the preferred placement of the popover.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "(placement: PopoverPlacement) => void"
+        },
+        {
+          "name": "setGap",
+          "type": "(gap: number) => void",
+          "description": "Changes the distance from the anchor or point.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "(gap: number) => void"
+        },
+        {
+          "name": "setPoint",
+          "type": "(x: number, y: number) => void",
+          "description": "Changes the point used to position an anchorless popup.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "(x: number, y: number) => void"
+        },
+        {
+          "name": "show",
+          "type": "() => void",
+          "description": "Shows the popup using the native Popover API.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "hide",
+          "type": "() => void",
+          "description": "Hides the popup using the native Popover API.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "toggle",
+          "type": "() => void",
+          "description": "Toggles the popup between its open and closed states.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "isOpen",
+          "type": "() => boolean",
+          "description": "Returns whether the browser currently considers the popup open.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "method",
+          "signature": "() => boolean"
+        }
+      ]
+    },
+    {
+      "name": "PopoverCloseMode",
+      "kind": "type",
+      "type": "any",
+      "description": "Controls whether the browser or the caller controls popup dismissal.",
+      "tags": [],
+      "source": "src/components/popup/popover.ts",
+      "definition": "\"auto\" | \"manual\""
+    },
+    {
+      "name": "PopoverOptions",
+      "kind": "interface",
+      "type": "PopoverOptions",
+      "description": "Configuration for a native Popover API popup.",
+      "tags": [],
+      "source": "src/components/popup/popover.ts",
+      "members": [
+        {
+          "name": "anchorElement",
+          "type": "HTMLElement | undefined",
+          "description": "Element used as the popup's positioning reference.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "point",
+          "type": "PopoverPoint | undefined",
+          "description": "Point used as the popup's positioning reference when no anchor exists.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "children",
+          "type": "ComponentChild",
+          "description": "Content rendered inside the popup.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "placement",
+          "type": "PopoverPlacement | undefined",
+          "description": "Preferred side and alignment relative to the anchor.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "gap",
+          "type": "number | undefined",
+          "description": "Distance from the anchor in pixels.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "open",
+          "type": "boolean | undefined",
+          "description": "Whether the popup is initially opened.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "closeMode",
+          "type": "PopoverCloseMode | undefined",
+          "description": "Native Popover API dismissal mode.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "bindAnchorTarget",
+          "type": "boolean | undefined",
+          "description": "Whether to bind the native `popovertarget` attribute to the anchor.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onclose",
+          "type": "((event: Event, popup: Popover) => void) | undefined",
+          "description": "Called when the native popup closes.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "PopoverPlacement",
+      "kind": "type",
+      "type": "any",
+      "description": "Preferred side and alignment of a popup relative to its anchor element.",
+      "tags": [],
+      "source": "src/components/popup/popover.ts",
+      "definition": "\"bottom-start\" | \"bottom\" | \"bottom-end\" | \"top-start\" | \"top\" | \"top-end\" | \"right-start\" | \"right\" | \"right-end\" | \"left-start\" | \"left\" | \"left-end\""
+    },
+    {
+      "name": "PopoverPoint",
+      "kind": "interface",
+      "type": "PopoverPoint",
+      "description": "A viewport point used to position a popup without an anchor element.",
+      "tags": [],
+      "source": "src/components/popup/popover.ts",
+      "members": [
+        {
+          "name": "x",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "y",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "PopupMenu",
+      "kind": "class",
+      "type": "PopupMenu",
+      "description": "A dynamically rendered, nested menu backed by one native popover.",
+      "tags": [],
+      "source": "src/components/popup/PopupMenu.ts",
+      "members": [
+        {
+          "name": "show",
+          "type": "(options: PopupMenuShowOptions) => Promise<void>",
+          "description": "Renders the supplied items and opens the menu at an anchor or viewport point.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "method",
+          "signature": "(options: PopupMenuShowOptions) => Promise<void>"
+        },
+        {
+          "name": "hide",
+          "type": "() => void",
+          "description": "Closes the native popover menu.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "toggle",
+          "type": "(options: PopupMenuShowOptions) => void",
+          "description": "Opens the menu if closed, or closes it if already open.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "method",
+          "signature": "(options: PopupMenuShowOptions) => void"
+        },
+        {
+          "name": "isOpen",
+          "type": "() => boolean",
+          "description": "Returns whether the native popover is currently open.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "method",
+          "signature": "() => boolean"
+        },
+        {
+          "name": "refresh",
+          "type": "() => Promise<void>",
+          "description": "Re-renders the current items and re-evaluates dynamic item state.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "method",
+          "signature": "() => Promise<void>"
+        }
+      ]
+    },
+    {
+      "name": "PopupMenuOptions",
+      "kind": "interface",
+      "type": "PopupMenuOptions",
+      "description": "Persistent configuration for a PopupMenu instance.",
+      "tags": [],
+      "source": "src/components/popup/PopupMenu.ts",
+      "members": [
+        {
+          "name": "closeOnAction",
+          "type": "boolean | undefined",
+          "description": "Whether to hide the menu after a leaf item is activated.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "PopupMenuShowOptions",
+      "kind": "interface",
+      "type": "PopupMenuShowOptions",
+      "description": "Positioning and content supplied when a PopupMenu is opened.",
+      "tags": [],
+      "source": "src/components/popup/PopupMenu.ts",
+      "members": [
+        {
+          "name": "items",
+          "type": "readonly MenuItem[]",
+          "description": "Items rendered for this invocation.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "anchor",
+          "type": "HTMLElement | undefined",
+          "description": "Element used as the menu's positioning reference.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "point",
+          "type": "PopoverPoint | undefined",
+          "description": "Viewport point used when showing a context menu.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "placement",
+          "type": "PopoverPlacement | undefined",
+          "description": "Preferred side and alignment relative to the anchor or point.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "gap",
+          "type": "number | undefined",
+          "description": "Distance from the positioning reference in pixels.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "closeMode",
+          "type": "PopoverCloseMode | undefined",
+          "description": "Native popover dismissal mode.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "RemixIcon",
+      "kind": "type",
+      "type": "any",
+      "description": "Remix Icon class names.\n\nGenerated from remixicon 4.9.1.\nThe open string branch permits custom or newer `ri-*` names.",
+      "tags": [],
+      "source": "src/core/RemixIcon.ts",
+      "definition": "| \"ri-24-hours-fill\"\n    | \"ri-24-hours-line\"\n    | \"ri-4k-fill\"\n    | \"ri-4k-line\"\n    | \"ri-a-b\"\n    | \"ri-accessibility-fill\"\n    | \"ri-accessibility-line\"\n    | \"ri-account-box-2-fill\"\n    | \"ri-account-box-2-line\"\n    | \"ri-account-box-fill\"\n    | \"ri-account-box-line\"\n    | \"ri-account-circle-2-fill\"\n    | \"ri-account-circle-2-line\"\n    | \"ri-account-circle-fill\"\n    | \"ri-account-circle-line\"\n    | \"ri-account-pin-box-fill\"\n    | \"ri-account-pin-box-line\"\n    | \"ri-account-pin-circle-fill\"\n    | \"ri-account-pin-circle-line\"\n    | \"ri-add-box-fill\"\n    | \"ri-add-box-line\"\n    | \"ri-add-circle-fill\"\n    | \"ri-add-circle-line\"\n    | \"ri-add-fill\"\n    | \"ri-add-large-fill\"\n    | \"ri-add-large-line\"\n    | \"ri-add-line\"\n    | \"ri-admin-fill\"\n    | \"ri-admin-line\"\n    | \"ri-advertisement-fill\"\n    | \"ri-advertisement-line\"\n    | \"ri-aed-electrodes-fill\"\n    | \"ri-aed-electrodes-line\"\n    | \"ri-aed-fill\"\n    | \"ri-aed-line\"\n    | \"ri-ai\"\n    | \"ri-ai-agent-fill\"\n    | \"ri-ai-agent-line\"\n    | \"ri-ai-generate\"\n    | \"ri-ai-generate-2\"\n    | \"ri-ai-generate-2-fill\"\n    | \"ri-ai-generate-2-line\"\n    | \"ri-ai-generate-3d-fill\"\n    | \"ri-ai-generate-3d-line\"\n    | \"ri-ai-generate-text\"\n    | \"ri-airplay-fill\"\n    | \"ri-airplay-line\"\n    | \"ri-alarm-add-fill\"\n    | \"ri-alarm-add-line\"\n    | \"ri-alarm-fill\"\n    | \"ri-alarm-line\"\n    | \"ri-alarm-snooze-fill\"\n    | \"ri-alarm-snooze-line\"\n    | \"ri-alarm-warning-fill\"\n    | \"ri-alarm-warning-line\"\n    | \"ri-album-fill\"\n    | \"ri-album-line\"\n    | \"ri-alert-fill\"\n    | \"ri-alert-line\"\n    | \"ri-alibaba-cloud-fill\"\n    | \"ri-alibaba-cloud-line\"\n    | \"ri-aliens-fill\"\n    | \"ri-aliens-line\"\n    | \"ri-align-bottom\"\n    | \"ri-align-center\"\n    | \"ri-align-item-bottom-fill\"\n    | \"ri-align-item-bottom-line\"\n    | \"ri-align-item-horizontal-center-fill\"\n    | \"ri-align-item-horizontal-center-line\"\n    | \"ri-align-item-left-fill\"\n    | \"ri-align-item-left-line\"\n    | \"ri-align-item-right-fill\"\n    | \"ri-align-item-right-line\"\n    | \"ri-align-item-top-fill\"\n    | \"ri-align-item-top-line\"\n    | \"ri-align-item-vertical-center-fill\"\n    | \"ri-align-item-vertical-center-line\"\n    | \"ri-align-justify\"\n    | \"ri-align-left\"\n    | \"ri-align-right\"\n    | \"ri-align-top\"\n    | \"ri-align-vertically\"\n    | \"ri-alipay-fill\"\n    | \"ri-alipay-line\"\n    | \"ri-amazon-fill\"\n    | \"ri-amazon-line\"\n    | \"ri-anchor-fill\"\n    | \"ri-anchor-line\"\n    | \"ri-ancient-gate-fill\"\n    | \"ri-ancient-gate-line\"\n    | \"ri-ancient-pavilion-fill\"\n    | \"ri-ancient-pavilion-line\"\n    | \"ri-android-fill\"\n    | \"ri-android-line\"\n    | \"ri-angularjs-fill\"\n    | \"ri-angularjs-line\"\n    | \"ri-anthropic-fill\"\n    | \"ri-anthropic-line\"\n    | \"ri-anticlockwise-2-fill\"\n    | \"ri-anticlockwise-2-line\"\n    | \"ri-anticlockwise-fill\"\n    | \"ri-anticlockwise-line\"\n    | \"ri-app-store-fill\"\n    | \"ri-app-store-line\"\n    | \"ri-apple-fill\"\n    | \"ri-apple-line\"\n    | \"ri-apps-2-add-fill\"\n    | \"ri-apps-2-add-line\"\n    | \"ri-apps-2-ai-fill\"\n    | \"ri-apps-2-ai-line\"\n    | \"ri-apps-2-fill\"\n    | \"ri-apps-2-line\"\n    | \"ri-apps-ai-fill\"\n    | \"ri-apps-ai-line\"\n    | \"ri-apps-fill\"\n    | \"ri-apps-line\"\n    | \"ri-archive-2-fill\"\n    | \"ri-archive-2-line\"\n    | \"ri-archive-drawer-fill\"\n    | \"ri-archive-drawer-line\"\n    | \"ri-archive-fill\"\n    | \"ri-archive-line\"\n    | \"ri-archive-stack-fill\"\n    | \"ri-archive-stack-line\"\n    | \"ri-area-chart-fill\"\n    | \"ri-area-chart-line\"\n    | \"ri-armchair-fill\"\n    | \"ri-armchair-line\"\n    | \"ri-arrow-down-box-fill\"\n    | \"ri-arrow-down-box-line\"\n    | \"ri-arrow-down-circle-fill\"\n    | \"ri-arrow-down-circle-line\"\n    | \"ri-arrow-down-double-fill\"\n    | \"ri-arrow-down-double-line\"\n    | \"ri-arrow-down-fill\"\n    | \"ri-arrow-down-line\"\n    | \"ri-arrow-down-long-fill\"\n    | \"ri-arrow-down-long-line\"\n    | \"ri-arrow-down-s-fill\"\n    | \"ri-arrow-down-s-line\"\n    | \"ri-arrow-down-wide-fill\"\n    | \"ri-arrow-down-wide-line\"\n    | \"ri-arrow-drop-down-fill\"\n    | \"ri-arrow-drop-down-line\"\n    | \"ri-arrow-drop-left-fill\"\n    | \"ri-arrow-drop-left-line\"\n    | \"ri-arrow-drop-right-fill\"\n    | \"ri-arrow-drop-right-line\"\n    | \"ri-arrow-drop-up-fill\"\n    | \"ri-arrow-drop-up-line\"\n    | \"ri-arrow-go-back-fill\"\n    | \"ri-arrow-go-back-line\"\n    | \"ri-arrow-go-forward-fill\"\n    | \"ri-arrow-go-forward-line\"\n    | \"ri-arrow-left-box-fill\"\n    | \"ri-arrow-left-box-line\"\n    | \"ri-arrow-left-circle-fill\"\n    | \"ri-arrow-left-circle-line\"\n    | \"ri-arrow-left-double-fill\"\n    | \"ri-arrow-left-double-line\"\n    | \"ri-arrow-left-down-box-fill\"\n    | \"ri-arrow-left-down-box-line\"\n    | \"ri-arrow-left-down-fill\"\n    | \"ri-arrow-left-down-line\"\n    | \"ri-arrow-left-down-long-fill\"\n    | \"ri-arrow-left-down-long-line\"\n    | \"ri-arrow-left-fill\"\n    | \"ri-arrow-left-line\"\n    | \"ri-arrow-left-long-fill\"\n    | \"ri-arrow-left-long-line\"\n    | \"ri-arrow-left-right-fill\"\n    | \"ri-arrow-left-right-line\"\n    | \"ri-arrow-left-s-fill\"\n    | \"ri-arrow-left-s-line\"\n    | \"ri-arrow-left-up-box-fill\"\n    | \"ri-arrow-left-up-box-line\"\n    | \"ri-arrow-left-up-fill\"\n    | \"ri-arrow-left-up-line\"\n    | \"ri-arrow-left-up-long-fill\"\n    | \"ri-arrow-left-up-long-line\"\n    | \"ri-arrow-left-wide-fill\"\n    | \"ri-arrow-left-wide-line\"\n    | \"ri-arrow-right-box-fill\"\n    | \"ri-arrow-right-box-line\"\n    | \"ri-arrow-right-circle-fill\"\n    | \"ri-arrow-right-circle-line\"\n    | \"ri-arrow-right-double-fill\"\n    | \"ri-arrow-right-double-line\"\n    | \"ri-arrow-right-down-box-fill\"\n    | \"ri-arrow-right-down-box-line\"\n    | \"ri-arrow-right-down-fill\"\n    | \"ri-arrow-right-down-line\"\n    | \"ri-arrow-right-down-long-fill\"\n    | \"ri-arrow-right-down-long-line\"\n    | \"ri-arrow-right-fill\"\n    | \"ri-arrow-right-line\"\n    | \"ri-arrow-right-long-fill\"\n    | \"ri-arrow-right-long-line\"\n    | \"ri-arrow-right-s-fill\"\n    | \"ri-arrow-right-s-line\"\n    | \"ri-arrow-right-up-box-fill\"\n    | \"ri-arrow-right-up-box-line\"\n    | \"ri-arrow-right-up-fill\"\n    | \"ri-arrow-right-up-line\"\n    | \"ri-arrow-right-up-long-fill\"\n    | \"ri-arrow-right-up-long-line\"\n    | \"ri-arrow-right-wide-fill\"\n    | \"ri-arrow-right-wide-line\"\n    | \"ri-arrow-turn-back-fill\"\n    | \"ri-arrow-turn-back-line\"\n    | \"ri-arrow-turn-forward-fill\"\n    | \"ri-arrow-turn-forward-line\"\n    | \"ri-arrow-up-box-fill\"\n    | \"ri-arrow-up-box-line\"\n    | \"ri-arrow-up-circle-fill\"\n    | \"ri-arrow-up-circle-line\"\n    | \"ri-arrow-up-double-fill\"\n    | \"ri-arrow-up-double-line\"\n    | \"ri-arrow-up-down-fill\"\n    | \"ri-arrow-up-down-line\"\n    | \"ri-arrow-up-fill\"\n    | \"ri-arrow-up-line\"\n    | \"ri-arrow-up-long-fill\"\n    | \"ri-arrow-up-long-line\"\n    | \"ri-arrow-up-s-fill\"\n    | \"ri-arrow-up-s-line\"\n    | \"ri-arrow-up-wide-fill\"\n    | \"ri-arrow-up-wide-line\"\n    | \"ri-artboard-2-fill\"\n    | \"ri-artboard-2-line\"\n    | \"ri-artboard-fill\"\n    | \"ri-artboard-line\"\n    | \"ri-article-fill\"\n    | \"ri-article-line\"\n    | \"ri-aspect-ratio-fill\"\n    | \"ri-aspect-ratio-line\"\n    | \"ri-asterisk\"\n    | \"ri-at-fill\"\n    | \"ri-at-line\"\n    | \"ri-atom-fill\"\n    | \"ri-atom-line\"\n    | \"ri-attachment-2\"\n    | \"ri-attachment-fill\"\n    | \"ri-attachment-line\"\n    | \"ri-auction-fill\"\n    | \"ri-auction-line\"\n    | \"ri-award-fill\"\n    | \"ri-award-line\"\n    | \"ri-baidu-fill\"\n    | \"ri-baidu-line\"\n    | \"ri-ball-pen-fill\"\n    | \"ri-ball-pen-line\"\n    | \"ri-bank-card-2-fill\"\n    | \"ri-bank-card-2-line\"\n    | \"ri-bank-card-fill\"\n    | \"ri-bank-card-line\"\n    | \"ri-bank-fill\"\n    | \"ri-bank-line\"\n    | \"ri-bar-chart-2-fill\"\n    | \"ri-bar-chart-2-line\"\n    | \"ri-bar-chart-box-ai-fill\"\n    | \"ri-bar-chart-box-ai-line\"\n    | \"ri-bar-chart-box-fill\"\n    | \"ri-bar-chart-box-line\"\n    | \"ri-bar-chart-fill\"\n    | \"ri-bar-chart-grouped-fill\"\n    | \"ri-bar-chart-grouped-line\"\n    | \"ri-bar-chart-horizontal-fill\"\n    | \"ri-bar-chart-horizontal-line\"\n    | \"ri-bar-chart-line\"\n    | \"ri-barcode-box-fill\"\n    | \"ri-barcode-box-line\"\n    | \"ri-barcode-fill\"\n    | \"ri-barcode-line\"\n    | \"ri-bard-fill\"\n    | \"ri-bard-line\"\n    | \"ri-barricade-fill\"\n    | \"ri-barricade-line\"\n    | \"ri-base-station-fill\"\n    | \"ri-base-station-line\"\n    | \"ri-baseball-fill\"\n    | \"ri-baseball-line\"\n    | \"ri-basketball-fill\"\n    | \"ri-basketball-line\"\n    | \"ri-battery-2-charge-fill\"\n    | \"ri-battery-2-charge-line\"\n    | \"ri-battery-2-fill\"\n    | \"ri-battery-2-line\"\n    | \"ri-battery-charge-fill\"\n    | \"ri-battery-charge-line\"\n    | \"ri-battery-fill\"\n    | \"ri-battery-line\"\n    | \"ri-battery-low-fill\"\n    | \"ri-battery-low-line\"\n    | \"ri-battery-saver-fill\"\n    | \"ri-battery-saver-line\"\n    | \"ri-battery-share-fill\"\n    | \"ri-battery-share-line\"\n    | \"ri-bear-smile-fill\"\n    | \"ri-bear-smile-line\"\n    | \"ri-beer-fill\"\n    | \"ri-beer-line\"\n    | \"ri-behance-fill\"\n    | \"ri-behance-line\"\n    | \"ri-bell-fill\"\n    | \"ri-bell-line\"\n    | \"ri-bike-fill\"\n    | \"ri-bike-line\"\n    | \"ri-bilibili-fill\"\n    | \"ri-bilibili-line\"\n    | \"ri-bill-fill\"\n    | \"ri-bill-line\"\n    | \"ri-billiards-fill\"\n    | \"ri-billiards-line\"\n    | \"ri-binoculars-fill\"\n    | \"ri-binoculars-line\"\n    | \"ri-bit-coin-fill\"\n    | \"ri-bit-coin-line\"\n    | \"ri-blaze-fill\"\n    | \"ri-blaze-line\"\n    | \"ri-blender-fill\"\n    | \"ri-blender-line\"\n    | \"ri-blogger-fill\"\n    | \"ri-blogger-line\"\n    | \"ri-bluesky-fill\"\n    | \"ri-bluesky-line\"\n    | \"ri-bluetooth-connect-fill\"\n    | \"ri-bluetooth-connect-line\"\n    | \"ri-bluetooth-fill\"\n    | \"ri-bluetooth-line\"\n    | \"ri-blur-off-fill\"\n    | \"ri-blur-off-line\"\n    | \"ri-bnb-fill\"\n    | \"ri-bnb-line\"\n    | \"ri-body-scan-fill\"\n    | \"ri-body-scan-line\"\n    | \"ri-bold\"\n    | \"ri-book-2-fill\"\n    | \"ri-book-2-line\"\n    | \"ri-book-3-fill\"\n    | \"ri-book-3-line\"\n    | \"ri-book-ai-fill\"\n    | \"ri-book-ai-line\"\n    | \"ri-book-fill\"\n    | \"ri-book-line\"\n    | \"ri-book-marked-fill\"\n    | \"ri-book-marked-line\"\n    | \"ri-book-open-fill\"\n    | \"ri-book-open-line\"\n    | \"ri-book-read-fill\"\n    | \"ri-book-read-line\"\n    | \"ri-book-shelf-fill\"\n    | \"ri-book-shelf-line\"\n    | \"ri-booklet-fill\"\n    | \"ri-booklet-line\"\n    | \"ri-bookmark-2-fill\"\n    | \"ri-bookmark-2-line\"\n    | \"ri-bookmark-3-fill\"\n    | \"ri-bookmark-3-line\"\n    | \"ri-bookmark-fill\"\n    | \"ri-bookmark-line\"\n    | \"ri-bootstrap-fill\"\n    | \"ri-bootstrap-line\"\n    | \"ri-bowl-fill\"\n    | \"ri-bowl-line\"\n    | \"ri-box-1-fill\"\n    | \"ri-box-1-line\"\n    | \"ri-box-2-fill\"\n    | \"ri-box-2-line\"\n    | \"ri-box-3-fill\"\n    | \"ri-box-3-line\"\n    | \"ri-boxing-fill\"\n    | \"ri-boxing-line\"\n    | \"ri-braces-fill\"\n    | \"ri-braces-line\"\n    | \"ri-brackets-fill\"\n    | \"ri-brackets-line\"\n    | \"ri-brain-2-fill\"\n    | \"ri-brain-2-line\"\n    | \"ri-brain-3-fill\"\n    | \"ri-brain-3-line\"\n    | \"ri-brain-4-fill\"\n    | \"ri-brain-4-line\"\n    | \"ri-brain-ai-3-fill\"\n    | \"ri-brain-ai-3-line\"\n    | \"ri-brain-fill\"\n    | \"ri-brain-line\"\n    | \"ri-bread-fill\"\n    | \"ri-bread-line\"\n    | \"ri-briefcase-2-fill\"\n    | \"ri-briefcase-2-line\"\n    | \"ri-briefcase-3-fill\"\n    | \"ri-briefcase-3-line\"\n    | \"ri-briefcase-4-fill\"\n    | \"ri-briefcase-4-line\"\n    | \"ri-briefcase-5-fill\"\n    | \"ri-briefcase-5-line\"\n    | \"ri-briefcase-fill\"\n    | \"ri-briefcase-line\"\n    | \"ri-bring-forward\"\n    | \"ri-bring-to-front\"\n    | \"ri-broadcast-fill\"\n    | \"ri-broadcast-line\"\n    | \"ri-brush-2-fill\"\n    | \"ri-brush-2-line\"\n    | \"ri-brush-3-fill\"\n    | \"ri-brush-3-line\"\n    | \"ri-brush-4-fill\"\n    | \"ri-brush-4-line\"\n    | \"ri-brush-ai-3-fill\"\n    | \"ri-brush-ai-3-line\"\n    | \"ri-brush-ai-fill\"\n    | \"ri-brush-ai-line\"\n    | \"ri-brush-fill\"\n    | \"ri-brush-line\"\n    | \"ri-btc-fill\"\n    | \"ri-btc-line\"\n    | \"ri-bubble-chart-fill\"\n    | \"ri-bubble-chart-line\"\n    | \"ri-bug-2-fill\"\n    | \"ri-bug-2-line\"\n    | \"ri-bug-fill\"\n    | \"ri-bug-line\"\n    | \"ri-building-2-fill\"\n    | \"ri-building-2-line\"\n    | \"ri-building-3-fill\"\n    | \"ri-building-3-line\"\n    | \"ri-building-4-fill\"\n    | \"ri-building-4-line\"\n    | \"ri-building-fill\"\n    | \"ri-building-line\"\n    | \"ri-bus-2-fill\"\n    | \"ri-bus-2-line\"\n    | \"ri-bus-fill\"\n    | \"ri-bus-line\"\n    | \"ri-bus-wifi-fill\"\n    | \"ri-bus-wifi-line\"\n    | \"ri-cactus-fill\"\n    | \"ri-cactus-line\"\n    | \"ri-cake-2-fill\"\n    | \"ri-cake-2-line\"\n    | \"ri-cake-3-fill\"\n    | \"ri-cake-3-line\"\n    | \"ri-cake-fill\"\n    | \"ri-cake-line\"\n    | \"ri-calculator-fill\"\n    | \"ri-calculator-line\"\n    | \"ri-calendar-2-fill\"\n    | \"ri-calendar-2-line\"\n    | \"ri-calendar-check-fill\"\n    | \"ri-calendar-check-line\"\n    | \"ri-calendar-close-fill\"\n    | \"ri-calendar-close-line\"\n    | \"ri-calendar-event-fill\"\n    | \"ri-calendar-event-line\"\n    | \"ri-calendar-fill\"\n    | \"ri-calendar-line\"\n    | \"ri-calendar-schedule-fill\"\n    | \"ri-calendar-schedule-line\"\n    | \"ri-calendar-todo-fill\"\n    | \"ri-calendar-todo-line\"\n    | \"ri-calendar-view\"\n    | \"ri-camera-2-fill\"\n    | \"ri-camera-2-line\"\n    | \"ri-camera-3-fill\"\n    | \"ri-camera-3-line\"\n    | \"ri-camera-4-fill\"\n    | \"ri-camera-4-line\"\n    | \"ri-camera-ai-2-fill\"\n    | \"ri-camera-ai-2-line\"\n    | \"ri-camera-ai-fill\"\n    | \"ri-camera-ai-line\"\n    | \"ri-camera-fill\"\n    | \"ri-camera-lens-ai-fill\"\n    | \"ri-camera-lens-ai-line\"\n    | \"ri-camera-lens-fill\"\n    | \"ri-camera-lens-line\"\n    | \"ri-camera-line\"\n    | \"ri-camera-off-fill\"\n    | \"ri-camera-off-line\"\n    | \"ri-camera-switch-fill\"\n    | \"ri-camera-switch-line\"\n    | \"ri-candle-fill\"\n    | \"ri-candle-line\"\n    | \"ri-capsule-fill\"\n    | \"ri-capsule-line\"\n    | \"ri-car-fill\"\n    | \"ri-car-line\"\n    | \"ri-car-washing-fill\"\n    | \"ri-car-washing-line\"\n    | \"ri-caravan-fill\"\n    | \"ri-caravan-line\"\n    | \"ri-carousel-view\"\n    | \"ri-cash-fill\"\n    | \"ri-cash-line\"\n    | \"ri-cast-fill\"\n    | \"ri-cast-line\"\n    | \"ri-cellphone-fill\"\n    | \"ri-cellphone-line\"\n    | \"ri-celsius-fill\"\n    | \"ri-celsius-line\"\n    | \"ri-centos-fill\"\n    | \"ri-centos-line\"\n    | \"ri-certificate-2-fill\"\n    | \"ri-certificate-2-line\"\n    | \"ri-certificate-fill\"\n    | \"ri-certificate-line\"\n    | \"ri-character-recognition-fill\"\n    | \"ri-character-recognition-line\"\n    | \"ri-charging-pile-2-fill\"\n    | \"ri-charging-pile-2-line\"\n    | \"ri-charging-pile-fill\"\n    | \"ri-charging-pile-line\"\n    | \"ri-chat-1-fill\"\n    | \"ri-chat-1-line\"\n    | \"ri-chat-2-fill\"\n    | \"ri-chat-2-line\"\n    | \"ri-chat-3-fill\"\n    | \"ri-chat-3-line\"\n    | \"ri-chat-4-fill\"\n    | \"ri-chat-4-line\"\n    | \"ri-chat-ai-2-fill\"\n    | \"ri-chat-ai-2-line\"\n    | \"ri-chat-ai-3-fill\"\n    | \"ri-chat-ai-3-line\"\n    | \"ri-chat-ai-4-fill\"\n    | \"ri-chat-ai-4-line\"\n    | \"ri-chat-ai-fill\"\n    | \"ri-chat-ai-line\"\n    | \"ri-chat-check-fill\"\n    | \"ri-chat-check-line\"\n    | \"ri-chat-delete-fill\"\n    | \"ri-chat-delete-line\"\n    | \"ri-chat-download-fill\"\n    | \"ri-chat-download-line\"\n    | \"ri-chat-follow-up-fill\"\n    | \"ri-chat-follow-up-line\"\n    | \"ri-chat-forward-fill\"\n    | \"ri-chat-forward-line\"\n    | \"ri-chat-heart-fill\"\n    | \"ri-chat-heart-line\"\n    | \"ri-chat-history-fill\"\n    | \"ri-chat-history-line\"\n    | \"ri-chat-new-fill\"\n    | \"ri-chat-new-line\"\n    | \"ri-chat-off-fill\"\n    | \"ri-chat-off-line\"\n    | \"ri-chat-poll-fill\"\n    | \"ri-chat-poll-line\"\n    | \"ri-chat-private-fill\"\n    | \"ri-chat-private-line\"\n    | \"ri-chat-quote-fill\"\n    | \"ri-chat-quote-line\"\n    | \"ri-chat-search-fill\"\n    | \"ri-chat-search-line\"\n    | \"ri-chat-settings-fill\"\n    | \"ri-chat-settings-line\"\n    | \"ri-chat-smile-2-fill\"\n    | \"ri-chat-smile-2-line\"\n    | \"ri-chat-smile-3-fill\"\n    | \"ri-chat-smile-3-line\"\n    | \"ri-chat-smile-ai-3-fill\"\n    | \"ri-chat-smile-ai-3-line\"\n    | \"ri-chat-smile-ai-fill\"\n    | \"ri-chat-smile-ai-line\"\n    | \"ri-chat-smile-fill\"\n    | \"ri-chat-smile-line\"\n    | \"ri-chat-thread-fill\"\n    | \"ri-chat-thread-line\"\n    | \"ri-chat-unread-fill\"\n    | \"ri-chat-unread-line\"\n    | \"ri-chat-upload-fill\"\n    | \"ri-chat-upload-line\"\n    | \"ri-chat-voice-ai-fill\"\n    | \"ri-chat-voice-ai-line\"\n    | \"ri-chat-voice-fill\"\n    | \"ri-chat-voice-line\"\n    | \"ri-check-double-fill\"\n    | \"ri-check-double-line\"\n    | \"ri-check-fill\"\n    | \"ri-check-line\"\n    | \"ri-checkbox-blank-circle-fill\"\n    | \"ri-checkbox-blank-circle-line\"\n    | \"ri-checkbox-blank-fill\"\n    | \"ri-checkbox-blank-line\"\n    | \"ri-checkbox-circle-fill\"\n    | \"ri-checkbox-circle-line\"\n    | \"ri-checkbox-fill\"\n    | \"ri-checkbox-indeterminate-fill\"\n    | \"ri-checkbox-indeterminate-line\"\n    | \"ri-checkbox-line\"\n    | \"ri-checkbox-multiple-blank-fill\"\n    | \"ri-checkbox-multiple-blank-line\"\n    | \"ri-checkbox-multiple-fill\"\n    | \"ri-checkbox-multiple-line\"\n    | \"ri-chess-fill\"\n    | \"ri-chess-line\"\n    | \"ri-china-railway-fill\"\n    | \"ri-china-railway-line\"\n    | \"ri-chrome-fill\"\n    | \"ri-chrome-line\"\n    | \"ri-circle-fill\"\n    | \"ri-circle-line\"\n    | \"ri-clapperboard-ai-fill\"\n    | \"ri-clapperboard-ai-line\"\n    | \"ri-clapperboard-fill\"\n    | \"ri-clapperboard-line\"\n    | \"ri-claude-fill\"\n    | \"ri-claude-line\"\n    | \"ri-clipboard-fill\"\n    | \"ri-clipboard-line\"\n    | \"ri-clockwise-2-fill\"\n    | \"ri-clockwise-2-line\"\n    | \"ri-clockwise-fill\"\n    | \"ri-clockwise-line\"\n    | \"ri-close-circle-fill\"\n    | \"ri-close-circle-line\"\n    | \"ri-close-fill\"\n    | \"ri-close-large-fill\"\n    | \"ri-close-large-line\"\n    | \"ri-close-line\"\n    | \"ri-closed-captioning-ai-fill\"\n    | \"ri-closed-captioning-ai-line\"\n    | \"ri-closed-captioning-fill\"\n    | \"ri-closed-captioning-line\"\n    | \"ri-cloud-fill\"\n    | \"ri-cloud-line\"\n    | \"ri-cloud-off-fill\"\n    | \"ri-cloud-off-line\"\n    | \"ri-cloud-windy-fill\"\n    | \"ri-cloud-windy-line\"\n    | \"ri-cloudy-2-fill\"\n    | \"ri-cloudy-2-line\"\n    | \"ri-cloudy-fill\"\n    | \"ri-cloudy-line\"\n    | \"ri-code-ai-fill\"\n    | \"ri-code-ai-line\"\n    | \"ri-code-block\"\n    | \"ri-code-box-fill\"\n    | \"ri-code-box-line\"\n    | \"ri-code-fill\"\n    | \"ri-code-line\"\n    | \"ri-code-s-fill\"\n    | \"ri-code-s-line\"\n    | \"ri-code-s-slash-fill\"\n    | \"ri-code-s-slash-line\"\n    | \"ri-code-view\"\n    | \"ri-codepen-fill\"\n    | \"ri-codepen-line\"\n    | \"ri-coin-fill\"\n    | \"ri-coin-line\"\n    | \"ri-coins-fill\"\n    | \"ri-coins-line\"\n    | \"ri-collage-fill\"\n    | \"ri-collage-line\"\n    | \"ri-collapse-diagonal-2-fill\"\n    | \"ri-collapse-diagonal-2-line\"\n    | \"ri-collapse-diagonal-fill\"\n    | \"ri-collapse-diagonal-line\"\n    | \"ri-collapse-horizontal-fill\"\n    | \"ri-collapse-horizontal-line\"\n    | \"ri-collapse-vertical-fill\"\n    | \"ri-collapse-vertical-line\"\n    | \"ri-color-filter-ai-fill\"\n    | \"ri-color-filter-ai-line\"\n    | \"ri-color-filter-fill\"\n    | \"ri-color-filter-line\"\n    | \"ri-command-fill\"\n    | \"ri-command-line\"\n    | \"ri-community-fill\"\n    | \"ri-community-line\"\n    | \"ri-compass-2-fill\"\n    | \"ri-compass-2-line\"\n    | \"ri-compass-3-fill\"\n    | \"ri-compass-3-line\"\n    | \"ri-compass-4-fill\"\n    | \"ri-compass-4-line\"\n    | \"ri-compass-discover-fill\"\n    | \"ri-compass-discover-line\"\n    | \"ri-compass-fill\"\n    | \"ri-compass-line\"\n    | \"ri-compasses-2-fill\"\n    | \"ri-compasses-2-line\"\n    | \"ri-compasses-fill\"\n    | \"ri-compasses-line\"\n    | \"ri-computer-fill\"\n    | \"ri-computer-line\"\n    | \"ri-connector-fill\"\n    | \"ri-connector-line\"\n    | \"ri-contacts-book-2-fill\"\n    | \"ri-contacts-book-2-line\"\n    | \"ri-contacts-book-3-fill\"\n    | \"ri-contacts-book-3-line\"\n    | \"ri-contacts-book-fill\"\n    | \"ri-contacts-book-line\"\n    | \"ri-contacts-book-upload-fill\"\n    | \"ri-contacts-book-upload-line\"\n    | \"ri-contacts-fill\"\n    | \"ri-contacts-line\"\n    | \"ri-contract-fill\"\n    | \"ri-contract-left-fill\"\n    | \"ri-contract-left-line\"\n    | \"ri-contract-left-right-fill\"\n    | \"ri-contract-left-right-line\"\n    | \"ri-contract-line\"\n    | \"ri-contract-right-fill\"\n    | \"ri-contract-right-line\"\n    | \"ri-contract-up-down-fill\"\n    | \"ri-contract-up-down-line\"\n    | \"ri-contrast-2-fill\"\n    | \"ri-contrast-2-line\"\n    | \"ri-contrast-drop-2-fill\"\n    | \"ri-contrast-drop-2-line\"\n    | \"ri-contrast-drop-fill\"\n    | \"ri-contrast-drop-line\"\n    | \"ri-contrast-fill\"\n    | \"ri-contrast-line\"\n    | \"ri-cookie-fill\"\n    | \"ri-cookie-line\"\n    | \"ri-copilot-fill\"\n    | \"ri-copilot-line\"\n    | \"ri-copper-coin-fill\"\n    | \"ri-copper-coin-line\"\n    | \"ri-copper-diamond-fill\"\n    | \"ri-copper-diamond-line\"\n    | \"ri-copyleft-fill\"\n    | \"ri-copyleft-line\"\n    | \"ri-copyright-fill\"\n    | \"ri-copyright-line\"\n    | \"ri-coreos-fill\"\n    | \"ri-coreos-line\"\n    | \"ri-corner-down-left-fill\"\n    | \"ri-corner-down-left-line\"\n    | \"ri-corner-down-right-fill\"\n    | \"ri-corner-down-right-line\"\n    | \"ri-corner-left-down-fill\"\n    | \"ri-corner-left-down-line\"\n    | \"ri-corner-left-up-fill\"\n    | \"ri-corner-left-up-line\"\n    | \"ri-corner-right-down-fill\"\n    | \"ri-corner-right-down-line\"\n    | \"ri-corner-right-up-fill\"\n    | \"ri-corner-right-up-line\"\n    | \"ri-corner-up-left-double-fill\"\n    | \"ri-corner-up-left-double-line\"\n    | \"ri-corner-up-left-fill\"\n    | \"ri-corner-up-left-line\"\n    | \"ri-corner-up-right-double-fill\"\n    | \"ri-corner-up-right-double-line\"\n    | \"ri-corner-up-right-fill\"\n    | \"ri-corner-up-right-line\"\n    | \"ri-coupon-2-fill\"\n    | \"ri-coupon-2-line\"\n    | \"ri-coupon-3-fill\"\n    | \"ri-coupon-3-line\"\n    | \"ri-coupon-4-fill\"\n    | \"ri-coupon-4-line\"\n    | \"ri-coupon-5-fill\"\n    | \"ri-coupon-5-line\"\n    | \"ri-coupon-fill\"\n    | \"ri-coupon-line\"\n    | \"ri-cpu-fill\"\n    | \"ri-cpu-line\"\n    | \"ri-creative-commons-by-fill\"\n    | \"ri-creative-commons-by-line\"\n    | \"ri-creative-commons-fill\"\n    | \"ri-creative-commons-line\"\n    | \"ri-creative-commons-nc-fill\"\n    | \"ri-creative-commons-nc-line\"\n    | \"ri-creative-commons-nd-fill\"\n    | \"ri-creative-commons-nd-line\"\n    | \"ri-creative-commons-sa-fill\"\n    | \"ri-creative-commons-sa-line\"\n    | \"ri-creative-commons-zero-fill\"\n    | \"ri-creative-commons-zero-line\"\n    | \"ri-criminal-fill\"\n    | \"ri-criminal-line\"\n    | \"ri-crop-2-fill\"\n    | \"ri-crop-2-line\"\n    | \"ri-crop-fill\"\n    | \"ri-crop-line\"\n    | \"ri-cross-fill\"\n    | \"ri-cross-line\"\n    | \"ri-crosshair-2-fill\"\n    | \"ri-crosshair-2-line\"\n    | \"ri-crosshair-fill\"\n    | \"ri-crosshair-line\"\n    | \"ri-css3-fill\"\n    | \"ri-css3-line\"\n    | \"ri-cup-fill\"\n    | \"ri-cup-line\"\n    | \"ri-currency-fill\"\n    | \"ri-currency-line\"\n    | \"ri-cursor-ai-fill\"\n    | \"ri-cursor-ai-line\"\n    | \"ri-cursor-fill\"\n    | \"ri-cursor-hand\"\n    | \"ri-cursor-line\"\n    | \"ri-custom-size\"\n    | \"ri-customer-service-2-fill\"\n    | \"ri-customer-service-2-line\"\n    | \"ri-customer-service-fill\"\n    | \"ri-customer-service-line\"\n    | \"ri-dashboard-2-fill\"\n    | \"ri-dashboard-2-line\"\n    | \"ri-dashboard-3-fill\"\n    | \"ri-dashboard-3-line\"\n    | \"ri-dashboard-fill\"\n    | \"ri-dashboard-horizontal-fill\"\n    | \"ri-dashboard-horizontal-line\"\n    | \"ri-dashboard-line\"\n    | \"ri-database-2-fill\"\n    | \"ri-database-2-line\"\n    | \"ri-database-fill\"\n    | \"ri-database-line\"\n    | \"ri-deepseek-fill\"\n    | \"ri-deepseek-line\"\n    | \"ri-delete-back-2-fill\"\n    | \"ri-delete-back-2-line\"\n    | \"ri-delete-back-fill\"\n    | \"ri-delete-back-line\"\n    | \"ri-delete-bin-2-fill\"\n    | \"ri-delete-bin-2-line\"\n    | \"ri-delete-bin-3-fill\"\n    | \"ri-delete-bin-3-line\"\n    | \"ri-delete-bin-4-fill\"\n    | \"ri-delete-bin-4-line\"\n    | \"ri-delete-bin-5-fill\"\n    | \"ri-delete-bin-5-line\"\n    | \"ri-delete-bin-6-fill\"\n    | \"ri-delete-bin-6-line\"\n    | \"ri-delete-bin-7-fill\"\n    | \"ri-delete-bin-7-line\"\n    | \"ri-delete-bin-fill\"\n    | \"ri-delete-bin-line\"\n    | \"ri-delete-column\"\n    | \"ri-delete-row\"\n    | \"ri-device-fill\"\n    | \"ri-device-line\"\n    | \"ri-device-recover-fill\"\n    | \"ri-device-recover-line\"\n    | \"ri-diamond-fill\"\n    | \"ri-diamond-line\"\n    | \"ri-diamond-ring-fill\"\n    | \"ri-diamond-ring-line\"\n    | \"ri-dice-1-fill\"\n    | \"ri-dice-1-line\"\n    | \"ri-dice-2-fill\"\n    | \"ri-dice-2-line\"\n    | \"ri-dice-3-fill\"\n    | \"ri-dice-3-line\"\n    | \"ri-dice-4-fill\"\n    | \"ri-dice-4-line\"\n    | \"ri-dice-5-fill\"\n    | \"ri-dice-5-line\"\n    | \"ri-dice-6-fill\"\n    | \"ri-dice-6-line\"\n    | \"ri-dice-fill\"\n    | \"ri-dice-line\"\n    | \"ri-dingding-fill\"\n    | \"ri-dingding-line\"\n    | \"ri-direction-fill\"\n    | \"ri-direction-line\"\n    | \"ri-disc-fill\"\n    | \"ri-disc-line\"\n    | \"ri-discord-fill\"\n    | \"ri-discord-line\"\n    | \"ri-discount-percent-fill\"\n    | \"ri-discount-percent-line\"\n    | \"ri-discuss-fill\"\n    | \"ri-discuss-line\"\n    | \"ri-dislike-fill\"\n    | \"ri-dislike-line\"\n    | \"ri-disqus-fill\"\n    | \"ri-disqus-line\"\n    | \"ri-divide-fill\"\n    | \"ri-divide-line\"\n    | \"ri-dna-fill\"\n    | \"ri-dna-line\"\n    | \"ri-donut-chart-fill\"\n    | \"ri-donut-chart-line\"\n    | \"ri-door-closed-fill\"\n    | \"ri-door-closed-line\"\n    | \"ri-door-fill\"\n    | \"ri-door-line\"\n    | \"ri-door-lock-box-fill\"\n    | \"ri-door-lock-box-line\"\n    | \"ri-door-lock-fill\"\n    | \"ri-door-lock-line\"\n    | \"ri-door-open-fill\"\n    | \"ri-door-open-line\"\n    | \"ri-dossier-fill\"\n    | \"ri-dossier-line\"\n    | \"ri-douban-fill\"\n    | \"ri-douban-line\"\n    | \"ri-double-quotes-l\"\n    | \"ri-double-quotes-r\"\n    | \"ri-download-2-fill\"\n    | \"ri-download-2-line\"\n    | \"ri-download-cloud-2-fill\"\n    | \"ri-download-cloud-2-line\"\n    | \"ri-download-cloud-fill\"\n    | \"ri-download-cloud-line\"\n    | \"ri-download-fill\"\n    | \"ri-download-line\"\n    | \"ri-draft-fill\"\n    | \"ri-draft-line\"\n    | \"ri-drag-drop-fill\"\n    | \"ri-drag-drop-line\"\n    | \"ri-drag-move-2-fill\"\n    | \"ri-drag-move-2-line\"\n    | \"ri-drag-move-fill\"\n    | \"ri-drag-move-line\"\n    | \"ri-draggable\"\n    | \"ri-draw-fill\"\n    | \"ri-draw-line\"\n    | \"ri-dribbble-fill\"\n    | \"ri-dribbble-line\"\n    | \"ri-drinks-2-fill\"\n    | \"ri-drinks-2-line\"\n    | \"ri-drinks-fill\"\n    | \"ri-drinks-line\"\n    | \"ri-drive-fill\"\n    | \"ri-drive-line\"\n    | \"ri-drizzle-fill\"\n    | \"ri-drizzle-line\"\n    | \"ri-drop-fill\"\n    | \"ri-drop-line\"\n    | \"ri-dropbox-fill\"\n    | \"ri-dropbox-line\"\n    | \"ri-dropdown-list\"\n    | \"ri-dropper-fill\"\n    | \"ri-dropper-line\"\n    | \"ri-dual-sim-1-fill\"\n    | \"ri-dual-sim-1-line\"\n    | \"ri-dual-sim-2-fill\"\n    | \"ri-dual-sim-2-line\"\n    | \"ri-dv-fill\"\n    | \"ri-dv-line\"\n    | \"ri-dvd-ai-fill\"\n    | \"ri-dvd-ai-line\"\n    | \"ri-dvd-fill\"\n    | \"ri-dvd-line\"\n    | \"ri-e-bike-2-fill\"\n    | \"ri-e-bike-2-line\"\n    | \"ri-e-bike-fill\"\n    | \"ri-e-bike-line\"\n    | \"ri-earth-fill\"\n    | \"ri-earth-line\"\n    | \"ri-earthquake-fill\"\n    | \"ri-earthquake-line\"\n    | \"ri-edge-fill\"\n    | \"ri-edge-line\"\n    | \"ri-edge-new-fill\"\n    | \"ri-edge-new-line\"\n    | \"ri-edit-2-fill\"\n    | \"ri-edit-2-line\"\n    | \"ri-edit-box-fill\"\n    | \"ri-edit-box-line\"\n    | \"ri-edit-circle-fill\"\n    | \"ri-edit-circle-line\"\n    | \"ri-edit-fill\"\n    | \"ri-edit-line\"\n    | \"ri-eject-fill\"\n    | \"ri-eject-line\"\n    | \"ri-emoji-sticker-fill\"\n    | \"ri-emoji-sticker-line\"\n    | \"ri-emotion-2-fill\"\n    | \"ri-emotion-2-line\"\n    | \"ri-emotion-add-fill\"\n    | \"ri-emotion-add-line\"\n    | \"ri-emotion-fill\"\n    | \"ri-emotion-happy-fill\"\n    | \"ri-emotion-happy-line\"\n    | \"ri-emotion-laugh-fill\"\n    | \"ri-emotion-laugh-line\"\n    | \"ri-emotion-line\"\n    | \"ri-emotion-normal-fill\"\n    | \"ri-emotion-normal-line\"\n    | \"ri-emotion-sad-fill\"\n    | \"ri-emotion-sad-line\"\n    | \"ri-emotion-unhappy-fill\"\n    | \"ri-emotion-unhappy-line\"\n    | \"ri-empathize-fill\"\n    | \"ri-empathize-line\"\n    | \"ri-emphasis\"\n    | \"ri-emphasis-cn\"\n    | \"ri-english-input\"\n    | \"ri-equal-fill\"\n    | \"ri-equal-line\"\n    | \"ri-equalizer-2-fill\"\n    | \"ri-equalizer-2-line\"\n    | \"ri-equalizer-3-fill\"\n    | \"ri-equalizer-3-line\"\n    | \"ri-equalizer-fill\"\n    | \"ri-equalizer-line\"\n    | \"ri-eraser-fill\"\n    | \"ri-eraser-line\"\n    | \"ri-error-warning-fill\"\n    | \"ri-error-warning-line\"\n    | \"ri-eth-fill\"\n    | \"ri-eth-line\"\n    | \"ri-evernote-fill\"\n    | \"ri-evernote-line\"\n    | \"ri-exchange-2-fill\"\n    | \"ri-exchange-2-line\"\n    | \"ri-exchange-box-fill\"\n    | \"ri-exchange-box-line\"\n    | \"ri-exchange-cny-fill\"\n    | \"ri-exchange-cny-line\"\n    | \"ri-exchange-dollar-fill\"\n    | \"ri-exchange-dollar-line\"\n    | \"ri-exchange-fill\"\n    | \"ri-exchange-funds-fill\"\n    | \"ri-exchange-funds-line\"\n    | \"ri-exchange-line\"\n    | \"ri-expand-diagonal-2-fill\"\n    | \"ri-expand-diagonal-2-line\"\n    | \"ri-expand-diagonal-fill\"\n    | \"ri-expand-diagonal-line\"\n    | \"ri-expand-diagonal-s-2-fill\"\n    | \"ri-expand-diagonal-s-2-line\"\n    | \"ri-expand-diagonal-s-fill\"\n    | \"ri-expand-diagonal-s-line\"\n    | \"ri-expand-height-fill\"\n    | \"ri-expand-height-line\"\n    | \"ri-expand-horizontal-fill\"\n    | \"ri-expand-horizontal-line\"\n    | \"ri-expand-horizontal-s-fill\"\n    | \"ri-expand-horizontal-s-line\"\n    | \"ri-expand-left-fill\"\n    | \"ri-expand-left-line\"\n    | \"ri-expand-left-right-fill\"\n    | \"ri-expand-left-right-line\"\n    | \"ri-expand-right-fill\"\n    | \"ri-expand-right-line\"\n    | \"ri-expand-up-down-fill\"\n    | \"ri-expand-up-down-line\"\n    | \"ri-expand-vertical-fill\"\n    | \"ri-expand-vertical-line\"\n    | \"ri-expand-vertical-s-fill\"\n    | \"ri-expand-vertical-s-line\"\n    | \"ri-expand-width-fill\"\n    | \"ri-expand-width-line\"\n    | \"ri-export-fill\"\n    | \"ri-export-line\"\n    | \"ri-external-link-fill\"\n    | \"ri-external-link-line\"\n    | \"ri-eye-2-fill\"\n    | \"ri-eye-2-line\"\n    | \"ri-eye-close-fill\"\n    | \"ri-eye-close-line\"\n    | \"ri-eye-fill\"\n    | \"ri-eye-line\"\n    | \"ri-eye-off-fill\"\n    | \"ri-eye-off-line\"\n    | \"ri-facebook-box-fill\"\n    | \"ri-facebook-box-line\"\n    | \"ri-facebook-circle-fill\"\n    | \"ri-facebook-circle-line\"\n    | \"ri-facebook-fill\"\n    | \"ri-facebook-line\"\n    | \"ri-fahrenheit-fill\"\n    | \"ri-fahrenheit-line\"\n    | \"ri-fediverse-fill\"\n    | \"ri-fediverse-line\"\n    | \"ri-feedback-fill\"\n    | \"ri-feedback-line\"\n    | \"ri-figma-fill\"\n    | \"ri-figma-line\"\n    | \"ri-file-2-fill\"\n    | \"ri-file-2-line\"\n    | \"ri-file-3-fill\"\n    | \"ri-file-3-line\"\n    | \"ri-file-4-fill\"\n    | \"ri-file-4-line\"\n    | \"ri-file-add-fill\"\n    | \"ri-file-add-line\"\n    | \"ri-file-ai-2-fill\"\n    | \"ri-file-ai-2-line\"\n    | \"ri-file-ai-fill\"\n    | \"ri-file-ai-line\"\n    | \"ri-file-chart-2-fill\"\n    | \"ri-file-chart-2-line\"\n    | \"ri-file-chart-fill\"\n    | \"ri-file-chart-line\"\n    | \"ri-file-check-fill\"\n    | \"ri-file-check-line\"\n    | \"ri-file-close-fill\"\n    | \"ri-file-close-line\"\n    | \"ri-file-cloud-fill\"\n    | \"ri-file-cloud-line\"\n    | \"ri-file-code-fill\"\n    | \"ri-file-code-line\"\n    | \"ri-file-copy-2-fill\"\n    | \"ri-file-copy-2-line\"\n    | \"ri-file-copy-fill\"\n    | \"ri-file-copy-line\"\n    | \"ri-file-damage-fill\"\n    | \"ri-file-damage-line\"\n    | \"ri-file-download-fill\"\n    | \"ri-file-download-line\"\n    | \"ri-file-edit-fill\"\n    | \"ri-file-edit-line\"\n    | \"ri-file-excel-2-fill\"\n    | \"ri-file-excel-2-line\"\n    | \"ri-file-excel-fill\"\n    | \"ri-file-excel-line\"\n    | \"ri-file-fill\"\n    | \"ri-file-forbid-fill\"\n    | \"ri-file-forbid-line\"\n    | \"ri-file-gif-fill\"\n    | \"ri-file-gif-line\"\n    | \"ri-file-history-fill\"\n    | \"ri-file-history-line\"\n    | \"ri-file-hwp-fill\"\n    | \"ri-file-hwp-line\"\n    | \"ri-file-image-fill\"\n    | \"ri-file-image-line\"\n    | \"ri-file-info-fill\"\n    | \"ri-file-info-line\"\n    | \"ri-file-line\"\n    | \"ri-file-list-2-fill\"\n    | \"ri-file-list-2-line\"\n    | \"ri-file-list-3-fill\"\n    | \"ri-file-list-3-line\"\n    | \"ri-file-list-fill\"\n    | \"ri-file-list-line\"\n    | \"ri-file-lock-fill\"\n    | \"ri-file-lock-line\"\n    | \"ri-file-marked-fill\"\n    | \"ri-file-marked-line\"\n    | \"ri-file-music-fill\"\n    | \"ri-file-music-line\"\n    | \"ri-file-paper-2-fill\"\n    | \"ri-file-paper-2-line\"\n    | \"ri-file-paper-fill\"\n    | \"ri-file-paper-line\"\n    | \"ri-file-pdf-2-fill\"\n    | \"ri-file-pdf-2-line\"\n    | \"ri-file-pdf-fill\"\n    | \"ri-file-pdf-line\"\n    | \"ri-file-ppt-2-fill\"\n    | \"ri-file-ppt-2-line\"\n    | \"ri-file-ppt-fill\"\n    | \"ri-file-ppt-line\"\n    | \"ri-file-reduce-fill\"\n    | \"ri-file-reduce-line\"\n    | \"ri-file-scan-fill\"\n    | \"ri-file-scan-line\"\n    | \"ri-file-search-fill\"\n    | \"ri-file-search-line\"\n    | \"ri-file-settings-fill\"\n    | \"ri-file-settings-line\"\n    | \"ri-file-shield-2-fill\"\n    | \"ri-file-shield-2-line\"\n    | \"ri-file-shield-fill\"\n    | \"ri-file-shield-line\"\n    | \"ri-file-shred-fill\"\n    | \"ri-file-shred-line\"\n    | \"ri-file-text-fill\"\n    | \"ri-file-text-line\"\n    | \"ri-file-transfer-fill\"\n    | \"ri-file-transfer-line\"\n    | \"ri-file-unknow-fill\"\n    | \"ri-file-unknow-line\"\n    | \"ri-file-upload-fill\"\n    | \"ri-file-upload-line\"\n    | \"ri-file-user-fill\"\n    | \"ri-file-user-line\"\n    | \"ri-file-video-fill\"\n    | \"ri-file-video-line\"\n    | \"ri-file-warning-fill\"\n    | \"ri-file-warning-line\"\n    | \"ri-file-word-2-fill\"\n    | \"ri-file-word-2-line\"\n    | \"ri-file-word-fill\"\n    | \"ri-file-word-line\"\n    | \"ri-file-zip-fill\"\n    | \"ri-file-zip-line\"\n    | \"ri-film-ai-fill\"\n    | \"ri-film-ai-line\"\n    | \"ri-film-fill\"\n    | \"ri-film-line\"\n    | \"ri-filter-2-fill\"\n    | \"ri-filter-2-line\"\n    | \"ri-filter-3-fill\"\n    | \"ri-filter-3-line\"\n    | \"ri-filter-fill\"\n    | \"ri-filter-line\"\n    | \"ri-filter-off-fill\"\n    | \"ri-filter-off-line\"\n    | \"ri-find-replace-fill\"\n    | \"ri-find-replace-line\"\n    | \"ri-finder-fill\"\n    | \"ri-finder-line\"\n    | \"ri-fingerprint-2-fill\"\n    | \"ri-fingerprint-2-line\"\n    | \"ri-fingerprint-fill\"\n    | \"ri-fingerprint-line\"\n    | \"ri-fire-fill\"\n    | \"ri-fire-line\"\n    | \"ri-firebase-fill\"\n    | \"ri-firebase-line\"\n    | \"ri-firefox-browser-fill\"\n    | \"ri-firefox-browser-line\"\n    | \"ri-firefox-fill\"\n    | \"ri-firefox-line\"\n    | \"ri-first-aid-kit-fill\"\n    | \"ri-first-aid-kit-line\"\n    | \"ri-fiverr-fill\"\n    | \"ri-fiverr-line\"\n    | \"ri-flag-2-fill\"\n    | \"ri-flag-2-line\"\n    | \"ri-flag-fill\"\n    | \"ri-flag-line\"\n    | \"ri-flag-off-fill\"\n    | \"ri-flag-off-line\"\n    | \"ri-flashlight-fill\"\n    | \"ri-flashlight-line\"\n    | \"ri-flask-fill\"\n    | \"ri-flask-line\"\n    | \"ri-flickr-fill\"\n    | \"ri-flickr-line\"\n    | \"ri-flight-land-fill\"\n    | \"ri-flight-land-line\"\n    | \"ri-flight-takeoff-fill\"\n    | \"ri-flight-takeoff-line\"\n    | \"ri-flip-horizontal-2-fill\"\n    | \"ri-flip-horizontal-2-line\"\n    | \"ri-flip-horizontal-fill\"\n    | \"ri-flip-horizontal-line\"\n    | \"ri-flip-vertical-2-fill\"\n    | \"ri-flip-vertical-2-line\"\n    | \"ri-flip-vertical-fill\"\n    | \"ri-flip-vertical-line\"\n    | \"ri-flood-fill\"\n    | \"ri-flood-line\"\n    | \"ri-flow-chart\"\n    | \"ri-flower-fill\"\n    | \"ri-flower-line\"\n    | \"ri-flutter-fill\"\n    | \"ri-flutter-line\"\n    | \"ri-focus-2-fill\"\n    | \"ri-focus-2-line\"\n    | \"ri-focus-3-fill\"\n    | \"ri-focus-3-line\"\n    | \"ri-focus-fill\"\n    | \"ri-focus-line\"\n    | \"ri-focus-mode\"\n    | \"ri-foggy-fill\"\n    | \"ri-foggy-line\"\n    | \"ri-folder-2-fill\"\n    | \"ri-folder-2-line\"\n    | \"ri-folder-3-fill\"\n    | \"ri-folder-3-line\"\n    | \"ri-folder-4-fill\"\n    | \"ri-folder-4-line\"\n    | \"ri-folder-5-fill\"\n    | \"ri-folder-5-line\"\n    | \"ri-folder-6-fill\"\n    | \"ri-folder-6-line\"\n    | \"ri-folder-add-fill\"\n    | \"ri-folder-add-line\"\n    | \"ri-folder-chart-2-fill\"\n    | \"ri-folder-chart-2-line\"\n    | \"ri-folder-chart-fill\"\n    | \"ri-folder-chart-line\"\n    | \"ri-folder-check-fill\"\n    | \"ri-folder-check-line\"\n    | \"ri-folder-close-fill\"\n    | \"ri-folder-close-line\"\n    | \"ri-folder-cloud-fill\"\n    | \"ri-folder-cloud-line\"\n    | \"ri-folder-download-fill\"\n    | \"ri-folder-download-line\"\n    | \"ri-folder-fill\"\n    | \"ri-folder-forbid-fill\"\n    | \"ri-folder-forbid-line\"\n    | \"ri-folder-history-fill\"\n    | \"ri-folder-history-line\"\n    | \"ri-folder-image-fill\"\n    | \"ri-folder-image-line\"\n    | \"ri-folder-info-fill\"\n    | \"ri-folder-info-line\"\n    | \"ri-folder-keyhole-fill\"\n    | \"ri-folder-keyhole-line\"\n    | \"ri-folder-line\"\n    | \"ri-folder-lock-fill\"\n    | \"ri-folder-lock-line\"\n    | \"ri-folder-music-fill\"\n    | \"ri-folder-music-line\"\n    | \"ri-folder-open-fill\"\n    | \"ri-folder-open-line\"\n    | \"ri-folder-received-fill\"\n    | \"ri-folder-received-line\"\n    | \"ri-folder-reduce-fill\"\n    | \"ri-folder-reduce-line\"\n    | \"ri-folder-settings-fill\"\n    | \"ri-folder-settings-line\"\n    | \"ri-folder-shared-fill\"\n    | \"ri-folder-shared-line\"\n    | \"ri-folder-shield-2-fill\"\n    | \"ri-folder-shield-2-line\"\n    | \"ri-folder-shield-fill\"\n    | \"ri-folder-shield-line\"\n    | \"ri-folder-transfer-fill\"\n    | \"ri-folder-transfer-line\"\n    | \"ri-folder-unknow-fill\"\n    | \"ri-folder-unknow-line\"\n    | \"ri-folder-upload-fill\"\n    | \"ri-folder-upload-line\"\n    | \"ri-folder-user-fill\"\n    | \"ri-folder-user-line\"\n    | \"ri-folder-video-fill\"\n    | \"ri-folder-video-line\"\n    | \"ri-folder-warning-fill\"\n    | \"ri-folder-warning-line\"\n    | \"ri-folder-zip-fill\"\n    | \"ri-folder-zip-line\"\n    | \"ri-folders-fill\"\n    | \"ri-folders-line\"\n    | \"ri-font-color\"\n    | \"ri-font-family\"\n    | \"ri-font-mono\"\n    | \"ri-font-sans-serif\"\n    | \"ri-font-serif\"\n    | \"ri-font-size\"\n    | \"ri-font-size-2\"\n    | \"ri-font-size-ai\"\n    | \"ri-football-fill\"\n    | \"ri-football-line\"\n    | \"ri-footprint-fill\"\n    | \"ri-footprint-line\"\n    | \"ri-forbid-2-fill\"\n    | \"ri-forbid-2-line\"\n    | \"ri-forbid-fill\"\n    | \"ri-forbid-line\"\n    | \"ri-format-clear\"\n    | \"ri-formula\"\n    | \"ri-forward-10-fill\"\n    | \"ri-forward-10-line\"\n    | \"ri-forward-15-fill\"\n    | \"ri-forward-15-line\"\n    | \"ri-forward-30-fill\"\n    | \"ri-forward-30-line\"\n    | \"ri-forward-5-fill\"\n    | \"ri-forward-5-line\"\n    | \"ri-forward-end-fill\"\n    | \"ri-forward-end-line\"\n    | \"ri-forward-end-mini-fill\"\n    | \"ri-forward-end-mini-line\"\n    | \"ri-fridge-fill\"\n    | \"ri-fridge-line\"\n    | \"ri-friendica-fill\"\n    | \"ri-friendica-line\"\n    | \"ri-fullscreen-exit-fill\"\n    | \"ri-fullscreen-exit-line\"\n    | \"ri-fullscreen-fill\"\n    | \"ri-fullscreen-line\"\n    | \"ri-function-add-fill\"\n    | \"ri-function-add-line\"\n    | \"ri-function-ai-fill\"\n    | \"ri-function-ai-line\"\n    | \"ri-function-fill\"\n    | \"ri-function-line\"\n    | \"ri-functions\"\n    | \"ri-funds-box-fill\"\n    | \"ri-funds-box-line\"\n    | \"ri-funds-fill\"\n    | \"ri-funds-line\"\n    | \"ri-gallery-fill\"\n    | \"ri-gallery-line\"\n    | \"ri-gallery-upload-fill\"\n    | \"ri-gallery-upload-line\"\n    | \"ri-gallery-view\"\n    | \"ri-gallery-view-2\"\n    | \"ri-game-2-fill\"\n    | \"ri-game-2-line\"\n    | \"ri-game-fill\"\n    | \"ri-game-line\"\n    | \"ri-gamepad-fill\"\n    | \"ri-gamepad-line\"\n    | \"ri-gas-station-fill\"\n    | \"ri-gas-station-line\"\n    | \"ri-gatsby-fill\"\n    | \"ri-gatsby-line\"\n    | \"ri-gemini-fill\"\n    | \"ri-gemini-line\"\n    | \"ri-genderless-fill\"\n    | \"ri-genderless-line\"\n    | \"ri-ghost-2-fill\"\n    | \"ri-ghost-2-line\"\n    | \"ri-ghost-3-fill\"\n    | \"ri-ghost-3-line\"\n    | \"ri-ghost-4-fill\"\n    | \"ri-ghost-4-line\"\n    | \"ri-ghost-fill\"\n    | \"ri-ghost-line\"\n    | \"ri-ghost-smile-fill\"\n    | \"ri-ghost-smile-line\"\n    | \"ri-gift-2-fill\"\n    | \"ri-gift-2-line\"\n    | \"ri-gift-fill\"\n    | \"ri-gift-line\"\n    | \"ri-git-branch-fill\"\n    | \"ri-git-branch-line\"\n    | \"ri-git-close-pull-request-fill\"\n    | \"ri-git-close-pull-request-line\"\n    | \"ri-git-commit-fill\"\n    | \"ri-git-commit-line\"\n    | \"ri-git-fork-fill\"\n    | \"ri-git-fork-line\"\n    | \"ri-git-merge-fill\"\n    | \"ri-git-merge-line\"\n    | \"ri-git-pr-draft-fill\"\n    | \"ri-git-pr-draft-line\"\n    | \"ri-git-pull-request-fill\"\n    | \"ri-git-pull-request-line\"\n    | \"ri-git-repository-commits-fill\"\n    | \"ri-git-repository-commits-line\"\n    | \"ri-git-repository-fill\"\n    | \"ri-git-repository-line\"\n    | \"ri-git-repository-private-fill\"\n    | \"ri-git-repository-private-line\"\n    | \"ri-gitbook-fill\"\n    | \"ri-gitbook-line\"\n    | \"ri-gitee-fill\"\n    | \"ri-gitee-line\"\n    | \"ri-github-fill\"\n    | \"ri-github-line\"\n    | \"ri-gitlab-fill\"\n    | \"ri-gitlab-line\"\n    | \"ri-glasses-2-fill\"\n    | \"ri-glasses-2-line\"\n    | \"ri-glasses-fill\"\n    | \"ri-glasses-line\"\n    | \"ri-global-fill\"\n    | \"ri-global-line\"\n    | \"ri-global-off-fill\"\n    | \"ri-global-off-line\"\n    | \"ri-globe-fill\"\n    | \"ri-globe-line\"\n    | \"ri-goblet-2-fill\"\n    | \"ri-goblet-2-line\"\n    | \"ri-goblet-broken-fill\"\n    | \"ri-goblet-broken-line\"\n    | \"ri-goblet-fill\"\n    | \"ri-goblet-line\"\n    | \"ri-goggles-fill\"\n    | \"ri-goggles-line\"\n    | \"ri-golf-ball-fill\"\n    | \"ri-golf-ball-line\"\n    | \"ri-google-fill\"\n    | \"ri-google-line\"\n    | \"ri-google-play-fill\"\n    | \"ri-google-play-line\"\n    | \"ri-government-fill\"\n    | \"ri-government-line\"\n    | \"ri-gps-fill\"\n    | \"ri-gps-line\"\n    | \"ri-gradienter-fill\"\n    | \"ri-gradienter-line\"\n    | \"ri-graduation-cap-fill\"\n    | \"ri-graduation-cap-line\"\n    | \"ri-grid-fill\"\n    | \"ri-grid-line\"\n    | \"ri-grok-ai-fill\"\n    | \"ri-grok-ai-line\"\n    | \"ri-group-2-fill\"\n    | \"ri-group-2-line\"\n    | \"ri-group-3-fill\"\n    | \"ri-group-3-line\"\n    | \"ri-group-fill\"\n    | \"ri-group-line\"\n    | \"ri-guide-fill\"\n    | \"ri-guide-line\"\n    | \"ri-h-1\"\n    | \"ri-h-2\"\n    | \"ri-h-3\"\n    | \"ri-h-4\"\n    | \"ri-h-5\"\n    | \"ri-h-6\"\n    | \"ri-hail-fill\"\n    | \"ri-hail-line\"\n    | \"ri-hammer-fill\"\n    | \"ri-hammer-line\"\n    | \"ri-hand\"\n    | \"ri-hand-2\"\n    | \"ri-hand-coin-fill\"\n    | \"ri-hand-coin-line\"\n    | \"ri-hand-heart-fill\"\n    | \"ri-hand-heart-line\"\n    | \"ri-hand-sanitizer-fill\"\n    | \"ri-hand-sanitizer-line\"\n    | \"ri-handbag-fill\"\n    | \"ri-handbag-line\"\n    | \"ri-hard-drive-2-fill\"\n    | \"ri-hard-drive-2-line\"\n    | \"ri-hard-drive-3-fill\"\n    | \"ri-hard-drive-3-line\"\n    | \"ri-hard-drive-fill\"\n    | \"ri-hard-drive-line\"\n    | \"ri-hashtag\"\n    | \"ri-haze-2-fill\"\n    | \"ri-haze-2-line\"\n    | \"ri-haze-fill\"\n    | \"ri-haze-line\"\n    | \"ri-hd-fill\"\n    | \"ri-hd-line\"\n    | \"ri-heading\"\n    | \"ri-headphone-fill\"\n    | \"ri-headphone-line\"\n    | \"ri-health-book-fill\"\n    | \"ri-health-book-line\"\n    | \"ri-heart-2-fill\"\n    | \"ri-heart-2-line\"\n    | \"ri-heart-3-fill\"\n    | \"ri-heart-3-line\"\n    | \"ri-heart-add-2-fill\"\n    | \"ri-heart-add-2-line\"\n    | \"ri-heart-add-fill\"\n    | \"ri-heart-add-line\"\n    | \"ri-heart-fill\"\n    | \"ri-heart-line\"\n    | \"ri-heart-pulse-fill\"\n    | \"ri-heart-pulse-line\"\n    | \"ri-hearts-fill\"\n    | \"ri-hearts-line\"\n    | \"ri-heavy-showers-fill\"\n    | \"ri-heavy-showers-line\"\n    | \"ri-hexagon-fill\"\n    | \"ri-hexagon-line\"\n    | \"ri-history-fill\"\n    | \"ri-history-line\"\n    | \"ri-home-2-fill\"\n    | \"ri-home-2-line\"\n    | \"ri-home-3-fill\"\n    | \"ri-home-3-line\"\n    | \"ri-home-4-fill\"\n    | \"ri-home-4-line\"\n    | \"ri-home-5-fill\"\n    | \"ri-home-5-line\"\n    | \"ri-home-6-fill\"\n    | \"ri-home-6-line\"\n    | \"ri-home-7-fill\"\n    | \"ri-home-7-line\"\n    | \"ri-home-8-fill\"\n    | \"ri-home-8-line\"\n    | \"ri-home-9-fill\"\n    | \"ri-home-9-line\"\n    | \"ri-home-fill\"\n    | \"ri-home-gear-fill\"\n    | \"ri-home-gear-line\"\n    | \"ri-home-heart-fill\"\n    | \"ri-home-heart-line\"\n    | \"ri-home-line\"\n    | \"ri-home-office-fill\"\n    | \"ri-home-office-line\"\n    | \"ri-home-smile-2-fill\"\n    | \"ri-home-smile-2-line\"\n    | \"ri-home-smile-fill\"\n    | \"ri-home-smile-line\"\n    | \"ri-home-wifi-fill\"\n    | \"ri-home-wifi-line\"\n    | \"ri-honor-of-kings-fill\"\n    | \"ri-honor-of-kings-line\"\n    | \"ri-honour-fill\"\n    | \"ri-honour-line\"\n    | \"ri-hospital-fill\"\n    | \"ri-hospital-line\"\n    | \"ri-hotel-bed-fill\"\n    | \"ri-hotel-bed-line\"\n    | \"ri-hotel-fill\"\n    | \"ri-hotel-line\"\n    | \"ri-hotspot-fill\"\n    | \"ri-hotspot-line\"\n    | \"ri-hourglass-2-fill\"\n    | \"ri-hourglass-2-line\"\n    | \"ri-hourglass-fill\"\n    | \"ri-hourglass-line\"\n    | \"ri-hq-fill\"\n    | \"ri-hq-line\"\n    | \"ri-html5-fill\"\n    | \"ri-html5-line\"\n    | \"ri-id-card-fill\"\n    | \"ri-id-card-line\"\n    | \"ri-ie-fill\"\n    | \"ri-ie-line\"\n    | \"ri-image-2-fill\"\n    | \"ri-image-2-line\"\n    | \"ri-image-add-fill\"\n    | \"ri-image-add-line\"\n    | \"ri-image-ai-fill\"\n    | \"ri-image-ai-line\"\n    | \"ri-image-circle-ai-fill\"\n    | \"ri-image-circle-ai-line\"\n    | \"ri-image-circle-fill\"\n    | \"ri-image-circle-line\"\n    | \"ri-image-download-fill\"\n    | \"ri-image-download-line\"\n    | \"ri-image-edit-fill\"\n    | \"ri-image-edit-line\"\n    | \"ri-image-fill\"\n    | \"ri-image-line\"\n    | \"ri-image-upload-fill\"\n    | \"ri-image-upload-line\"\n    | \"ri-import-fill\"\n    | \"ri-import-line\"\n    | \"ri-inbox-2-fill\"\n    | \"ri-inbox-2-line\"\n    | \"ri-inbox-archive-fill\"\n    | \"ri-inbox-archive-line\"\n    | \"ri-inbox-fill\"\n    | \"ri-inbox-line\"\n    | \"ri-inbox-unarchive-fill\"\n    | \"ri-inbox-unarchive-line\"\n    | \"ri-increase-decrease-fill\"\n    | \"ri-increase-decrease-line\"\n    | \"ri-indent-decrease\"\n    | \"ri-indent-increase\"\n    | \"ri-indeterminate-circle-fill\"\n    | \"ri-indeterminate-circle-line\"\n    | \"ri-infinity-fill\"\n    | \"ri-infinity-line\"\n    | \"ri-info-card-fill\"\n    | \"ri-info-card-line\"\n    | \"ri-info-i\"\n    | \"ri-information-2-fill\"\n    | \"ri-information-2-line\"\n    | \"ri-information-fill\"\n    | \"ri-information-line\"\n    | \"ri-information-off-fill\"\n    | \"ri-information-off-line\"\n    | \"ri-infrared-thermometer-fill\"\n    | \"ri-infrared-thermometer-line\"\n    | \"ri-ink-bottle-fill\"\n    | \"ri-ink-bottle-line\"\n    | \"ri-input-cursor-move\"\n    | \"ri-input-field\"\n    | \"ri-input-method-fill\"\n    | \"ri-input-method-line\"\n    | \"ri-insert-column-left\"\n    | \"ri-insert-column-right\"\n    | \"ri-insert-row-bottom\"\n    | \"ri-insert-row-top\"\n    | \"ri-instagram-fill\"\n    | \"ri-instagram-line\"\n    | \"ri-install-fill\"\n    | \"ri-install-line\"\n    | \"ri-instance-fill\"\n    | \"ri-instance-line\"\n    | \"ri-invision-fill\"\n    | \"ri-invision-line\"\n    | \"ri-issues-fill\"\n    | \"ri-issues-line\"\n    | \"ri-issues-reopen-fill\"\n    | \"ri-issues-reopen-line\"\n    | \"ri-italic\"\n    | \"ri-java-fill\"\n    | \"ri-java-line\"\n    | \"ri-javascript-fill\"\n    | \"ri-javascript-line\"\n    | \"ri-jewelry-fill\"\n    | \"ri-jewelry-line\"\n    | \"ri-kakao-talk-fill\"\n    | \"ri-kakao-talk-line\"\n    | \"ri-kanban-view\"\n    | \"ri-kanban-view-2\"\n    | \"ri-key-2-fill\"\n    | \"ri-key-2-line\"\n    | \"ri-key-fill\"\n    | \"ri-key-line\"\n    | \"ri-keyboard-box-fill\"\n    | \"ri-keyboard-box-line\"\n    | \"ri-keyboard-fill\"\n    | \"ri-keyboard-line\"\n    | \"ri-keynote-fill\"\n    | \"ri-keynote-line\"\n    | \"ri-kick-fill\"\n    | \"ri-kick-line\"\n    | \"ri-knife-blood-fill\"\n    | \"ri-knife-blood-line\"\n    | \"ri-knife-fill\"\n    | \"ri-knife-line\"\n    | \"ri-landscape-ai-fill\"\n    | \"ri-landscape-ai-line\"\n    | \"ri-landscape-fill\"\n    | \"ri-landscape-line\"\n    | \"ri-layout-2-fill\"\n    | \"ri-layout-2-line\"\n    | \"ri-layout-3-fill\"\n    | \"ri-layout-3-line\"\n    | \"ri-layout-4-fill\"\n    | \"ri-layout-4-line\"\n    | \"ri-layout-5-fill\"\n    | \"ri-layout-5-line\"\n    | \"ri-layout-6-fill\"\n    | \"ri-layout-6-line\"\n    | \"ri-layout-bottom-2-fill\"\n    | \"ri-layout-bottom-2-line\"\n    | \"ri-layout-bottom-fill\"\n    | \"ri-layout-bottom-line\"\n    | \"ri-layout-column-fill\"\n    | \"ri-layout-column-line\"\n    | \"ri-layout-fill\"\n    | \"ri-layout-grid-2-fill\"\n    | \"ri-layout-grid-2-line\"\n    | \"ri-layout-grid-fill\"\n    | \"ri-layout-grid-line\"\n    | \"ri-layout-horizontal-fill\"\n    | \"ri-layout-horizontal-line\"\n    | \"ri-layout-left-2-fill\"\n    | \"ri-layout-left-2-line\"\n    | \"ri-layout-left-fill\"\n    | \"ri-layout-left-line\"\n    | \"ri-layout-line\"\n    | \"ri-layout-masonry-fill\"\n    | \"ri-layout-masonry-line\"\n    | \"ri-layout-right-2-fill\"\n    | \"ri-layout-right-2-line\"\n    | \"ri-layout-right-fill\"\n    | \"ri-layout-right-line\"\n    | \"ri-layout-row-fill\"\n    | \"ri-layout-row-line\"\n    | \"ri-layout-top-2-fill\"\n    | \"ri-layout-top-2-line\"\n    | \"ri-layout-top-fill\"\n    | \"ri-layout-top-line\"\n    | \"ri-layout-vertical-fill\"\n    | \"ri-layout-vertical-line\"\n    | \"ri-leaf-fill\"\n    | \"ri-leaf-line\"\n    | \"ri-letter-spacing-2\"\n    | \"ri-lifebuoy-fill\"\n    | \"ri-lifebuoy-line\"\n    | \"ri-lightbulb-ai-fill\"\n    | \"ri-lightbulb-ai-line\"\n    | \"ri-lightbulb-fill\"\n    | \"ri-lightbulb-flash-fill\"\n    | \"ri-lightbulb-flash-line\"\n    | \"ri-lightbulb-line\"\n    | \"ri-line-chart-fill\"\n    | \"ri-line-chart-line\"\n    | \"ri-line-fill\"\n    | \"ri-line-height\"\n    | \"ri-line-height-2\"\n    | \"ri-line-line\"\n    | \"ri-link\"\n    | \"ri-link-m\"\n    | \"ri-link-unlink\"\n    | \"ri-link-unlink-m\"\n    | \"ri-linkedin-box-fill\"\n    | \"ri-linkedin-box-line\"\n    | \"ri-linkedin-fill\"\n    | \"ri-linkedin-line\"\n    | \"ri-links-fill\"\n    | \"ri-links-line\"\n    | \"ri-list-check\"\n    | \"ri-list-check-2\"\n    | \"ri-list-check-3\"\n    | \"ri-list-indefinite\"\n    | \"ri-list-ordered\"\n    | \"ri-list-ordered-2\"\n    | \"ri-list-radio\"\n    | \"ri-list-settings-fill\"\n    | \"ri-list-settings-line\"\n    | \"ri-list-unordered\"\n    | \"ri-list-view\"\n    | \"ri-live-fill\"\n    | \"ri-live-line\"\n    | \"ri-loader-2-fill\"\n    | \"ri-loader-2-line\"\n    | \"ri-loader-3-fill\"\n    | \"ri-loader-3-line\"\n    | \"ri-loader-4-fill\"\n    | \"ri-loader-4-line\"\n    | \"ri-loader-5-fill\"\n    | \"ri-loader-5-line\"\n    | \"ri-loader-fill\"\n    | \"ri-loader-line\"\n    | \"ri-lock-2-fill\"\n    | \"ri-lock-2-line\"\n    | \"ri-lock-fill\"\n    | \"ri-lock-line\"\n    | \"ri-lock-password-fill\"\n    | \"ri-lock-password-line\"\n    | \"ri-lock-star-fill\"\n    | \"ri-lock-star-line\"\n    | \"ri-lock-unlock-fill\"\n    | \"ri-lock-unlock-line\"\n    | \"ri-login-box-fill\"\n    | \"ri-login-box-line\"\n    | \"ri-login-circle-fill\"\n    | \"ri-login-circle-line\"\n    | \"ri-logout-box-fill\"\n    | \"ri-logout-box-line\"\n    | \"ri-logout-box-r-fill\"\n    | \"ri-logout-box-r-line\"\n    | \"ri-logout-circle-fill\"\n    | \"ri-logout-circle-line\"\n    | \"ri-logout-circle-r-fill\"\n    | \"ri-logout-circle-r-line\"\n    | \"ri-loop-left-ai-fill\"\n    | \"ri-loop-left-ai-line\"\n    | \"ri-loop-left-fill\"\n    | \"ri-loop-left-line\"\n    | \"ri-loop-right-ai-fill\"\n    | \"ri-loop-right-ai-line\"\n    | \"ri-loop-right-fill\"\n    | \"ri-loop-right-line\"\n    | \"ri-luggage-cart-fill\"\n    | \"ri-luggage-cart-line\"\n    | \"ri-luggage-deposit-fill\"\n    | \"ri-luggage-deposit-line\"\n    | \"ri-lungs-fill\"\n    | \"ri-lungs-line\"\n    | \"ri-mac-fill\"\n    | \"ri-mac-line\"\n    | \"ri-macbook-fill\"\n    | \"ri-macbook-line\"\n    | \"ri-magic-fill\"\n    | \"ri-magic-line\"\n    | \"ri-mail-add-fill\"\n    | \"ri-mail-add-line\"\n    | \"ri-mail-ai-fill\"\n    | \"ri-mail-ai-line\"\n    | \"ri-mail-check-fill\"\n    | \"ri-mail-check-line\"\n    | \"ri-mail-close-fill\"\n    | \"ri-mail-close-line\"\n    | \"ri-mail-download-fill\"\n    | \"ri-mail-download-line\"\n    | \"ri-mail-fill\"\n    | \"ri-mail-forbid-fill\"\n    | \"ri-mail-forbid-line\"\n    | \"ri-mail-line\"\n    | \"ri-mail-lock-fill\"\n    | \"ri-mail-lock-line\"\n    | \"ri-mail-open-fill\"\n    | \"ri-mail-open-line\"\n    | \"ri-mail-send-fill\"\n    | \"ri-mail-send-line\"\n    | \"ri-mail-settings-fill\"\n    | \"ri-mail-settings-line\"\n    | \"ri-mail-star-fill\"\n    | \"ri-mail-star-line\"\n    | \"ri-mail-unread-fill\"\n    | \"ri-mail-unread-line\"\n    | \"ri-mail-volume-fill\"\n    | \"ri-mail-volume-line\"\n    | \"ri-map-2-fill\"\n    | \"ri-map-2-line\"\n    | \"ri-map-fill\"\n    | \"ri-map-line\"\n    | \"ri-map-pin-2-fill\"\n    | \"ri-map-pin-2-line\"\n    | \"ri-map-pin-3-fill\"\n    | \"ri-map-pin-3-line\"\n    | \"ri-map-pin-4-fill\"\n    | \"ri-map-pin-4-line\"\n    | \"ri-map-pin-5-fill\"\n    | \"ri-map-pin-5-line\"\n    | \"ri-map-pin-add-fill\"\n    | \"ri-map-pin-add-line\"\n    | \"ri-map-pin-fill\"\n    | \"ri-map-pin-line\"\n    | \"ri-map-pin-range-fill\"\n    | \"ri-map-pin-range-line\"\n    | \"ri-map-pin-time-fill\"\n    | \"ri-map-pin-time-line\"\n    | \"ri-map-pin-user-fill\"\n    | \"ri-map-pin-user-line\"\n    | \"ri-mark-pen-fill\"\n    | \"ri-mark-pen-line\"\n    | \"ri-markdown-fill\"\n    | \"ri-markdown-line\"\n    | \"ri-markup-fill\"\n    | \"ri-markup-line\"\n    | \"ri-mastercard-fill\"\n    | \"ri-mastercard-line\"\n    | \"ri-mastodon-fill\"\n    | \"ri-mastodon-line\"\n    | \"ri-medal-2-fill\"\n    | \"ri-medal-2-line\"\n    | \"ri-medal-fill\"\n    | \"ri-medal-line\"\n    | \"ri-medicine-bottle-fill\"\n    | \"ri-medicine-bottle-line\"\n    | \"ri-medium-fill\"\n    | \"ri-medium-line\"\n    | \"ri-megaphone-2-fill\"\n    | \"ri-megaphone-2-line\"\n    | \"ri-megaphone-fill\"\n    | \"ri-megaphone-line\"\n    | \"ri-memories-fill\"\n    | \"ri-memories-line\"\n    | \"ri-men-fill\"\n    | \"ri-men-line\"\n    | \"ri-mental-health-fill\"\n    | \"ri-mental-health-line\"\n    | \"ri-menu-2-fill\"\n    | \"ri-menu-2-line\"\n    | \"ri-menu-3-fill\"\n    | \"ri-menu-3-line\"\n    | \"ri-menu-4-fill\"\n    | \"ri-menu-4-line\"\n    | \"ri-menu-5-fill\"\n    | \"ri-menu-5-line\"\n    | \"ri-menu-add-fill\"\n    | \"ri-menu-add-line\"\n    | \"ri-menu-fill\"\n    | \"ri-menu-fold-2-fill\"\n    | \"ri-menu-fold-2-line\"\n    | \"ri-menu-fold-3-fill\"\n    | \"ri-menu-fold-3-line\"\n    | \"ri-menu-fold-4-fill\"\n    | \"ri-menu-fold-4-line\"\n    | \"ri-menu-fold-fill\"\n    | \"ri-menu-fold-line\"\n    | \"ri-menu-line\"\n    | \"ri-menu-search-fill\"\n    | \"ri-menu-search-line\"\n    | \"ri-menu-unfold-2-fill\"\n    | \"ri-menu-unfold-2-line\"\n    | \"ri-menu-unfold-3-fill\"\n    | \"ri-menu-unfold-3-line\"\n    | \"ri-menu-unfold-4-fill\"\n    | \"ri-menu-unfold-4-line\"\n    | \"ri-menu-unfold-fill\"\n    | \"ri-menu-unfold-line\"\n    | \"ri-merge-cells-horizontal\"\n    | \"ri-merge-cells-vertical\"\n    | \"ri-message-2-fill\"\n    | \"ri-message-2-line\"\n    | \"ri-message-3-fill\"\n    | \"ri-message-3-line\"\n    | \"ri-message-ai-3-fill\"\n    | \"ri-message-ai-3-line\"\n    | \"ri-message-fill\"\n    | \"ri-message-line\"\n    | \"ri-messenger-fill\"\n    | \"ri-messenger-line\"\n    | \"ri-meta-fill\"\n    | \"ri-meta-line\"\n    | \"ri-meteor-fill\"\n    | \"ri-meteor-line\"\n    | \"ri-mic-2-ai-fill\"\n    | \"ri-mic-2-ai-line\"\n    | \"ri-mic-2-fill\"\n    | \"ri-mic-2-line\"\n    | \"ri-mic-ai-fill\"\n    | \"ri-mic-ai-line\"\n    | \"ri-mic-fill\"\n    | \"ri-mic-line\"\n    | \"ri-mic-off-fill\"\n    | \"ri-mic-off-line\"\n    | \"ri-mickey-fill\"\n    | \"ri-mickey-line\"\n    | \"ri-microscope-fill\"\n    | \"ri-microscope-line\"\n    | \"ri-microsoft-copilot-fill\"\n    | \"ri-microsoft-copilot-line\"\n    | \"ri-microsoft-fill\"\n    | \"ri-microsoft-line\"\n    | \"ri-microsoft-loop-fill\"\n    | \"ri-microsoft-loop-line\"\n    | \"ri-mind-map\"\n    | \"ri-mini-program-fill\"\n    | \"ri-mini-program-line\"\n    | \"ri-mist-fill\"\n    | \"ri-mist-line\"\n    | \"ri-mixtral-fill\"\n    | \"ri-mixtral-line\"\n    | \"ri-mobile-download-fill\"\n    | \"ri-mobile-download-line\"\n    | \"ri-money-cny-box-fill\"\n    | \"ri-money-cny-box-line\"\n    | \"ri-money-cny-circle-fill\"\n    | \"ri-money-cny-circle-line\"\n    | \"ri-money-dollar-box-fill\"\n    | \"ri-money-dollar-box-line\"\n    | \"ri-money-dollar-circle-fill\"\n    | \"ri-money-dollar-circle-line\"\n    | \"ri-money-euro-box-fill\"\n    | \"ri-money-euro-box-line\"\n    | \"ri-money-euro-circle-fill\"\n    | \"ri-money-euro-circle-line\"\n    | \"ri-money-pound-box-fill\"\n    | \"ri-money-pound-box-line\"\n    | \"ri-money-pound-circle-fill\"\n    | \"ri-money-pound-circle-line\"\n    | \"ri-money-rupee-circle-fill\"\n    | \"ri-money-rupee-circle-line\"\n    | \"ri-moon-clear-fill\"\n    | \"ri-moon-clear-line\"\n    | \"ri-moon-cloudy-fill\"\n    | \"ri-moon-cloudy-line\"\n    | \"ri-moon-fill\"\n    | \"ri-moon-foggy-fill\"\n    | \"ri-moon-foggy-line\"\n    | \"ri-moon-line\"\n    | \"ri-more-2-fill\"\n    | \"ri-more-2-line\"\n    | \"ri-more-fill\"\n    | \"ri-more-line\"\n    | \"ri-mosaic-fill\"\n    | \"ri-mosaic-line\"\n    | \"ri-motorbike-fill\"\n    | \"ri-motorbike-line\"\n    | \"ri-mouse-fill\"\n    | \"ri-mouse-line\"\n    | \"ri-movie-2-ai-fill\"\n    | \"ri-movie-2-ai-line\"\n    | \"ri-movie-2-fill\"\n    | \"ri-movie-2-line\"\n    | \"ri-movie-ai-fill\"\n    | \"ri-movie-ai-line\"\n    | \"ri-movie-fill\"\n    | \"ri-movie-line\"\n    | \"ri-multi-image-fill\"\n    | \"ri-multi-image-line\"\n    | \"ri-music-2-fill\"\n    | \"ri-music-2-line\"\n    | \"ri-music-ai-fill\"\n    | \"ri-music-ai-line\"\n    | \"ri-music-fill\"\n    | \"ri-music-line\"\n    | \"ri-mv-ai-fill\"\n    | \"ri-mv-ai-line\"\n    | \"ri-mv-fill\"\n    | \"ri-mv-line\"\n    | \"ri-navigation-fill\"\n    | \"ri-navigation-line\"\n    | \"ri-netease-cloud-music-fill\"\n    | \"ri-netease-cloud-music-line\"\n    | \"ri-netflix-fill\"\n    | \"ri-netflix-line\"\n    | \"ri-network-error-fill\"\n    | \"ri-network-error-line\"\n    | \"ri-network-fill\"\n    | \"ri-network-line\"\n    | \"ri-network-off-fill\"\n    | \"ri-network-off-line\"\n    | \"ri-news-fill\"\n    | \"ri-news-line\"\n    | \"ri-newspaper-fill\"\n    | \"ri-newspaper-line\"\n    | \"ri-nextjs-fill\"\n    | \"ri-nextjs-line\"\n    | \"ri-nft-fill\"\n    | \"ri-nft-line\"\n    | \"ri-no-credit-card-fill\"\n    | \"ri-no-credit-card-line\"\n    | \"ri-node-tree\"\n    | \"ri-nodejs-fill\"\n    | \"ri-nodejs-line\"\n    | \"ri-notification-2-fill\"\n    | \"ri-notification-2-line\"\n    | \"ri-notification-3-fill\"\n    | \"ri-notification-3-line\"\n    | \"ri-notification-4-fill\"\n    | \"ri-notification-4-line\"\n    | \"ri-notification-badge-fill\"\n    | \"ri-notification-badge-line\"\n    | \"ri-notification-fill\"\n    | \"ri-notification-line\"\n    | \"ri-notification-off-fill\"\n    | \"ri-notification-off-line\"\n    | \"ri-notification-snooze-fill\"\n    | \"ri-notification-snooze-line\"\n    | \"ri-notion-fill\"\n    | \"ri-notion-line\"\n    | \"ri-npmjs-fill\"\n    | \"ri-npmjs-line\"\n    | \"ri-number-0\"\n    | \"ri-number-1\"\n    | \"ri-number-2\"\n    | \"ri-number-3\"\n    | \"ri-number-4\"\n    | \"ri-number-5\"\n    | \"ri-number-6\"\n    | \"ri-number-7\"\n    | \"ri-number-8\"\n    | \"ri-number-9\"\n    | \"ri-numbers-fill\"\n    | \"ri-numbers-line\"\n    | \"ri-nurse-fill\"\n    | \"ri-nurse-line\"\n    | \"ri-octagon-fill\"\n    | \"ri-octagon-line\"\n    | \"ri-oil-fill\"\n    | \"ri-oil-line\"\n    | \"ri-omega\"\n    | \"ri-open-arm-fill\"\n    | \"ri-open-arm-line\"\n    | \"ri-open-source-fill\"\n    | \"ri-open-source-line\"\n    | \"ri-openai-fill\"\n    | \"ri-openai-line\"\n    | \"ri-openbase-fill\"\n    | \"ri-openbase-line\"\n    | \"ri-opera-fill\"\n    | \"ri-opera-line\"\n    | \"ri-order-play-fill\"\n    | \"ri-order-play-line\"\n    | \"ri-organization-chart\"\n    | \"ri-outlet-2-fill\"\n    | \"ri-outlet-2-line\"\n    | \"ri-outlet-fill\"\n    | \"ri-outlet-line\"\n    | \"ri-overline\"\n    | \"ri-p2p-fill\"\n    | \"ri-p2p-line\"\n    | \"ri-page-separator\"\n    | \"ri-pages-fill\"\n    | \"ri-pages-line\"\n    | \"ri-paint-brush-fill\"\n    | \"ri-paint-brush-line\"\n    | \"ri-paint-fill\"\n    | \"ri-paint-line\"\n    | \"ri-painting-ai-fill\"\n    | \"ri-painting-ai-line\"\n    | \"ri-painting-fill\"\n    | \"ri-painting-line\"\n    | \"ri-palette-fill\"\n    | \"ri-palette-line\"\n    | \"ri-pantone-fill\"\n    | \"ri-pantone-line\"\n    | \"ri-paragraph\"\n    | \"ri-parent-fill\"\n    | \"ri-parent-line\"\n    | \"ri-parentheses-fill\"\n    | \"ri-parentheses-line\"\n    | \"ri-parking-box-fill\"\n    | \"ri-parking-box-line\"\n    | \"ri-parking-fill\"\n    | \"ri-parking-line\"\n    | \"ri-pass-expired-fill\"\n    | \"ri-pass-expired-line\"\n    | \"ri-pass-pending-fill\"\n    | \"ri-pass-pending-line\"\n    | \"ri-pass-valid-fill\"\n    | \"ri-pass-valid-line\"\n    | \"ri-passport-fill\"\n    | \"ri-passport-line\"\n    | \"ri-patreon-fill\"\n    | \"ri-patreon-line\"\n    | \"ri-pause-circle-fill\"\n    | \"ri-pause-circle-line\"\n    | \"ri-pause-fill\"\n    | \"ri-pause-large-fill\"\n    | \"ri-pause-large-line\"\n    | \"ri-pause-line\"\n    | \"ri-pause-mini-fill\"\n    | \"ri-pause-mini-line\"\n    | \"ri-paypal-fill\"\n    | \"ri-paypal-line\"\n    | \"ri-pen-nib-fill\"\n    | \"ri-pen-nib-line\"\n    | \"ri-pencil-ai-2-fill\"\n    | \"ri-pencil-ai-2-line\"\n    | \"ri-pencil-ai-fill\"\n    | \"ri-pencil-ai-line\"\n    | \"ri-pencil-fill\"\n    | \"ri-pencil-line\"\n    | \"ri-pencil-ruler-2-fill\"\n    | \"ri-pencil-ruler-2-line\"\n    | \"ri-pencil-ruler-fill\"\n    | \"ri-pencil-ruler-line\"\n    | \"ri-pentagon-fill\"\n    | \"ri-pentagon-line\"\n    | \"ri-percent-fill\"\n    | \"ri-percent-line\"\n    | \"ri-perplexity-fill\"\n    | \"ri-perplexity-line\"\n    | \"ri-phone-camera-fill\"\n    | \"ri-phone-camera-line\"\n    | \"ri-phone-fill\"\n    | \"ri-phone-find-fill\"\n    | \"ri-phone-find-line\"\n    | \"ri-phone-line\"\n    | \"ri-phone-lock-fill\"\n    | \"ri-phone-lock-line\"\n    | \"ri-php-fill\"\n    | \"ri-php-line\"\n    | \"ri-piano-fill\"\n    | \"ri-piano-grand-fill\"\n    | \"ri-piano-grand-line\"\n    | \"ri-piano-line\"\n    | \"ri-picture-in-picture-2-fill\"\n    | \"ri-picture-in-picture-2-line\"\n    | \"ri-picture-in-picture-exit-fill\"\n    | \"ri-picture-in-picture-exit-line\"\n    | \"ri-picture-in-picture-fill\"\n    | \"ri-picture-in-picture-line\"\n    | \"ri-pie-chart-2-fill\"\n    | \"ri-pie-chart-2-line\"\n    | \"ri-pie-chart-box-fill\"\n    | \"ri-pie-chart-box-line\"\n    | \"ri-pie-chart-fill\"\n    | \"ri-pie-chart-line\"\n    | \"ri-pin-distance-fill\"\n    | \"ri-pin-distance-line\"\n    | \"ri-ping-pong-fill\"\n    | \"ri-ping-pong-line\"\n    | \"ri-pinterest-fill\"\n    | \"ri-pinterest-line\"\n    | \"ri-pinyin-input\"\n    | \"ri-pix-fill\"\n    | \"ri-pix-line\"\n    | \"ri-pixelfed-fill\"\n    | \"ri-pixelfed-line\"\n    | \"ri-plane-fill\"\n    | \"ri-plane-line\"\n    | \"ri-planet-fill\"\n    | \"ri-planet-line\"\n    | \"ri-plant-fill\"\n    | \"ri-plant-line\"\n    | \"ri-play-circle-fill\"\n    | \"ri-play-circle-line\"\n    | \"ri-play-fill\"\n    | \"ri-play-large-fill\"\n    | \"ri-play-large-line\"\n    | \"ri-play-line\"\n    | \"ri-play-list-2-fill\"\n    | \"ri-play-list-2-line\"\n    | \"ri-play-list-add-fill\"\n    | \"ri-play-list-add-line\"\n    | \"ri-play-list-fill\"\n    | \"ri-play-list-line\"\n    | \"ri-play-mini-fill\"\n    | \"ri-play-mini-line\"\n    | \"ri-play-reverse-fill\"\n    | \"ri-play-reverse-large-fill\"\n    | \"ri-play-reverse-large-line\"\n    | \"ri-play-reverse-line\"\n    | \"ri-play-reverse-mini-fill\"\n    | \"ri-play-reverse-mini-line\"\n    | \"ri-playstation-fill\"\n    | \"ri-playstation-line\"\n    | \"ri-plug-2-fill\"\n    | \"ri-plug-2-line\"\n    | \"ri-plug-3-fill\"\n    | \"ri-plug-3-line\"\n    | \"ri-plug-fill\"\n    | \"ri-plug-line\"\n    | \"ri-poker-clubs-fill\"\n    | \"ri-poker-clubs-line\"\n    | \"ri-poker-diamonds-fill\"\n    | \"ri-poker-diamonds-line\"\n    | \"ri-poker-hearts-fill\"\n    | \"ri-poker-hearts-line\"\n    | \"ri-poker-spades-fill\"\n    | \"ri-poker-spades-line\"\n    | \"ri-polaroid-2-fill\"\n    | \"ri-polaroid-2-line\"\n    | \"ri-polaroid-fill\"\n    | \"ri-polaroid-line\"\n    | \"ri-police-badge-fill\"\n    | \"ri-police-badge-line\"\n    | \"ri-police-car-fill\"\n    | \"ri-police-car-line\"\n    | \"ri-presentation-fill\"\n    | \"ri-presentation-line\"\n    | \"ri-price-tag-2-fill\"\n    | \"ri-price-tag-2-line\"\n    | \"ri-price-tag-3-fill\"\n    | \"ri-price-tag-3-line\"\n    | \"ri-price-tag-fill\"\n    | \"ri-price-tag-line\"\n    | \"ri-printer-cloud-fill\"\n    | \"ri-printer-cloud-line\"\n    | \"ri-printer-fill\"\n    | \"ri-printer-line\"\n    | \"ri-product-hunt-fill\"\n    | \"ri-product-hunt-line\"\n    | \"ri-profile-fill\"\n    | \"ri-profile-line\"\n    | \"ri-progress-1-fill\"\n    | \"ri-progress-1-line\"\n    | \"ri-progress-2-fill\"\n    | \"ri-progress-2-line\"\n    | \"ri-progress-3-fill\"\n    | \"ri-progress-3-line\"\n    | \"ri-progress-4-fill\"\n    | \"ri-progress-4-line\"\n    | \"ri-progress-5-fill\"\n    | \"ri-progress-5-line\"\n    | \"ri-progress-6-fill\"\n    | \"ri-progress-6-line\"\n    | \"ri-progress-7-fill\"\n    | \"ri-progress-7-line\"\n    | \"ri-progress-8-fill\"\n    | \"ri-progress-8-line\"\n    | \"ri-prohibited-2-fill\"\n    | \"ri-prohibited-2-line\"\n    | \"ri-prohibited-fill\"\n    | \"ri-prohibited-line\"\n    | \"ri-projector-2-fill\"\n    | \"ri-projector-2-line\"\n    | \"ri-projector-fill\"\n    | \"ri-projector-line\"\n    | \"ri-psychotherapy-fill\"\n    | \"ri-psychotherapy-line\"\n    | \"ri-pulse-ai-fill\"\n    | \"ri-pulse-ai-line\"\n    | \"ri-pulse-fill\"\n    | \"ri-pulse-line\"\n    | \"ri-pushpin-2-fill\"\n    | \"ri-pushpin-2-line\"\n    | \"ri-pushpin-fill\"\n    | \"ri-pushpin-line\"\n    | \"ri-puzzle-2-fill\"\n    | \"ri-puzzle-2-line\"\n    | \"ri-puzzle-fill\"\n    | \"ri-puzzle-line\"\n    | \"ri-qq-fill\"\n    | \"ri-qq-line\"\n    | \"ri-qr-code-fill\"\n    | \"ri-qr-code-line\"\n    | \"ri-qr-scan-2-fill\"\n    | \"ri-qr-scan-2-line\"\n    | \"ri-qr-scan-ai-fill\"\n    | \"ri-qr-scan-ai-line\"\n    | \"ri-qr-scan-fill\"\n    | \"ri-qr-scan-line\"\n    | \"ri-question-answer-fill\"\n    | \"ri-question-answer-line\"\n    | \"ri-question-fill\"\n    | \"ri-question-line\"\n    | \"ri-question-mark\"\n    | \"ri-questionnaire-fill\"\n    | \"ri-questionnaire-line\"\n    | \"ri-quill-pen-ai-fill\"\n    | \"ri-quill-pen-ai-line\"\n    | \"ri-quill-pen-fill\"\n    | \"ri-quill-pen-line\"\n    | \"ri-quote-text\"\n    | \"ri-qwen-ai-fill\"\n    | \"ri-qwen-ai-line\"\n    | \"ri-radar-fill\"\n    | \"ri-radar-line\"\n    | \"ri-radio-2-fill\"\n    | \"ri-radio-2-line\"\n    | \"ri-radio-button-fill\"\n    | \"ri-radio-button-line\"\n    | \"ri-radio-fill\"\n    | \"ri-radio-line\"\n    | \"ri-rainbow-fill\"\n    | \"ri-rainbow-line\"\n    | \"ri-rainy-fill\"\n    | \"ri-rainy-line\"\n    | \"ri-ram-2-fill\"\n    | \"ri-ram-2-line\"\n    | \"ri-ram-fill\"\n    | \"ri-ram-line\"\n    | \"ri-reactjs-fill\"\n    | \"ri-reactjs-line\"\n    | \"ri-receipt-fill\"\n    | \"ri-receipt-line\"\n    | \"ri-record-circle-fill\"\n    | \"ri-record-circle-line\"\n    | \"ri-record-mail-fill\"\n    | \"ri-record-mail-line\"\n    | \"ri-rectangle-fill\"\n    | \"ri-rectangle-line\"\n    | \"ri-recycle-fill\"\n    | \"ri-recycle-line\"\n    | \"ri-red-packet-fill\"\n    | \"ri-red-packet-line\"\n    | \"ri-reddit-2-fill\"\n    | \"ri-reddit-2-line\"\n    | \"ri-reddit-fill\"\n    | \"ri-reddit-line\"\n    | \"ri-refresh-fill\"\n    | \"ri-refresh-line\"\n    | \"ri-refund-2-fill\"\n    | \"ri-refund-2-line\"\n    | \"ri-refund-fill\"\n    | \"ri-refund-line\"\n    | \"ri-registered-fill\"\n    | \"ri-registered-line\"\n    | \"ri-remix-fill\"\n    | \"ri-remix-line\"\n    | \"ri-remix-run-fill\"\n    | \"ri-remix-run-line\"\n    | \"ri-remixicon-fill\"\n    | \"ri-remixicon-line\"\n    | \"ri-remote-control-2-fill\"\n    | \"ri-remote-control-2-line\"\n    | \"ri-remote-control-fill\"\n    | \"ri-remote-control-line\"\n    | \"ri-repeat-2-fill\"\n    | \"ri-repeat-2-line\"\n    | \"ri-repeat-fill\"\n    | \"ri-repeat-line\"\n    | \"ri-repeat-one-fill\"\n    | \"ri-repeat-one-line\"\n    | \"ri-replay-10-fill\"\n    | \"ri-replay-10-line\"\n    | \"ri-replay-15-fill\"\n    | \"ri-replay-15-line\"\n    | \"ri-replay-30-fill\"\n    | \"ri-replay-30-line\"\n    | \"ri-replay-5-fill\"\n    | \"ri-replay-5-line\"\n    | \"ri-reply-all-fill\"\n    | \"ri-reply-all-line\"\n    | \"ri-reply-fill\"\n    | \"ri-reply-line\"\n    | \"ri-reserved-fill\"\n    | \"ri-reserved-line\"\n    | \"ri-reset-left-fill\"\n    | \"ri-reset-left-line\"\n    | \"ri-reset-right-fill\"\n    | \"ri-reset-right-line\"\n    | \"ri-rest-time-fill\"\n    | \"ri-rest-time-line\"\n    | \"ri-restart-fill\"\n    | \"ri-restart-line\"\n    | \"ri-restaurant-2-fill\"\n    | \"ri-restaurant-2-line\"\n    | \"ri-restaurant-fill\"\n    | \"ri-restaurant-line\"\n    | \"ri-rewind-fill\"\n    | \"ri-rewind-line\"\n    | \"ri-rewind-mini-fill\"\n    | \"ri-rewind-mini-line\"\n    | \"ri-rewind-start-fill\"\n    | \"ri-rewind-start-line\"\n    | \"ri-rewind-start-mini-fill\"\n    | \"ri-rewind-start-mini-line\"\n    | \"ri-rfid-fill\"\n    | \"ri-rfid-line\"\n    | \"ri-rhythm-fill\"\n    | \"ri-rhythm-line\"\n    | \"ri-riding-fill\"\n    | \"ri-riding-line\"\n    | \"ri-road-map-fill\"\n    | \"ri-road-map-line\"\n    | \"ri-roadster-fill\"\n    | \"ri-roadster-line\"\n    | \"ri-robot-2-fill\"\n    | \"ri-robot-2-line\"\n    | \"ri-robot-3-fill\"\n    | \"ri-robot-3-line\"\n    | \"ri-robot-fill\"\n    | \"ri-robot-line\"\n    | \"ri-rocket-2-fill\"\n    | \"ri-rocket-2-line\"\n    | \"ri-rocket-fill\"\n    | \"ri-rocket-line\"\n    | \"ri-rotate-lock-fill\"\n    | \"ri-rotate-lock-line\"\n    | \"ri-rounded-corner\"\n    | \"ri-route-fill\"\n    | \"ri-route-line\"\n    | \"ri-router-fill\"\n    | \"ri-router-line\"\n    | \"ri-rss-fill\"\n    | \"ri-rss-line\"\n    | \"ri-ruler-2-fill\"\n    | \"ri-ruler-2-line\"\n    | \"ri-ruler-fill\"\n    | \"ri-ruler-line\"\n    | \"ri-run-fill\"\n    | \"ri-run-line\"\n    | \"ri-safari-fill\"\n    | \"ri-safari-line\"\n    | \"ri-safe-2-fill\"\n    | \"ri-safe-2-line\"\n    | \"ri-safe-3-fill\"\n    | \"ri-safe-3-line\"\n    | \"ri-safe-fill\"\n    | \"ri-safe-line\"\n    | \"ri-sailboat-fill\"\n    | \"ri-sailboat-line\"\n    | \"ri-save-2-fill\"\n    | \"ri-save-2-line\"\n    | \"ri-save-3-fill\"\n    | \"ri-save-3-line\"\n    | \"ri-save-fill\"\n    | \"ri-save-line\"\n    | \"ri-scales-2-fill\"\n    | \"ri-scales-2-line\"\n    | \"ri-scales-3-fill\"\n    | \"ri-scales-3-line\"\n    | \"ri-scales-fill\"\n    | \"ri-scales-line\"\n    | \"ri-scan-2-fill\"\n    | \"ri-scan-2-line\"\n    | \"ri-scan-fill\"\n    | \"ri-scan-line\"\n    | \"ri-school-fill\"\n    | \"ri-school-line\"\n    | \"ri-scissors-2-fill\"\n    | \"ri-scissors-2-line\"\n    | \"ri-scissors-cut-fill\"\n    | \"ri-scissors-cut-line\"\n    | \"ri-scissors-fill\"\n    | \"ri-scissors-line\"\n    | \"ri-screenshot-2-fill\"\n    | \"ri-screenshot-2-line\"\n    | \"ri-screenshot-fill\"\n    | \"ri-screenshot-line\"\n    | \"ri-scroll-to-bottom-fill\"\n    | \"ri-scroll-to-bottom-line\"\n    | \"ri-sd-card-fill\"\n    | \"ri-sd-card-line\"\n    | \"ri-sd-card-mini-fill\"\n    | \"ri-sd-card-mini-line\"\n    | \"ri-search-2-fill\"\n    | \"ri-search-2-line\"\n    | \"ri-search-ai-2-fill\"\n    | \"ri-search-ai-2-line\"\n    | \"ri-search-ai-3-fill\"\n    | \"ri-search-ai-3-line\"\n    | \"ri-search-ai-4-fill\"\n    | \"ri-search-ai-4-line\"\n    | \"ri-search-ai-fill\"\n    | \"ri-search-ai-line\"\n    | \"ri-search-eye-fill\"\n    | \"ri-search-eye-line\"\n    | \"ri-search-fill\"\n    | \"ri-search-line\"\n    | \"ri-secure-payment-fill\"\n    | \"ri-secure-payment-line\"\n    | \"ri-seedling-fill\"\n    | \"ri-seedling-line\"\n    | \"ri-send-backward\"\n    | \"ri-send-ins-fill\"\n    | \"ri-send-ins-line\"\n    | \"ri-send-plane-2-fill\"\n    | \"ri-send-plane-2-line\"\n    | \"ri-send-plane-fill\"\n    | \"ri-send-plane-line\"\n    | \"ri-send-to-back\"\n    | \"ri-sensor-fill\"\n    | \"ri-sensor-line\"\n    | \"ri-seo-fill\"\n    | \"ri-seo-line\"\n    | \"ri-separator\"\n    | \"ri-server-fill\"\n    | \"ri-server-line\"\n    | \"ri-service-bell-fill\"\n    | \"ri-service-bell-line\"\n    | \"ri-service-fill\"\n    | \"ri-service-line\"\n    | \"ri-settings-2-fill\"\n    | \"ri-settings-2-line\"\n    | \"ri-settings-3-fill\"\n    | \"ri-settings-3-line\"\n    | \"ri-settings-4-fill\"\n    | \"ri-settings-4-line\"\n    | \"ri-settings-5-fill\"\n    | \"ri-settings-5-line\"\n    | \"ri-settings-6-fill\"\n    | \"ri-settings-6-line\"\n    | \"ri-settings-fill\"\n    | \"ri-settings-line\"\n    | \"ri-shadow-fill\"\n    | \"ri-shadow-line\"\n    | \"ri-shake-hands-fill\"\n    | \"ri-shake-hands-line\"\n    | \"ri-shape-2-fill\"\n    | \"ri-shape-2-line\"\n    | \"ri-shape-fill\"\n    | \"ri-shape-line\"\n    | \"ri-shapes-fill\"\n    | \"ri-shapes-line\"\n    | \"ri-share-2-fill\"\n    | \"ri-share-2-line\"\n    | \"ri-share-box-fill\"\n    | \"ri-share-box-line\"\n    | \"ri-share-circle-fill\"\n    | \"ri-share-circle-line\"\n    | \"ri-share-fill\"\n    | \"ri-share-forward-2-fill\"\n    | \"ri-share-forward-2-line\"\n    | \"ri-share-forward-box-fill\"\n    | \"ri-share-forward-box-line\"\n    | \"ri-share-forward-fill\"\n    | \"ri-share-forward-line\"\n    | \"ri-share-line\"\n    | \"ri-shield-check-fill\"\n    | \"ri-shield-check-line\"\n    | \"ri-shield-cross-fill\"\n    | \"ri-shield-cross-line\"\n    | \"ri-shield-fill\"\n    | \"ri-shield-flash-fill\"\n    | \"ri-shield-flash-line\"\n    | \"ri-shield-keyhole-fill\"\n    | \"ri-shield-keyhole-line\"\n    | \"ri-shield-line\"\n    | \"ri-shield-star-fill\"\n    | \"ri-shield-star-line\"\n    | \"ri-shield-user-fill\"\n    | \"ri-shield-user-line\"\n    | \"ri-shining-2-fill\"\n    | \"ri-shining-2-line\"\n    | \"ri-shining-fill\"\n    | \"ri-shining-line\"\n    | \"ri-ship-2-fill\"\n    | \"ri-ship-2-line\"\n    | \"ri-ship-fill\"\n    | \"ri-ship-line\"\n    | \"ri-shirt-fill\"\n    | \"ri-shirt-line\"\n    | \"ri-shopping-bag-2-fill\"\n    | \"ri-shopping-bag-2-line\"\n    | \"ri-shopping-bag-3-fill\"\n    | \"ri-shopping-bag-3-line\"\n    | \"ri-shopping-bag-4-fill\"\n    | \"ri-shopping-bag-4-line\"\n    | \"ri-shopping-bag-fill\"\n    | \"ri-shopping-bag-line\"\n    | \"ri-shopping-basket-2-fill\"\n    | \"ri-shopping-basket-2-line\"\n    | \"ri-shopping-basket-fill\"\n    | \"ri-shopping-basket-line\"\n    | \"ri-shopping-cart-2-fill\"\n    | \"ri-shopping-cart-2-line\"\n    | \"ri-shopping-cart-fill\"\n    | \"ri-shopping-cart-line\"\n    | \"ri-showers-fill\"\n    | \"ri-showers-line\"\n    | \"ri-shuffle-fill\"\n    | \"ri-shuffle-line\"\n    | \"ri-shut-down-fill\"\n    | \"ri-shut-down-line\"\n    | \"ri-side-bar-fill\"\n    | \"ri-side-bar-line\"\n    | \"ri-sidebar-fold-fill\"\n    | \"ri-sidebar-fold-line\"\n    | \"ri-sidebar-unfold-fill\"\n    | \"ri-sidebar-unfold-line\"\n    | \"ri-signal-cellular-1-fill\"\n    | \"ri-signal-cellular-1-line\"\n    | \"ri-signal-cellular-2-fill\"\n    | \"ri-signal-cellular-2-line\"\n    | \"ri-signal-cellular-3-fill\"\n    | \"ri-signal-cellular-3-line\"\n    | \"ri-signal-cellular-off-fill\"\n    | \"ri-signal-cellular-off-line\"\n    | \"ri-signal-tower-fill\"\n    | \"ri-signal-tower-line\"\n    | \"ri-signal-wifi-1-fill\"\n    | \"ri-signal-wifi-1-line\"\n    | \"ri-signal-wifi-2-fill\"\n    | \"ri-signal-wifi-2-line\"\n    | \"ri-signal-wifi-3-fill\"\n    | \"ri-signal-wifi-3-line\"\n    | \"ri-signal-wifi-error-fill\"\n    | \"ri-signal-wifi-error-line\"\n    | \"ri-signal-wifi-fill\"\n    | \"ri-signal-wifi-line\"\n    | \"ri-signal-wifi-off-fill\"\n    | \"ri-signal-wifi-off-line\"\n    | \"ri-signpost-fill\"\n    | \"ri-signpost-line\"\n    | \"ri-sim-card-2-fill\"\n    | \"ri-sim-card-2-line\"\n    | \"ri-sim-card-fill\"\n    | \"ri-sim-card-line\"\n    | \"ri-sim-card-warning-fill\"\n    | \"ri-sim-card-warning-line\"\n    | \"ri-single-quotes-l\"\n    | \"ri-single-quotes-r\"\n    | \"ri-sip-fill\"\n    | \"ri-sip-line\"\n    | \"ri-sketching\"\n    | \"ri-skip-back-fill\"\n    | \"ri-skip-back-line\"\n    | \"ri-skip-back-mini-fill\"\n    | \"ri-skip-back-mini-line\"\n    | \"ri-skip-down-fill\"\n    | \"ri-skip-down-line\"\n    | \"ri-skip-forward-fill\"\n    | \"ri-skip-forward-line\"\n    | \"ri-skip-forward-mini-fill\"\n    | \"ri-skip-forward-mini-line\"\n    | \"ri-skip-left-fill\"\n    | \"ri-skip-left-line\"\n    | \"ri-skip-right-fill\"\n    | \"ri-skip-right-line\"\n    | \"ri-skip-up-fill\"\n    | \"ri-skip-up-line\"\n    | \"ri-skull-2-fill\"\n    | \"ri-skull-2-line\"\n    | \"ri-skull-fill\"\n    | \"ri-skull-line\"\n    | \"ri-skype-fill\"\n    | \"ri-skype-line\"\n    | \"ri-slack-fill\"\n    | \"ri-slack-line\"\n    | \"ri-slash-commands\"\n    | \"ri-slash-commands-2\"\n    | \"ri-slice-fill\"\n    | \"ri-slice-line\"\n    | \"ri-slideshow-2-fill\"\n    | \"ri-slideshow-2-line\"\n    | \"ri-slideshow-3-fill\"\n    | \"ri-slideshow-3-line\"\n    | \"ri-slideshow-4-fill\"\n    | \"ri-slideshow-4-line\"\n    | \"ri-slideshow-fill\"\n    | \"ri-slideshow-line\"\n    | \"ri-slideshow-view\"\n    | \"ri-slow-down-fill\"\n    | \"ri-slow-down-line\"\n    | \"ri-smartphone-fill\"\n    | \"ri-smartphone-line\"\n    | \"ri-snapchat-fill\"\n    | \"ri-snapchat-line\"\n    | \"ri-snowflake-fill\"\n    | \"ri-snowflake-line\"\n    | \"ri-snowy-fill\"\n    | \"ri-snowy-line\"\n    | \"ri-sofa-fill\"\n    | \"ri-sofa-line\"\n    | \"ri-sort-alphabet-asc\"\n    | \"ri-sort-alphabet-desc\"\n    | \"ri-sort-asc\"\n    | \"ri-sort-desc\"\n    | \"ri-sort-number-asc\"\n    | \"ri-sort-number-desc\"\n    | \"ri-sound-module-fill\"\n    | \"ri-sound-module-line\"\n    | \"ri-soundcloud-fill\"\n    | \"ri-soundcloud-line\"\n    | \"ri-space\"\n    | \"ri-space-ship-2-fill\"\n    | \"ri-space-ship-2-line\"\n    | \"ri-space-ship-fill\"\n    | \"ri-space-ship-line\"\n    | \"ri-spam-2-fill\"\n    | \"ri-spam-2-line\"\n    | \"ri-spam-3-fill\"\n    | \"ri-spam-3-line\"\n    | \"ri-spam-fill\"\n    | \"ri-spam-line\"\n    | \"ri-sparkling-2-fill\"\n    | \"ri-sparkling-2-line\"\n    | \"ri-sparkling-fill\"\n    | \"ri-sparkling-line\"\n    | \"ri-speak-ai-fill\"\n    | \"ri-speak-ai-line\"\n    | \"ri-speak-fill\"\n    | \"ri-speak-line\"\n    | \"ri-speaker-2-fill\"\n    | \"ri-speaker-2-line\"\n    | \"ri-speaker-3-fill\"\n    | \"ri-speaker-3-line\"\n    | \"ri-speaker-fill\"\n    | \"ri-speaker-line\"\n    | \"ri-spectrum-fill\"\n    | \"ri-spectrum-line\"\n    | \"ri-speech-to-text-fill\"\n    | \"ri-speech-to-text-line\"\n    | \"ri-speed-fill\"\n    | \"ri-speed-line\"\n    | \"ri-speed-mini-fill\"\n    | \"ri-speed-mini-line\"\n    | \"ri-speed-up-fill\"\n    | \"ri-speed-up-line\"\n    | \"ri-split-cells-horizontal\"\n    | \"ri-split-cells-vertical\"\n    | \"ri-spotify-fill\"\n    | \"ri-spotify-line\"\n    | \"ri-spy-fill\"\n    | \"ri-spy-line\"\n    | \"ri-square-fill\"\n    | \"ri-square-line\"\n    | \"ri-square-root\"\n    | \"ri-stack-fill\"\n    | \"ri-stack-line\"\n    | \"ri-stack-overflow-fill\"\n    | \"ri-stack-overflow-line\"\n    | \"ri-stacked-chart-fill\"\n    | \"ri-stacked-chart-line\"\n    | \"ri-stacked-view\"\n    | \"ri-stackshare-fill\"\n    | \"ri-stackshare-line\"\n    | \"ri-stairs-fill\"\n    | \"ri-stairs-line\"\n    | \"ri-star-fill\"\n    | \"ri-star-half-fill\"\n    | \"ri-star-half-line\"\n    | \"ri-star-half-s-fill\"\n    | \"ri-star-half-s-line\"\n    | \"ri-star-line\"\n    | \"ri-star-off-fill\"\n    | \"ri-star-off-line\"\n    | \"ri-star-s-fill\"\n    | \"ri-star-s-line\"\n    | \"ri-star-smile-fill\"\n    | \"ri-star-smile-line\"\n    | \"ri-steam-fill\"\n    | \"ri-steam-line\"\n    | \"ri-steering-2-fill\"\n    | \"ri-steering-2-line\"\n    | \"ri-steering-fill\"\n    | \"ri-steering-line\"\n    | \"ri-stethoscope-fill\"\n    | \"ri-stethoscope-line\"\n    | \"ri-sticky-note-2-fill\"\n    | \"ri-sticky-note-2-line\"\n    | \"ri-sticky-note-add-fill\"\n    | \"ri-sticky-note-add-line\"\n    | \"ri-sticky-note-fill\"\n    | \"ri-sticky-note-line\"\n    | \"ri-stock-fill\"\n    | \"ri-stock-line\"\n    | \"ri-stop-circle-fill\"\n    | \"ri-stop-circle-line\"\n    | \"ri-stop-fill\"\n    | \"ri-stop-large-fill\"\n    | \"ri-stop-large-line\"\n    | \"ri-stop-line\"\n    | \"ri-stop-mini-fill\"\n    | \"ri-stop-mini-line\"\n    | \"ri-store-2-fill\"\n    | \"ri-store-2-line\"\n    | \"ri-store-3-fill\"\n    | \"ri-store-3-line\"\n    | \"ri-store-fill\"\n    | \"ri-store-line\"\n    | \"ri-strikethrough\"\n    | \"ri-strikethrough-2\"\n    | \"ri-subreddit-fill\"\n    | \"ri-subreddit-line\"\n    | \"ri-subscript\"\n    | \"ri-subscript-2\"\n    | \"ri-subtract-fill\"\n    | \"ri-subtract-line\"\n    | \"ri-subway-fill\"\n    | \"ri-subway-line\"\n    | \"ri-subway-wifi-fill\"\n    | \"ri-subway-wifi-line\"\n    | \"ri-suitcase-2-fill\"\n    | \"ri-suitcase-2-line\"\n    | \"ri-suitcase-3-fill\"\n    | \"ri-suitcase-3-line\"\n    | \"ri-suitcase-fill\"\n    | \"ri-suitcase-line\"\n    | \"ri-sun-cloudy-fill\"\n    | \"ri-sun-cloudy-line\"\n    | \"ri-sun-fill\"\n    | \"ri-sun-foggy-fill\"\n    | \"ri-sun-foggy-line\"\n    | \"ri-sun-line\"\n    | \"ri-supabase-fill\"\n    | \"ri-supabase-line\"\n    | \"ri-superscript\"\n    | \"ri-superscript-2\"\n    | \"ri-surgical-mask-fill\"\n    | \"ri-surgical-mask-line\"\n    | \"ri-surround-sound-fill\"\n    | \"ri-surround-sound-line\"\n    | \"ri-survey-fill\"\n    | \"ri-survey-line\"\n    | \"ri-svelte-fill\"\n    | \"ri-svelte-line\"\n    | \"ri-swap-2-fill\"\n    | \"ri-swap-2-line\"\n    | \"ri-swap-3-fill\"\n    | \"ri-swap-3-line\"\n    | \"ri-swap-box-fill\"\n    | \"ri-swap-box-line\"\n    | \"ri-swap-fill\"\n    | \"ri-swap-line\"\n    | \"ri-switch-fill\"\n    | \"ri-switch-line\"\n    | \"ri-sword-fill\"\n    | \"ri-sword-line\"\n    | \"ri-syringe-fill\"\n    | \"ri-syringe-line\"\n    | \"ri-t-box-fill\"\n    | \"ri-t-box-line\"\n    | \"ri-t-shirt-2-fill\"\n    | \"ri-t-shirt-2-line\"\n    | \"ri-t-shirt-air-fill\"\n    | \"ri-t-shirt-air-line\"\n    | \"ri-t-shirt-fill\"\n    | \"ri-t-shirt-line\"\n    | \"ri-table-2\"\n    | \"ri-table-3\"\n    | \"ri-table-alt-fill\"\n    | \"ri-table-alt-line\"\n    | \"ri-table-fill\"\n    | \"ri-table-line\"\n    | \"ri-table-view\"\n    | \"ri-tablet-fill\"\n    | \"ri-tablet-line\"\n    | \"ri-tailwind-css-fill\"\n    | \"ri-tailwind-css-line\"\n    | \"ri-takeaway-fill\"\n    | \"ri-takeaway-line\"\n    | \"ri-taobao-fill\"\n    | \"ri-taobao-line\"\n    | \"ri-tape-fill\"\n    | \"ri-tape-line\"\n    | \"ri-target-fill\"\n    | \"ri-target-line\"\n    | \"ri-task-fill\"\n    | \"ri-task-line\"\n    | \"ri-taxi-fill\"\n    | \"ri-taxi-line\"\n    | \"ri-taxi-wifi-fill\"\n    | \"ri-taxi-wifi-line\"\n    | \"ri-team-fill\"\n    | \"ri-team-line\"\n    | \"ri-telegram-2-fill\"\n    | \"ri-telegram-2-line\"\n    | \"ri-telegram-fill\"\n    | \"ri-telegram-line\"\n    | \"ri-temp-cold-fill\"\n    | \"ri-temp-cold-line\"\n    | \"ri-temp-hot-fill\"\n    | \"ri-temp-hot-line\"\n    | \"ri-tent-fill\"\n    | \"ri-tent-line\"\n    | \"ri-terminal-box-fill\"\n    | \"ri-terminal-box-line\"\n    | \"ri-terminal-fill\"\n    | \"ri-terminal-line\"\n    | \"ri-terminal-window-fill\"\n    | \"ri-terminal-window-line\"\n    | \"ri-test-tube-fill\"\n    | \"ri-test-tube-line\"\n    | \"ri-text\"\n    | \"ri-text-block\"\n    | \"ri-text-direction-l\"\n    | \"ri-text-direction-r\"\n    | \"ri-text-snippet\"\n    | \"ri-text-spacing\"\n    | \"ri-text-to-speech-fill\"\n    | \"ri-text-to-speech-line\"\n    | \"ri-text-wrap\"\n    | \"ri-thermometer-fill\"\n    | \"ri-thermometer-line\"\n    | \"ri-threads-fill\"\n    | \"ri-threads-line\"\n    | \"ri-thumb-down-fill\"\n    | \"ri-thumb-down-line\"\n    | \"ri-thumb-up-fill\"\n    | \"ri-thumb-up-line\"\n    | \"ri-thunderstorms-fill\"\n    | \"ri-thunderstorms-line\"\n    | \"ri-ticket-2-fill\"\n    | \"ri-ticket-2-line\"\n    | \"ri-ticket-fill\"\n    | \"ri-ticket-line\"\n    | \"ri-tiktok-fill\"\n    | \"ri-tiktok-line\"\n    | \"ri-time-fill\"\n    | \"ri-time-line\"\n    | \"ri-time-zone-fill\"\n    | \"ri-time-zone-line\"\n    | \"ri-timeline-view\"\n    | \"ri-timer-2-fill\"\n    | \"ri-timer-2-line\"\n    | \"ri-timer-fill\"\n    | \"ri-timer-flash-fill\"\n    | \"ri-timer-flash-line\"\n    | \"ri-timer-line\"\n    | \"ri-todo-fill\"\n    | \"ri-todo-line\"\n    | \"ri-toggle-fill\"\n    | \"ri-toggle-line\"\n    | \"ri-token-swap-fill\"\n    | \"ri-token-swap-line\"\n    | \"ri-tools-fill\"\n    | \"ri-tools-line\"\n    | \"ri-tooth-fill\"\n    | \"ri-tooth-line\"\n    | \"ri-tornado-fill\"\n    | \"ri-tornado-line\"\n    | \"ri-trademark-fill\"\n    | \"ri-trademark-line\"\n    | \"ri-traffic-light-fill\"\n    | \"ri-traffic-light-line\"\n    | \"ri-train-fill\"\n    | \"ri-train-line\"\n    | \"ri-train-wifi-fill\"\n    | \"ri-train-wifi-line\"\n    | \"ri-translate\"\n    | \"ri-translate-2\"\n    | \"ri-translate-ai\"\n    | \"ri-translate-ai-2\"\n    | \"ri-travesti-fill\"\n    | \"ri-travesti-line\"\n    | \"ri-treasure-map-fill\"\n    | \"ri-treasure-map-line\"\n    | \"ri-tree-fill\"\n    | \"ri-tree-line\"\n    | \"ri-trello-fill\"\n    | \"ri-trello-line\"\n    | \"ri-triangle-fill\"\n    | \"ri-triangle-line\"\n    | \"ri-triangular-flag-fill\"\n    | \"ri-triangular-flag-line\"\n    | \"ri-trophy-fill\"\n    | \"ri-trophy-line\"\n    | \"ri-truck-fill\"\n    | \"ri-truck-line\"\n    | \"ri-tumblr-fill\"\n    | \"ri-tumblr-line\"\n    | \"ri-tv-2-fill\"\n    | \"ri-tv-2-line\"\n    | \"ri-tv-fill\"\n    | \"ri-tv-line\"\n    | \"ri-twitch-fill\"\n    | \"ri-twitch-line\"\n    | \"ri-twitter-fill\"\n    | \"ri-twitter-line\"\n    | \"ri-twitter-x-fill\"\n    | \"ri-twitter-x-line\"\n    | \"ri-typhoon-fill\"\n    | \"ri-typhoon-line\"\n    | \"ri-u-disk-fill\"\n    | \"ri-u-disk-line\"\n    | \"ri-ubuntu-fill\"\n    | \"ri-ubuntu-line\"\n    | \"ri-umbrella-fill\"\n    | \"ri-umbrella-line\"\n    | \"ri-underline\"\n    | \"ri-uninstall-fill\"\n    | \"ri-uninstall-line\"\n    | \"ri-unpin-fill\"\n    | \"ri-unpin-line\"\n    | \"ri-unsplash-fill\"\n    | \"ri-unsplash-line\"\n    | \"ri-upload-2-fill\"\n    | \"ri-upload-2-line\"\n    | \"ri-upload-cloud-2-fill\"\n    | \"ri-upload-cloud-2-line\"\n    | \"ri-upload-cloud-fill\"\n    | \"ri-upload-cloud-line\"\n    | \"ri-upload-fill\"\n    | \"ri-upload-line\"\n    | \"ri-upwork-fill\"\n    | \"ri-upwork-line\"\n    | \"ri-usb-fill\"\n    | \"ri-usb-line\"\n    | \"ri-user-2-fill\"\n    | \"ri-user-2-line\"\n    | \"ri-user-3-fill\"\n    | \"ri-user-3-line\"\n    | \"ri-user-4-fill\"\n    | \"ri-user-4-line\"\n    | \"ri-user-5-fill\"\n    | \"ri-user-5-line\"\n    | \"ri-user-6-fill\"\n    | \"ri-user-6-line\"\n    | \"ri-user-add-fill\"\n    | \"ri-user-add-line\"\n    | \"ri-user-community-fill\"\n    | \"ri-user-community-line\"\n    | \"ri-user-fill\"\n    | \"ri-user-follow-fill\"\n    | \"ri-user-follow-line\"\n    | \"ri-user-forbid-fill\"\n    | \"ri-user-forbid-line\"\n    | \"ri-user-heart-fill\"\n    | \"ri-user-heart-line\"\n    | \"ri-user-line\"\n    | \"ri-user-location-fill\"\n    | \"ri-user-location-line\"\n    | \"ri-user-minus-fill\"\n    | \"ri-user-minus-line\"\n    | \"ri-user-received-2-fill\"\n    | \"ri-user-received-2-line\"\n    | \"ri-user-received-fill\"\n    | \"ri-user-received-line\"\n    | \"ri-user-search-fill\"\n    | \"ri-user-search-line\"\n    | \"ri-user-settings-fill\"\n    | \"ri-user-settings-line\"\n    | \"ri-user-shared-2-fill\"\n    | \"ri-user-shared-2-line\"\n    | \"ri-user-shared-fill\"\n    | \"ri-user-shared-line\"\n    | \"ri-user-smile-fill\"\n    | \"ri-user-smile-line\"\n    | \"ri-user-star-fill\"\n    | \"ri-user-star-line\"\n    | \"ri-user-unfollow-fill\"\n    | \"ri-user-unfollow-line\"\n    | \"ri-user-voice-fill\"\n    | \"ri-user-voice-line\"\n    | \"ri-vercel-fill\"\n    | \"ri-vercel-line\"\n    | \"ri-verified-badge-fill\"\n    | \"ri-verified-badge-line\"\n    | \"ri-video-add-fill\"\n    | \"ri-video-add-line\"\n    | \"ri-video-ai-fill\"\n    | \"ri-video-ai-line\"\n    | \"ri-video-chat-fill\"\n    | \"ri-video-chat-line\"\n    | \"ri-video-download-fill\"\n    | \"ri-video-download-line\"\n    | \"ri-video-fill\"\n    | \"ri-video-line\"\n    | \"ri-video-off-fill\"\n    | \"ri-video-off-line\"\n    | \"ri-video-on-ai-fill\"\n    | \"ri-video-on-ai-line\"\n    | \"ri-video-on-fill\"\n    | \"ri-video-on-line\"\n    | \"ri-video-upload-fill\"\n    | \"ri-video-upload-line\"\n    | \"ri-vidicon-2-fill\"\n    | \"ri-vidicon-2-line\"\n    | \"ri-vidicon-fill\"\n    | \"ri-vidicon-line\"\n    | \"ri-vimeo-fill\"\n    | \"ri-vimeo-line\"\n    | \"ri-vip-crown-2-fill\"\n    | \"ri-vip-crown-2-line\"\n    | \"ri-vip-crown-fill\"\n    | \"ri-vip-crown-line\"\n    | \"ri-vip-diamond-fill\"\n    | \"ri-vip-diamond-line\"\n    | \"ri-vip-fill\"\n    | \"ri-vip-line\"\n    | \"ri-virus-fill\"\n    | \"ri-virus-line\"\n    | \"ri-visa-fill\"\n    | \"ri-visa-line\"\n    | \"ri-vk-fill\"\n    | \"ri-vk-line\"\n    | \"ri-voice-ai-fill\"\n    | \"ri-voice-ai-line\"\n    | \"ri-voice-recognition-fill\"\n    | \"ri-voice-recognition-line\"\n    | \"ri-voiceprint-fill\"\n    | \"ri-voiceprint-line\"\n    | \"ri-volume-down-fill\"\n    | \"ri-volume-down-line\"\n    | \"ri-volume-mute-fill\"\n    | \"ri-volume-mute-line\"\n    | \"ri-volume-off-vibrate-fill\"\n    | \"ri-volume-off-vibrate-line\"\n    | \"ri-volume-up-fill\"\n    | \"ri-volume-up-line\"\n    | \"ri-volume-vibrate-fill\"\n    | \"ri-volume-vibrate-line\"\n    | \"ri-vuejs-fill\"\n    | \"ri-vuejs-line\"\n    | \"ri-walk-fill\"\n    | \"ri-walk-line\"\n    | \"ri-wallet-2-fill\"\n    | \"ri-wallet-2-line\"\n    | \"ri-wallet-3-fill\"\n    | \"ri-wallet-3-line\"\n    | \"ri-wallet-fill\"\n    | \"ri-wallet-line\"\n    | \"ri-water-flash-fill\"\n    | \"ri-water-flash-line\"\n    | \"ri-water-percent-fill\"\n    | \"ri-water-percent-line\"\n    | \"ri-webcam-fill\"\n    | \"ri-webcam-line\"\n    | \"ri-webhook-fill\"\n    | \"ri-webhook-line\"\n    | \"ri-wechat-2-fill\"\n    | \"ri-wechat-2-line\"\n    | \"ri-wechat-channels-fill\"\n    | \"ri-wechat-channels-line\"\n    | \"ri-wechat-fill\"\n    | \"ri-wechat-line\"\n    | \"ri-wechat-pay-fill\"\n    | \"ri-wechat-pay-line\"\n    | \"ri-weibo-fill\"\n    | \"ri-weibo-line\"\n    | \"ri-weight-fill\"\n    | \"ri-weight-line\"\n    | \"ri-whatsapp-fill\"\n    | \"ri-whatsapp-line\"\n    | \"ri-wheelchair-fill\"\n    | \"ri-wheelchair-line\"\n    | \"ri-wifi-fill\"\n    | \"ri-wifi-line\"\n    | \"ri-wifi-off-fill\"\n    | \"ri-wifi-off-line\"\n    | \"ri-window-2-fill\"\n    | \"ri-window-2-line\"\n    | \"ri-window-fill\"\n    | \"ri-window-line\"\n    | \"ri-windows-fill\"\n    | \"ri-windows-line\"\n    | \"ri-windy-fill\"\n    | \"ri-windy-line\"\n    | \"ri-wireless-charging-fill\"\n    | \"ri-wireless-charging-line\"\n    | \"ri-women-fill\"\n    | \"ri-women-line\"\n    | \"ri-wordpress-fill\"\n    | \"ri-wordpress-line\"\n    | \"ri-wrench-fill\"\n    | \"ri-wrench-line\"\n    | \"ri-wubi-input\"\n    | \"ri-xbox-fill\"\n    | \"ri-xbox-line\"\n    | \"ri-xing-fill\"\n    | \"ri-xing-line\"\n    | \"ri-xrp-fill\"\n    | \"ri-xrp-line\"\n    | \"ri-xtz-fill\"\n    | \"ri-xtz-line\"\n    | \"ri-youtube-fill\"\n    | \"ri-youtube-line\"\n    | \"ri-yuque-fill\"\n    | \"ri-yuque-line\"\n    | \"ri-zcool-fill\"\n    | \"ri-zcool-line\"\n    | \"ri-zhihu-fill\"\n    | \"ri-zhihu-line\"\n    | \"ri-zhipu-ai-fill\"\n    | \"ri-zhipu-ai-line\"\n    | \"ri-zoom-in-fill\"\n    | \"ri-zoom-in-line\"\n    | \"ri-zoom-out-fill\"\n    | \"ri-zoom-out-line\"\n    | \"ri-zzz-fill\"\n    | \"ri-zzz-line\"\n    | (string & {})"
+    },
+    {
+      "name": "RenderRowArgs",
+      "kind": "type",
+      "type": "any",
+      "description": "Interface for rendering a row in the virtual list.",
+      "tags": [],
+      "source": "src/components/virtual-list/VirtualList.ts",
+      "definition": "{\r\n    /** The row html element. Users should add content to this element. */\r\n    rowElement: HTMLElement\r\n\r\n    /** The current width of the virtual list container. */\r\n    readonly viewportWidth: number\r\n    /** The current left scroll position of the virtual list container. May be used to implment horizontal virtual scrolling. */\r\n    readonly scrollLeft: number\r\n    /** The row data */\r\n    readonly data: T\r\n    /** The row visible index. */\r\n    readonly index: number\r\n}"
+    },
+    {
+      "name": "RowIdentity",
+      "kind": "type",
+      "type": "any",
+      "description": "Represents data row ID.",
+      "tags": [],
+      "source": "src/components/datagrid/DataSource.ts",
+      "definition": "string | number"
+    },
+    {
+      "name": "Scheduler",
+      "kind": "class",
+      "type": "Scheduler",
+      "description": "Frame-batched task scheduler that deduplicates the same task reference.",
+      "tags": [],
+      "source": "src/core/ElgoraUI.ts",
+      "members": [
+        {
+          "name": "schedule",
+          "type": "(task: RenderTask) => void",
+          "description": "Schedule a task.\r\nSame function reference is automatically deduped.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/ElgoraUI.ts",
+          "kind": "method",
+          "signature": "(task: RenderTask) => void"
+        }
+      ]
+    },
+    {
+      "name": "ScrollEngine",
+      "kind": "class",
+      "type": "ScrollEngine",
+      "description": "Custom scroll container supporting virtual dimensions and multiple input modes.",
+      "tags": [],
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "members": [
+        {
+          "name": "dom",
+          "type": "HTMLElement",
+          "description": "The viewport element enhanced by this scroll engine.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "scrollWidth",
+          "type": "number",
+          "description": "Total virtual content width configured for the viewport.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "scrollHeight",
+          "type": "number",
+          "description": "Total virtual content height configured for the viewport.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "scrollLeft",
+          "type": "number",
+          "description": "Current horizontal virtual scroll position.\nSets the horizontal virtual scroll position, clamped to valid bounds.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "scrollLeft",
+          "type": "number",
+          "description": "Current horizontal virtual scroll position.\nSets the horizontal virtual scroll position, clamped to valid bounds.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "scrollTop",
+          "type": "number",
+          "description": "Current vertical virtual scroll position.\nSets the vertical virtual scroll position, clamped to valid bounds.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "scrollTop",
+          "type": "number",
+          "description": "Current vertical virtual scroll position.\nSets the vertical virtual scroll position, clamped to valid bounds.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "maxScrollLeft",
+          "type": "number",
+          "description": "Maximum horizontal virtual scroll position.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "maxScrollTop",
+          "type": "number",
+          "description": "Maximum vertical virtual scroll position.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "clientWidth",
+          "type": "number",
+          "description": "Current physical viewport width in CSS pixels.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "clientHeight",
+          "type": "number",
+          "description": "Current physical viewport height in CSS pixels.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "updateDimensions",
+          "type": "(scrollWidth: number, scrollHeight: number) => void",
+          "description": "Updates the engine with virtual content dimensions. If a dimension exceeds\nthe browser-safe physical limit, the engine calculates an amplification ratio.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "scrollWidth Total virtual content width."
+            },
+            {
+              "name": "param",
+              "text": "scrollHeight Total virtual content height."
+            }
+          ],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "method",
+          "signature": "(scrollWidth: number, scrollHeight: number) => void"
+        },
+        {
+          "name": "scrollTo",
+          "type": "(left: number, top: number) => void",
+          "description": "Scrolls programmatically using virtual coordinates.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "left Target horizontal virtual position."
+            },
+            {
+              "name": "param",
+              "text": "top Target vertical virtual position."
+            }
+          ],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "method",
+          "signature": "(left: number, top: number) => void"
+        },
+        {
+          "name": "onScroll",
+          "type": "(callback: () => void) => void",
+          "description": "Registers a callback invoked after the virtual scroll position changes.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "method",
+          "signature": "(callback: () => void) => void"
+        },
+        {
+          "name": "onResize",
+          "type": "(callback: () => void) => void",
+          "description": "Registers a callback invoked after the physical viewport is resized.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "method",
+          "signature": "(callback: () => void) => void"
+        }
+      ]
+    },
+    {
+      "name": "SelectionCell",
+      "kind": "interface",
+      "type": "SelectionCell",
+      "description": "Coordinates and selection metadata for a visible grid cell.",
+      "tags": [],
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "members": [
+        {
+          "name": "rowIndex",
+          "type": "number",
+          "description": "The actual visual row index on screen at the moment of selection",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "colIndex",
+          "type": "number",
+          "description": "Visual column index on screen at the moment of selection",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "wholeRow",
+          "type": "boolean | undefined",
+          "description": "",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "SelectionEdge",
+      "kind": "type",
+      "type": "any",
+      "description": "The cardinal sides of a selection box a selected cell can sit on.\r\nA cell is marked with every side it touches (e.g. a lone cell is on all four,\r\na single-row selection marks its cells as both top and bottom), so the renderer\r\ncan paint a complete border around any selection shape.",
+      "tags": [],
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "definition": "\"t\" | \"r\" | \"b\" | \"l\""
+    },
+    {
+      "name": "SelectionManager",
+      "kind": "class",
+      "type": "SelectionManager",
+      "description": "Manages keyboard, pointer, and range-based grid selection state.",
+      "tags": [],
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "members": [
+        {
+          "name": "selectSingleCell",
+          "type": "(rowIndex: number, colIndex: number) => void",
+          "description": "Sets a single range, clearing all existing ranges.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number) => void"
+        },
+        {
+          "name": "selectSingleRow",
+          "type": "(rowIndex: number) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number) => void"
+        },
+        {
+          "name": "addRowRange",
+          "type": "(rowIndex: number) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number) => void"
+        },
+        {
+          "name": "extendRowSelection",
+          "type": "(rowIndex: number) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number) => void"
+        },
+        {
+          "name": "addRange",
+          "type": "(rowIndex: number, colIndex: number) => void",
+          "description": "Appends a new disjoint range (Ctrl / Cmd + Click).",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number) => void"
+        },
+        {
+          "name": "extendSelection",
+          "type": "(rowIndex: number, colIndex: number) => void",
+          "description": "Extends the focus edge of the current (last added) range (Shift + Click / Drag).",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number) => void"
+        },
+        {
+          "name": "setActiveCell",
+          "type": "(rowIndex: number, colIndex: number) => void",
+          "description": "Moves ONLY the activeCell inside existing selection ranges (e.g., Tab / Enter navigation).\r\nDoes not alter anchor or focus boundaries of any range.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number) => void"
+        },
+        {
+          "name": "handleCellClick",
+          "type": "(rowIndex: number, colIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void",
+          "description": "Handles MouseDown or Click events on a cell.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void"
+        },
+        {
+          "name": "handleRowHeaderClick",
+          "type": "(rowIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void"
+        },
+        {
+          "name": "handleCellMouseEnter",
+          "type": "(rowIndex: number, colIndex: number, isMouseDown: boolean) => void",
+          "description": "Handles MouseMove events when dragging to extend the selection range.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number, isMouseDown: boolean) => void"
+        },
+        {
+          "name": "handleKeyDown",
+          "type": "(event: KeyboardEvent, ctx: GridContext) => boolean",
+          "description": "Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).\r\nReturns true if the key event was handled by selection.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(event: KeyboardEvent, ctx: GridContext) => boolean"
+        },
+        {
+          "name": "isActive",
+          "type": "(rowIndex: number, colIndex: number) => boolean",
+          "description": "Checks if a cell is the single active focus cell receiving keyboard input & editing.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number) => boolean"
+        },
+        {
+          "name": "isSelected",
+          "type": "(rowIndex: number, colIndex: number) => boolean",
+          "description": "2D hit test checking if a cell at (rowIndex, colIndex) falls inside ANY active range.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number) => boolean"
+        },
+        {
+          "name": "getSelectionState",
+          "type": "(rowIndex: number, colIndex: number, ctx?: GridContext) => CellSelectionState",
+          "description": "2D hit test that also reports which selection-box sides the cell sits on.\r\nA selected cell is marked with every edge it touches (top/right/bottom/left),\r\nso thin selections (single row/column/single cell) still get a full border.\r\n`ctx` is required to resolve the full column span of whole-row ranges.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number, ctx?: GridContext) => CellSelectionState"
+        },
+        {
+          "name": "getActiveCell",
+          "type": "() => SelectionCell | null",
+          "description": "Returns the single active cell receiving keyboard focus and editing.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "() => SelectionCell | null"
+        },
+        {
+          "name": "getRanges",
+          "type": "() => SelectionRange[]",
+          "description": "Returns all currently active selection ranges.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "() => SelectionRange[]"
+        },
+        {
+          "name": "isWholeRowSelected",
+          "type": "(rowIndex: number) => boolean",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "(rowIndex: number) => boolean"
+        },
+        {
+          "name": "clear",
+          "type": "() => void",
+          "description": "Clears all current ranges and active cell states.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "SelectionRange",
+      "kind": "interface",
+      "type": "SelectionRange",
+      "description": "Rectangular range between an anchor cell and a focus cell.",
+      "tags": [],
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "members": [
+        {
+          "name": "anchor",
+          "type": "SelectionCell",
+          "description": "The origin cell where interaction (mouse down / click) started for this box",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "focus",
+          "type": "SelectionCell",
+          "description": "The outer edge cell extended by mouse drag or Shift+Click/Arrows",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "SizeManager",
+      "kind": "interface",
+      "type": "SizeManager",
+      "description": "Measures virtual-list rows and maps between indexes and scroll offsets.",
+      "tags": [],
+      "source": "src/components/virtual-list/SizeManager.ts",
+      "members": [
+        {
+          "name": "defaultSize",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaultSize",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getSize",
+          "type": "(index: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number) => number"
+        },
+        {
+          "name": "update",
+          "type": "(index: number, newSize: number) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number, newSize: number) => void"
+        },
+        {
+          "name": "getOffset",
+          "type": "(index: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number) => number"
+        },
+        {
+          "name": "findIndex",
+          "type": "(offset: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(offset: number) => number"
+        }
+      ]
+    },
+    {
+      "name": "Throttle",
+      "kind": "class",
+      "type": "Throttle<T>",
+      "description": "Simple time-based throttle with trailing execution.",
+      "tags": [],
+      "source": "src/core/Throttle.ts",
+      "members": [
+        {
+          "name": "call",
+          "type": "(...args: Parameters<T>) => void",
+          "description": "Call the throttled function.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Throttle.ts",
+          "kind": "method",
+          "signature": "(...args: Parameters<T>) => void"
+        },
+        {
+          "name": "cancel",
+          "type": "() => void",
+          "description": "Cancel any pending execution.",
+          "tags": [],
+          "optional": false,
+          "source": "src/core/Throttle.ts",
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "Tooltip",
+      "kind": "class",
+      "type": "Tooltip",
+      "description": "A universal singleton tooltip backed by one reusable Popover element.",
+      "tags": [],
+      "source": "src/components/popup/Tooltip.ts",
+      "members": [
+        {
+          "name": "show",
+          "type": "(options: TooltipShowOptions) => void",
+          "description": "Shows tooltip content for an anchor, optionally after a delay.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "method",
+          "signature": "(options: TooltipShowOptions) => void"
+        },
+        {
+          "name": "hide",
+          "type": "(anchor?: HTMLElement) => void",
+          "description": "Hides the tooltip. If an anchor is supplied, only that anchor can hide it.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "method",
+          "signature": "(anchor?: HTMLElement) => void"
+        },
+        {
+          "name": "isOpen",
+          "type": "() => boolean",
+          "description": "Returns whether the shared tooltip popover is open.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "method",
+          "signature": "() => boolean"
+        },
+        {
+          "name": "attach",
+          "type": "(anchor: HTMLElement, content: TooltipContent, options?: Omit<TooltipShowOptions, \"anchor\" | \"content\">) => () => void",
+          "description": "Adds hover and focus listeners and returns a function that removes them.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "method",
+          "signature": "(anchor: HTMLElement, content: TooltipContent, options?: Omit<TooltipShowOptions, \"anchor\" | \"content\">) => () => void"
+        }
+      ]
+    },
+    {
+      "name": "TooltipContent",
+      "kind": "type",
+      "type": "any",
+      "description": "Content accepted by the shared Tooltip popover.",
+      "tags": [],
+      "source": "src/components/popup/Tooltip.ts",
+      "definition": "string | HTMLElement | Component | ElementProps<HTMLElement>"
+    },
+    {
+      "name": "TooltipShowOptions",
+      "kind": "interface",
+      "type": "TooltipShowOptions",
+      "description": "Positioning, content, and timing options for Tooltip.show().",
+      "tags": [],
+      "source": "src/components/popup/Tooltip.ts",
+      "members": [
+        {
+          "name": "anchor",
+          "type": "HTMLElement",
+          "description": "Element described by the tooltip.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "property"
+        },
+        {
+          "name": "content",
+          "type": "TooltipContent",
+          "description": "Content rendered inside the tooltip.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "property"
+        },
+        {
+          "name": "placement",
+          "type": "PopoverPlacement | undefined",
+          "description": "Preferred side and alignment relative to the anchor.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "property"
+        },
+        {
+          "name": "gap",
+          "type": "number | undefined",
+          "description": "Distance from the anchor in pixels.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "property"
+        },
+        {
+          "name": "delay",
+          "type": "number | undefined",
+          "description": "Delay before showing on hover.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/popup/Tooltip.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "UiStyle",
+      "kind": "type",
+      "type": "any",
+      "description": "Typed Elgora UI utility class name without the `elg-` prefix.",
+      "tags": [],
+      "source": "src/core/UiStyle.ts",
+      "definition": "| \"d-none\"\r\n  | \"d-block\"\r\n  | \"d-inline\"\r\n  | \"d-inline-block\"\r\n  | \"d-flex\"\r\n  | \"d-inline-flex\"\r\n  | \"d-grid\"\r\n\r\n  // ------------------\r\n  // Flex direction\r\n  // ------------------\r\n  | \"flex-row\"\r\n  | \"flex-row-reverse\"\r\n  | \"flex-col\"\r\n  | \"flex-col-reverse\"\r\n\r\n  // ------------------\r\n  // Flex wrap\r\n  // ------------------\r\n  | \"flex-wrap\"\r\n  | \"flex-nowrap\"\r\n  | \"flex-wrap-reverse\"\r\n\r\n  // ------------------\r\n  // Justify\r\n  // ------------------\r\n  | \"justify-start\"\r\n  | \"justify-center\"\r\n  | \"justify-end\"\r\n  | \"justify-between\"\r\n  | \"justify-around\"\r\n  | \"justify-evenly\"\r\n\r\n  // ------------------\r\n  // Align items\r\n  // ------------------\r\n  | \"items-start\"\r\n  | \"items-center\"\r\n  | \"items-end\"\r\n  | \"items-stretch\"\r\n  | \"items-baseline\"\r\n\r\n  // ------------------\r\n  // Align self\r\n  // ------------------\r\n  | \"self-auto\"\r\n  | \"self-start\"\r\n  | \"self-center\"\r\n  | \"self-end\"\r\n  | \"self-stretch\"\r\n\r\n  // ------------------\r\n  // Gap\r\n  // ------------------\r\n  | \"gap-0\" | \"gap-1\" | \"gap-2\" | \"gap-3\" | \"gap-4\" | \"gap-5\"\r\n\r\n  // ------------------\r\n  // Flex sizing\r\n  // ------------------\r\n  | \"flex-1\"\r\n  | \"flex-auto\"\r\n  | \"flex-initial\"\r\n  | \"flex-none\"\r\n\r\n  // Grow / Shrink\r\n  | \"grow-0\" | \"grow-1\"\r\n  | \"shrink-0\" | \"shrink-1\"\r\n\r\n  // Min constraints (IMPORTANT)\r\n  | \"min-w-0\"\r\n  | \"min-h-0\"\r\n\r\n  // ------------------\r\n  // Margin\r\n  // ------------------\r\n  | \"m-0\" | \"m-1\" | \"m-2\" | \"m-3\" | \"m-4\" | \"m-5\" | \"m-auto\"\r\n  | \"mx-0\" | \"mx-1\" | \"mx-2\" | \"mx-3\" | \"mx-4\" | \"mx-5\" | \"mx-auto\"\r\n  | \"my-0\" | \"my-1\" | \"my-2\" | \"my-3\" | \"my-4\" | \"my-5\" | \"my-auto\"\r\n  | \"mt-0\" | \"mt-1\" | \"mt-2\" | \"mt-3\" | \"mt-4\" | \"mt-5\" | \"mt-auto\"\r\n  | \"mb-0\" | \"mb-1\" | \"mb-2\" | \"mb-3\" | \"mb-4\" | \"mb-5\" | \"mb-auto\"\r\n  | \"ms-0\" | \"ms-1\" | \"ms-2\" | \"ms-3\" | \"ms-4\" | \"ms-5\" | \"ms-auto\"\r\n  | \"me-0\" | \"me-1\" | \"me-2\" | \"me-3\" | \"me-4\" | \"me-5\" | \"me-auto\"\r\n\r\n  // ------------------\r\n  // Padding\r\n  // ------------------\r\n  | \"p-0\" | \"p-1\" | \"p-2\" | \"p-3\" | \"p-4\" | \"p-5\"\r\n  | \"px-0\" | \"px-1\" | \"px-2\" | \"px-3\" | \"px-4\" | \"px-5\"\r\n  | \"py-0\" | \"py-1\" | \"py-2\" | \"py-3\" | \"py-4\" | \"py-5\"\r\n  | \"pt-0\" | \"pt-1\" | \"pt-2\" | \"pt-3\" | \"pt-4\" | \"pt-5\"\r\n  | \"pb-0\" | \"pb-1\" | \"pb-2\" | \"pb-3\" | \"pb-4\" | \"pb-5\"\r\n  | \"ps-0\" | \"ps-1\" | \"ps-2\" | \"ps-3\" | \"ps-4\" | \"ps-5\"\r\n  | \"pe-0\" | \"pe-1\" | \"pe-2\" | \"pe-3\" | \"pe-4\" | \"pe-5\"\r\n\r\n  // ------------------\r\n  // Size\r\n  // ------------------\r\n  | \"w-100\" | \"w-auto\"\r\n  | \"h-100\" | \"h-auto\"\r\n\r\n  // ------------------\r\n  // Overflow\r\n  // ------------------\r\n  | \"overflow-auto\"\r\n  | \"overflow-hidden\"\r\n  | \"overflow-scroll\"\r\n  | \"overflow-x-auto\"\r\n  | \"overflow-y-auto\"\r\n\r\n  // ------------------\r\n  // Position\r\n  // ------------------\r\n  | \"position-relative\"\r\n  | \"position-absolute\"\r\n  | \"position-fixed\"\r\n  | \"top-0\" | \"bottom-0\" | \"start-0\" | \"end-0\"\r\n\r\n  // ------------------\r\n  // Text\r\n  // ------------------\r\n  | \"text-start\"\r\n  | \"text-center\"\r\n  | \"text-end\"\r\n  | \"text-wrap\"\r\n  | \"text-nowrap\"\r\n\r\n  // ------------------\r\n  // Border\r\n  // ------------------\r\n  | \"border\"\r\n  | \"border-0\"\r\n  | \"border-top\"\r\n  | \"border-bottom\"\r\n  | \"border-start\"\r\n  | \"border-end\"\r\n\r\n  // Border style\r\n  | \"border-solid\"\r\n  | \"border-dashed\"\r\n  | \"border-dotted\"\r\n  | \"border-none\"\r\n\r\n  // Border width\r\n  | \"border-1\"\r\n  | \"border-2\"\r\n  | \"border-3\"\r\n\r\n  // ------------------\r\n  // Radius\r\n  // ------------------\r\n  | \"rounded-0\"\r\n  | \"rounded-1\"\r\n  | \"rounded-2\"\r\n  | \"rounded-3\"\r\n  | \"rounded-4\"\r\n  | \"rounded-pill\"\r\n  | \"rounded-circle\"\r\n\r\n  // ------------------\r\n  // Colors (CSS class mirror)\r\n  // ------------------\r\n  // ======================================================\r\n  // BASE ELEMENT \r\n  // ======================================================\r\n  | \"elg\"\r\n\r\n  // ======================================================\r\n  // SURFACES\r\n  // ======================================================\r\n  | \"page\"\r\n  | \"surface\"\r\n  | \"surface-2\"\r\n  | \"surface-3\"\r\n\r\n  // ======================================================\r\n  // SEMANTIC COLORS\r\n  // ======================================================\r\n  | \"primary\"\n  | \"accent\"\n  | \"success\"\n  | \"warning\"\r\n  | \"danger\"\r\n  | \"neutral\"\r\n\r\n  | \"text-primary\"\r\n  | \"text-success\"\r\n  | \"text-warning\"\r\n  | \"text-danger\"\r\n  | \"text-neutral\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 1 (PERSISTENT)\r\n  // ======================================================\r\n  | \"selected\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 2 (SEMANTIC / CONTEXT)\r\n  // ======================================================\r\n  | \"active\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 3 (INTERACTION)\r\n  // ======================================================\r\n  | \"hover\"\r\n  | \"focus\"\r\n\r\n  // NOTE:\r\n  // active:active is pseudo-class usage, not a class,\r\n  // so it is NOT included separately.\r\n\r\n  // ======================================================\r\n  // BORDER\r\n  // ======================================================\r\n  | \"border\"\r\n  | \"border-strong\"\r\n\r\n  // ======================================================\r\n  // BG ALPHA UTILITIES\r\n  // ======================================================\r\n  | \"bg-a-05\"\r\n  | \"bg-a-10\"\r\n  | \"bg-a-25\"\r\n  | \"bg-a-50\"\r\n  | \"bg-a-75\"\r\n  | \"bg-a-100\"\r\n\r\n  // ======================================================\r\n  // Font Size\r\n  // ======================================================\r\n  | \"fs-50\"\r\n  | \"fs-80\"\r\n  | \"fs-100\"\r\n  | \"fs-120\"\r\n  | \"fs-150\"\r\n  | \"fs-200\"\r\n\r\n  // ======================================================\r\n  // Font Weight\r\n  // ======================================================\r\n  | \"fw-100\"\r\n  | \"fw-200\"\r\n  | \"fw-300\"\r\n  | \"fw-400\"\r\n  | \"fw-500\"\r\n  | \"fw-600\"\r\n  | \"fw-700\"\r\n  | \"fw-800\"\r\n\r\n  // ======================================================\r\n  // Components\r\n  // ======================================================\r\n  | \"btn\"\r\n  | \"box\"\r\n\r\n  | \"user-select-none\""
+    },
+    {
+      "name": "v",
+      "kind": "function",
+      "type": "<K extends keyof HTMLElementTagNameMap>(tag: K, ...args: VNodeArgs<HTMLElementTagNameMap[K]>) => VNode<HTMLElementTagNameMap[K]>",
+      "description": "Creates a virtual element description for keyed or deferred DOM rendering.",
+      "tags": [],
+      "source": "src/core/e.ts"
+    },
+    {
+      "name": "VariableSizeManager",
+      "kind": "class",
+      "type": "VariableSizeManager",
+      "description": "Variable size manager using Fenwick Tree (Binary Indexed Tree).\r\nSupports dynamic growth with batched expansion.",
+      "tags": [],
+      "source": "src/components/virtual-list/SizeManager.ts",
+      "members": [
+        {
+          "name": "defaultSize",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaultSize",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getSize",
+          "type": "(index: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number) => number"
+        },
+        {
+          "name": "update",
+          "type": "(index: number, newSize: number) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number, newSize: number) => void"
+        },
+        {
+          "name": "getOffset",
+          "type": "(index: number) => number",
+          "description": "Returns prefix sum [0..index)",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(index: number) => number"
+        },
+        {
+          "name": "findIndex",
+          "type": "(offset: number) => number",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/SizeManager.ts",
+          "kind": "method",
+          "signature": "(offset: number) => number"
+        }
+      ]
+    },
+    {
+      "name": "VirtualList",
+      "kind": "class",
+      "type": "VirtualList<T>",
+      "description": "Efficiently renders only the visible portion of a large data collection.",
+      "tags": [],
+      "source": "src/components/virtual-list/VirtualList.ts",
+      "members": [
+        {
+          "name": "scrollLeft",
+          "type": "number",
+          "description": "The horizontal scroll position",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "scrollTop",
+          "type": "number",
+          "description": "The vertical scroll position",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "viewportWidth",
+          "type": "number",
+          "description": "The width of the viewport",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "viewportHeight",
+          "type": "number",
+          "description": "The height of the viewport",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "startOffset",
+          "type": "number",
+          "description": "The top offset of the content",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "invalidateRow",
+          "type": "(index: number) => void",
+          "description": "",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "method",
+          "signature": "(index: number) => void"
+        }
+      ]
+    },
+    {
+      "name": "VirtualListOptions",
+      "kind": "interface",
+      "type": "VirtualListOptions<T>",
+      "description": "Construction options for a virtualized list component.",
+      "tags": [],
+      "source": "src/components/virtual-list/VirtualList.ts",
+      "members": [
+        {
+          "name": "data",
+          "type": "VirtualDataSource<T>",
+          "description": "A virtual list data source. The data items are rendered as rows in the list.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "renderRow",
+          "type": "(args: RenderRowArgs<T>) => void",
+          "description": "A function that renders a row in the virtual list. The user must append content to the row element.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "args"
+            },
+            {
+              "name": "returns",
+              "text": ""
+            }
+          ],
+          "optional": false,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "contentElement",
+          "type": "HTMLElement | undefined",
+          "description": "Custom conent element for the virtual list. If not provided, a default DIV element will be used.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "transformContentElement",
+          "type": "HTMLElement | undefined",
+          "description": "The element that contains the displayed rows and it's position is transformed by the virtual list component.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createRowElement",
+          "type": "((content: HTMLElement) => HTMLElement) | undefined",
+          "description": "A function that creates a row element for the virtual list.\r\nThe element must be appended to the content element before being returned.",
+          "tags": [
+            {
+              "name": "param",
+              "text": "content The content element of the virtual list."
+            },
+            {
+              "name": "returns",
+              "text": "The row element."
+            }
+          ],
+          "optional": true,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "beforeRender",
+          "type": "(() => void) | undefined",
+          "description": "A function that is called before the virtual list is rendered. The content element is available at this point and all size and scroll offset properties are also available.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        },
+        {
+          "name": "afterRender",
+          "type": "(() => void) | undefined",
+          "description": "A function that is called after the virtual list is rendered. Can be used to measure DOM elements.",
+          "tags": [],
+          "optional": true,
+          "source": "src/components/virtual-list/VirtualList.ts",
+          "kind": "property"
+        }
+      ]
+    }
+  ]
+}
