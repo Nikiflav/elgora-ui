@@ -283,14 +283,15 @@ export class PopupMenu extends Component {
         const state = id ? this.itemStates.get(id) : undefined;
         const container = control.closest<HTMLElement>("[data-menu-container]");
         if (container && event.relatedTarget instanceof Node && container.contains(event.relatedTarget)) return;
-        if (id && state && state.subItems !== null && !isDisabled(state.item)) void this.openSubmenu(id);
+        if (id && state && container) this.showOrHideSubmenu(id, state, container);
     }
 
     private handleFocusIn(event: FocusEvent): void {
         const target = event.target as HTMLElement;
         const id = target.closest<HTMLElement>("[data-menu-key]")?.getAttribute("data-menu-key");
         const state = id ? this.itemStates.get(id) : undefined;
-        if (id && state && state.subItems !== null && !isDisabled(state.item)) void this.openSubmenu(id);
+        const container = target.closest<HTMLElement>("[data-menu-container]");
+        if (id && state && container) this.showOrHideSubmenu(id, state, container);
     }
 
     private handleKeyDown(event: KeyboardEvent): void {
@@ -324,6 +325,35 @@ export class PopupMenu extends Component {
         }
         this.openItems.add(id);
         await this.renderItems();
+    }
+
+    private showOrHideSubmenu(id: string, state: MenuState, container: HTMLElement): void {
+        const siblingClosed = this.closeSiblingSubmenus(container);
+        const canOpen = state.subItems !== null && !isDisabled(state.item);
+
+        if (canOpen) void this.openSubmenu(id);
+        else if (siblingClosed) void this.renderItems();
+    }
+
+    private closeSiblingSubmenus(container: HTMLElement): boolean {
+        const menu = container.parentElement;
+        if (!menu) return false;
+
+        let changed = false;
+        for (const sibling of Array.from(menu.children)) {
+            if (sibling === container) continue;
+            const siblingId = (sibling as HTMLElement).getAttribute("data-menu-container");
+            if (!siblingId) continue;
+
+            for (const openId of this.openItems) {
+                if (openId === siblingId || openId.startsWith(`${siblingId}.`)) {
+                    this.openItems.delete(openId);
+                    changed = true;
+                }
+            }
+        }
+
+        return changed;
     }
 
     private async toggleSubmenu(id: string): Promise<void> {
