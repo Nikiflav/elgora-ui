@@ -763,15 +763,15 @@
 }
 
 .elg-rounded-1 {
-    border-radius: 0.2rem;
-}
-
-.elg-rounded-2 {
     border-radius: 0.4rem;
 }
 
-.elg-rounded-3 {
+.elg-rounded-2 {
     border-radius: 0.6rem;
+}
+
+.elg-rounded-3 {
+    border-radius: 0.8rem;
 }
 
 .elg-rounded-4 {
@@ -847,3 +847,9 @@
 .elg-fw-900 {
     font-weight: 900;
 }   
+
+/* User select*/
+
+.elg-user-select-none {
+    user-select: none;
+}

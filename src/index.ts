@@ -11,3 +11,4 @@ export { BrowserRouter } from './components/browser-router/BrowserRouter';
 export { DataGrid, type DataGridOptions, type GridDataSource } from './components/datagrid/DataGrid';
 export { SelectionManager, type SelectionCell, type SelectionRange, type GridContext, type SelectionEdge, type CellSelectionState } from './components/datagrid/SelectionManager';
 export { type DataSource, ArrayDataSource, type RowIdentity } from './components/datagrid/DataSource';
+export { Popup, type PopupOptions, type PopupPoint, type PopupPlacement, type PopupCloseMode } from './components/popup/popup';

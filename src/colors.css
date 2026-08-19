@@ -214,6 +214,7 @@
     --elg-bg-final-s: clamp(0, calc(var(--elg-bg-s) + var(--elg-state-s-1) + var(--elg-state-s-2) + var(--elg-state-s-3)), 100);
     --elg-bg-final-l: clamp(0, calc(var(--elg-bg-l) + var(--elg-state-l-1) + var(--elg-state-l-2) + var(--elg-state-l-3)), 100);
     --elg-bg-rendered-color: hsl(var(--elg-bg-h) var(--elg-bg-final-s) var(--elg-bg-final-l) / var(--elg-bg-a));
+    
     background-color: var(--elg-bg-rendered-color);
     transition: background-color 0.4s ease;
 }
@@ -251,7 +252,12 @@
     --elg-bg-s: var(--elg-primary-s);
     --elg-bg-l: var(--elg-primary-l);
 
+    --elg-border-h: var(--elg-primary-h);
+    --elg-border-s: var(--elg-primary-s);
+    --elg-border-l: clamp(0, calc(var(--elg-primary-l) - 10));
+
     color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
+    border-color: hsl(var(--elg-border-hsl));
 }
 
 .elg-neutral {

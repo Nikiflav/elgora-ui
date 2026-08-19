@@ -5,6 +5,7 @@ import { c, cbutton, cdiv } from '../src/core/c';
 import { a, div, e, nav } from '../src/core/e';
 import { dataGridRouterHandler } from './data-grid-demo';
 import { dataGridTreeRouterHandler } from './data-grid-tree-demo';
+import { popupRouterHandler } from './popup-demo';
 
 const routes: RouterHandler[] = [
 
@@ -13,6 +14,9 @@ const routes: RouterHandler[] = [
 
     // Data Grid
     dataGridRouterHandler,
+
+    // Popup Demo
+    popupRouterHandler,
 
 
     // Simple Button Demo
@@ -144,9 +148,10 @@ const app = cdiv(
         a({ href: "?!=/virtual-list" }, "Virtual List"),
         a({ href: "?!=/data-grid" }, "Data Grid"),
         a({ href: "?!=/data-grid-tree" }, "Data Grid - Tree"),        
+        a({ href: "?!=/popup" }, "Popup"),
     ),
     // Page Content
-    div({ ui: ["grow-1", "d-flex", "p-4"] },
+    div({ ui: ["grow-1", "d-flex", "p-4" ] },
         router)
 )
 

@@ -52,7 +52,7 @@ export class BrowserRouter extends Component {
         if (BrowserRouter.instance)
             throw new Error("BrowserRouter instance already exists. Only one instance is allowed.");
 
-        super({ ui: ["flex-1"] });
+        super({ ui: ["flex-1", "overflow-auto"] });
         const self = this;
         BrowserRouter.instance = self;
         this.routes = routes;
