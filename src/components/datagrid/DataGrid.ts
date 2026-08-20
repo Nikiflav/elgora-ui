@@ -330,7 +330,16 @@ export class DataGrid<TRow> extends Component {
         }
     });
 
-    private handleSelectionKeyDown = (event: KeyboardEvent) => {
+    private handleSelectionKeyDown = async (event: KeyboardEvent) => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+            if (this._selection.getRanges().length === 0) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+            await this.copySelection();
+            return;
+        }
+
         const previous = this._selection.getActiveCell();
         if (this._selection.handleKeyDown(event, this.getSelectionContext())) {
             event.preventDefault();
@@ -343,6 +352,90 @@ export class DataGrid<TRow> extends Component {
             }
         }
     };
+
+    /** Copies the currently selected data cells to the system clipboard. */
+    public async copySelection(): Promise<boolean> {
+        const ranges = this._selection.getRanges();
+        const columns = this.getVisibleColumns();
+        if (ranges.length === 0 || columns.length === 0) return false;
+
+        const selectedRows = new Map<number, Set<number>>();
+        for (const range of ranges) {
+            const minRow = Math.min(range.anchor.rowIndex, range.focus.rowIndex);
+            const maxRow = Math.max(range.anchor.rowIndex, range.focus.rowIndex);
+            const minCol = range.anchor.wholeRow || range.focus.wholeRow
+                ? 0
+                : Math.min(range.anchor.colIndex, range.focus.colIndex);
+            const maxCol = range.anchor.wholeRow || range.focus.wholeRow
+                ? columns.length - 1
+                : Math.max(range.anchor.colIndex, range.focus.colIndex);
+
+            for (let rowIndex = minRow; rowIndex <= maxRow; rowIndex++) {
+                let selectedColumns = selectedRows.get(rowIndex);
+                if (!selectedColumns) {
+                    selectedColumns = new Set<number>();
+                    selectedRows.set(rowIndex, selectedColumns);
+                }
+                for (let colIndex = minCol; colIndex <= maxCol; colIndex++) {
+                    if (colIndex >= 0 && colIndex < columns.length) selectedColumns.add(colIndex);
+                }
+            }
+        }
+
+        const textLines: string[][] = [];
+        for (const rowIndex of Array.from(selectedRows.keys()).sort((a, b) => a - b)) {
+            const selectedColumns = selectedRows.get(rowIndex)!;
+            let row = this._gridRows.getAt(rowIndex);
+            if (row.type === "loading") {
+                await this._gridRows.load(rowIndex, 1);
+                row = this._gridRows.getAt(rowIndex);
+            }
+            if (!this.isSelectableGridRow(row) || row.type === "loading") continue;
+
+            const line: string[] = [];
+            for (const colIndex of Array.from(selectedColumns).sort((a, b) => a - b)) {
+                const cell = row.cells?.[columns[colIndex].name];
+                let cellText = String(cell?.text ?? cell?.value ?? cell ?? "");
+                if (/[\t\r\n"]/.test(cellText)) cellText = `"${cellText.replace(/"/g, '""')}"`;
+                line.push(cellText);
+            }
+            textLines.push(line);
+        }
+
+        if (textLines.length === 0) return false;
+
+        const text = textLines.map(line => line.join("\t")).join("\r\n");
+        const escapeHtml = (value: string) => value.replace(/[&<>"']/g, symbol => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[symbol]!));
+        const html = `<table>${textLines.map(line =>
+            `<tr>${line.map(cell => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`
+        ).join("\r\n")}</table>`;
+
+        try {
+            if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        "text/plain": new Blob([text], { type: "text/plain" }),
+                        "text/html": new Blob([html], { type: "text/html" })
+                    })
+                ]);
+            } else if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                return false;
+            }
+        } catch {
+            if (!navigator.clipboard?.writeText) return false;
+            await navigator.clipboard.writeText(text);
+        }
+
+        return true;
+    }
 
     private ensureKeyboardCellVisible(rowIndex: number, colIndex: number): void {
         const rowTop = this._sizeManager.getOffset(rowIndex);

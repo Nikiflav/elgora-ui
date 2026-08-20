@@ -441,6 +441,16 @@
       "source": "src/components/datagrid/DataGrid.ts",
       "members": [
         {
+          "name": "copySelection",
+          "type": "() => Promise<boolean>",
+          "description": "Copies the currently selected data cells to the system clipboard.",
+          "tags": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
           "name": "setOptions",
           "type": "(options: Partial<DataGridOptions<TRow>>) => void",
           "description": "Sets (patches) the grid's options. Only the provided keys are changed; everything else is\r\nleft as-is. This is the single path for both the constructor's initial options and every\r\nlater change - fires an \"optionChanged\" DOM event on this.dom with the applied patch as detail.",
