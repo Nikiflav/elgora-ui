@@ -6,7 +6,7 @@ import { ScrollEngine } from "../scrollbar/scroll-engine";
 import { Scrollbar } from "../scrollbar/scrollbar";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
-import { DataCell, DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryType } from "./DataColumn";
+import { DataCell, DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryDefinition, SummaryType } from "./DataColumn";
 import { ArrayDataSource, DataSource, LocalGroupingDataSource, RowIdentity } from "./DataSource";
 import type { FilterFunctionRegistry } from "../../data/filter";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
@@ -68,6 +68,8 @@ export type DataGridOptions<TRow> = {
     groupSummary?: { field: string, summaryType: SummaryType }[],
     /** Custom group intervals available in the Group by context-menu submenu. */
     groupIntervals?: GroupIntervalDefinition<TRow>[],
+    /** Custom summary accumulators available for locally grouped data. */
+    customSummaries?: SummaryDefinition<TRow, any, any>[],
     /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */
     selectableGroupRows?: boolean,
     /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */
@@ -691,7 +693,11 @@ export class DataGrid<TRow> extends Component {
                         { label: "Sum", value: "sum" },
                         { label: "Minimum", value: "min" },
                         { label: "Maximum", value: "max" },
-                        { label: "Distinct", value: "distinct" }
+                        { label: "Distinct", value: "distinct" },
+                        ...(this._gridOptions.customSummaries ?? []).map(summary => ({
+                            label: summary.text,
+                            value: summary.name as SummaryType
+                        }))
                     ];
                     return summaryTypes.map(summary => ({
                         text: summary.label,
@@ -875,7 +881,7 @@ export class DataGrid<TRow> extends Component {
                 if (!col)
                     return Promise.resolve((row as any)[column]);
                 return DataColumnUtils.getValue(col, row);
-            }, column => this._columnsIndex.get(column), this._gridOptions.groupIntervals);
+            }, column => this._columnsIndex.get(column), this._gridOptions.groupIntervals, this._gridOptions.customSummaries);
         }
     }
 
@@ -910,7 +916,7 @@ export class DataGrid<TRow> extends Component {
 
         if (this._initialized && ("data" in options || "groupColumns" in options || "hierarchyRootId" in options
             || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
-            || "groupIntervals" in options)) {
+            || "groupIntervals" in options || "customSummaries" in options)) {
             this._selection.clear();
         }
 
@@ -939,6 +945,7 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.groupColumns ??= [];
         this._gridOptions.groupSummary ??= [];
         this._gridOptions.groupIntervals ??= [];
+        this._gridOptions.customSummaries ??= [];
         this._gridOptions.pageSize ??= 100;
         this._gridOptions.fixedLeftColumns ??= 0;
         this._gridOptions.fixedRightColumns ??= 0;
@@ -974,7 +981,7 @@ export class DataGrid<TRow> extends Component {
 
         const reloadsRows = "data" in options || "groupColumns" in options || "hierarchyRootId" in options
             || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
-            || "groupIntervals" in options;
+            || "groupIntervals" in options || "customSummaries" in options;
         const changesLayout = "columns" in options || "visibleColumns" in options || "fixedLeftColumns" in options
             || "fixedRightColumns" in options || "autoFillViewportWidth" in options || "showRowHeader" in options;
         const changesStaticRows = "showColumnHeaders" in options || "showFilterRow" in options || "showColumnFooters" in options;

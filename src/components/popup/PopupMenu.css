@@ -43,6 +43,12 @@
     flex: 1 1 auto;
 }
 
+.elg-menu-item-icon {
+    flex: 0 0 1em;
+    width: 1em;
+    text-align: center;
+}
+
 .elg-menu-item-arrow,
 .elg-menu-item-check {
     flex: 0 0 auto;
@@ -73,6 +79,16 @@
     box-shadow: var(--elg-popover-shadow);
 }
 
+.elg-menu-submenu.is-left {
+    right: calc(100% + var(--elg-popup-menu-submenu-gap, 2px));
+    left: auto;
+}
+
+.elg-menu-submenu.is-up {
+    top: auto;
+    bottom: -5px;
+}
+
 /* Keep the submenu hover state connected across the visual gap. */
 .elg-menu-submenu::before {
     position: absolute;
@@ -81,6 +97,11 @@
     left: calc(-1 * var(--elg-popup-menu-submenu-gap, 2px));
     width: var(--elg-popup-menu-submenu-gap, 2px);
     content: "";
+}
+
+.elg-menu-submenu.is-left::before {
+    right: calc(-1 * var(--elg-popup-menu-submenu-gap, 2px));
+    left: auto;
 }
 
 .elg-menu-item-container.is-open > .elg-menu-submenu {

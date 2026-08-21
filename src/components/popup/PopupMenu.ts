@@ -86,7 +86,7 @@ function itemId(item: MenuItem, path: string): string {
 
 function itemClass(item: MenuItem, open: boolean): string {
     return [
-        "elg", "elg-menu-item-container",
+        "elg-menu-item-container",
         item.className,
         open ? "is-open" : ""
     ].filter(Boolean).join(" ");
@@ -137,7 +137,7 @@ export class PopupMenu extends Component {
         super({ ...rest, tag: options.tag || "div" });
 
         this.closeOnAction = closeOnAction;
-        this.dom.classList.add("elg", "elg-popover", "elg-popup-menu");
+        this.dom.classList.add("elg-popover", "elg-popup-menu");
         this.dom.setAttribute("role", "menu");
         this.dom.setAttribute("popover", this.closeMode);
         this.dom.id ||= menuId();
@@ -170,6 +170,7 @@ export class PopupMenu extends Component {
         this.anchor?.style.setProperty("anchor-name", "--elg-popup-menu-anchor");
         if (!wasOpen) (this.dom as any).showPopover();
         this.updatePosition();
+        requestAnimationFrame(() => this.positionSubmenus());
         this.startTracking();
     }
 
@@ -202,6 +203,7 @@ export class PopupMenu extends Component {
         this.itemStates = states;
         setElementProps(this.dom, { vnodes: nodes as any });
         this.dom.dataset.placement = this.placement;
+        requestAnimationFrame(() => this.positionSubmenus());
         return true;
     }
 
@@ -222,7 +224,10 @@ export class PopupMenu extends Component {
             const children = subItems || [];
             const hasSubmenu = subItems !== null;
             const open = this.openItems.has(id);
-            const icon = item.icon ? v("i", { className: `${item.icon}`, ariaHidden: "true" } as any) : null;
+            const icon = v("i", {
+                className: `elg-menu-item-icon${item.icon ? ` ${item.icon}` : ""}`,
+                ariaHidden: "true"
+            } as any);
             const text = item.showText === false ? null : v("span", { className: "elg-menu-item-text", vnodes: [item.text || ""] });
             const arrow = hasSubmenu ? v("i", {
                 className: "elg-menu-item-arrow ri-arrow-right-s-line",
@@ -370,6 +375,33 @@ export class PopupMenu extends Component {
 
     private focusFirst(parentId: string): void {
         requestAnimationFrame(() => this.dom.querySelector<HTMLElement>(`[data-menu-container="${CSS.escape(parentId)}"] > .elg-menu-submenu [data-menu-key]`)?.focus());
+    }
+
+    /** Keeps visible nested submenus inside the viewport by flipping their sides when necessary. */
+    private positionSubmenus(): void {
+        const viewportGap = 4;
+        const submenuGap = 2;
+
+        for (const submenu of Array.from(this.dom.querySelectorAll<HTMLElement>(".elg-menu-submenu"))) {
+            if (getComputedStyle(submenu).display === "none") continue;
+            const container = submenu.parentElement;
+            if (!container) continue;
+
+            submenu.classList.remove("is-left", "is-up");
+            const containerRect = container.getBoundingClientRect();
+            let submenuRect = submenu.getBoundingClientRect();
+
+            const canOpenLeft = containerRect.left - submenuRect.width - submenuGap >= viewportGap;
+            if (submenuRect.right > innerWidth - viewportGap && canOpenLeft) {
+                submenu.classList.add("is-left");
+                submenuRect = submenu.getBoundingClientRect();
+            }
+
+            const canOpenUp = containerRect.bottom - submenuRect.height + submenuGap >= viewportGap;
+            if (submenuRect.bottom > innerHeight - viewportGap && canOpenUp) {
+                submenu.classList.add("is-up");
+            }
+        }
     }
 
     private startTracking(): void {

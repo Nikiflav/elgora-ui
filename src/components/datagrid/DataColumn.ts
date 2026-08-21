@@ -55,8 +55,38 @@ export function orderByTokenToString(tok: OrderByToken) {
 
 
 
-/** Aggregation kind applied to a group column's summary value. */
+/**
+ * Aggregation kind applied to a group column's summary value.
+ * `count` and `distinct` support all value types; `sum`, `min`, and `max`
+ * require a numeric column.
+ */
 export type SummaryType = "count" | "sum" | "min" | "max" | "distinct" | string;
+
+/** Context supplied to a custom summary lifecycle method. */
+export interface SummaryContext<TRow> {
+    /** Field being summarized. */
+    field: string;
+    /** Value of the group currently being accumulated. */
+    groupValue: any;
+    /** Current source row, when the lifecycle method is processing a row. */
+    row?: TRow;
+    /** Current field value, when the lifecycle method is processing a row. */
+    value?: any;
+}
+
+/** Defines a locally calculated summary identified by its serializable name. */
+export interface SummaryDefinition<TRow, TState = any, TResult = any> {
+    /** Name used in `SummaryType` requests. */
+    name: string;
+    /** Display text for summary selectors and documentation. */
+    text: string;
+    /** Creates the accumulator state for one group and field. */
+    start(context: SummaryContext<TRow>): TState | Promise<TState>;
+    /** Adds one row value to the accumulator. Returning a value replaces the state. */
+    accumulate(state: TState, value: any, row: TRow, context: SummaryContext<TRow>): void | TState | Promise<void | TState>;
+    /** Converts the final accumulator state into the value displayed by the group row. */
+    finalize(state: TState, context: SummaryContext<TRow>): TResult | Promise<TResult>;
+}
 
 
 /** Input control used to edit a column's value. */

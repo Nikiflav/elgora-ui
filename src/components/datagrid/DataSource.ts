@@ -1,6 +1,6 @@
 import { Utils } from "../../core/Utils";
 import { DataFilter, evalFilter } from "../../data/filter";
-import { DataColumn, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, SummaryType } from "./DataColumn";
+import { DataColumn, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, SummaryDefinition, SummaryType } from "./DataColumn";
 import type { FilterFunctionRegistry } from "../../data/filter";
 
 
@@ -35,6 +35,68 @@ export type GroupItem = {
     summaryValues?: Record<string, any>;
 };
 
+type SummaryAccumulator = {
+    definition: SummaryDefinition<any, any, any>;
+    state: any;
+};
+
+function isNumericSummary(summaryType: SummaryType): boolean {
+    return summaryType === "sum" || summaryType === "min" || summaryType === "max";
+}
+
+const standardSummaries: Record<string, SummaryDefinition<any, any, any>> = {
+    count: {
+        name: "count",
+        text: "Count",
+        start: () => 0,
+        accumulate: state => state + 1,
+        finalize: state => state
+    },
+    distinct: {
+        name: "distinct",
+        text: "Distinct",
+        start: () => new Set<any>(),
+        accumulate: (state, value) => state.add(value),
+        finalize: state => state.size
+    },
+    sum: {
+        name: "sum",
+        text: "Sum",
+        start: () => ({ value: 0, hasValue: false }),
+        accumulate: (state, value) => {
+            if (typeof value === "number" && Number.isFinite(value)) {
+                state.value += value;
+                state.hasValue = true;
+            }
+        },
+        finalize: state => state.hasValue ? state.value : undefined
+    },
+    min: {
+        name: "min",
+        text: "Minimum",
+        start: () => ({ value: Infinity, hasValue: false }),
+        accumulate: (state, value) => {
+            if (typeof value === "number" && Number.isFinite(value)) {
+                state.value = Math.min(state.value, value);
+                state.hasValue = true;
+            }
+        },
+        finalize: state => state.hasValue ? state.value : undefined
+    },
+    max: {
+        name: "max",
+        text: "Maximum",
+        start: () => ({ value: -Infinity, hasValue: false }),
+        accumulate: (state, value) => {
+            if (typeof value === "number" && Number.isFinite(value)) {
+                state.value = Math.max(state.value, value);
+                state.hasValue = true;
+            }
+        },
+        finalize: state => state.hasValue ? state.value : undefined
+    }
+};
+
 /** The response to a QueryArgs request: either flat data rows or, when grouping, group buckets. */
 export interface DataResult<TRow> {
     totalCount?: number;
@@ -48,6 +110,33 @@ export type RowIdentity = string | number;
 
 /** Query-level access to row data, with optional native grouping support. */
 export interface DataSource<TRow> {
+    /**
+     * Loads a page of rows or grouped records.
+     *
+     * When `args.groupColumn` is not provided, the datasource should return
+     * `dataItems` containing the requested page of rows. When grouping is
+     * requested and the datasource supports it, it should return `groups`,
+     * where each group contains its key, row count, and any requested
+     * `groupSummary` values. A supported grouped query may legitimately
+     * return `groups: []` when no rows match the query; callers must not
+     * interpret that as a request to perform grouping locally.
+     *
+     * For a grouped request that the datasource does not handle, it should
+     * return a result with both `dataItems` and `groups` undefined.
+     * `LocalGroupingDataSource` uses that response as the signal to issue a
+     * second flat request, then performs grouping and supported summaries
+     * locally. The server should not return a partial flat page for the
+     * grouped request because the local datasource will make that flat
+     * request itself.
+     *
+     * `skip` and `top` apply to the returned rows or groups. `totalCount`,
+     * when requested, must describe the complete result before pagination.
+     * Implementations should preserve `args` in the returned `DataResult` so
+     * consumers can associate a response with the query that produced it.
+     *
+     * @param args Query, filtering, grouping, pagination, and summary options.
+     * @returns The loaded rows or groups and optional total count.
+     */
     loadData(args: QueryArgs): Promise<DataResult<TRow>>;
     
     /** Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children. */
@@ -65,7 +154,8 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         private ds: DataSource<TRow>,
         private getValue: (row: TRow, column: string) => Promise<any>,
         private getColumn?: (column: string) => DataColumn<TRow> | undefined,
-        private customIntervals?: GroupIntervalDefinition<TRow>[]
+        private customIntervals?: GroupIntervalDefinition<TRow>[],
+        private customSummaries?: SummaryDefinition<TRow, any, any>[]
     ) {
 
     }
@@ -98,6 +188,7 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             const flatResult = await this.ds.loadData(flatArgs);
 
             const map = new Map<any, GroupItem>();
+            const summaryStates = new Map<any, Map<string, SummaryAccumulator>>();
             for (let r of flatResult.dataItems ?? []) {
                 const groupValue = column
                     ? await DataColumnUtils.getGroupValue(column, r, this.customIntervals)
@@ -110,14 +201,55 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
                         count: 0
                     };
                     map.set(groupValue, group);
+                    summaryStates.set(groupValue, new Map());
                 }
                 group.count++;
                 if (args.groupSummary) {
                     group.summaryValues = group.summaryValues || {};
+                    const states = summaryStates.get(groupValue)!;
                     for (let g of args.groupSummary) {
-                        // TODO: Calculate summary for each group
-                        group.summaryValues[g.field] = group.summaryValues[g.field] || 0;
-                        group.summaryValues[g.field] += await this.getValue(r, g.field);
+                        const value = await this.getValue(r, g.field);
+                        let state = states.get(g.field);
+                        if (!state) {
+                            const definition = standardSummaries[g.summaryType]
+                                ?? this.customSummaries?.find(x => x.name === g.summaryType);
+                            if (!definition) continue;
+                            state = {
+                                definition,
+                                state: await definition.start({ field: g.field, groupValue, row: r, value })
+                            };
+                            states.set(g.field, state);
+                        }
+
+                        if (isNumericSummary(g.summaryType)) {
+                            const summaryColumn = this.getColumn?.(g.field);
+                            const numericColumn = !summaryColumn
+                                || summaryColumn.editorType === "number"
+                                || (!summaryColumn.editorType && typeof value === "number");
+                            if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
+                                continue;
+                        }
+
+                        const context = { field: g.field, groupValue, row: r, value };
+                        const nextState = await state.definition.accumulate(state.state, value, r, context);
+                        if (nextState !== undefined) state.state = nextState;
+                    }
+                }
+            }
+
+            if (args.groupSummary) {
+                for (const [groupValue, states] of summaryStates) {
+                    const group = map.get(groupValue)!;
+                    for (const summary of args.groupSummary) {
+                        const state = states.get(summary.field);
+                        if (!state) continue;
+
+                        const value = await state.definition.finalize(
+                            state.state,
+                            { field: summary.field, groupValue }
+                        );
+                        if (value !== undefined)
+                            group.summaryValues![summary.field] = value;
                     }
                 }
             }

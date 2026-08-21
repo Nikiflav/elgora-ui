@@ -38,6 +38,19 @@ const data = Array.from({ length: 100_000 }, (_, i) => {
     };
 });
 
+const averageSummary = {
+    name: "average",
+    text: "Average",
+    start: () => ({ total: 0, count: 0 }),
+    accumulate: (state: { total: number, count: number }, value: any) => {
+        if (typeof value === "number" && Number.isFinite(value)) {
+            state.total += value;
+            state.count++;
+        }
+    },
+    finalize: (state: { total: number, count: number }) => state.count ? state.total / state.count : 0
+};
+
 const grid = new DataGrid({
     data: new ArrayDataSource(data),
     columns: [
@@ -55,8 +68,10 @@ const grid = new DataGrid({
     groupColumns: ["customer", "region", "status"],
     groupSummary: [
         { field: "quantity", summaryType: "sum" },
-        { field: "totalAmount", summaryType: "sum" }
+        { field: "totalAmount", summaryType: "sum" },
+        { field: "unitPrice", summaryType: "average" }
     ],
+    customSummaries: [averageSummary],
     stickyGroupRows: true,
 });
 
