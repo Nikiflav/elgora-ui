@@ -1,4 +1,5 @@
 import { Utils } from "../../core/Utils";
+import type { GridContextMenuItems } from "./DataGridContextMenu";
 
 /** One selectable option for a column's allowed-value list (e.g. a dropdown item). */
 export type DisplayValue = {
@@ -116,6 +117,10 @@ export type DataColumn<TRow> = {
     getAllowedValueText?(value?: TRow): Promise<string | undefined>;
     /** List of data cell actions displayed as popup menu for data cell. */
     //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;
+    /** Produces context-menu items for cells in this column. */
+    contextMenuItems?: GridContextMenuItems<TRow>;
+    /** Produces context-menu items for this column's header. */
+    headerContextMenuItems?: GridContextMenuItems<TRow>;
 }
 
 

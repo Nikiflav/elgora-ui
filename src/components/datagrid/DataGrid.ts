@@ -19,6 +19,8 @@ import { trackGesture } from "../../core/interact/DragGesture";
 import { DragDropController, DragPayload, DropTarget } from "../../core/interact/DragDropController";
 import { createListDropZone } from "../../core/interact/ListDropZone";
 import { SelectionManager, GridContext } from "./SelectionManager";
+import type { DataGridContextMenuContext, GridContextMenuItems, GridStandardContextMenuItem } from "./DataGridContextMenu";
+import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
 
 
 /** Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource. */
@@ -75,6 +77,16 @@ export type DataGridOptions<TRow> = {
     stickyGroupRowsMaxLevels?: number,
     /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */
     texts?: Partial<DataGridTexts>,
+
+    /** Enables the grid context menu. Defaults to true. */
+    contextMenu?: boolean,
+    /** Built-in context-menu items; null means all standard items, [] means none. */
+    standardContextMenuItems?: GridStandardContextMenuItem[] | null,
+
+    /** Produces context-menu items for data, group, and hierarchy rows. */
+    rowContextMenuItems?: GridContextMenuItems<TRow>,
+    /** Produces context-menu items for row headers. */
+    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,
 
     /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */
     autoFillViewportWidth?: boolean,
@@ -177,6 +189,7 @@ export class DataGrid<TRow> extends Component {
     private _selection = new SelectionManager();
     private _selectionMouseDown = false;
     private _selectionWholeRowDrag = false;
+    private _contextMenu: PopupMenu;
 
     private _dragDrop: DragDropController;
 
@@ -197,6 +210,7 @@ export class DataGrid<TRow> extends Component {
 
         this._tableContainer = e("div",
             {
+                class: "elg-grid-viewport",
                 style: {
                     position: "absolute",
                     top: 0,
@@ -212,6 +226,9 @@ export class DataGrid<TRow> extends Component {
         this._tableContainer.addEventListener("keydown", this.handleSelectionKeyDown, true);
         this._tableContainer.addEventListener("mouseup", this.endSelectionDrag);
         this._tableContainer.addEventListener("mouseleave", this.endSelectionDrag);
+
+        this._contextMenu = new PopupMenu();
+        this.append(this._contextMenu);
 
         this._contentTable = e("table",
             {
@@ -354,10 +371,11 @@ export class DataGrid<TRow> extends Component {
     };
 
     /** Copies the currently selected data cells to the system clipboard. */
-    public async copySelection(): Promise<boolean> {
+    public async copySelection(addHeaders = false): Promise<boolean> {
         const ranges = this._selection.getRanges();
-        const columns = this.getVisibleColumns();
-        if (ranges.length === 0 || columns.length === 0) return false;
+        const gridColumns = this._gridColumns.filter(column => column.type === "data");
+        const columns = gridColumns.map(column => column.dataColumn!);
+        if (ranges.length === 0 || gridColumns.length === 0) return false;
 
         const selectedRows = new Map<number, Set<number>>();
         for (const range of ranges) {
@@ -394,8 +412,7 @@ export class DataGrid<TRow> extends Component {
 
             const line: string[] = [];
             for (const colIndex of Array.from(selectedColumns).sort((a, b) => a - b)) {
-                const cell = row.cells?.[columns[colIndex].name];
-                let cellText = String(cell?.text ?? cell?.value ?? cell ?? "");
+                let cellText = this.getCellText(row, gridColumns[colIndex]);
                 if (/[\t\r\n"]/.test(cellText)) cellText = `"${cellText.replace(/"/g, '""')}"`;
                 line.push(cellText);
             }
@@ -403,6 +420,13 @@ export class DataGrid<TRow> extends Component {
         }
 
         if (textLines.length === 0) return false;
+
+        if (addHeaders) {
+            const headerColumns = Array.from(new Set(
+                Array.from(selectedRows.values()).flatMap(selectedColumns => Array.from(selectedColumns))
+            )).sort((a, b) => a - b);
+            textLines.unshift(headerColumns.map(colIndex => columns[colIndex].caption ?? columns[colIndex].name ?? ""));
+        }
 
         const text = textLines.map(line => line.join("\t")).join("\r\n");
         const escapeHtml = (value: string) => value.replace(/[&<>"']/g, symbol => ({
@@ -436,6 +460,256 @@ export class DataGrid<TRow> extends Component {
 
         return true;
     }
+
+    private getContextMenuRowData = (row?: GridRow): TRow | undefined => {
+        if (!row || (row.type !== "data" && row.type !== "node")) return undefined;
+        return row.data?.data as TRow | undefined;
+    };
+
+    private getColumnPinPosition = (columnName: string): "left" | "right" | "none" => {
+        const columns = this._gridOptions.visibleColumns ?? [];
+        const index = columns.indexOf(columnName);
+        if (index < 0) return "none";
+        if (index < (this._gridOptions.fixedLeftColumns ?? 0)) return "left";
+        if (index >= columns.length - (this._gridOptions.fixedRightColumns ?? 0)) return "right";
+        return "none";
+    };
+
+    private setColumnPinPosition = (columnName: string, position: "left" | "right" | "none") => {
+        const columns = [...(this._gridOptions.visibleColumns ?? [])];
+        const currentIndex = columns.indexOf(columnName);
+        if (currentIndex < 0) return;
+
+        let leftCount = this._gridOptions.fixedLeftColumns ?? 0;
+        let rightCount = this._gridOptions.fixedRightColumns ?? 0;
+        const currentPosition = this.getColumnPinPosition(columnName);
+
+        columns.splice(currentIndex, 1);
+        if (currentPosition === "left") leftCount--;
+        if (currentPosition === "right") rightCount--;
+
+        if (position === "left") {
+            columns.splice(leftCount, 0, columnName);
+            leftCount++;
+        } else if (position === "right") {
+            columns.splice(columns.length - rightCount, 0, columnName);
+            rightCount++;
+        } else {
+            const unpinnedIndex = Math.min(leftCount, columns.length - rightCount);
+            columns.splice(unpinnedIndex, 0, columnName);
+        }
+
+        this.setOptions({
+            visibleColumns: columns,
+            fixedLeftColumns: leftCount,
+            fixedRightColumns: rightCount
+        });
+    };
+
+    private autoSizeAllColumns = () => {
+        for (const column of this.getVisibleColumns()) column.width = undefined;
+        void this.layoutChanged();
+    };
+
+    private setColumnSort = (columnName: string, direction: "asc" | "desc") => {
+        this.setOptions({ orderBy: [[columnName, direction]] });
+    };
+
+    private clearColumnSort = (columnName: string) => {
+        const orderBy = (this._gridOptions.orderBy ?? []).filter(item =>
+            typeof item === "string" ? item !== columnName : item[0] !== columnName
+        );
+        this.setOptions({ orderBy });
+    };
+
+    private toggleColumnGrouping = (columnName: string) => {
+        if (this._isHierarchicalData) return;
+        const groupColumns = [...(this._gridOptions.groupColumns ?? [])];
+        const index = groupColumns.indexOf(columnName);
+        if (index >= 0) groupColumns.splice(index, 1);
+        else groupColumns.push(columnName);
+        this.setOptions({ groupColumns });
+    };
+
+    private getColumnSortDirection = (columnName: string): "asc" | "desc" | undefined => {
+        const token = this._gridOptions.orderBy?.find(item =>
+            typeof item === "string" ? item === columnName : item[0] === columnName
+        );
+        if (!token) return undefined;
+        return typeof token === "string" ? "asc" : token[1];
+    };
+
+    private getContextMenuItems = async (context: DataGridContextMenuContext<TRow>): Promise<MenuItem[]> => {
+        const items: MenuItem[] = [];
+        const standard = this._gridOptions.standardContextMenuItems;
+        const hasStandard = (item: GridStandardContextMenuItem) =>
+            standard === null || standard?.includes(item) === true;
+        const addDivider = () => {
+            if (items.length && items[items.length - 1].isDivider !== true) items.push({ isDivider: true });
+        };
+
+        if (context.target === "columnHeader" && context.column) {
+            const columnName = context.column.name;
+            const pinPosition = this.getColumnPinPosition(columnName);
+            const isGrouped = this._gridOptions.groupColumns?.includes(columnName) === true;
+            const sortDirection = this.getColumnSortDirection(columnName);
+
+            if ((!sortDirection || sortDirection === "desc") && hasStandard("sortAscending" as GridStandardContextMenuItem)) {
+                items.push({
+                    icon: "ri-arrow-up-line",
+                    text: "Sort Ascending",
+                    action: () => this.setColumnSort(columnName, "asc")
+                });
+            }
+            if ((!sortDirection || sortDirection === "asc") && hasStandard("sortDescending" as GridStandardContextMenuItem)) {
+                items.push({
+                    icon: "ri-arrow-down-line",
+                    text: "Sort Descending",
+                    action: () => this.setColumnSort(columnName, "desc")
+                });
+            }
+            if (sortDirection && hasStandard("clearSort" as GridStandardContextMenuItem)) {
+                items.push({
+                    icon: "ri-close-line",
+                    text: "Clear sorting",
+                    action: () => this.clearColumnSort(columnName)
+                });
+            }
+            if (hasStandard("pinColumn" as GridStandardContextMenuItem)) {
+                addDivider();
+                items.push({
+                    icon: "ri-pushpin-line",
+                    text: "Pin Column",
+                    subItems: async () => [
+                        {
+                            icon: "ri-close-line",
+                            text: "No Pin",
+                            checked: () => pinPosition === "none",
+                            action: () => this.setColumnPinPosition(columnName, "none")
+                        },
+                        {
+                            text: "Pin Left",
+                            checked: () => pinPosition === "left",
+                            action: () => this.setColumnPinPosition(columnName, "left")
+                        },
+                        {
+                            text: "Pin Right",
+                            checked: () => pinPosition === "right",
+                            action: () => this.setColumnPinPosition(columnName, "right")
+                        }
+                    ]
+                });
+            }
+            if (hasStandard("autosizeColumn" as GridStandardContextMenuItem)) {
+                addDivider();
+                items.push({
+                    icon: "ri-expand-up-down-line",
+                    text: "Autosize This Column",
+                    action: () => this.autoSizeColumn(columnName)
+                });
+            }
+            if (hasStandard("autosizeAllColumns" as GridStandardContextMenuItem)) {
+                items.push({
+                    icon: "ri-expand-up-down-line",
+                    text: "Autosize All Columns",
+                    action: this.autoSizeAllColumns
+                });
+            }
+            if (hasStandard("groupColumn" as GridStandardContextMenuItem)) {
+                addDivider();
+                items.push({
+                    icon: "ri-timeline-view",
+                    text: isGrouped ? "Ungroup" : `Group by ${context.column.caption ?? context.column.name}`,
+                    disabled: this._isHierarchicalData,
+                    action: () => this.toggleColumnGrouping(columnName)
+                });
+            }
+        }
+
+        if (context.target === "cell" || context.target === "rowHeader" || context.target === "row") {
+            if (hasStandard("copy") && this._selection.getRanges().length > 0) {
+                items.push({ icon: "ri-file-copy-line", text: "Copy selected cells", action: () => this.copySelection() });
+            }
+            if (hasStandard("copyWithHeaders") && this._selection.getRanges().length > 0) {
+                items.push({ icon: "ri-file-copy-2-line", text: "Copy selected cells with headers", action: () => this.copySelection(true) });
+            }
+            if (hasStandard("selectRow") && context.row && this.isSelectableGridRow(context.row)) {
+                items.push({
+                    icon: "ri-checkbox-multiple-line",
+                    text: "Select row",
+                    action: () => {
+                        this._selection.selectSingleRow(context.row!.visibleIndex);
+                        this.refresh();
+                    }
+                });
+            }
+            if (hasStandard("clearSelection") && this._selection.getRanges().length > 0) {
+                items.push({ icon: "ri-close-circle-line", text: "Clear selection", action: () => this.clearSelection() });
+            }
+        }
+
+        const customItems: MenuItem[] = [];
+        if (context.target === "cell" && context.column?.contextMenuItems) {
+            customItems.push(...(await context.column.contextMenuItems(context)));
+        }
+        if (context.target === "columnHeader" && context.column?.headerContextMenuItems) {
+            customItems.push(...(await context.column.headerContextMenuItems(context)));
+        }
+        if ((context.target === "cell" || context.target === "row") && this._gridOptions.rowContextMenuItems) {
+            customItems.push(...(await this._gridOptions.rowContextMenuItems(context)));
+        }
+        if (context.target === "rowHeader" && this._gridOptions.rowHeaderContextMenuItems) {
+            customItems.push(...(await this._gridOptions.rowHeaderContextMenuItems(context)));
+        }
+
+        if (customItems.length) {
+            addDivider();
+            items.push(...customItems);
+        }
+
+        return items;
+    };
+
+    private showContextMenu = async (
+        event: MouseEvent,
+        target: DataGridContextMenuContext<TRow>["target"],
+        row?: GridRow,
+        column?: DataColumn<TRow>,
+        colIndex?: number
+    ) => {
+        if (!this._gridOptions.contextMenu) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (target === "cell" && row && colIndex !== undefined && this.isSelectableGridRow(row)
+            && !this._selection.isSelected(row.visibleIndex, colIndex)) {
+            this._selection.selectSingleCell(row.visibleIndex, colIndex);
+            this.refresh();
+        } else if (target === "rowHeader" && row && this.isSelectableGridRow(row)
+            && !this._selection.isWholeRowSelected(row.visibleIndex)) {
+            this._selection.selectSingleRow(row.visibleIndex);
+            this.refresh();
+        }
+
+        const context: DataGridContextMenuContext<TRow> = {
+            target,
+            row,
+            rowData: this.getContextMenuRowData(row),
+            column,
+            rowIndex: row?.visibleIndex,
+            colIndex,
+            selectedRanges: this._selection.getRanges(),
+            event
+        };
+        const items = await this.getContextMenuItems(context);
+        if (items.length) {
+            await this._contextMenu.show({
+                point: { x: event.clientX, y: event.clientY },
+                items
+            });
+        }
+    };
 
     private ensureKeyboardCellVisible(rowIndex: number, colIndex: number): void {
         const rowTop = this._sizeManager.getOffset(rowIndex);
@@ -592,6 +866,8 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.selectableGroupRows ??= true;
         this._gridOptions.selectableHierarchyNodes ??= false;
         this._gridOptions.texts ??= {};
+        this._gridOptions.contextMenu ??= true;
+        this._gridOptions.standardContextMenuItems ??= null;
 
         this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: options }));
 
@@ -1173,7 +1449,7 @@ export class DataGrid<TRow> extends Component {
         props.style.left = (offsetLeft) + "px";
 
         if (visibleIndex == this.fixedLeftColumnCount - 1) {
-            props.style.borderRightWidth = "2px";
+            props.style.borderRight = "1px solid var(--elg-border-color)";
         }
     }
 
@@ -1187,12 +1463,18 @@ export class DataGrid<TRow> extends Component {
         props.style.right = (offsetRight) + "px";
 
         if (visibleIndex == this._gridColumns.length - 1 - this.fixedRightColumnCount) {
-            props.style.borderLeft = "2px solid var(--elg-border-color)";
+            props.style.borderLeft = "1px solid var(--elg-border-color)";
         }
     }
 
-    private getCellText = (gridRow: GridRow,
-        col: GridColumn<TRow>): string => {
+    private getCellText = (gridRow: GridRow, col: GridColumn<TRow>): string => {
+
+        // First column in a group row displays the group label.
+        if (col.visibleIndex == 1
+            && gridRow.expandable
+            && gridRow.type == "group")
+            return gridRow.text ?? "";
+
         if (col.dataColumn) {
             const cell = gridRow.cells?.[col.dataColumn.name];
             return String(cell?.text ?? cell?.value ?? cell ?? "");
@@ -1223,21 +1505,27 @@ export class DataGrid<TRow> extends Component {
                     if (this.isSelectableGridRow(gridRow)) {
                         props.onmousedown = (e: MouseEvent) => this.beginRowSelection(e, gridRow);
                         props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
+                        props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(e, "rowHeader", gridRow);
                     }
                     break;
                 }
                 if (!col.dataColumn) break;
 
-                let cellText = this.getCellText(gridRow, col);
+                const cellText = this.getCellText(gridRow, col);
 
                 props.onmousedown = (e: MouseEvent) => this.beginCellSelection(e, gridRow, col.visibleIndex);
                 props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
+                props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
+                    e,
+                    "cell",
+                    gridRow,
+                    col.dataColumn,
+                    col.visibleIndex - this.rowHeaderOffset
+                );
 
                 if (col.visibleIndex == 1) {
 
                     if (gridRow.expandable) {
-                        if (gridRow.type == "group")
-                            cellText = gridRow.text ?? "";
 
                         props.vnodes = [
                             v("i", {
@@ -1292,8 +1580,16 @@ export class DataGrid<TRow> extends Component {
 
             case "header":
                 if (col.type == "data" && col.dataColumn) {
+                    const sortDirection = this.getColumnSortDirection(col.dataColumn.name);
                     props.vnodes = [
                         v("span", String(col.dataColumn.caption ?? col.dataColumn.name)),
+                        sortDirection
+                            ? v("i", {
+                                class: `${sortDirection === "asc" ? "ri-arrow-up-line" : "ri-arrow-down-line"}`,
+                                ui: ["ms-1"],
+                                ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
+                            })
+                            : null,
                         v("em", {
                             class: "elg-grid-header-resizer",
                             onmousedown: (e, el) => this.resizeColumn(e, col),
@@ -1308,6 +1604,12 @@ export class DataGrid<TRow> extends Component {
                     ]
                     props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
                     props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
+                    props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
+                        e,
+                        "columnHeader",
+                        undefined,
+                        col.dataColumn
+                    );
                 }
                 break;
 
@@ -1818,6 +2120,12 @@ export class DataGrid<TRow> extends Component {
                         class: "elg-gridcell" + (this._activeGroupColumn === cn ? " elg-active-col" : ""),
                         onmousedown: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
                         ontouchstart: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
+                        oncontextmenu: (e: MouseEvent) => this.showContextMenu(
+                            e,
+                            "columnHeader",
+                            undefined,
+                            col
+                        ),
                     },
                     v("span", col.caption ?? col.name),
                     v("i", {

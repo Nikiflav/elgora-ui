@@ -15,6 +15,7 @@ export { BrowserRouter } from './components/browser-router/BrowserRouter';
 export { ScrollEngine } from './components/scrollbar/scroll-engine';
 export { DataGrid, type DataGridOptions, type GridDataSource } from './components/datagrid/DataGrid';
 export { SelectionManager, type SelectionCell, type SelectionRange, type GridContext, type SelectionEdge, type CellSelectionState } from './components/datagrid/SelectionManager';
+export { type GridContextMenuTarget, type GridStandardContextMenuItem, type DataGridContextMenuContext, type GridContextMenuItems } from './components/datagrid/DataGridContextMenu';
 export { type DataSource, ArrayDataSource, type RowIdentity } from './components/datagrid/DataSource';
 export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement, type PopoverCloseMode } from './components/popup/popover';
 export { PopupMenu, type PopupMenuOptions, type PopupMenuShowOptions, type MenuItem } from './components/popup/PopupMenu';
