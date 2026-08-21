@@ -6,8 +6,9 @@ import { ScrollEngine } from "../scrollbar/scroll-engine";
 import { Scrollbar } from "../scrollbar/scrollbar";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
-import { DataCell, DataColumn, DataColumnLayoutInfo, DataColumnUtils, OrderByToken, orderByTokenToString, SummaryType } from "./DataColumn";
+import { DataCell, DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryType } from "./DataColumn";
 import { ArrayDataSource, DataSource, LocalGroupingDataSource, RowIdentity } from "./DataSource";
+import type { FilterFunctionRegistry } from "../../data/filter";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
 import { GridRow, GridRowsProvider } from "./GridRow";
 import { VirtualGridRows } from "./VirtualGridRows";
@@ -65,6 +66,8 @@ export type DataGridOptions<TRow> = {
     groupColumns?: string[],
     /** The aggregation summary for group rows. */
     groupSummary?: { field: string, summaryType: SummaryType }[],
+    /** Custom group intervals available in the Group by context-menu submenu. */
+    groupIntervals?: GroupIntervalDefinition<TRow>[],
     /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */
     selectableGroupRows?: boolean,
     /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */
@@ -531,6 +534,21 @@ export class DataGrid<TRow> extends Component {
         this.setOptions({ groupColumns });
     };
 
+    private setColumnSummary = (columnName: string, summaryType?: SummaryType) => {
+        const summaries = (this._gridOptions.groupSummary ?? []).filter(s => s.field !== columnName);
+        if (summaryType) summaries.push({ field: columnName, summaryType });
+        this.setOptions({ groupSummary: summaries });
+    };
+
+    private setColumnGroupInterval = (columnName: string, groupInterval?: GroupInterval) => {
+        this.setColumnOptions(columnName, { groupInterval });
+        if (!this._gridOptions.groupColumns?.includes(columnName)) {
+            this.setOptions({ groupColumns: [...(this._gridOptions.groupColumns ?? []), columnName] });
+        } else {
+            this.reloadRows();
+        }
+    };
+
     private getColumnSortDirection = (columnName: string): "asc" | "desc" | undefined => {
         const token = this._gridOptions.orderBy?.find(item =>
             typeof item === "string" ? item === columnName : item[0] === columnName
@@ -619,11 +637,69 @@ export class DataGrid<TRow> extends Component {
                 addDivider();
                 items.push({
                     icon: "ri-timeline-view",
-                    text: isGrouped ? "Ungroup" : `Group by ${context.column.caption ?? context.column.name}`,
+                    text: `Group by ${context.column.caption ?? context.column.name}`,
                     disabled: this._isHierarchicalData,
-                    action: () => this.toggleColumnGrouping(columnName)
+                    subItems: async () => {
+                        const intervalLabels: Record<string, string> = {
+                            "year": "Year",
+                            "yearQuarter": "Year-quarter",
+                            "quarter": "Quarter",
+                            "yearMonth": "Year-month",
+                            "month": "Month",
+                            "week": "ISO week",
+                            "day": "Day",
+                            "dayOfWeek": "Day of week",
+                            "hour": "Hour",
+                            "minute": "Minute",
+                            "second": "Second",
+                            "firstChar": "First character"
+                        };
+                        const supportedIntervals = DataColumnUtils.getSupportedGroupIntervals(context.column!);
+                        const customIntervals = this._gridOptions.groupIntervals ?? [];
+                        const intervals: Array<{ label: string, value?: GroupInterval }> = [
+                            ...(isGrouped ? [{ label: "Ungroup" } as { label: string, value?: GroupInterval }] : []),
+                            { label: "No interval" },
+                            ...supportedIntervals.map(value => ({ label: intervalLabels[value] ?? String(value), value })),
+                            ...customIntervals
+                                .filter(interval => !supportedIntervals.includes(interval.name))
+                                .map(interval => ({ label: interval.text, value: interval.name as GroupInterval }))
+                        ];
+                        const currentInterval = context.column!.groupInterval;
+                        if (currentInterval && !intervals.some(i => i.value === currentInterval)) {
+                            intervals.push({ label: String(currentInterval), value: currentInterval });
+                        }
+                        return intervals.map(interval => ({
+                            text: interval.label,
+                            checked: () => isGrouped && currentInterval === interval.value,
+                            action: () => interval.label === "Ungroup"
+                                ? this.toggleColumnGrouping(columnName)
+                                : this.setColumnGroupInterval(columnName, interval.value)
+                        }));
+                    }
                 });
             }
+            addDivider();
+            const currentSummary = this._gridOptions.groupSummary?.find(s => s.field === columnName)?.summaryType;
+            items.push({
+                icon: "ri-calculator-line",
+                text: "Summary",
+                disabled: this._isHierarchicalData,
+                subItems: async () => {
+                    const summaryTypes: Array<{ label: string, value?: SummaryType }> = [
+                        { label: "None" },
+                        { label: "Count", value: "count" },
+                        { label: "Sum", value: "sum" },
+                        { label: "Minimum", value: "min" },
+                        { label: "Maximum", value: "max" },
+                        { label: "Distinct", value: "distinct" }
+                    ];
+                    return summaryTypes.map(summary => ({
+                        text: summary.label,
+                        checked: () => currentSummary === summary.value,
+                        action: () => this.setColumnSummary(columnName, summary.value)
+                    }));
+                }
+            });
         }
 
         if (context.target === "cell" || context.target === "rowHeader" || context.target === "row") {
@@ -781,7 +857,7 @@ export class DataGrid<TRow> extends Component {
         const data = this._gridOptions.data;
         let ds: DataSource<TRow>;
         if (data == undefined || data instanceof Array) {
-            ds = new ArrayDataSource<TRow>(data || []);
+            ds = new ArrayDataSource<TRow>(data || [], { filterFunctions: this.getGroupFilterFunctions() });
         } else {
             ds = data;
         }
@@ -799,9 +875,17 @@ export class DataGrid<TRow> extends Component {
                 if (!col)
                     return Promise.resolve((row as any)[column]);
                 return DataColumnUtils.getValue(col, row);
-            }, column => this._columnsIndex.get(column));
+            }, column => this._columnsIndex.get(column), this._gridOptions.groupIntervals);
         }
     }
+
+    private getGroupFilterFunctions = (): FilterFunctionRegistry => {
+        const functions: FilterFunctionRegistry = {};
+        for (const interval of this._gridOptions.groupIntervals ?? []) {
+            functions[interval.name] = (value, _args, row) => interval.getGroupValue(row, value);
+        }
+        return functions;
+    };
 
     /** Merges a column patch onto the existing DataColumn of the same name (preserving its object
      *  identity, since it's shared with _gridOptions.columns and _gridColumns[i].dataColumn), or adds
@@ -825,7 +909,8 @@ export class DataGrid<TRow> extends Component {
     public setOptions = (options: Partial<DataGridOptions<TRow>>) => {
 
         if (this._initialized && ("data" in options || "groupColumns" in options || "hierarchyRootId" in options
-            || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options)) {
+            || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
+            || "groupIntervals" in options)) {
             this._selection.clear();
         }
 
@@ -853,6 +938,7 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.visibleColumns ??= this._gridOptions.columns.map(c => c.name);
         this._gridOptions.groupColumns ??= [];
         this._gridOptions.groupSummary ??= [];
+        this._gridOptions.groupIntervals ??= [];
         this._gridOptions.pageSize ??= 100;
         this._gridOptions.fixedLeftColumns ??= 0;
         this._gridOptions.fixedRightColumns ??= 0;
@@ -887,7 +973,8 @@ export class DataGrid<TRow> extends Component {
         }
 
         const reloadsRows = "data" in options || "groupColumns" in options || "hierarchyRootId" in options
-            || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options;
+            || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
+            || "groupIntervals" in options;
         const changesLayout = "columns" in options || "visibleColumns" in options || "fixedLeftColumns" in options
             || "fixedRightColumns" in options || "autoFillViewportWidth" in options || "showRowHeader" in options;
         const changesStaticRows = "showColumnHeaders" in options || "showFilterRow" in options || "showColumnFooters" in options;
@@ -1470,7 +1557,7 @@ export class DataGrid<TRow> extends Component {
     private getCellText = (gridRow: GridRow, col: GridColumn<TRow>): string => {
 
         // First column in a group row displays the group label.
-        if (col.visibleIndex == 1
+        if (false && col.visibleIndex == 1
             && gridRow.expandable
             && gridRow.type == "group")
             return gridRow.text ?? "";

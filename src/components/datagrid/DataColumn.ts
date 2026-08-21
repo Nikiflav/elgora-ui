@@ -1,5 +1,6 @@
 import { Utils } from "../../core/Utils";
 import type { GridContextMenuItems } from "./DataGridContextMenu";
+import type { FilterSelector } from "../../data/filter";
 
 /** One selectable option for a column's allowed-value list (e.g. a dropdown item). */
 export type DisplayValue = {
@@ -26,18 +27,25 @@ export type OrderByToken = string | [string, "asc" | "desc"];
 /** Built-in grouping buckets, plus names understood by a server DataSource. */
 export type GroupInterval =
     | "year"
-    | "year+quarter"
+    | "yearQuarter"
     | "quarter"
-    | "year+month"
+    | "yearMonth"
     | "month"
     | "week"
     | "day"
-    | "day-of-week"
+    | "dayOfWeek"
     | "hour"
     | "minute"
     | "second"
-    | "first-char"
+    | "firstChar"
     | (string & {});
+
+/** A custom grouping interval with a serializable name and local fallback evaluator. */
+export type GroupIntervalDefinition<TRow> = {
+    name: string;
+    text: string;
+    getGroupValue: (row: TRow, value: any) => any;
+};
 
 export function orderByTokenToString(tok: OrderByToken) {
     if (typeof tok == "string")
@@ -146,9 +154,35 @@ export type DataColumn<TRow> = {
 
 export class DataColumnUtils {
 
+    static isDateColumn<TRow>(col: DataColumn<TRow>): boolean {
+        return col.editorType === "date" || col.editorType === "datetime-local";
+    }
+
+    static getGroupFilterSelector<TRow>(col: DataColumn<TRow>): FilterSelector {
+        if (!col.groupInterval) return col.name;
+        return {
+            function: col.groupInterval,
+            field: col.name
+        };
+    }
+
+    static getSupportedGroupIntervals<TRow>(col: DataColumn<TRow>): GroupInterval[] {
+        if (DataColumnUtils.isDateColumn(col)) {
+            return [
+                "year", "yearQuarter", "quarter", "yearMonth", "month",
+                "week", "day", "dayOfWeek", "hour", "minute", "second"
+            ];
+        }
+        if (col.editorType === "text") return ["firstChar"];
+        return [];
+    }
+
     /** Resolves the value used for a local group, including custom and built-in intervals. */
-    static async getGroupValue<TRow>(col: DataColumn<TRow>, row: TRow): Promise<any> {
+    static async getGroupValue<TRow>(col: DataColumn<TRow>, row: TRow, customIntervals?: GroupIntervalDefinition<TRow>[]): Promise<any> {
         const value = await DataColumnUtils.getValue(col, row);
+        const customInterval = customIntervals?.find(x => x.name === col.groupInterval);
+        if (customInterval)
+            return await customInterval.getGroupValue(row, value);
         if (col.getGroupValue)
             return await col.getGroupValue(row, value);
         return DataColumnUtils.applyGroupInterval(value, col.groupInterval);
@@ -156,7 +190,7 @@ export class DataColumnUtils {
 
     static applyGroupInterval(value: any, interval?: GroupInterval): any {
         if (!interval || value === null || value === undefined || value === "") return value ?? "";
-        if (interval === "first-char") return String(value).charAt(0);
+        if (interval === "firstChar") return String(value).charAt(0);
 
         const date = value instanceof Date ? value : new Date(value);
         if (Number.isNaN(date.getTime())) return value;
@@ -166,9 +200,9 @@ export class DataColumnUtils {
         const quarter = Math.floor(date.getMonth() / 3) + 1;
         switch (interval) {
             case "year": return year;
-            case "year+quarter": return `${year}-Q${quarter}`;
+            case "yearQuarter": return `${year}-Q${quarter}`;
             case "quarter": return quarter;
-            case "year+month": return `${year}-${String(month).padStart(2, "0")}`;
+            case "yearMonth": return `${year}-${String(month).padStart(2, "0")}`;
             case "month": return month;
             case "week": {
                 // ISO 8601 week: Monday-based, with the year's first Thursday in week 1.
@@ -181,7 +215,7 @@ export class DataColumnUtils {
                 return `${isoYear}-W${String(isoWeek).padStart(2, "0")}`;
             }
             case "day": return date.getDate();
-            case "day-of-week": return date.getDay() || 7;
+            case "dayOfWeek": return date.getDay() || 7;
             case "hour": return date.getHours();
             case "minute": return date.getMinutes();
             case "second": return date.getSeconds();

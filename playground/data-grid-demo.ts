@@ -4,7 +4,14 @@ import { DataGrid } from "../src/components/datagrid/DataGrid";
 import { ArrayDataSource } from "../src/components/datagrid/DataSource";
 
 const products = ["Laptop", "Monitor", "Keyboard", "Mouse", "Headphones", "Webcam", "Desk Chair", "Desk Lamp"];
-const customers = ["Acme Corp", "TechStart", "Global Solutions", "Innovate Inc", "Digital Dynamics", "ByteWorks"];
+const customers = [
+    "Acme Corp", "Apex Systems", "Atlas Industries",
+    "TechStart", "TechNova",
+    "Global Solutions", "Greenfield Labs",
+    "Innovate Inc", "Ionix",
+    "Digital Dynamics", "Delta Works",
+    "ByteWorks", "Brightside"
+];
 const regions = ["North", "South", "East", "West"];
 const statuses = ["Pending", "Shipped", "Delivered", "Cancelled"];
 
@@ -37,7 +44,7 @@ const grid = new DataGrid({
         { name: "id", editorType: "number", width: 250 },
         { name: "orderNumber", editorType: "text" },
         { name: "product", editorType: "text" },
-        { name: "customer", editorType: "text" },
+        { name: "customer", editorType: "text", groupInterval: "firstChar" },
         { name: "region", editorType: "text" },
         { name: "status", editorType: "text" },
         { name: "quantity", editorType: "number" },

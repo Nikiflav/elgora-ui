@@ -1,4 +1,4 @@
-import { filterAnd, DataFilter } from "../../data/filter";
+import { DataFilter, filterAnd } from "../../data/filter";
 import { DataColumn, DataColumnUtils, OrderByToken, SummaryType } from "./DataColumn";
 import { DataSource, GroupItem, QueryArgs } from "./DataSource";
 import { GridViewportArgs, GridResult, GridRow, GridRowsProvider } from "./GridRow";
@@ -73,7 +73,7 @@ class Paginator {
         try {
             const requireTotalCount = this._totalCount < 0;
             const pageOffset = this._pageSize * pageIndex;
-            let filter = filterAnd(this._groupFilter, this._gridState.baseFilter);
+            const filter = filterAnd(this._groupFilter, this._gridState.baseFilter);
 
             const groupColumn = this.groupColumn;
             const result = await this._gridState.dataSource.loadData({
@@ -146,10 +146,17 @@ class Paginator {
                         expandedChildren: []
                     };
                     node.createPaginator = () => new Paginator({
-                        node,
-                        state: this._gridState,
-                        groupIndex: this._groupIndex + 1,
-                        groupFilter: filterAnd(this._groupFilter, [[g.groupField, "=", g.groupValue]])
+                    node,
+                    state: this._gridState,
+                    groupIndex: this._groupIndex + 1,
+                        groupFilter: filterAnd(
+                            this._groupFilter,
+                            [
+                                DataColumnUtils.getGroupFilterSelector(this._gridState.columns.get(g.groupField) ?? { name: g.groupField }),
+                                "=",
+                                g.groupValue
+                            ]
+                        )
                     });
                     return node;
                 });

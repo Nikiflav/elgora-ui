@@ -1,6 +1,7 @@
 import { Utils } from "../../core/Utils";
 import { DataFilter, evalFilter } from "../../data/filter";
-import { DataColumn, DataColumnUtils, GroupInterval, OrderByToken, SummaryType } from "./DataColumn";
+import { DataColumn, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, SummaryType } from "./DataColumn";
+import type { FilterFunctionRegistry } from "../../data/filter";
 
 
 
@@ -63,24 +64,17 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
     constructor(
         private ds: DataSource<TRow>,
         private getValue: (row: TRow, column: string) => Promise<any>,
-        private getColumn?: (column: string) => DataColumn<TRow> | undefined
+        private getColumn?: (column: string) => DataColumn<TRow> | undefined,
+        private customIntervals?: GroupIntervalDefinition<TRow>[]
     ) {
 
     }
 
     async loadData(args: QueryArgs): Promise<DataResult<TRow>> {
-
         if (args.groupColumn) {
 
             const column = this.getColumn?.(args.groupColumn);
-            const hasCustomGroupValue = !!column?.getGroupValue;
-            const serverArgs: QueryArgs = { ...args };
-            if (hasCustomGroupValue) {
-                delete serverArgs.groupColumn;
-                delete serverArgs.groupInterval;
-            }
-
-            const serverResult = hasCustomGroupValue ? undefined : await this.ds.loadData(serverArgs);
+            const serverResult = await this.ds.loadData(args);
             if (serverResult?.groups) return serverResult;
 
             // Load all items in memory and then group them.
@@ -104,9 +98,9 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             const flatResult = await this.ds.loadData(flatArgs);
 
             const map = new Map<any, GroupItem>();
-            for (let r of flatResult.dataItems!) {
+            for (let r of flatResult.dataItems ?? []) {
                 const groupValue = column
-                    ? await DataColumnUtils.getGroupValue(column, r)
+                    ? await DataColumnUtils.getGroupValue(column, r, this.customIntervals)
                     : (await this.getValue(r, args.groupColumn!)) ?? '';
                 let group = map.get(groupValue);
                 if (!group) {
@@ -158,13 +152,15 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
 export class ArrayDataSource<T> implements DataSource<T> {
     readonly array: Array<T>;
     private _parentField?: string;
+    private _filterFunctions?: FilterFunctionRegistry;
 
     /** Only assigned when `options.parentField` is given, so plain flat arrays don't get flagged as hierarchical. */
     getRowId?: (row: T) => any;
     hasChildren?: (row: T) => Promise<boolean>;
 
-    constructor(array: Array<T>, options?: { parentField?: string, idField?: string }) {
+    constructor(array: Array<T>, options?: { parentField?: string, idField?: string, filterFunctions?: FilterFunctionRegistry }) {
         this.array = array;
+        this._filterFunctions = options?.filterFunctions;
 
         const idField = options?.idField ?? "id";
         if (options?.parentField) {
@@ -182,7 +178,7 @@ export class ArrayDataSource<T> implements DataSource<T> {
         let workingSet = this._parentField && args.parentId !== undefined
             ? this.array.filter(item => (item as any)[this._parentField!] === args.parentId)
             : [...this.array];
-        if (args.filter) workingSet = workingSet.filter(item => evalFilter(<any>item, args.filter!));
+        if (args.filter) workingSet = workingSet.filter(item => evalFilter(<any>item, args.filter!, this._filterFunctions));
         if (args.orderby) {
             workingSet.sort((a, b) => {
                 for (const token of args.orderby!) {

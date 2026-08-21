@@ -1,8 +1,19 @@
 type BinaryOperator = "=" | "<>" | ">" | ">=" | "<" | "<=" | "startswith" | "endswith" | "contains" | "notcontains";
 type GroupOperator = "and" | "or";
 
+/** A field name or a serializable transformation applied to a field. */
+export type FilterSelector = string | {
+    function: string;
+    field: string;
+    args?: unknown[];
+};
+
+/** Local implementations for structured filter selectors. */
+export type FilterFunction = (value: any, args: unknown[], item: any) => any;
+export type FilterFunctionRegistry = Record<string, FilterFunction>;
+
 /** [ "field", "op", value ] */
-type BinaryFilter = [string, BinaryOperator, any];
+type BinaryFilter = [FilterSelector, BinaryOperator, any];
 
 /** [ "!", [filter] ] */
 type UnaryFilter = ["!", DataFilter];
@@ -17,8 +28,62 @@ type GroupFilter =
 
 export type DataFilter = BinaryFilter | UnaryFilter | GroupFilter;
 
+const DEFAULT_FILTER_FUNCTIONS: FilterFunctionRegistry = {
+    firstChar: value => String(value ?? "").charAt(0),
+    year: value => toDate(value)?.getFullYear(),
+    yearQuarter: value => {
+        const date = toDate(value);
+        return date ? `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}` : value;
+    },
+    quarter: value => {
+        const date = toDate(value);
+        return date ? Math.floor(date.getMonth() / 3) + 1 : value;
+    },
+    month: value => toDate(value)?.getMonth()! + 1,
+    yearMonth: value => {
+        const date = toDate(value);
+        return date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}` : value;
+    },
+    week: value => {
+        const date = toDate(value);
+        if (!date) return value;
+        const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const day = utc.getUTCDay() || 7;
+        utc.setUTCDate(utc.getUTCDate() + 4 - day);
+        const isoYear = utc.getUTCFullYear();
+        const yearStart = new Date(Date.UTC(isoYear, 0, 1));
+        const isoWeek = Math.ceil((((utc.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+        return `${isoYear}-W${String(isoWeek).padStart(2, "0")}`;
+    },
+    day: value => toDate(value)?.getDate(),
+    dayOfWeek: value => {
+        const date = toDate(value);
+        return date ? (date.getDay() || 7) : value;
+    },
+    hour: value => toDate(value)?.getHours(),
+    minute: value => toDate(value)?.getMinutes(),
+    second: value => toDate(value)?.getSeconds()
+};
 
-export function evalFilter(item: Record<string, any>, filter: DataFilter): boolean {
+function toDate(value: any): Date | undefined {
+    const date = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function getFieldValue(item: Record<string, any>, field: string): any {
+    return field.split(".").reduce((value, part) => value == null ? undefined : value[part], item);
+}
+
+function resolveSelector(item: Record<string, any>, selector: FilterSelector, functions: FilterFunctionRegistry): any {
+    if (typeof selector === "string") return getFieldValue(item, selector);
+    const fn = functions[selector.function];
+    if (!fn) throw new Error(`Unsupported filter function: "${selector.function}".`);
+    return fn(getFieldValue(item, selector.field), selector.args ?? [], item);
+}
+
+
+export function evalFilter(item: Record<string, any>, filter: DataFilter, functions?: FilterFunctionRegistry): boolean {
+    const filterFunctions = functions ? { ...DEFAULT_FILTER_FUNCTIONS, ...functions } : DEFAULT_FILTER_FUNCTIONS;
     // 1. Basic sanity check
     if (filter === undefined || filter === null) return true;
     if (!Array.isArray(filter)) {
@@ -41,22 +106,22 @@ export function evalFilter(item: Record<string, any>, filter: DataFilter): boole
         const operands = filter.slice(1);
         if (first === "and") {
             return operands.every((f, idx) => {
-                try { return evalFilter(item, f); }
+                try { return evalFilter(item, f, filterFunctions); }
                 catch (e: any) { throw new Error(`Error in "and" group at index ${idx + 1}: ${e.message}`); }
             });
         } else {
             return operands.some((f, idx) => {
-                try { return evalFilter(item, f); }
+                try { return evalFilter(item, f, filterFunctions); }
                 catch (e: any) { throw new Error(`Error in "or" group at index ${idx + 1}: ${e.message}`); }
             });
         }
     }
 
     // 4. Handle Binary Filter: ["Field", "Op", Value]
-    if (typeof first === "string" && filter.length === 3) {
+    if ((typeof first === "string" || (first && typeof first === "object")) && filter.length === 3) {
         const validOps = ["=", "<>", ">", ">=", "<", "<=", "startswith", "endswith", "contains", "notcontains"];
         if (validOps.includes(second)) {
-            return compare(item[first], second, third);
+            return compare(resolveSelector(item, first, filterFunctions), second, third);
         }
         // If it looks like a binary filter but has a bad operator
         throw new Error(`Invalid Binary Operator: "${second}" is not supported.`);
@@ -65,7 +130,7 @@ export function evalFilter(item: Record<string, any>, filter: DataFilter): boole
     // 5. Handle Implicit AND: [[...], [...]]
     if (Array.isArray(first)) {
         return filter.every((f, idx) => {
-            try { return evalFilter(item, f); }
+                try { return evalFilter(item, f, filterFunctions); }
             catch (e: any) { throw new Error(`Error in implicit "and" group at index ${idx}: ${e.message}`); }
         });
     }
