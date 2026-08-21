@@ -22,15 +22,6 @@
           "kind": "property"
         },
         {
-          "name": "supportsGrouping",
-          "type": "boolean",
-          "description": "Whether this source can bucket rows into groups itself (vs. relying on LocalGroupingDataSource).",
-          "tags": [],
-          "optional": false,
-          "source": "src/components/datagrid/DataSource.ts",
-          "kind": "property"
-        },
-        {
           "name": "getRowId",
           "type": "((row: T) => any) | undefined",
           "description": "Only assigned when `options.parentField` is given, so plain flat arrays don't get flagged as hierarchical.",
@@ -735,15 +726,6 @@
           "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
         },
         {
-          "name": "supportsGrouping",
-          "type": "boolean",
-          "description": "Whether this source can bucket rows into groups itself (vs. relying on LocalGroupingDataSource).",
-          "tags": [],
-          "optional": false,
-          "source": "src/components/datagrid/DataSource.ts",
-          "kind": "property"
-        },
-        {
           "name": "getRowId",
           "type": "((row: TRow) => RowIdentity) | undefined",
           "description": "Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children.",
@@ -930,6 +912,15 @@
       "tags": [],
       "source": "src/components/datagrid/DataGridContextMenu.ts",
       "definition": "| \"copy\"\n    | \"copyWithHeaders\"\n    | \"selectRow\"\n    | \"clearSelection\"\n    | \"sortAscending\"\n    | \"sortDescending\"\n    | \"clearSort\"\n    | \"pinColumn\"\n    | \"autosizeColumn\"\n    | \"autosizeAllColumns\"\n    | \"groupColumn\""
+    },
+    {
+      "name": "GroupInterval",
+      "kind": "type",
+      "type": "any",
+      "description": "Built-in grouping buckets, plus names understood by a server DataSource.",
+      "tags": [],
+      "source": "src/components/datagrid/DataColumn.ts",
+      "definition": "| \"year\"\n    | \"year+quarter\"\n    | \"quarter\"\n    | \"year+month\"\n    | \"month\"\n    | \"week\"\n    | \"day\"\n    | \"day-of-week\"\n    | \"hour\"\n    | \"minute\"\n    | \"second\"\n    | \"first-char\"\n    | (string & {})"
     },
     {
       "name": "MenuItem",

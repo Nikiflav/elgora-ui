@@ -1,6 +1,6 @@
 import { Utils } from "../../core/Utils";
 import { DataFilter, evalFilter } from "../../data/filter";
-import { DataColumn, OrderByToken, SummaryType } from "./DataColumn";
+import { DataColumn, DataColumnUtils, GroupInterval, OrderByToken, SummaryType } from "./DataColumn";
 
 
 
@@ -14,6 +14,8 @@ export interface QueryArgs {
     top?: number;
     /** Column to bucket rows by; when set, the result carries `groups` instead of `dataItems`. */
     groupColumn?: string;
+    /** Interval requested for groupColumn; arbitrary strings may be server-defined. */
+    groupInterval?: GroupInterval;
     /** Aggregations to compute per group, per field. */
     groupSummary?: { field: string, summaryType: SummaryType }[];
     /** Value to match against the data source's parent-reference field; present only in hierarchical (parent/child) mode. */
@@ -47,9 +49,6 @@ export type RowIdentity = string | number;
 export interface DataSource<TRow> {
     loadData(args: QueryArgs): Promise<DataResult<TRow>>;
     
-    /** Whether this source can bucket rows into groups itself (vs. relying on LocalGroupingDataSource). */
-    get supportsGrouping(): boolean;
-
     /** Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children. */
     getRowId?(row: TRow): RowIdentity;
 
@@ -63,14 +62,26 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
 
     constructor(
         private ds: DataSource<TRow>,
-        private getValue: (row: TRow, column: string) => Promise<any>
+        private getValue: (row: TRow, column: string) => Promise<any>,
+        private getColumn?: (column: string) => DataColumn<TRow> | undefined
     ) {
 
     }
 
     async loadData(args: QueryArgs): Promise<DataResult<TRow>> {
 
-        if (!this.ds.supportsGrouping && args.groupColumn) {
+        if (args.groupColumn) {
+
+            const column = this.getColumn?.(args.groupColumn);
+            const hasCustomGroupValue = !!column?.getGroupValue;
+            const serverArgs: QueryArgs = { ...args };
+            if (hasCustomGroupValue) {
+                delete serverArgs.groupColumn;
+                delete serverArgs.groupInterval;
+            }
+
+            const serverResult = hasCustomGroupValue ? undefined : await this.ds.loadData(serverArgs);
+            if (serverResult?.groups) return serverResult;
 
             // Load all items in memory and then group them.
             const flatArgs: QueryArgs = { ...args };
@@ -88,11 +99,15 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             flatArgs.select = Array.from(select);
 
 
+            // A flat response may be only the requested page; reload without paging so
+            // client-side fallback grouping sees the complete filtered set.
             const flatResult = await this.ds.loadData(flatArgs);
 
             const map = new Map<any, GroupItem>();
             for (let r of flatResult.dataItems!) {
-                const groupValue = (await this.getValue(r, args.groupColumn!)) ?? '';
+                const groupValue = column
+                    ? await DataColumnUtils.getGroupValue(column, r)
+                    : (await this.getValue(r, args.groupColumn!)) ?? '';
                 let group = map.get(groupValue);
                 if (!group) {
                     group = {
@@ -113,9 +128,13 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
                 }
             }
             let groups = Array.from(map.values());
+            const token = args.orderby?.find(x => (typeof x === "string" ? x : x[0]) === args.groupColumn);
+            const desc = Array.isArray(token) && token[1] === "desc";
             groups.sort((a, b) => {
-                return a.groupValue < b.groupValue ? -1 : 1;
-            })
+                if (a.groupValue === b.groupValue) return 0;
+                const result = a.groupValue < b.groupValue ? -1 : 1;
+                return desc ? -result : result;
+            });
             if (args.skip || args.top) {
                 groups = groups.slice(args.skip ?? 0, (args.skip ?? 0) + (args.top ?? groups.length));
             }
@@ -133,20 +152,12 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         return this.ds.getRowId?.(row);
     }
 
-    get supportsGrouping(): boolean {
-        return true;
-    }
 }
 
 /** DataSource implementation backed by an in-memory array. */
 export class ArrayDataSource<T> implements DataSource<T> {
     readonly array: Array<T>;
     private _parentField?: string;
-
-    // Switch to true so the grid can natively group local arrays!
-    get supportsGrouping(): boolean {
-        return false;
-    }
 
     /** Only assigned when `options.parentField` is given, so plain flat arrays don't get flagged as hierarchical. */
     getRowId?: (row: T) => any;

@@ -23,6 +23,22 @@ export type DataColumnLayoutInfo = {
 /** A sort instruction: either a bare field name, or a [field, direction] pair. */
 export type OrderByToken = string | [string, "asc" | "desc"];
 
+/** Built-in grouping buckets, plus names understood by a server DataSource. */
+export type GroupInterval =
+    | "year"
+    | "year+quarter"
+    | "quarter"
+    | "year+month"
+    | "month"
+    | "week"
+    | "day"
+    | "day-of-week"
+    | "hour"
+    | "minute"
+    | "second"
+    | "first-char"
+    | (string & {});
+
 export function orderByTokenToString(tok: OrderByToken) {
     if (typeof tok == "string")
         return tok;
@@ -121,10 +137,57 @@ export type DataColumn<TRow> = {
     contextMenuItems?: GridContextMenuItems<TRow>;
     /** Produces context-menu items for this column's header. */
     headerContextMenuItems?: GridContextMenuItems<TRow>;
+    /** Groups this column into a built-in or server-defined interval. */
+    groupInterval?: GroupInterval;
+    /** Computes a local grouping value. When present, grouping for this column is client-side. */
+    getGroupValue?(row: TRow, value: any): any | Promise<any>;
 }
 
 
 export class DataColumnUtils {
+
+    /** Resolves the value used for a local group, including custom and built-in intervals. */
+    static async getGroupValue<TRow>(col: DataColumn<TRow>, row: TRow): Promise<any> {
+        const value = await DataColumnUtils.getValue(col, row);
+        if (col.getGroupValue)
+            return await col.getGroupValue(row, value);
+        return DataColumnUtils.applyGroupInterval(value, col.groupInterval);
+    }
+
+    static applyGroupInterval(value: any, interval?: GroupInterval): any {
+        if (!interval || value === null || value === undefined || value === "") return value ?? "";
+        if (interval === "first-char") return String(value).charAt(0);
+
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
+        switch (interval) {
+            case "year": return year;
+            case "year+quarter": return `${year}-Q${quarter}`;
+            case "quarter": return quarter;
+            case "year+month": return `${year}-${String(month).padStart(2, "0")}`;
+            case "month": return month;
+            case "week": {
+                // ISO 8601 week: Monday-based, with the year's first Thursday in week 1.
+                const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                const day = utc.getUTCDay() || 7;
+                utc.setUTCDate(utc.getUTCDate() + 4 - day);
+                const isoYear = utc.getUTCFullYear();
+                const yearStart = new Date(Date.UTC(isoYear, 0, 1));
+                const isoWeek = Math.ceil((((utc.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+                return `${isoYear}-W${String(isoWeek).padStart(2, "0")}`;
+            }
+            case "day": return date.getDate();
+            case "day-of-week": return date.getDay() || 7;
+            case "hour": return date.getHours();
+            case "minute": return date.getMinutes();
+            case "second": return date.getSeconds();
+            default: return value;
+        }
+    }
 
     static hasDropdown<TRow>(col: DataColumn<TRow>) {
         return col.editorType == "date" || col.editorType == "datetime-local"

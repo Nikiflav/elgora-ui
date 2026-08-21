@@ -75,12 +75,14 @@ class Paginator {
             const pageOffset = this._pageSize * pageIndex;
             let filter = filterAnd(this._groupFilter, this._gridState.baseFilter);
 
+            const groupColumn = this.groupColumn;
             const result = await this._gridState.dataSource.loadData({
                 skip: pageIndex * this._pageSize,
                 top: this._pageSize,
                 filter: filter,
                 orderby: this._gridState.orderBy,
-                groupColumn: this.groupColumn,
+                groupColumn,
+                groupInterval: groupColumn ? this._gridState.columns.get(groupColumn)?.groupInterval : undefined,
                 groupSummary: this._gridState.groupSummary,
                 parentId: this._isHierarchy ? this._parentId : undefined,
                 requireTotalCount: requireTotalCount

@@ -799,7 +799,7 @@ export class DataGrid<TRow> extends Component {
                 if (!col)
                     return Promise.resolve((row as any)[column]);
                 return DataColumnUtils.getValue(col, row);
-            });
+            }, column => this._columnsIndex.get(column));
         }
     }
 
