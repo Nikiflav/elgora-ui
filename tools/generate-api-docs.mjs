@@ -4,7 +4,24 @@ import ts from "typescript";
 
 const root = process.cwd();
 const entryFile = path.join(root, "src", "index.ts");
-const outputFile = path.join(root, "playground", "api-docs.json");
+const outputFile = path.join(root, "docs", "content", "api-docs.json");
+const apiDirectory = path.join(root, "docs", "content", "api");
+const apiManifestFile = path.join(apiDirectory, "manifest.json");
+const guideTopicPaths = new Set();
+
+function collectGuidePaths(directory) {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        const fileName = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+            collectGuidePaths(fileName);
+            continue;
+        }
+        if (!entry.name.endsWith(".md")) continue;
+        const match = fs.readFileSync(fileName, "utf8").match(/^path:\s*["']?([^\r\n"']+)/m);
+        if (match) guideTopicPaths.add(match[1].trim());
+    }
+}
+collectGuidePaths(path.join(root, "docs", "content"));
 
 const program = ts.createProgram([entryFile], {
     target: ts.ScriptTarget.ES2020,
@@ -57,6 +74,20 @@ function sourceOf(node) {
     return path.relative(root, node.getSourceFile().fileName).replaceAll(path.sep, "/");
 }
 
+function namespaceOf(source) {
+    const parts = source.split("/");
+    if (parts[1] === "core") return "Core";
+    if (parts[1] === "data") return "Data";
+    if (parts[1] === "components" && parts[2]) {
+        if (parts[2] === "datagrid" && parts[3] === "DataSource.ts") return "Data";
+        const title = parts[2] === "datagrid"
+            ? "DataGrid"
+            : parts[2].split("-").map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+        return `Components.${title}`;
+    }
+    return "Types";
+}
+
 function typeOf(symbol, node) {
     const type = checker.getTypeOfSymbolAtLocation(symbol, node);
     return checker.typeToString(type, node, ts.TypeFormatFlags.NoTruncation);
@@ -81,6 +112,35 @@ function signatureOf(symbol, node) {
     ));
 }
 
+function callableDocs(node) {
+    if (!node.parameters) return {};
+    const jsdocParams = new Map(ts.getJSDocTags(node)
+        .filter(tag => ts.isJSDocParameterTag(tag))
+        .map(tag => [
+        tag.name.getText(),
+        textOf(tag.comment).trim()
+        ]));
+    const parameters = node.parameters.map(parameter => {
+        const name = parameter.name.getText();
+        const parameterType = checker.getTypeAtLocation(parameter);
+        return {
+            name,
+            type: checker.typeToString(parameterType, parameter, ts.TypeFormatFlags.NoTruncation),
+            optional: Boolean(parameter.questionToken || parameter.initializer),
+            defaultValue: parameter.initializer?.getText(),
+            description: jsdocParams.get(name) || ""
+        };
+    });
+    const returnTag = ts.getJSDocTags(node).find(tag => ts.isJSDocReturnTag(tag));
+    return {
+        parameters,
+        returns: {
+            type: node.type ? node.type.getText() : "void",
+            description: textOf(returnTag?.comment).trim()
+        }
+    };
+}
+
 function isPrivateOrProtected(node) {
     return node.modifiers?.some(modifier =>
         modifier.kind === ts.SyntaxKind.PrivateKeyword ||
@@ -89,13 +149,18 @@ function isPrivateOrProtected(node) {
 }
 
 function memberDocs(memberSymbol, memberNode) {
+    const tags = tagsOf(memberSymbol);
     return {
         name: memberSymbol.getName(),
         type: typeOf(memberSymbol, memberNode),
         description: documentationOf(memberSymbol),
-        tags: tagsOf(memberSymbol),
+        tags,
+        topics: tags.filter(tag => tag.name === "topic").map(tag => tag.text),
         optional: Boolean(memberSymbol.flags & ts.SymbolFlags.Optional),
         source: sourceOf(memberNode)
+        ,...(ts.isMethodDeclaration(memberNode) || ts.isMethodSignature(memberNode)
+            ? callableDocs(memberNode)
+            : {})
     };
 }
 
@@ -110,7 +175,9 @@ function membersOf(declaration) {
         if (!symbol) continue;
         result.push({
             ...memberDocs(symbol, member),
-            kind: ts.isMethodDeclaration(member) || ts.isMethodSignature(member) ? "method" : "property",
+            kind: memberDocs(symbol, member).tags?.some(tag => tag.name === "event")
+                ? "event"
+                : ts.isMethodDeclaration(member) || ts.isMethodSignature(member) ? "method" : "property",
             signature: ts.isMethodDeclaration(member) || ts.isMethodSignature(member)
                 ? typeOf(symbol, member)
                 : undefined
@@ -140,7 +207,16 @@ function apiEntry(symbol) {
         type: declarationTypeOf(resolved, declaration),
         description: documentationOf(resolved),
         tags: tagsOf(resolved),
+        topics: tagsOf(resolved).filter(tag => tag.name === "topic").map(tag => tag.text),
+        group: declarationKind(declaration) === "type" || declarationKind(declaration) === "interface"
+            ? "types"
+            : sourceOf(declaration).startsWith("src/components/") ? "components" : "core",
+        namespace: namespaceOf(sourceOf(declaration)),
+        path: "/api-reference/" + encodeURIComponent(symbol.getName()),
         source: sourceOf(declaration)
+        ,...(ts.isFunctionDeclaration(declaration) || ts.isMethodDeclaration(declaration)
+            ? callableDocs(declaration)
+            : {})
     };
 
     if (entry.kind === "class" || entry.kind === "interface") {
@@ -167,6 +243,13 @@ const exports = checker.getExportsOfModule(moduleSymbol)
     .filter(Boolean)
     .sort((a, b) => a.name.localeCompare(b.name));
 
+const invalidTopics = exports.flatMap(entry => (entry.topics || [])
+    .filter(topic => !guideTopicPaths.has(topic))
+    .map(topic => `${entry.name}: ${topic}`));
+if (invalidTopics.length) {
+    throw new Error(`API @topic references do not resolve to guide topics:\n${invalidTopics.join("\n")}`);
+}
+
 const diagnostics = ts.getPreEmitDiagnostics(program)
     .filter(diagnostic => diagnostic.category === ts.DiagnosticCategory.Error)
     .map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
@@ -184,5 +267,16 @@ const output = {
 };
 
 fs.mkdirSync(path.dirname(outputFile), { recursive: true });
+fs.mkdirSync(apiDirectory, { recursive: true });
 fs.writeFileSync(outputFile, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+for (const entry of exports) {
+    fs.writeFileSync(path.join(apiDirectory, entry.name + ".js"), `export default ${JSON.stringify(entry, null, 2)};\n`, "utf8");
+}
+fs.writeFileSync(apiManifestFile, `${JSON.stringify({
+    schemaVersion: 1,
+    entries: exports.map(({ name, kind, group, namespace, path: entryPath, description }) => ({
+        name, kind, group, namespace, path: entryPath, description,
+        module: "./content/api/" + name + ".js"
+    }))
+}, null, 2)}\n`, "utf8");
 console.log(`Generated ${exports.length} API entries at ${path.relative(root, outputFile)}.`);

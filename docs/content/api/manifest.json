@@ -1,0 +1,563 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "name": "ArrayDataSource",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Data",
+      "path": "/api-reference/ArrayDataSource",
+      "description": "DataSource implementation backed by an in-memory array.",
+      "module": "./content/api/ArrayDataSource.js"
+    },
+    {
+      "name": "BrowserRouter",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Browser Router",
+      "path": "/api-reference/BrowserRouter",
+      "description": "A simple client-side router that uses the browser's history API to manage navigation without hard page reloads. It listens for URL changes and updates the displayed page accordingly based on a set of defined routes.\r\nThe url path is stored as url parameter named '!'. Example ?!=/home/sub1/sub2\r\nUrl parameter is used instead of hash to allow better support for server-side redirects.\r\nThe router also supports dynamic route parameters and provides a default 404 page if no matching route is found. It also handles navigation through anchor tags and the browser's back/forward buttons.\r\nTo use the router, create an instance of `BrowserRouter` with an array of route handlers and optionally a custom 404 page. Each route handler defines a URL pattern and a function to create the corresponding page component. The router will automatically manage the displayed content based on the current URL.\r\nOnly one instance of `BrowserRouter` should be created in the application, and it should be mounted to a container element where the page content will be displayed.",
+      "module": "./content/api/BrowserRouter.js"
+    },
+    {
+      "name": "c",
+      "kind": "function",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/c",
+      "description": "Creates a Component backed by the requested HTML tag.\n\nChildren can be supplied either as `props.children` or as positional\narguments after the props object. When both forms are present, positional\nchildren take precedence.",
+      "module": "./content/api/c.js"
+    },
+    {
+      "name": "cbutton",
+      "kind": "variable",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/cbutton",
+      "description": "Creates a Component backed by a button element.\nChildren may be provided through `children` in the props object or as\npositional arguments; positional arguments take precedence.",
+      "module": "./content/api/cbutton.js"
+    },
+    {
+      "name": "cdiv",
+      "kind": "variable",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/cdiv",
+      "description": "Creates a Component backed by a div element.",
+      "module": "./content/api/cdiv.js"
+    },
+    {
+      "name": "CellSelectionState",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/CellSelectionState",
+      "description": "Render state for a cell participating in one or more selection ranges.",
+      "module": "./content/api/CellSelectionState.js"
+    },
+    {
+      "name": "Component",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/Component",
+      "description": "Base class for composable DOM components with lifecycle and observable state support.",
+      "module": "./content/api/Component.js"
+    },
+    {
+      "name": "ComponentChild",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/ComponentChild",
+      "description": "A value that can be mounted as a Component child.",
+      "module": "./content/api/ComponentChild.js"
+    },
+    {
+      "name": "ComponentOptions",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/ComponentOptions",
+      "description": "Configuration for a Component instance, including DOM and lifecycle props.",
+      "module": "./content/api/ComponentOptions.js"
+    },
+    {
+      "name": "DataFilter",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataFilter",
+      "description": "",
+      "module": "./content/api/DataFilter.js"
+    },
+    {
+      "name": "DataGrid",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGrid",
+      "description": "Virtualized, selectable, and optionally grouped data grid component.",
+      "module": "./content/api/DataGrid.js"
+    },
+    {
+      "name": "DataGridContextMenuContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridContextMenuContext",
+      "description": "Context passed to grid, row, and column context-menu customization points.",
+      "module": "./content/api/DataGridContextMenuContext.js"
+    },
+    {
+      "name": "DataGridOptions",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridOptions",
+      "description": "Construction-time configuration for a DataGrid instance.",
+      "module": "./content/api/DataGridOptions.js"
+    },
+    {
+      "name": "DataList",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Virtual List",
+      "path": "/api-reference/DataList",
+      "description": "Random-access data source consumed by a VirtualList.",
+      "module": "./content/api/DataList.js"
+    },
+    {
+      "name": "DataSource",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSource",
+      "description": "Query-level access to row data, with optional native grouping support.",
+      "module": "./content/api/DataSource.js"
+    },
+    {
+      "name": "e",
+      "kind": "function",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/e",
+      "description": "Creates a native HTML element, applies typed properties, and appends children.\n\nChildren can be supplied either as `props.children` or as positional\narguments after the props object. When both forms are present, positional\nchildren take precedence. The `children` prop is consumed as content and is\nnot written as an HTML attribute.",
+      "module": "./content/api/e.js"
+    },
+    {
+      "name": "ElgoraUI",
+      "kind": "variable",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/ElgoraUI",
+      "description": "Global UI runtime instance.\r\nUsed to invalidate components and manage scheduling.",
+      "module": "./content/api/ElgoraUI.js"
+    },
+    {
+      "name": "FilterFunction",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FilterFunction",
+      "description": "Local implementations for structured filter selectors.",
+      "module": "./content/api/FilterFunction.js"
+    },
+    {
+      "name": "FilterFunctionRegistry",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FilterFunctionRegistry",
+      "description": "",
+      "module": "./content/api/FilterFunctionRegistry.js"
+    },
+    {
+      "name": "FilterSelector",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FilterSelector",
+      "description": "A field name or a serializable transformation applied to a field.",
+      "module": "./content/api/FilterSelector.js"
+    },
+    {
+      "name": "FixedSizeManager",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Virtual List",
+      "path": "/api-reference/FixedSizeManager",
+      "description": "Size manager for lists whose rows share one fixed height.",
+      "module": "./content/api/FixedSizeManager.js"
+    },
+    {
+      "name": "GridContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridContext",
+      "description": "Grid callbacks and dimensions used by selection navigation.",
+      "module": "./content/api/GridContext.js"
+    },
+    {
+      "name": "GridContextMenuItems",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridContextMenuItems",
+      "description": "Produces context-menu items for a particular grid surface.",
+      "module": "./content/api/GridContextMenuItems.js"
+    },
+    {
+      "name": "GridContextMenuTarget",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridContextMenuTarget",
+      "description": "The grid surface that received a context-menu request.",
+      "module": "./content/api/GridContextMenuTarget.js"
+    },
+    {
+      "name": "GridDataSource",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridDataSource",
+      "description": "Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource.",
+      "module": "./content/api/GridDataSource.js"
+    },
+    {
+      "name": "GridStandardContextMenuItem",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridStandardContextMenuItem",
+      "description": "Identifiers for the grid's built-in context-menu actions.",
+      "module": "./content/api/GridStandardContextMenuItem.js"
+    },
+    {
+      "name": "GroupInterval",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GroupInterval",
+      "description": "Built-in grouping buckets, plus names understood by a server DataSource.",
+      "module": "./content/api/GroupInterval.js"
+    },
+    {
+      "name": "GroupIntervalDefinition",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GroupIntervalDefinition",
+      "description": "A custom grouping interval with a serializable name and local fallback evaluator.",
+      "module": "./content/api/GroupIntervalDefinition.js"
+    },
+    {
+      "name": "MenuItem",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/MenuItem",
+      "description": "A declarative action, link, divider, or nested submenu entry.",
+      "module": "./content/api/MenuItem.js"
+    },
+    {
+      "name": "Observable",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/Observable",
+      "description": "A subscribable source of values or events.",
+      "module": "./content/api/Observable.js"
+    },
+    {
+      "name": "ObservableEvent",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/ObservableEvent",
+      "description": "Observable event stream whose payload is emitted explicitly by the caller.",
+      "module": "./content/api/ObservableEvent.js"
+    },
+    {
+      "name": "ObservableValue",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/ObservableValue",
+      "description": "Mutable observable value that notifies subscribers when its value changes.",
+      "module": "./content/api/ObservableValue.js"
+    },
+    {
+      "name": "Popover",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/Popover",
+      "description": "A native top-layer popup positioned relative to an anchor element.",
+      "module": "./content/api/Popover.js"
+    },
+    {
+      "name": "PopoverCloseMode",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopoverCloseMode",
+      "description": "Controls whether the browser or the caller controls popup dismissal.",
+      "module": "./content/api/PopoverCloseMode.js"
+    },
+    {
+      "name": "PopoverOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopoverOptions",
+      "description": "Configuration for a native Popover API popup.",
+      "module": "./content/api/PopoverOptions.js"
+    },
+    {
+      "name": "PopoverPlacement",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopoverPlacement",
+      "description": "Preferred side and alignment of a popup relative to its anchor element.",
+      "module": "./content/api/PopoverPlacement.js"
+    },
+    {
+      "name": "PopoverPoint",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopoverPoint",
+      "description": "A viewport point used to position a popup without an anchor element.",
+      "module": "./content/api/PopoverPoint.js"
+    },
+    {
+      "name": "PopupMenu",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopupMenu",
+      "description": "A dynamically rendered, nested menu backed by one native popover.",
+      "module": "./content/api/PopupMenu.js"
+    },
+    {
+      "name": "PopupMenuOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopupMenuOptions",
+      "description": "Persistent configuration for a PopupMenu instance.",
+      "module": "./content/api/PopupMenuOptions.js"
+    },
+    {
+      "name": "PopupMenuShowOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopupMenuShowOptions",
+      "description": "Positioning and content supplied when a PopupMenu is opened.",
+      "module": "./content/api/PopupMenuShowOptions.js"
+    },
+    {
+      "name": "RemixIcon",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/RemixIcon",
+      "description": "Remix Icon class names.\n\nGenerated from remixicon 4.9.1.\nThe open string branch permits custom or newer `ri-*` names.",
+      "module": "./content/api/RemixIcon.js"
+    },
+    {
+      "name": "RenderRowArgs",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Virtual List",
+      "path": "/api-reference/RenderRowArgs",
+      "description": "Interface for rendering a row in the virtual list.",
+      "module": "./content/api/RenderRowArgs.js"
+    },
+    {
+      "name": "RowIdentity",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/RowIdentity",
+      "description": "Represents data row ID.",
+      "module": "./content/api/RowIdentity.js"
+    },
+    {
+      "name": "Scheduler",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/Scheduler",
+      "description": "Frame-batched task scheduler that deduplicates the same task reference.",
+      "module": "./content/api/Scheduler.js"
+    },
+    {
+      "name": "ScrollEngine",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Scrollbar",
+      "path": "/api-reference/ScrollEngine",
+      "description": "Custom scroll container supporting virtual dimensions and multiple input modes.",
+      "module": "./content/api/ScrollEngine.js"
+    },
+    {
+      "name": "SelectionCell",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SelectionCell",
+      "description": "Coordinates and selection metadata for a visible grid cell.",
+      "module": "./content/api/SelectionCell.js"
+    },
+    {
+      "name": "SelectionEdge",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SelectionEdge",
+      "description": "The cardinal sides of a selection box a selected cell can sit on.\r\nA cell is marked with every side it touches (e.g. a lone cell is on all four,\r\na single-row selection marks its cells as both top and bottom), so the renderer\r\ncan paint a complete border around any selection shape.",
+      "module": "./content/api/SelectionEdge.js"
+    },
+    {
+      "name": "SelectionManager",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SelectionManager",
+      "description": "Manages keyboard, pointer, and range-based grid selection state.",
+      "module": "./content/api/SelectionManager.js"
+    },
+    {
+      "name": "SelectionRange",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SelectionRange",
+      "description": "Rectangular range between an anchor cell and a focus cell.",
+      "module": "./content/api/SelectionRange.js"
+    },
+    {
+      "name": "SizeManager",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Virtual List",
+      "path": "/api-reference/SizeManager",
+      "description": "Measures virtual-list rows and maps between indexes and scroll offsets.",
+      "module": "./content/api/SizeManager.js"
+    },
+    {
+      "name": "SummaryContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SummaryContext",
+      "description": "Context supplied to a custom summary lifecycle method.",
+      "module": "./content/api/SummaryContext.js"
+    },
+    {
+      "name": "SummaryDefinition",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SummaryDefinition",
+      "description": "Defines a locally calculated summary identified by its serializable name.",
+      "module": "./content/api/SummaryDefinition.js"
+    },
+    {
+      "name": "SummaryType",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SummaryType",
+      "description": "Aggregation kind applied to a group column's summary value.\n`count` and `distinct` support all value types; `sum`, `min`, and `max`\nrequire a numeric column.",
+      "module": "./content/api/SummaryType.js"
+    },
+    {
+      "name": "Throttle",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/Throttle",
+      "description": "Simple time-based throttle with trailing execution.",
+      "module": "./content/api/Throttle.js"
+    },
+    {
+      "name": "Tooltip",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/Tooltip",
+      "description": "A universal singleton tooltip backed by one reusable Popover element.",
+      "module": "./content/api/Tooltip.js"
+    },
+    {
+      "name": "TooltipContent",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/TooltipContent",
+      "description": "Content accepted by the shared Tooltip popover.",
+      "module": "./content/api/TooltipContent.js"
+    },
+    {
+      "name": "TooltipShowOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/TooltipShowOptions",
+      "description": "Positioning, content, and timing options for Tooltip.show().",
+      "module": "./content/api/TooltipShowOptions.js"
+    },
+    {
+      "name": "UiStyle",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UiStyle",
+      "description": "Typed Elgora UI utility class name without the `elg-` prefix.",
+      "module": "./content/api/UiStyle.js"
+    },
+    {
+      "name": "v",
+      "kind": "function",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/v",
+      "description": "Creates a virtual element description for keyed or deferred DOM rendering.",
+      "module": "./content/api/v.js"
+    },
+    {
+      "name": "VariableSizeManager",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Virtual List",
+      "path": "/api-reference/VariableSizeManager",
+      "description": "Variable size manager using Fenwick Tree (Binary Indexed Tree).\r\nSupports dynamic growth with batched expansion.",
+      "module": "./content/api/VariableSizeManager.js"
+    },
+    {
+      "name": "VirtualList",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Virtual List",
+      "path": "/api-reference/VirtualList",
+      "description": "Efficiently renders only the visible portion of a large data collection.",
+      "module": "./content/api/VirtualList.js"
+    },
+    {
+      "name": "VirtualListOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Virtual List",
+      "path": "/api-reference/VirtualListOptions",
+      "description": "Construction options for a virtualized list component.",
+      "module": "./content/api/VirtualListOptions.js"
+    }
+  ]
+}

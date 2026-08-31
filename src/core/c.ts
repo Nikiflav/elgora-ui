@@ -50,6 +50,8 @@ type StyleObject = {
 }
 
 type ExtraProps = {
+    /** Child content supplied through props. Positional children take precedence when both forms are used. */
+    children?: ComponentChild
     key?: any
     ui?: UiStyle | UiStyle[]
     class?: string
@@ -74,7 +76,12 @@ export type ComponentProps<
 // Args
 // ======================================================
 
-/** Arguments accepted by a Component-backed HTML element factory. */
+/**
+ * Arguments accepted by a Component-backed HTML element factory.
+ *
+ * Child content may be passed in the props object's `children` property or
+ * as one or more positional arguments. Positional children take precedence.
+ */
 export type ComponentArgs<
     T extends HTMLElement
 > =
@@ -85,7 +92,17 @@ export type ComponentArgs<
 // c() declaration
 // ======================================================
 
-/** Creates a Component backed by the requested HTML tag. */
+/**
+ * Creates a Component backed by the requested HTML tag.
+ *
+ * Children can be supplied either as `props.children` or as positional
+ * arguments after the props object. When both forms are present, positional
+ * children take precedence.
+ *
+ * @example
+ * c("button", { ui: ["elg", "btn", "primary"], children: "Save" })
+ * c("button", { ui: ["elg", "btn", "primary"] }, "Save")
+ */
 export function c<
     K extends keyof HTMLElementTagNameMap
 >(
@@ -103,19 +120,22 @@ export function c(
 ): Component {
 
     let props: any = {}
-    let children: any[] = []
+    let positionalChildren: any[] = []
 
     if (isProps(args[0])) {
         props = args[0]
-        children = args.slice(1)
+        positionalChildren = args.slice(1)
     }
     else {
-        children = args
+        positionalChildren = args
     }
+
+    const { children: propChildren, ...componentProps } = props
+    const children = positionalChildren.length > 0 ? positionalChildren : propChildren
 
     return new Component({
         tag,
-        ...props,
+        ...componentProps,
         children
     })
 }
@@ -193,7 +213,11 @@ export const cinput    = ctag("input")
 export const ctextarea = ctag("textarea")
 export const cselect   = ctag("select")
 export const coption   = ctag("option")
-/** Creates a Component backed by a button element. */
+/**
+ * Creates a Component backed by a button element.
+ * Children may be provided through `children` in the props object or as
+ * positional arguments; positional arguments take precedence.
+ */
 export const cbutton   = ctag("button")
 
 // Lists

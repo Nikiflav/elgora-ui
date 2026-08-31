@@ -52,6 +52,8 @@ export type StyleObject = Partial<
 >
 
 type ExtraProps = {
+    /** Child content supplied through props. Positional children take precedence when both forms are used. */
+    children?: ComponentChild
     class?: string
     className?: string
     key?: any
@@ -80,7 +82,12 @@ export type ElementProps<T extends HTMLElement> =
 // e("div", { class:"x" }, child1, child2)
 // ------------------------------------------------------
 
-/** Arguments accepted by the typed element factory. */
+/**
+ * Arguments accepted by the typed element factory.
+ *
+ * Child content may be passed in the props object's `children` property or
+ * as one or more positional arguments. Positional children take precedence.
+ */
 export type ElementArgs<T extends HTMLElement> =
     [props?: ElementProps<T>, ...children: ComponentChild[]] |
     ComponentChild[]
@@ -132,7 +139,18 @@ export function v<K extends keyof HTMLElementTagNameMap>(
 // Main declaration
 // ------------------------------------------------------
 
-/** Creates a native HTML element, applies typed properties, and appends children. */
+/**
+ * Creates a native HTML element, applies typed properties, and appends children.
+ *
+ * Children can be supplied either as `props.children` or as positional
+ * arguments after the props object. When both forms are present, positional
+ * children take precedence. The `children` prop is consumed as content and is
+ * not written as an HTML attribute.
+ *
+ * @example
+ * e("button", { ui: ["elg", "btn", "primary"], children: "Save" })
+ * e("button", { ui: ["elg", "btn", "primary"] }, "Save")
+ */
 export function e<K extends keyof HTMLElementTagNameMap>(
     tag: K,
     ...args: ElementArgs<HTMLElementTagNameMap[K]>
@@ -151,16 +169,19 @@ export function e(
     const el = document.createElement(tag)
 
     let props: any = {}
-    let children: any[] = []
+    let positionalChildren: any[] = []
 
     if (isProps(args[0])) {
         props = args[0]
-        children = args.slice(1)
+        positionalChildren = args.slice(1)
     } else {
-        children = args
+        positionalChildren = args
     }
 
-    setElementProps(el, props)
+    const { children: propChildren, ...elementProps } = props
+    const children = positionalChildren.length > 0 ? positionalChildren : propChildren
+
+    setElementProps(el, elementProps)
     appendChildren(el, children)
 
     return el

@@ -1,4 +1,5 @@
 import { trackGesture, GestureAxis } from "./DragGesture";
+import type { Disposable } from "../ElgoraUI";
 import { createDragGhost, DragGhost } from "./DragGhost";
 import { ScrollByFn, createEdgeAutoScroll, EdgeAutoScroll } from "./EdgeAutoScroll";
 
@@ -70,19 +71,25 @@ export interface DragDropControllerOptions {
  * zone's autoscroll. Own one instance per independent drag surface (e.g. one per grid) - zones
  * only ever match against others registered on the same controller.
  */
-export class DragDropController {
+export class DragDropController implements Disposable {
 
     private zones = new Map<string, DropZone>();
+    private activeCancel?: () => void;
+    private disposed = false;
 
     constructor(private options: DragDropControllerOptions) { }
 
     registerZone(zone: DropZone): () => void {
+        if (this.disposed) return () => { };
         this.zones.set(zone.id, zone);
         return () => this.zones.delete(zone.id);
     }
 
     /** `onDragEnd` runs once the gesture is over regardless of outcome (dropped or cancelled) - the reliable place for a caller to clear its own "this item is being dragged" styling. */
     beginDrag(payload: DragPayload, startEvent: MouseEvent | TouchEvent, anchorRect: DOMRect, axis: GestureAxis = "free", onDragEnd?: () => void): void {
+
+        if (this.disposed) return;
+        this.activeCancel?.();
 
         const zonesOfKind = [...this.zones.values()].filter(z => z.kind === payload.kind);
 
@@ -125,7 +132,13 @@ export class DragDropController {
             }
         };
 
-        trackGesture(startEvent, {
+        let cancelGesture: (() => void) | undefined;
+        const clearActive = () => {
+            if (this.activeCancel === cancelGesture)
+                this.activeCancel = undefined;
+        };
+
+        cancelGesture = trackGesture(startEvent, {
             axis,
             threshold: 6,
 
@@ -144,13 +157,25 @@ export class DragDropController {
                     this.options.onDrop(payload, { zoneId: hovered.zone.id, index: hovered.slot.index });
                 leave();
                 onDragEnd?.();
+                clearActive();
             },
 
             onCancel: () => {
                 ghost?.remove();
                 leave();
                 onDragEnd?.();
+                clearActive();
             }
         });
+        this.activeCancel = cancelGesture;
+    }
+
+    /** Cancels active drag state and releases all registered drop zones. */
+    dispose(): void {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.activeCancel?.();
+        this.activeCancel = undefined;
+        this.zones.clear();
     }
 }

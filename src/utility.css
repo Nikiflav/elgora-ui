@@ -659,6 +659,10 @@
     position: fixed;
 }
 
+.elg-position-sticky {
+    position: sticky;
+}
+
 .elg-top-0 {
     top: 0;
 }
@@ -695,6 +699,24 @@
 .elg-text-nowrap {
     white-space: nowrap;
 }
+
+.elg-underline {
+    text-decoration-line: underline;
+}
+
+.elg-overline {
+    text-decoration-line: overline;
+}
+
+.elg-line-through {
+    text-decoration-line: line-through;
+}
+
+.elg-no-underline {
+    text-decoration-line: none;
+}
+
+/* Layout utilities: small composable classes for display, spacing, sizing, positioning, and typography. */
 
 /* ======================================================
    Border utilities
@@ -791,16 +813,40 @@
     font-size: 50%;
 }
 
+.elg-fs-60 {
+    font-size: 60%;
+}
+
+.elg-fs-70 {
+    font-size: 70%;
+}
+
 .elg-fs-80 {
     font-size: 80%;
+}
+
+.elg-fs-90 {
+    font-size: 90%;
 }
 
 .elg-fs-100 {
     font-size: 100%;
 }
 
+.elg-fs-110 {
+    font-size: 110%;
+}
+
 .elg-fs-120 {
     font-size: 120%;
+}
+
+.elg-fs-130 {
+    font-size: 130%;
+}
+
+.elg-fs-140 {
+    font-size: 140%;
 }
 
 .elg-fs-150 {
@@ -852,4 +898,21 @@
 
 .elg-user-select-none {
     user-select: none;
+}
+
+/* Interaction and visibility */
+.elg-cursor-pointer {
+    cursor: pointer;
+}
+
+.elg-cursor-default {
+    cursor: default;
+}
+
+.elg-bg-transparent {
+    background-color: transparent;
+}
+
+.elg-opacity-50 {
+    opacity: 0.5;
 }

@@ -197,6 +197,7 @@ export class DataGrid<TRow> extends Component {
     private _contextMenu: PopupMenu;
 
     private _dragDrop: DragDropController;
+    private _cancelActiveResize?: () => void;
 
     private readonly _MAX_ROWS = 100
 
@@ -228,9 +229,9 @@ export class DataGrid<TRow> extends Component {
                 }
             });
 
-        this._tableContainer.addEventListener("keydown", this.handleSelectionKeyDown, true);
-        this._tableContainer.addEventListener("mouseup", this.endSelectionDrag);
-        this._tableContainer.addEventListener("mouseleave", this.endSelectionDrag);
+        this.listen(this._tableContainer, "keydown", event => this.handleSelectionKeyDown(event as KeyboardEvent), true);
+        this.listen(this._tableContainer, "mouseup", () => this.endSelectionDrag());
+        this.listen(this._tableContainer, "mouseleave", () => this.endSelectionDrag());
 
         this._contextMenu = new PopupMenu();
         this.append(this._contextMenu);
@@ -271,6 +272,7 @@ export class DataGrid<TRow> extends Component {
                 }),)
 
         this._scrollEngine = new ScrollEngine(this._tableContainer);
+        this.addCleanup(() => this._scrollEngine.dispose());
         this._scrollEngine.onScroll(this.updateLayout);
         this._scrollEngine.onResize(() => {
             this.updateLayout();
@@ -279,8 +281,9 @@ export class DataGrid<TRow> extends Component {
         })
 
         this._dragDrop = new DragDropController({ onDrop: this.handleColumnDrop });
+        this.addCleanup(() => this._dragDrop.dispose());
 
-        this._dragDrop.registerZone(createListDropZone({
+        this.addCleanup(this._dragDrop.registerZone(createListDropZone({
             id: "grid-header",
             kind: "column",
             // Hit-test/indicator against the whole scrollable table (header+body+footer), matching
@@ -291,16 +294,16 @@ export class DataGrid<TRow> extends Component {
             axis: "x",
             itemSelector: "tr.elg-gridrow-header td.elg-gridcell-data",
             scrollBy: delta => this._scrollEngine.scrollLeft += delta
-        }));
+        })));
 
-        this._dragDrop.registerZone(createListDropZone({
+        this.addCleanup(this._dragDrop.registerZone(createListDropZone({
             id: "group-panel",
             kind: "column",
             element: this._headerPanel,
             axis: "x",
             itemSelector: ".elg-gridcell",
             scrollBy: delta => this._headerPanel.scrollLeft += delta
-        }));
+        })));
 
         this._tableContainer.append(this._contentTable);
 
@@ -637,48 +640,58 @@ export class DataGrid<TRow> extends Component {
             }
             if (hasStandard("groupColumn" as GridStandardContextMenuItem)) {
                 addDivider();
+                const intervalLabels: Record<string, string> = {
+                    "year": "Year",
+                    "yearQuarter": "Year-quarter",
+                    "quarter": "Quarter",
+                    "yearMonth": "Year-month",
+                    "month": "Month",
+                    "week": "ISO week",
+                    "day": "Day",
+                    "dayOfWeek": "Day of week",
+                    "hour": "Hour",
+                    "minute": "Minute",
+                    "second": "Second",
+                    "firstChar": "First character"
+                };
+                const supportedIntervals = DataColumnUtils.getSupportedGroupIntervals(context.column!);
+                const customIntervals = this._gridOptions.groupIntervals ?? [];
+                const advancedIntervals = [
+                    ...supportedIntervals.map(value => ({ label: intervalLabels[value] ?? String(value), value })),
+                    ...customIntervals
+                        .filter(interval => !supportedIntervals.includes(interval.name))
+                        .map(interval => ({ label: interval.text, value: interval.name as GroupInterval }))
+                ];
                 items.push({
                     icon: "ri-timeline-view",
-                    text: `Group by ${context.column.caption ?? context.column.name}`,
+                    text: `${isGrouped ? "Ungroup" : "Group by"} ${context.column.caption ?? context.column.name}`,
                     disabled: this._isHierarchicalData,
-                    subItems: async () => {
-                        const intervalLabels: Record<string, string> = {
-                            "year": "Year",
-                            "yearQuarter": "Year-quarter",
-                            "quarter": "Quarter",
-                            "yearMonth": "Year-month",
-                            "month": "Month",
-                            "week": "ISO week",
-                            "day": "Day",
-                            "dayOfWeek": "Day of week",
-                            "hour": "Hour",
-                            "minute": "Minute",
-                            "second": "Second",
-                            "firstChar": "First character"
-                        };
-                        const supportedIntervals = DataColumnUtils.getSupportedGroupIntervals(context.column!);
-                        const customIntervals = this._gridOptions.groupIntervals ?? [];
-                        const intervals: Array<{ label: string, value?: GroupInterval }> = [
-                            ...(isGrouped ? [{ label: "Ungroup" } as { label: string, value?: GroupInterval }] : []),
-                            { label: "No interval" },
-                            ...supportedIntervals.map(value => ({ label: intervalLabels[value] ?? String(value), value })),
-                            ...customIntervals
-                                .filter(interval => !supportedIntervals.includes(interval.name))
-                                .map(interval => ({ label: interval.text, value: interval.name as GroupInterval }))
-                        ];
-                        const currentInterval = context.column!.groupInterval;
-                        if (currentInterval && !intervals.some(i => i.value === currentInterval)) {
-                            intervals.push({ label: String(currentInterval), value: currentInterval });
-                        }
-                        return intervals.map(interval => ({
-                            text: interval.label,
-                            checked: () => isGrouped && currentInterval === interval.value,
-                            action: () => interval.label === "Ungroup"
-                                ? this.toggleColumnGrouping(columnName)
-                                : this.setColumnGroupInterval(columnName, interval.value)
-                        }));
-                    }
+                    action: () => isGrouped
+                        ? this.toggleColumnGrouping(columnName)
+                        : this.setColumnGroupInterval(columnName, undefined)
                 });
+                if (advancedIntervals.length) {
+                    items.push({
+                        icon: "ri-settings-3-line",
+                        text: "Grouping options",
+                        disabled: this._isHierarchicalData,
+                        subItems: async () => {
+                            const currentInterval = context.column!.groupInterval;
+                            const intervals: Array<{ label: string, value?: GroupInterval }> = [
+                                { label: "Exact value" },
+                                ...advancedIntervals
+                            ];
+                            if (currentInterval && !intervals.some(i => i.value === currentInterval)) {
+                                intervals.push({ label: String(currentInterval), value: currentInterval });
+                            }
+                            return intervals.map(interval => ({
+                                text: interval.label,
+                                checked: () => isGrouped && currentInterval === interval.value,
+                                action: () => this.setColumnGroupInterval(columnName, interval.value)
+                            }));
+                        }
+                    });
+                }
             }
             addDivider();
             const currentSummary = this._gridOptions.groupSummary?.find(s => s.field === columnName)?.summaryType;
@@ -1763,7 +1776,14 @@ export class DataGrid<TRow> extends Component {
         // Manually resizing a column takes it out of the auto-fill pool permanently.
         col.isAutoWidth = false;
 
-        trackGesture(e, {
+        this._cancelActiveResize?.();
+        let cancelResize: (() => void) | undefined;
+        const clearResize = () => {
+            if (this._cancelActiveResize === cancelResize)
+                this._cancelActiveResize = undefined;
+        };
+
+        cancelResize = trackGesture(e, {
             axis: "x",
             onMove: (dx) => {
                 col.width = Math.floor(Math.max(40, Math.min(800, startWidth + dx)));
@@ -1775,14 +1795,24 @@ export class DataGrid<TRow> extends Component {
                 // _gridOptions.columns) so getColumn()/getOptions() reflect what's on screen.
                 if (col.dataColumn)
                     col.dataColumn.width = col.width;
+                clearResize();
             },
             onCancel: () => {
                 col.width = startWidth;
                 col.isAutoWidth = startIsAutoWidth;
                 this.redistributeColumnWidths();
                 this.render(this.renderColGroup);
+                clearResize();
             }
         });
+        this._cancelActiveResize = cancelResize;
+    }
+
+    /** Releases grid-owned interaction controllers and active gestures. */
+    public override dispose(): void {
+        this._cancelActiveResize?.();
+        this._cancelActiveResize = undefined;
+        super.dispose();
     }
 
     private startColumnDrag = (e: MouseEvent | TouchEvent, headerTd: HTMLTableCellElement, col: GridColumn<TRow>) => {

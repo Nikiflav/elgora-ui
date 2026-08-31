@@ -15,10 +15,10 @@ export interface GestureHandlers {
  * mouse and touch into one move/end/cancel stream. Deliberately avoids Pointer Events so mouse
  * and touch stay two separate, debuggable listener sets sharing this one state machine.
  */
-export function trackGesture(startEvent: MouseEvent | TouchEvent, handlers: GestureHandlers): void {
+export function trackGesture(startEvent: MouseEvent | TouchEvent, handlers: GestureHandlers): () => void {
 
     if (startEvent instanceof MouseEvent && startEvent.button !== 0)
-        return;
+        return () => { };
 
     let startX: number, startY: number, touchId: number | undefined;
 
@@ -33,6 +33,8 @@ export function trackGesture(startEvent: MouseEvent | TouchEvent, handlers: Gest
     const threshold = handlers.threshold ?? 0;
     let active = threshold <= 0;
     let locked = false;
+    let finished = false;
+    const previousUserSelect = document.body.style.userSelect;
 
     const pickTouch = (e: TouchEvent) => Array.from(e.changedTouches).find(t => t.identifier === touchId);
 
@@ -62,8 +64,10 @@ export function trackGesture(startEvent: MouseEvent | TouchEvent, handlers: Gest
     };
 
     const finish = (end?: { x: number, y: number }) => {
+        if (finished) return;
+        finished = true;
         detach();
-        document.body.style.userSelect = "";
+        document.body.style.userSelect = previousUserSelect;
         if (end && active) handlers.onEnd(end.x, end.y);
         else handlers.onCancel?.();
     };
@@ -105,4 +109,6 @@ export function trackGesture(startEvent: MouseEvent | TouchEvent, handlers: Gest
     }
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("blur", onBlur);
+
+    return () => finish();
 }

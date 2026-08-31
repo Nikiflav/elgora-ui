@@ -122,6 +122,7 @@ export type UiStyle =
   | "position-relative"
   | "position-absolute"
   | "position-fixed"
+  | "position-sticky"
   | "top-0" | "bottom-0" | "start-0" | "end-0"
 
   // ------------------
@@ -192,10 +193,19 @@ export type UiStyle =
   | "neutral"
 
   | "text-primary"
+  | "text-muted"
   | "text-success"
   | "text-warning"
   | "text-danger"
   | "text-neutral"
+
+  // ======================================================
+  // TEXT DECORATION
+  // ======================================================
+  | "underline"
+  | "overline"
+  | "line-through"
+  | "no-underline"
 
   // ======================================================
   // STATE SLOT 1 (PERSISTENT)
@@ -237,9 +247,15 @@ export type UiStyle =
   // Font Size
   // ======================================================
   | "fs-50"
+  | "fs-60"
+  | "fs-70"
   | "fs-80"
+  | "fs-90"
   | "fs-100"
+  | "fs-110"
   | "fs-120"
+  | "fs-130"
+  | "fs-140"
   | "fs-150"
   | "fs-200"
 
@@ -260,6 +276,15 @@ export type UiStyle =
   // ======================================================
   | "btn"
   | "box"
+  | "field"
+  | "shadow"
+  | "table"
+  | "table-bordered"
+  | "table-row-borders"
 
   | "user-select-none"
+  | "cursor-pointer"
+  | "cursor-default"
+  | "bg-transparent"
+  | "opacity-50"
   ;

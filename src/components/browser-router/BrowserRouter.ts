@@ -45,7 +45,7 @@ export class BrowserRouter extends Component {
     private _currentRoute?: RouterHandler;
 
 
-    private static instance: BrowserRouter;
+    private static instance?: BrowserRouter;
 
     constructor(routes: RouterHandler[], page404?: RouterPage) {
 
@@ -167,72 +167,79 @@ export class BrowserRouter extends Component {
         }
     };
 
-    private run() {
+    private onDocumentClick = (event: Event): void => {
+        const e = event as MouseEvent;
+        if (e.defaultPrevented)
+            return;
+        const target = e.target as HTMLElement | null;
+        const anchor = target?.closest("a");
+        if (!anchor)
+            return;
 
-        // create document click that watches the nav links only
-        document.addEventListener("click", (e) => {
-            if (e.defaultPrevented)
-                return;
-            const target = <HTMLElement>e.target;
-            const anchor = target && target.closest("a");
-            if (!anchor)
-                return;
+        if (!anchor.href || anchor.getAttribute("target") || e.ctrlKey)
+            return;
 
-            if (!anchor.href)
-                return;
+        const href = new URL(anchor.href);
+        if (href.pathname != window.location.pathname)
+            return;
 
-            if (anchor.getAttribute("target"))
-                return;
+        e.preventDefault();
+        BrowserRouter.navigate(anchor.href);
+    };
 
-            if (e.ctrlKey)
-                return;
+    private onPopState = (): void => {
+        const url = window.location.href;
+        if (!this.canLeaveCurrentPage(url) && this.lastUrl) {
+            history.pushState({}, "", this.lastUrl);
+            return;
+        }
+        void this.locationHandler();
+    };
 
-            const href = new URL(anchor.href);
-            if (href.pathname != window.location.pathname)
-                return;
+    private onBeforeUnload = (event: Event): void => {
+        const e = event as BeforeUnloadEvent;
+        if (!this.currentPage || !this.currentPage.onUnload)
+            return;
 
+        const msg = this.currentPage.onUnload();
+        if (typeof msg == "string") {
             e.preventDefault();
-            BrowserRouter.navigate(anchor.href);
-        });
+            e.returnValue = "";
+        }
+    };
 
-        // listen popstate
-        window.addEventListener('popstate', (e) => {
-            const url = window.location.href;
-            if (!this.canLeaveCurrentPage(url) && this.lastUrl) {
-                // Push back the previous url
-                history.pushState({}, "", this.lastUrl);
-                return;
-            }
-            this.locationHandler();
-        });
-        window.addEventListener("beforeunload", (e) => {
-            if (this.currentPage
-                && this.currentPage.onUnload) {
-
-                const msg = this.currentPage.onUnload();
-                if (typeof msg == "string") {
-                    e.preventDefault();
-                    // Some browsers require setting returnValue
-                    e.returnValue = "";
-                    return msg;
-                }
-            }
-        });
+    private run() {
+        this.listen(document, "click", this.onDocumentClick);
+        this.listen(window, "popstate", this.onPopState);
+        this.listen(window, "beforeunload", this.onBeforeUnload);
 
         // initialize
-        this.locationHandler();
+        void this.locationHandler();
     }
 
-    /** Navigates the browser to the specified url without hard reload. */
+    /** Navigates the browser to the specified url without a hard reload. */
     public static navigate(url: string, replaceHistory = false) {
 
-        if (!BrowserRouter.instance.canLeaveCurrentPage(url))
+        const router = BrowserRouter.instance;
+        if (!router || !router.canLeaveCurrentPage(url))
             return;
         if (replaceHistory)
             window.history.replaceState({}, "", url);
         else
             window.history.pushState({}, "", url);
-        BrowserRouter.instance.locationHandler();
+        // Keep router consumers (for example navigation state and sidebars)
+        // synchronized with programmatic history changes.
+        window.dispatchEvent(new PopStateEvent("popstate"));
+    }
+
+    /**
+     * Removes global navigation listeners and releases the one-router-per-window
+     * slot. The router cannot be reused after disposal.
+     */
+    public override dispose(): void {
+        if (BrowserRouter.instance === this)
+            BrowserRouter.instance = undefined;
+        super.dispose();
     }
 
     private canLeaveCurrentPage(newUrl: string) {

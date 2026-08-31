@@ -50,6 +50,8 @@ export type ComponentOptions = {
   children?: ComponentChild
 } & ComponentLifecycleProps & DOMProps
 
+type ComponentCleanup = Disposable | (() => void)
+
 // ------------------------------------------------------
 // Component
 // ------------------------------------------------------
@@ -58,18 +60,28 @@ const ELEMENT_COMPONENT_KEY = "_elgComponent"
 
 /** Base class for composable DOM components with lifecycle and observable state support. */
 export class Component implements Disposable {
+  /** The native HTMLElement owned by this component. */
   dom: HTMLElement
 
   private _disposed = new ObservableValue(false)
   private _mounted = false
 
-  protected disposables: Disposable[] = []
+  protected disposables: ComponentCleanup[] = []
   protected renderTasks: RenderTask[] = []
 
   private _options: ComponentOptions
   private _locked = false
 
 
+  /**
+   * Creates a component and its native DOM root.
+   *
+   * The constructor creates the element, applies DOM options, appends initial
+   * children, and invokes `comcreate` once. The component is not mounted by
+   * the constructor; use `mount()` to connect it to a document or container.
+   *
+   * @param options DOM, child, and lifecycle options for the component.
+   */
   constructor(options: ComponentOptions = {}) {
     this._options = options
     this.dom = document.createElement(options.tag || "div")
@@ -96,7 +108,12 @@ export class Component implements Disposable {
     return this._locked
   }
 
-  /** Locks the component, preventing further structure modifications. */
+  /**
+   * Locks the component, preventing further structure modifications.
+   *
+   * After locking, `append()` throws instead of adding children. Locking does
+   * not affect rendering, mounting, unmounting, or disposal.
+   */
   lock(): void {
     this._locked = true
   }
@@ -200,23 +217,66 @@ export class Component implements Disposable {
   // Mount / Unmount
   // --------------------------------------------------
 
-  /** 
-   * Appends the dom to the provided container.
-   * Always use this method to attach the component to the document, as it ensures that 'mount' lifecycle events are properly handled. Do not directly append the component's dom to the document or other containers, as this may lead to inconsistent state and missed lifecycle events.
-   * This will trigger the onMount lifecycle event for this component and all of its descendants. If the component is already mounted, calling this method again will have no effect.
-   * @param container The DOM element to which the component's dom will be appended. 
-    * @example
-    * const myComponent = new Component({ tag: "div", children: "Hello, world!" })
-    * myComponent.mount(document.body) // Appends the component's dom to the body and triggers onMount events.
+  /**
+   * Appends the component DOM to the provided container.
+   *
+   * Always use this method to attach a component to the document. It keeps the
+   * component lifecycle state consistent and triggers mount lifecycle callbacks
+   * for the complete component subtree. The current component is mounted first,
+   * followed by its descendants (parent-to-child order).
+   *
+   * A child component is discovered from the DOM tree and mounted automatically;
+   * lifecycle callbacks are not copied from the parent to the child. Each
+   * component receives its own `commount` callback and `onMount()` call.
+   *
+   * If the component is already mounted, it is first unmounted and then moved
+   * to the new container. The component instance and its state are preserved.
+   *
+   * @param container The HTMLElement or CSS selector to which the component's
+   * DOM will be appended.
+   * @example
+   * const myComponent = new Component({ tag: "div", children: "Hello, world!" })
+   * myComponent.mount(document.body) // Mounts the component and its descendants.
    */
-  mount(container: HTMLElement): void {
+  mount(container: HTMLElement | string): void {
+    if (this._disposed.Value) {
+      throw new Error("Cannot mount a disposed component.")
+    }
+
+    let target: HTMLElement
+    if (typeof container === "string") {
+      const resolved = document.querySelector(container)
+      if (!resolved) {
+        throw new Error(`Cannot mount component: selector "${container}" did not match an element.`)
+      }
+      if (!(resolved instanceof HTMLElement)) {
+        throw new Error(`Cannot mount component: selector "${container}" did not match an HTMLElement.`)
+      }
+      target = resolved
+    } else {
+      target = container
+    }
+
     this.unmount() // Ensure it's not already mounted somewhere else
-    container.appendChild(this.dom)
+    target.appendChild(this.dom)
     this.tryMountTree()
   }
 
   /**
-   * Unmounts the component from the DOM. This will trigger the onUnmount lifecycle event for this component and all of its descendants. After unmounting, the component's dom will be removed from its parent element, but the component instance will still exist in memory and can be re-mounted later if needed. Always use this method to unmount the component, as it ensures that 'unmount' lifecycle events are properly handled. Do not directly remove the component's dom from the document or other containers, as this may lead to inconsistent state and missed lifecycle events.
+   * Unmounts the component from the DOM without disposing the component.
+   *
+   * Unmount lifecycle callbacks are invoked for descendants first and then for
+   * the current component (child-to-parent order). Each component receives its
+   * own `comunmount` callback and `onUnmount()` call; the callbacks are not
+   * propagated or shared between parent and child components.
+   *
+   * Use `onUnmount()` to release resources that depend on an external mount
+   * context, such as listeners on a host container, `window`, or `document`.
+   * Resources owned by the component itself may remain available while it is
+   * unmounted. The component's state is preserved and it can be mounted again.
+   *
+   * Always use this method instead of removing `dom` directly, otherwise
+   * lifecycle callbacks will not run and descendants can retain stale state.
    */
   unmount(): void {
     if (!this._mounted) return
@@ -266,10 +326,30 @@ export class Component implements Disposable {
     }
   }
 
+  /**
+   * Called after this component's DOM is connected and before its descendants
+   * are mounted.
+   *
+   * Override this hook for work that requires the component to be connected to
+   * the document, especially subscriptions to an external mount container,
+   * `window`, or `document`. Pair that work with cleanup in `onUnmount()`.
+   * Subclasses should not invoke this method manually; it is called by the
+   * recursive component lifecycle.
+   */
   protected onMount(): void {
 
   }
 
+  /**
+   * Called before this component's DOM is removed from its parent and after all
+   * descendants have been unmounted.
+   *
+   * Override this hook to remove subscriptions and other resources created in
+   * `onMount()`. The component remains alive after this hook and may be mounted
+   * again. Permanent resources should instead be released by `dispose()`.
+   * Subclasses should not invoke this method manually; it is called by the
+   * recursive component lifecycle.
+   */
   protected onUnmount(): void {
 
   }
@@ -314,10 +394,223 @@ export class Component implements Disposable {
   }
 
   /**
-   * Register a render task that will be automatically scheduled to run whenever the given observable value changes. The current value of the observable will also be used to perform an initial render when this method is called.
-   * The subscribtion is automatically disposed when the component is disposed. Multiple calls to renderOnChange() with the same renderTask will result in multiple subscribtions, and each subscription will trigger the renderTask independently when the observable changes.
-   * @param obs An observable value to subscribe to. 
-   * @param renderTask A function that performs DOM updates. 
+   * Registers a resource cleanup callback that runs when the component is
+   * disposed. Use this for event listeners, observers, timers, and other
+   * resources that are not themselves Disposable objects.
+   *
+   * @param cleanup A Disposable resource or a callback that releases it.
+   *
+   * @example
+   * component.addCleanup(() => window.removeEventListener("resize", handler))
+   */
+  addCleanup(cleanup: ComponentCleanup): void {
+    if (this._disposed.Value) {
+      if (typeof cleanup === "function") cleanup()
+      else cleanup.dispose()
+      return
+    }
+
+    this.disposables.push(cleanup)
+  }
+
+  /**
+   * Adds an event listener owned by the component. The listener is removed
+   * automatically when the component is disposed. If the listener belongs to
+   * an external mount context, add and remove it explicitly in `onMount()` and
+   * `onUnmount()` instead; calling `listen()` repeatedly from `onMount()` would
+   * otherwise register a new listener on every mount cycle.
+   *
+   * @param target The EventTarget receiving the listener.
+   * @param type The event name.
+   * @param listener The event listener.
+   * @param options Native event listener options.
+   */
+  listen(
+    target: EventTarget,
+    type: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions
+  ): void {
+    target.addEventListener(type, listener, options)
+    this.addCleanup(() => target.removeEventListener(type, listener, options))
+  }
+
+  /**
+   * Registers an observer owned by the component. Its disconnect method is
+   * called automatically when the component is disposed. Observers that should
+   * exist only while the component is mounted should be created and disconnected
+   * in `onMount()` and `onUnmount()` instead.
+   *
+   * @param observer An observer with a disconnect method, such as ResizeObserver.
+   */
+  observe(observer: { disconnect(): void }): void {
+    this.addCleanup(() => observer.disconnect())
+  }
+
+  /**
+   * Binds an observable value to a native DOM property.
+   *
+   * The initial update is scheduled immediately for ObservableValue instances
+   * and then refreshed on the next animation frame after each observable update.
+   * The subscription is disposed automatically with the component.
+   *
+   * @param property The DOM property to assign, for example `textContent`,
+   * `value`, `disabled`, or `checked`.
+   * @param obs The observable source.
+   * @param transform Optional function that converts the source value to the
+   * property value.
+   *
+   * @example
+   * component.bindProperty("textContent", count, value => `Count: ${value}`)
+   */
+  bindProperty<T>(
+    property: string,
+    obs: Observable<T>,
+    transform?: (value: T) => unknown
+  ): void {
+    this.bindObservable(obs, value => {
+      ; (this.dom as any)[property] = transform ? transform(value) : value
+    })
+  }
+
+  /**
+   * Binds an observable value to an HTML attribute.
+   *
+   * A `null` or `undefined` mapped value removes the attribute. Use this for
+   * `aria-*`, `data-*`, and other attributes; use bindProperty() for native
+   * DOM properties such as `disabled` or `value`.
+   *
+   * @param attribute The attribute name.
+   * @param obs The observable source.
+   * @param transform Optional function that converts the source value to an
+   * attribute value.
+   *
+   * @example
+   * component.bindAttribute("aria-label", count, value => `Count: ${value}`)
+   */
+  bindAttribute<T>(
+    attribute: string,
+    obs: Observable<T>,
+    transform?: (value: T) => unknown
+  ): void {
+    this.bindObservable(obs, value => {
+      const result = transform ? transform(value) : value
+      if (result === null || result === undefined) {
+        this.dom.removeAttribute(attribute)
+      } else {
+        this.dom.setAttribute(attribute, String(result))
+      }
+    })
+  }
+
+  /**
+   * Binds an observable value to a CSS style property.
+   *
+   * CSS custom properties such as `--progress` are supported. A `null` or
+   * `undefined` mapped value clears the style property.
+   *
+   * @param property The CSS property name.
+   * @param obs The observable source.
+   * @param transform Optional function that converts the source value to a
+   * CSS value.
+   *
+   * @example
+   * component.bindStyle("opacity", visible, value => value ? "1" : "0")
+   */
+  bindStyle<T>(
+    property: string,
+    obs: Observable<T>,
+    transform?: (value: T) => unknown
+  ): void {
+    this.bindObservable(obs, value => {
+      const result = transform ? transform(value) : value
+      this.dom.style.setProperty(property, result === null || result === undefined ? "" : String(result))
+    })
+  }
+
+  /**
+   * Toggles a CSS class from an observable value.
+   *
+   * The class is enabled when the optional predicate returns true, or when
+   * the source value is truthy if no predicate is supplied. The subscription
+   * is disposed automatically with the component.
+   *
+   * @param className One literal CSS class name, or an array of class names, to toggle.
+   * @param obs The observable source.
+   * @param predicate Optional function that decides whether the class is on.
+   *
+   * @example
+   * component.bindClass(["is-loading", "has-error"], isInvalid)
+   */
+  bindClass<T>(
+    className: string | string[],
+    obs: Observable<T>,
+    predicate?: (value: T) => boolean
+  ): void {
+    const classNames = Array.isArray(className) ? className : [className]
+    this.bindObservable(obs, value => {
+      const enabled = predicate ? predicate(value) : Boolean(value)
+      for (const name of classNames) this.dom.classList.toggle(name, enabled)
+    })
+  }
+
+  /**
+   * Toggles one or more typed Elgora UI styles from an observable value.
+   *
+   * Style names are automatically converted to their generated CSS class names:
+   * `selected` becomes `elg-selected`, while `elg` remains `elg`. The class
+   * names are enabled when the optional predicate returns true, or when the
+   * source value is truthy if no predicate is supplied. The subscription is
+   * disposed automatically with the component.
+   *
+   * @param uiStyle One UI style, or an array of UI styles, to toggle.
+   * @param obs The observable source.
+   * @param predicate Optional function that decides whether the styles are on.
+   *
+   * @example
+   * component.bindUiStyle(["selected", "text-primary"], isSelected)
+   */
+  bindUiStyle<T>(
+    uiStyle: UiStyle | UiStyle[],
+    obs: Observable<T>,
+    predicate?: (value: T) => boolean
+  ): void {
+    const styles = Array.isArray(uiStyle) ? uiStyle : [uiStyle]
+    const classNames = styles.map(style => style === "elg" ? "elg" : `elg-${style}`)
+    this.bindClass(classNames, obs, predicate)
+  }
+
+  private bindObservable<T>(obs: Observable<T>, update: (value: T) => void): void {
+    let latestValue!: T
+    let hasValue = false
+    const renderTask = () => {
+      if (hasValue) update(latestValue)
+    }
+
+    const sub = obs.subscribe(value => {
+      latestValue = value
+      hasValue = true
+      this.render(renderTask)
+    })
+    this.disposables.push(sub)
+
+    if (obs instanceof ObservableValue) {
+      latestValue = obs.Value
+      hasValue = true
+      this.render(renderTask)
+    }
+  }
+
+  /**
+   * Registers a render task that runs when an observable value changes.
+   *
+   * The current value is rendered immediately. The subscription is disposed
+   * automatically when the component is disposed, not when it is unmounted, so
+   * the reactive state remains available across mount/unmount cycles.
+   * Multiple calls with the same task create independent subscriptions.
+   *
+   * @param obs The observable value to subscribe to.
+   * @param renderTask The function that performs DOM updates.
    */
   renderOnChange<T>(obs: ObservableValue<T>, renderTask: RenderTask): void {
     this.renderTasks.push(renderTask)
@@ -329,16 +622,22 @@ export class Component implements Disposable {
   }
 
   /**
-   * Schedule a render task to run on the next animation frame. Multiple calls to render() for the same task within the same frame will be coalesced into a single call.
-   * @param renderTask A function that performs DOM updates. Will be scheduled to run on the next animation frame. Multiple calls to render() within the same frame will be coalesced into a single call.
+   * Schedules a render task on the next animation frame.
+   *
+   * Multiple calls for the same task within one frame are coalesced. Scheduling
+   * is independent of whether the component is currently mounted.
+   *
+   * @param renderTask The function that performs the DOM update.
    */
   render(renderTask: RenderTask): void {
     ElgoraUI.scheduler.schedule(renderTask)
   }
 
-  /** 
-   * Schedules all registered render tasks to run on the next animation frame.
-   * Used when hard refresh is needed.
+  /**
+   * Schedules all registered render tasks on the next animation frame.
+   *
+   * Use this when a component needs a full reactive refresh after an external
+   * change that is not represented by one of its observable values.
    */
   refresh(): void {
     for (const t of this.renderTasks) this.render(t);
@@ -348,14 +647,17 @@ export class Component implements Disposable {
   // State
   // --------------------------------------------------
 
+  /** Whether the component's DOM is connected anywhere in the document. */
   get attached(): boolean {
     return this.dom.isConnected
   }
 
+  /** Whether this component has completed its mount lifecycle. */
   get mounted(): boolean {
     return this._mounted
   }
 
+  /** Observable state that becomes `true` after permanent disposal. */
   get disposed(): ObservableValue<boolean> {
     return this._disposed
   }
@@ -364,6 +666,14 @@ export class Component implements Disposable {
   // Dispose
   // --------------------------------------------------
 
+  /**
+   * Permanently disposes this component and its descendants.
+   *
+   * Disposal unmounts the component, disposes child components, releases all
+   * resources registered through the component cleanup APIs, and invokes
+   * `comdispose`. It is terminal: a disposed component cannot be mounted again.
+   * Use `unmount()` when the component may be reused later.
+   */
   dispose(): void {
     if (this._disposed.Value) return
 
@@ -380,7 +690,8 @@ export class Component implements Disposable {
     }
 
     for (const d of this.disposables) {
-      d.dispose()
+      if (typeof d === "function") d()
+      else d.dispose()
     }
 
     this._options.comdispose?.(this)

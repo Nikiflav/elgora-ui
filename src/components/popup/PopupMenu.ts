@@ -142,11 +142,11 @@ export class PopupMenu extends Component {
         this.dom.setAttribute("popover", this.closeMode);
         this.dom.id ||= menuId();
 
-        this.dom.addEventListener("close", this.onClose);
-        this.dom.addEventListener("click", event => this.handleClick(event));
-        this.dom.addEventListener("pointerover", event => this.handlePointerOver(event));
-        this.dom.addEventListener("focusin", event => this.handleFocusIn(event));
-        this.dom.addEventListener("keydown", event => this.handleKeyDown(event));
+        this.listen(this.dom, "close", this.onClose);
+        this.listen(this.dom, "click", event => this.handleClick(event as MouseEvent));
+        this.listen(this.dom, "pointerover", event => this.handlePointerOver(event as PointerEvent));
+        this.listen(this.dom, "focusin", event => this.handleFocusIn(event as FocusEvent));
+        this.listen(this.dom, "keydown", event => this.handleKeyDown(event as KeyboardEvent));
     }
 
     /** Renders the supplied items and opens the menu at an anchor or viewport point. */
@@ -413,6 +413,14 @@ export class PopupMenu extends Component {
         this.anchor?.style.removeProperty("anchor-name");
         removeEventListener("resize", this.reposition);
         removeEventListener("scroll", this.reposition, true);
+    }
+
+    /**
+     * Stops viewport tracking and releases all component-owned listeners.
+     */
+    public override dispose(): void {
+        this.stopTracking();
+        super.dispose();
     }
 
     private updatePosition(): void {

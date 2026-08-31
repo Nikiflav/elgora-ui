@@ -1,8 +1,9 @@
 import { div } from "../../core/e";
+import type { Disposable } from "../../core/ElgoraUI";
 
 
 /** Custom scroll container supporting virtual dimensions and multiple input modes. */
-export class ScrollEngine {
+export class ScrollEngine implements Disposable {
     /** The viewport element enhanced by this scroll engine. */
     public readonly dom: HTMLElement;
 
@@ -47,6 +48,8 @@ export class ScrollEngine {
     private _lastTouchTime: number = 0;
     private _inertiaFrameId: number | null = null;
     private _isTouching: boolean = false;
+    private _resizeObserver?: ResizeObserver;
+    private _disposed = false;
 
     /** Creates a scroll engine for an existing viewport element. */
     constructor(dom: HTMLElement) {
@@ -87,6 +90,7 @@ export class ScrollEngine {
      * @param scrollHeight Total virtual content height.
      */
     public updateDimensions(scrollWidth: number, scrollHeight: number): void {
+        if (this._disposed) return;
         this._scrollWidth = scrollWidth;
         this._scrollHeight = scrollHeight;
 
@@ -127,6 +131,7 @@ export class ScrollEngine {
      * @param top Target vertical virtual position.
      */
     public scrollTo(left: number, top: number): void {
+        if (this._disposed) return;
         const maxLeft = this.getMaxScrollLeft();
         const maxTop = this.getMaxScrollTop();
 
@@ -149,12 +154,53 @@ export class ScrollEngine {
 
     /** Registers a callback invoked after the virtual scroll position changes. */
     public onScroll(callback: () => void): void {
+        if (this._disposed) return;
         this._onScrollCallback = callback;
     }
 
     /** Registers a callback invoked after the physical viewport is resized. */
     public onResize(callback: () => void): void {
+        if (this._disposed) return;
         this._onResizeCallback = callback;
+    }
+
+    /**
+     * Releases all event listeners, observers, animation frames, and custom
+     * scrollbar elements owned by the engine. The viewport and its content
+     * remain owned by the caller.
+     */
+    public dispose(): void {
+        if (this._disposed) return;
+        this._disposed = true;
+
+        this.dom.removeEventListener('wheel', this.handleWheel);
+        this.dom.removeEventListener('keydown', this.handleKeyDown);
+        this._hThumb.removeEventListener('pointerdown', this.handleHorizontalThumbPointerDown);
+        this._vThumb.removeEventListener('pointerdown', this.handleVerticalThumbPointerDown);
+        window.removeEventListener('pointermove', this.handleDrag);
+        window.removeEventListener('pointerup', this.stopDrag);
+        this._hTrack.removeEventListener('pointerdown', this.handleHorizontalTrackPointerDown);
+        this._vTrack.removeEventListener('pointerdown', this.handleVerticalTrackPointerDown);
+        this.dom.removeEventListener('touchstart', this.handleTouchStart);
+        this.dom.removeEventListener('touchmove', this.handleTouchMove);
+        this.dom.removeEventListener('touchend', this.handleTouchEnd);
+        this.dom.removeEventListener('touchcancel', this.handleTouchEnd);
+
+        this._resizeObserver?.disconnect();
+        this._resizeObserver = undefined;
+
+        if (this._inertiaFrameId !== null) {
+            cancelAnimationFrame(this._inertiaFrameId);
+            this._inertiaFrameId = null;
+        }
+
+        this._hTrack.remove();
+        this._vTrack.remove();
+        this.dom.classList.remove('elg-scrolling', 'elg-scrollbar-both');
+        this._onScrollCallback = undefined;
+        this._onResizeCallback = undefined;
+        this._isDragging = null;
+        this._isTouching = false;
     }
 
     private getMaxScrollLeft(): number { return Math.max(0, this._scrollWidth - this._clientWidth); }
@@ -187,14 +233,14 @@ export class ScrollEngine {
         this.dom.addEventListener('keydown', this.handleKeyDown);
 
         // Pointer click + drag channels
-        this._hThumb.addEventListener('pointerdown', (e) => this.startDrag(e, 'horizontal'));
-        this._vThumb.addEventListener('pointerdown', (e) => this.startDrag(e, 'vertical'));
+        this._hThumb.addEventListener('pointerdown', this.handleHorizontalThumbPointerDown);
+        this._vThumb.addEventListener('pointerdown', this.handleVerticalThumbPointerDown);
 
         window.addEventListener('pointermove', this.handleDrag);
         window.addEventListener('pointerup', this.stopDrag);
 
-        this._hTrack.addEventListener('pointerdown', (e) => this.handleTrackClick(e, 'horizontal'));
-        this._vTrack.addEventListener('pointerdown', (e) => this.handleTrackClick(e, 'vertical'));
+        this._hTrack.addEventListener('pointerdown', this.handleHorizontalTrackPointerDown);
+        this._vTrack.addEventListener('pointerdown', this.handleVerticalTrackPointerDown);
 
         // Mobile touch swipe channels
         this.dom.addEventListener('touchstart', this.handleTouchStart, { passive: false });
@@ -202,15 +248,32 @@ export class ScrollEngine {
         this.dom.addEventListener('touchend', this.handleTouchEnd, { passive: false });
         this.dom.addEventListener('touchcancel', this.handleTouchEnd, { passive: false });
 
-        new ResizeObserver(() => {
+        this._resizeObserver = new ResizeObserver(() => {
             this._clientWidth = this.dom.clientWidth;
             this._clientHeight = this.dom.clientHeight;
             this._maxScrollLeft = Math.max(0, this._scrollWidth - this._clientWidth);
             this._maxScrollTop = Math.max(0, this._scrollHeight - this._clientHeight);
             this.updateScrollbarVisibilitiesAndSizes();
             this._onResizeCallback?.();
-        }).observe(this.dom);
+        });
+        this._resizeObserver.observe(this.dom);
     }
+
+    private handleHorizontalThumbPointerDown = (event: PointerEvent): void => {
+        this.startDrag(event, 'horizontal');
+    };
+
+    private handleVerticalThumbPointerDown = (event: PointerEvent): void => {
+        this.startDrag(event, 'vertical');
+    };
+
+    private handleHorizontalTrackPointerDown = (event: PointerEvent): void => {
+        this.handleTrackClick(event, 'horizontal');
+    };
+
+    private handleVerticalTrackPointerDown = (event: PointerEvent): void => {
+        this.handleTrackClick(event, 'vertical');
+    };
 
     private handleWheel = (e: WheelEvent): void => {
         e.preventDefault();

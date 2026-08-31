@@ -1,5 +1,5 @@
 :root {
-    --elg-grid-sel-color: var(--elg-primary-color, #3b82f6);
+    --elg-grid-sel-color: var(--elg-selection-border, var(--elg-primary-color, #3b82f6));
     --elg-grid-sel-width: 1px;
     --elg-grid-cell-color: var(--elg-bg-color);
     --elg-grid-bg-tint: 12%;

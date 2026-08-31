@@ -166,7 +166,7 @@ export class VirtualList<T> extends Component {
         this.container.appendChild(this.spacer)
         this.container.appendChild(this.content)
 
-        this.container.addEventListener("scroll", this.onScroll)
+        this.listen(this.container, "scroll", this.onScroll)
 
         this.renderTasks.push(() => this.frame())
 

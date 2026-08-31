@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "topics": [
+    {
+      "id": "framework-overview",
+      "title": "ElgoraUI fundamentals",
+      "path": "/getting-started/framework-overview",
+      "group": "getting-started",
+      "order": 1,
+      "description": "Learn the core ElgoraUI concepts, components, reactive state, and UI styles.",
+      "next": "/getting-started/download",
+      "toc": true,
+      "api": [
+        "Component",
+        "cdiv",
+        "cbutton",
+        "e",
+        "ObservableValue",
+        "ObservableEvent",
+        "ElgoraUI"
+      ],
+      "keywords": [
+        "framework",
+        "observable",
+        "event",
+        "theme",
+        "ui styles",
+        "css variables"
+      ],
+      "module": "./content/topics/framework-overview.js"
+    },
+    {
+      "id": "download",
+      "title": "Download and installation",
+      "path": "/getting-started/download",
+      "group": "getting-started",
+      "order": 2,
+      "description": "Choose how to include ElgoraUI in a browser application.",
+      "prev": "/getting-started/framework-overview",
+      "next": "/components",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "download",
+        "installation",
+        "npm",
+        "github",
+        "static",
+        "cdn"
+      ],
+      "module": "./content/topics/download.js"
+    },
+    {
+      "id": "components-overview",
+      "title": "Component overview",
+      "path": "/components",
+      "group": "components",
+      "order": 10,
+      "description": "Learn what an ElgoraUI Component adds to a native HTMLElement.",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "component",
+        "HTMLElement",
+        "lifecycle",
+        "composition",
+        "observable"
+      ],
+      "module": "./content/topics/components-overview.js"
+    },
+    {
+      "id": "semantic-colors",
+      "title": "Semantic colors",
+      "path": "/styles/semantic-colors",
+      "group": "styles",
+      "order": 10,
+      "description": "Understand ElgoraUI semantic color roles and their background, text, and border tokens.",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "colors",
+        "theme",
+        "semantic",
+        "tokens",
+        "light",
+        "dark"
+      ],
+      "module": "./content/topics/semantic-colors.js"
+    },
+    {
+      "id": "html-elements",
+      "title": "HTML elements",
+      "path": "/styles/html-elements",
+      "group": "styles",
+      "order": 20,
+      "description": "Explore how ElgoraUI styles native HTML elements, controls, containers, and tables.",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "html",
+        "elements",
+        "buttons",
+        "forms",
+        "tables",
+        "surfaces"
+      ],
+      "module": "./content/topics/html-elements.js"
+    },
+    {
+      "id": "popover",
+      "title": "Popover",
+      "path": "/popover",
+      "group": "components",
+      "order": 20,
+      "description": "Create anchored and point-positioned floating panels.",
+      "toc": true,
+      "api": [
+        "Popover",
+        "PopoverOptions",
+        "PopoverPoint",
+        "PopoverPlacement",
+        "PopoverCloseMode"
+      ],
+      "keywords": [
+        "popover",
+        "anchor",
+        "context menu",
+        "floating panel"
+      ],
+      "module": "./content/topics/popover.js"
+    },
+    {
+      "id": "popup-menu",
+      "title": "PopupMenu",
+      "path": "/popup",
+      "group": "components",
+      "order": 30,
+      "description": "Build dynamic action menus with nested items and context positioning.",
+      "toc": true,
+      "api": [
+        "PopupMenu",
+        "PopupMenuOptions",
+        "PopupMenuShowOptions",
+        "MenuItem",
+        "RemixIcon"
+      ],
+      "keywords": [
+        "popup menu",
+        "menu",
+        "submenu",
+        "context menu"
+      ],
+      "module": "./content/topics/popup-menu.js"
+    },
+    {
+      "id": "virtual-list",
+      "title": "Virtual List",
+      "path": "/components/virtual-list",
+      "group": "components",
+      "order": 30,
+      "description": "Efficiently render very large collections by keeping only the visible rows in the DOM.",
+      "toc": true,
+      "api": [
+        "VirtualList",
+        "VirtualListOptions",
+        "DataList",
+        "RenderRowArgs",
+        "SizeManager",
+        "VariableSizeManager",
+        "FixedSizeManager"
+      ],
+      "keywords": [
+        "virtual list",
+        "virtualization",
+        "large collections",
+        "variable height"
+      ],
+      "module": "./content/topics/virtual-list.js"
+    },
+    {
+      "id": "tooltip",
+      "title": "Tooltip",
+      "path": "/tooltip",
+      "group": "components",
+      "order": 40,
+      "description": "Add hover and keyboard-focus descriptions to any element.",
+      "toc": true,
+      "api": [
+        "Tooltip",
+        "TooltipContent",
+        "TooltipShowOptions"
+      ],
+      "keywords": [
+        "tooltip",
+        "hover",
+        "focus",
+        "accessibility"
+      ],
+      "module": "./content/topics/tooltip.js"
+    },
+    {
+      "id": "browser-router",
+      "title": "Browser Router",
+      "path": "/components/browser-router",
+      "group": "components",
+      "order": 50,
+      "description": "Navigate between client-side pages without full document reloads.",
+      "toc": true,
+      "api": [
+        "BrowserRouter"
+      ],
+      "keywords": [
+        "browser router",
+        "routing",
+        "navigation",
+        "history api"
+      ],
+      "module": "./content/topics/browser-router.js"
+    },
+    {
+      "id": "datagrid-overview",
+      "title": "Overview",
+      "path": "/components/datagrid/overview",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 50,
+      "description": "Display, group, summarize, and interact with tabular data.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridOptions",
+        "ArrayDataSource",
+        "DataSource",
+        "DataColumn",
+        "SummaryDefinition"
+      ],
+      "keywords": [
+        "data grid",
+        "grid",
+        "grouping",
+        "summaries"
+      ],
+      "module": "./content/topics/datagrid-overview.js"
+    },
+    {
+      "id": "datagrid-tree",
+      "title": "DataGrid tree data",
+      "path": "/components/datagrid/tree",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 60,
+      "description": "Render hierarchical parent and child rows in a DataGrid.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "ArrayDataSource",
+        "DataSource"
+      ],
+      "keywords": [
+        "data grid",
+        "tree",
+        "hierarchy",
+        "parent child"
+      ],
+      "module": "./content/topics/datagrid-tree.js"
+    },
+    {
+      "id": "scroll-engine",
+      "title": "Scroll Engine",
+      "path": "/components/scroll-engine",
+      "group": "components",
+      "order": 60,
+      "description": "Scroll virtual dimensions through a bounded viewport with programmatic and pointer input.",
+      "toc": true,
+      "api": [
+        "ScrollEngine"
+      ],
+      "keywords": [
+        "scroll engine",
+        "scrolling",
+        "virtual dimensions",
+        "custom scrollbar"
+      ],
+      "module": "./content/topics/scroll-engine.js"
+    }
+  ]
+}

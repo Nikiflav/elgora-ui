@@ -1,0 +1,12 @@
+{
+  "name": "elgora-ui-docs",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "elgora-ui": "file:..",
+    "markdown-it": "^14.1.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2"
+  }
+}

@@ -1,12 +1,277 @@
+/* Visual classes: consumes theme tokens for surfaces, semantic colors, states, controls, and components. */
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  font-size: 16px;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+/* =========================================================
+   CORE RENDER ENGINE
+========================================================= */
+.elg {
+
+    /* Background color */
+    --elg-bg-final-s: clamp(0, calc(var(--elg-bg-s) + var(--elg-state-s-1) + var(--elg-state-s-2) + var(--elg-state-s-3)), 100);
+    --elg-bg-final-l: clamp(0, calc(var(--elg-bg-l) + var(--elg-state-l-1) + var(--elg-state-l-2) + var(--elg-state-l-3)), 100);
+    --elg-bg-rendered-color: hsl(var(--elg-bg-h) var(--elg-bg-final-s) var(--elg-bg-final-l) / var(--elg-bg-a));
+    
+    background-color: var(--elg-bg-rendered-color);
+    color: var(--elg-text-color);
+    transition: background-color 0.4s ease;
+}
+
+/* =========================================================
+   SURFACES
+========================================================= */
+.elg-page {
+    /* The base background variables are inherited from :root. */
+}
+
+.elg-surface {
+    --elg-bg-h: var(--elg-surface-h);
+    --elg-bg-s: var(--elg-surface-s);
+    --elg-bg-l: var(--elg-surface-l);
+}
+
+.elg-surface-2 {
+    --elg-bg-h: var(--elg-surface-2-h);
+    --elg-bg-s: var(--elg-surface-2-s);
+    --elg-bg-l: var(--elg-surface-2-l);
+}
+
+.elg-surface-3 {
+    --elg-bg-h: var(--elg-surface-3-h);
+    --elg-bg-s: var(--elg-surface-3-s);
+    --elg-bg-l: var(--elg-surface-3-l);
+}
+
+/* =========================================================
+   SEMANTIC COLORS
+========================================================= */
+.elg-primary {
+    --elg-bg-h: var(--elg-primary-h);
+    --elg-bg-s: var(--elg-primary-s);
+    --elg-bg-l: var(--elg-primary-l);
+
+    background-color: var(--elg-bg-rendered-color);
+    color: var(--elg-primary-text);
+    --elg-border-color: var(--elg-primary-border);
+}
+
+.elg-accent {
+    --elg-bg-h: var(--elg-accent-h);
+    --elg-bg-s: var(--elg-accent-s);
+    --elg-bg-l: var(--elg-accent-l);
+
+    background-color: var(--elg-bg-rendered-color);
+    color: var(--elg-accent-text);
+    --elg-border-color: var(--elg-accent-border);
+}
+
+.elg-neutral {
+    --elg-bg-h: var(--elg-neutral-h);
+    --elg-bg-s: var(--elg-neutral-s);
+    --elg-bg-l: var(--elg-neutral-l);
+
+    background-color: var(--elg-bg-rendered-color);
+    color: var(--elg-neutral-text);
+    --elg-border-color: var(--elg-neutral-border);
+}
+
+.elg-success {
+    --elg-bg-h: var(--elg-success-h);
+    --elg-bg-s: var(--elg-success-s);
+    --elg-bg-l: var(--elg-success-l);
+
+    background-color: var(--elg-bg-rendered-color);
+    color: var(--elg-success-text);
+    --elg-border-color: var(--elg-success-border);
+}
+
+.elg-warning {
+    --elg-bg-h: var(--elg-warning-h);
+    --elg-bg-s: var(--elg-warning-s);
+    --elg-bg-l: var(--elg-warning-l);
+
+    background-color: var(--elg-bg-rendered-color);
+    color: var(--elg-warning-text);
+    --elg-border-color: var(--elg-warning-border);
+}
+
+.elg-danger {
+    --elg-bg-h: var(--elg-danger-h);
+    --elg-bg-s: var(--elg-danger-s);
+    --elg-bg-l: var(--elg-danger-l);
+
+    background-color: var(--elg-bg-rendered-color);
+    color: var(--elg-danger-text);
+    --elg-border-color: var(--elg-danger-border);
+}
+
+
+.elg-text-primary {
+    color: hsl(var(--elg-primary-hsl))
+}
+
+.elg-text-muted {
+    color: var(--elg-text-muted)
+}
+
+.elg-text-neutral {
+    color: hsl(var(--elg-neutral-hsl))
+}
+
+
+.elg-text-success {
+    color: hsl(var(--elg-success-hsl))
+}
+
+.elg-text-warning {
+    color: hsl(var(--elg-warning-hsl))
+}
+
+.elg-text-danger {
+    color: hsl(var(--elg-danger-hsl))
+}
+
+/* =========================================================
+   STATE SLOT 1 (PERSISTENT)
+========================================================= */
+.elg-selected {
+    --elg-bg-h: var(--elg-selection-h);
+    --elg-bg-s: var(--elg-selection-s);
+    --elg-bg-l: var(--elg-selection-l);
+    --elg-state-s-1: 0;
+    --elg-state-l-1: 0;
+    color: var(--elg-selection-text);
+}
+
+/* =========================================================
+   STATE SLOT 2 (SEMANTIC / CONTEXT)
+========================================================= */
+.elg-active {
+    --elg-state-s-2: var(--elg-active-s);
+    --elg-state-l-2: var(--elg-active-l);
+}
+
+/* =========================================================
+   STATE SLOT 3 (INTERACTION)
+========================================================= */
+.elg-hover:hover {
+    --elg-state-s-3: var(--elg-hover-s);
+    --elg-state-l-3: var(--elg-hover-l);
+}
+
+.elg-focus:focus-visible {
+    --elg-state-s-3: var(--elg-focus-s);
+    --elg-state-l-3: var(--elg-focus-l);
+}
+
+.elg-active:active {
+    --elg-state-s-3: 6;
+    --elg-state-l-3: -8;
+}
+
+/* =========================================================
+   BORDERS
+========================================================= */
+.elg-border {
+    border: 1px solid var(--elg-border-color);
+}
+
+.elg-border-strong {
+    border: 1px solid hsl(var(--elg-border-strong-h) var(--elg-border-strong-s) var(--elg-border-strong-l));
+}
+
+/* =========================================================
+   ELG BG ALPHA UTILITIES (MINIMAL SET)
+========================================================= */
+
+.elg-bg-a-05 {
+    --elg-bg-a: 0.05;
+}
+
+.elg-bg-a-10 {
+    --elg-bg-a: 0.10;
+}
+
+.elg-bg-a-25 {
+    --elg-bg-a: 0.25;
+}
+
+.elg-bg-a-50 {
+    --elg-bg-a: 0.50;
+}
+
+.elg-bg-a-75 {
+    --elg-bg-a: 0.75;
+}
+
+.elg-bg-a-100 {
+    --elg-bg-a: 1;
+}
+
+.elg-gradient {
+    --elg-bg-l: 50;
+    --elg-bg-color-2: transparent;
+
+    background-image: linear-gradient(300deg, var(--elg-bg-color), var(--elg-bg-color-2));
+    background-color: transparent;
+}
+
+.elg:where(button, input, textarea, select) {
+  font: inherit;
+}
+
+.elg:where(input, textarea, select) {
+  background-color: var(--elg-surface-color);
+  border: 1px solid var(--elg-border-color);
+}
+
+.elg:where(button) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.elg:where(button).elg-surface,
+.elg:where(button).elg-surface-2,
+.elg:where(button).elg-surface-3,
+.elg:where(button).elg-primary,
+.elg:where(button).elg-accent,
+.elg:where(button).elg-neutral,
+.elg:where(button).elg-success,
+.elg:where(button).elg-warning,
+.elg:where(button).elg-danger,
+.elg:where(button).elg-selected {
+  background-color: var(--elg-bg-rendered-color);
+}
+
+.elg:where(button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--elg-selection-border);
+  outline-offset: 1px;
+}
+
+.elg-field:where(input, textarea, select) {
+  min-width: 0;
+  padding: 0.5em 0.75em;
+  border-radius: 6px;
+}
+
+.elg-field:where(input, textarea) {
+  resize: vertical;
 }
 
 .elg-btn {
   padding: 0.15em 0.5em;
   border-radius: 4px;
   cursor: pointer;
+  text-decoration: none;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   border: 1px solid var(--elg-border-color);
 }
@@ -33,6 +298,41 @@ body {
 
 .elg-shadow {
   box-shadow: 0 3px 6px -1px rgb(0, 0, 0, 0.2);
+}
+
+.elg-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--elg-text-color);
+}
+
+.elg-table th,
+.elg-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.elg-table th {
+  color: var(--elg-text-soft);
+  font-weight: 600;
+}
+
+.elg-table-row-borders thead {
+  border-bottom: 1px solid var(--elg-border-strong);
+}
+
+.elg-table-row-borders tbody tr {
+  border-bottom: 1px solid var(--elg-border-color);
+}
+
+.elg-table-bordered {
+  border: 1px solid var(--elg-border-color);
+}
+
+.elg-table-bordered th,
+.elg-table-bordered td {
+  border: 1px solid var(--elg-border-color);
 }
 
 /** -------------------- */

@@ -9,5 +9,6 @@
     "rootDir": ".",
     "types": []
   },
-  "include": ["src", "playground"]
+  "include": ["src", "docs"],
+  "exclude": ["docs/vite.config.ts", "docs/demos/**/*.ts"]
 }

@@ -61,8 +61,8 @@ export class Popover extends Component {
         this.dom.id ||= `elg-popup-${++popupId}`;
         if (this.anchor && this.bindAnchorTarget) this.anchor.setAttribute("popovertarget", this.dom.id);
 
-        this.dom.addEventListener("close", event => onclose?.(event, this));
-        this.dom.addEventListener("toggle", this.reposition);
+        this.listen(this.dom, "close", event => onclose?.(event, this));
+        this.listen(this.dom, "toggle", this.reposition);
         if (open) this.show();
     }
 
@@ -114,12 +114,22 @@ export class Popover extends Component {
     hide(): void {
         if ((this.dom as any).matches(":popover-open")) (this.dom as any).hidePopover();
         removeEventListener("resize", this.reposition); removeEventListener("scroll", this.reposition, true);
+        this.anchor?.style.removeProperty("anchor-name");
     }
     /** Toggles the popup between its open and closed states. */
     toggle(): void { this.isOpen() ? this.hide() : this.show(); }
 
     /** Returns whether the browser currently considers the popup open. */
     isOpen(): boolean { return (this.dom as any).matches(":popover-open"); }
+
+    /**
+     * Stops viewport tracking, removes the anchor marker, and releases all
+     * component-owned listeners and subscriptions.
+     */
+    public override dispose(): void {
+        this.hide();
+        super.dispose();
+    }
 
     private updatePosition(): void {
         if (!this.isOpen()) return;

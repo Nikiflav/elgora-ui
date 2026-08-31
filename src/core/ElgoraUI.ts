@@ -1,6 +1,6 @@
 import '../colors.css';
-import '../utility.css';
 import '../style.css';
+import '../utility.css';
 import '../loaders.css';
 import 'remixicon/fonts/remixicon.css';
 

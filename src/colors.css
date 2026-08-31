@@ -1,3 +1,5 @@
+/* Theme tokens: CSS variables for light/dark themes and semantic color roles. */
+
 /* =========================================================
    ELG DESIGN SYSTEM (3-SLOT STATE MODEL)
    - slot 1: persistent (selected)
@@ -10,7 +12,7 @@
 ========================================================= */
 :root {
     /* core theme hue */
-    --elg-theme-h: 220;
+    --elg-theme-h: 250;
 
     /* alpha */
     --elg-bg-a: 1;
@@ -31,31 +33,44 @@
     /* ======================================================
      STATE PRESETS
   ====================================================== */
-    --elg-hover-s: 10;
-    --elg-hover-l: -8;
+    --elg-hover-s: 8;
+    --elg-hover-l: -6;
 
-    --elg-focus-s: 3;
-    --elg-focus-l: 6;
+    --elg-focus-s: 4;
+    --elg-focus-l: 7;
 
-    --elg-selected-s: -20;
-    --elg-selected-l: -6;
+    --elg-selected-s: 12;
+    --elg-selected-l: -7;
 
     --elg-active-s: 10;
-    --elg-active-l: -15;
+    --elg-active-l: -12;
+
+    /* ======================================================
+     SELECTION COLORS
+  ====================================================== */
+    --elg-selection-h: 220;
+    --elg-selection-s: 90;
+    --elg-selection-l: 94;
+    --elg-selection-text-h: 220;
+    --elg-selection-text-s: 78;
+    --elg-selection-text-l: 38;
+    --elg-selection-border-h: 220;
+    --elg-selection-border-s: 78;
+    --elg-selection-border-l: 50;
 
     /* ======================================================
      SEMANTIC COLORS
   ====================================================== */
 
     /* PRIMARY */
-    --elg-primary-h: 210;
-    --elg-primary-s: 85;
-    --elg-primary-l: 56;
+    --elg-primary-h: 255;
+    --elg-primary-s: 82;
+    --elg-primary-l: 62;
 
     /* ACCENT */
-    --elg-accent-h: 310;
-    --elg-accent-s: 75;
-    --elg-accent-l: 60;
+    --elg-accent-h: 205;
+    --elg-accent-s: 88;
+    --elg-accent-l: 58;
 
     /* SUCCESS */
     --elg-success-h: 145;
@@ -74,42 +89,42 @@
 
     /* NEUTRAL */
     --elg-neutral-h: var(--elg-theme-h);
-    --elg-neutral-s: 10;
-    --elg-neutral-l: 60;
+    --elg-neutral-s: 8;
+    --elg-neutral-l: 90;
 
     /* ======================================================
      SURFACES
   ====================================================== */
     --elg-bg-h: var(--elg-theme-h);
-    --elg-bg-s: 10;
-    --elg-bg-l: 100;
+    --elg-bg-s: 8;
+    --elg-bg-l: 98;
 
     --elg-surface-h: var(--elg-theme-h);
-    --elg-surface-s: 5;
-    --elg-surface-l: 97;
+    --elg-surface-s: 7;
+    --elg-surface-l: 96;
 
     --elg-surface-2-h: var(--elg-theme-h);
-    --elg-surface-2-s: 5;
-    --elg-surface-2-l: 93;
+    --elg-surface-2-s: 8;
+    --elg-surface-2-l: 92;
 
     --elg-surface-3-h: var(--elg-theme-h);
-    --elg-surface-3-s: 5;
-    --elg-surface-3-l: 90;
+    --elg-surface-3-s: 9;
+    --elg-surface-3-l: 87;
 
     /* ======================================================
      TEXT
   ====================================================== */
     --elg-text-h: var(--elg-theme-h);
-    --elg-text-s: 18;
-    --elg-text-l: 14;
+    --elg-text-s: 14;
+    --elg-text-l: 16;
 
     --elg-text-muted-h: var(--elg-theme-h);
-    --elg-text-muted-s: 12;
-    --elg-text-muted-l: 40;
+    --elg-text-muted-s: 10;
+    --elg-text-muted-l: 42;
 
     --elg-text-soft-h: var(--elg-theme-h);
-    --elg-text-soft-s: 10;
-    --elg-text-soft-l: 55;
+    --elg-text-soft-s: 8;
+    --elg-text-soft-l: 56;
 
     --elg-text-inverse-h: 0;
     --elg-text-inverse-s: 0;
@@ -119,12 +134,12 @@
      BORDERS
   ====================================================== */
     --elg-border-h: var(--elg-theme-h);
-    --elg-border-s: 16;
-    --elg-border-l: 92;
+    --elg-border-s: 10;
+    --elg-border-l: 88;
 
     --elg-border-strong-h: var(--elg-theme-h);
-    --elg-border-strong-s: 14;
-    --elg-border-strong-l: 72;
+    --elg-border-strong-s: 12;
+    --elg-border-strong-l: 68;
 
     /* =============
         HSL
@@ -145,6 +160,9 @@
     --elg-success-hsl: var(--elg-success-h) var(--elg-success-s) var(--elg-success-l);
     --elg-warning-hsl: var(--elg-warning-h) var(--elg-warning-s) var(--elg-warning-l);
     --elg-danger-hsl: var(--elg-danger-h) var(--elg-danger-s) var(--elg-danger-l);
+    --elg-selection-hsl: var(--elg-selection-h) var(--elg-selection-s) var(--elg-selection-l);
+    --elg-selection-text-hsl: var(--elg-selection-text-h) var(--elg-selection-text-s) var(--elg-selection-text-l);
+    --elg-selection-border-hsl: var(--elg-selection-border-h) var(--elg-selection-border-s) var(--elg-selection-border-l);
 
     /* =============
         COLORS
@@ -169,6 +187,29 @@
     --elg-success-color: hsl(var(--elg-success-hsl));
     --elg-warning-color: hsl(var(--elg-warning-hsl));
     --elg-danger-color: hsl(var(--elg-danger-hsl));
+    --elg-selection-bg: hsl(var(--elg-selection-hsl));
+    --elg-selection-text: hsl(var(--elg-selection-text-hsl));
+    --elg-selection-border: hsl(var(--elg-selection-border-hsl));
+
+    /* Semantic role colors */
+    --elg-primary-bg: hsl(var(--elg-primary-hsl));
+    --elg-primary-text: hsl(0 0% 100%);
+    --elg-primary-border: hsl(var(--elg-primary-h) var(--elg-primary-s) clamp(0, calc(var(--elg-primary-l) - 12), 100));
+    --elg-accent-bg: hsl(var(--elg-accent-hsl));
+    --elg-accent-text: hsl(0 0% 100%);
+    --elg-accent-border: hsl(var(--elg-accent-h) var(--elg-accent-s) clamp(0, calc(var(--elg-accent-l) - 12), 100));
+    --elg-neutral-bg: hsl(var(--elg-neutral-hsl));
+    --elg-neutral-text: hsl(250 14% 16%);
+    --elg-neutral-border: hsl(var(--elg-neutral-h) var(--elg-neutral-s) clamp(0, calc(var(--elg-neutral-l) - 12), 100));
+    --elg-success-bg: hsl(var(--elg-success-hsl));
+    --elg-success-text: hsl(0 0% 100%);
+    --elg-success-border: hsl(var(--elg-success-h) var(--elg-success-s) clamp(0, calc(var(--elg-success-l) - 12), 100));
+    --elg-warning-bg: hsl(var(--elg-warning-hsl));
+    --elg-warning-text: hsl(250 14% 16%);
+    --elg-warning-border: hsl(var(--elg-warning-h) var(--elg-warning-s) clamp(0, calc(var(--elg-warning-l) - 12), 100));
+    --elg-danger-bg: hsl(var(--elg-danger-hsl));
+    --elg-danger-text: hsl(0 0% 100%);
+    --elg-danger-border: hsl(var(--elg-danger-h) var(--elg-danger-s) clamp(0, calc(var(--elg-danger-l) - 12), 100));
 
 
 }
@@ -180,248 +221,47 @@
    DARK THEME OVERRIDES
 ========================================================= */
 [data-theme="dark"] {
-    --elg-bg-s: 18;
-    --elg-bg-l: 8;
+    --elg-bg-s: 10;
+    --elg-bg-l: 7;
 
-    --elg-surface-s: 16;
-    --elg-surface-l: 12;
+    --elg-surface-s: 9;
+    --elg-surface-l: 11;
 
-    --elg-surface-2-s: 15;
-    --elg-surface-2-l: 16;
+    --elg-surface-2-s: 9;
+    --elg-surface-2-l: 15;
 
-    --elg-surface-3-s: 14;
+    --elg-surface-3-s: 8;
     --elg-surface-3-l: 20;
 
-    --elg-text-s: 20;
+    --elg-neutral-l: 24;
+    --elg-neutral-text: hsl(250 12% 94%);
+
+    --elg-text-s: 12;
     --elg-text-l: 94;
 
-    --elg-text-muted-s: 14;
-    --elg-text-muted-l: 72;
+    --elg-text-muted-s: 9;
+    --elg-text-muted-l: 68;
 
-    --elg-text-soft-s: 10;
-    --elg-text-soft-l: 58;
+    --elg-text-soft-s: 8;
+    --elg-text-soft-l: 56;
 
     --elg-text-inverse-h: var(--elg-theme-h);
     --elg-text-inverse-s: 18;
     --elg-text-inverse-l: 8;
 
-    --elg-border-s: 14;
-    --elg-border-l: 24;
+    --elg-border-s: 9;
+    --elg-border-l: 23;
+
+    --elg-selection-h: 220;
+    --elg-selection-s: 70;
+    --elg-selection-l: 20;
+    --elg-selection-text-h: 210;
+    --elg-selection-text-s: 95;
+    --elg-selection-text-l: 78;
+    --elg-selection-border-h: 210;
+    --elg-selection-border-s: 95;
+    --elg-selection-border-l: 78;
 
     --elg-hover-l: 8;
     --elg-focus-l: 8;
-}
-
-/* =========================================================
-   CORE RENDER ENGINE
-========================================================= */
-.elg {
-
-    /* Background color */
-    --elg-bg-final-s: clamp(0, calc(var(--elg-bg-s) + var(--elg-state-s-1) + var(--elg-state-s-2) + var(--elg-state-s-3)), 100);
-    --elg-bg-final-l: clamp(0, calc(var(--elg-bg-l) + var(--elg-state-l-1) + var(--elg-state-l-2) + var(--elg-state-l-3)), 100);
-    --elg-bg-rendered-color: hsl(var(--elg-bg-h) var(--elg-bg-final-s) var(--elg-bg-final-l) / var(--elg-bg-a));
-    
-    background-color: var(--elg-bg-rendered-color);
-    transition: background-color 0.4s ease;
-}
-
-/* =========================================================
-   SURFACES
-========================================================= */
-.elg-page {
-    /* The base background variables are inherited from :root. */
-}
-
-.elg-surface {
-    --elg-bg-h: var(--elg-surface-h);
-    --elg-bg-s: var(--elg-surface-s);
-    --elg-bg-l: var(--elg-surface-l);
-}
-
-.elg-surface-2 {
-    --elg-bg-h: var(--elg-surface-2-h);
-    --elg-bg-s: var(--elg-surface-2-s);
-    --elg-bg-l: var(--elg-surface-2-l);
-}
-
-.elg-surface-3 {
-    --elg-bg-h: var(--elg-surface-3-h);
-    --elg-bg-s: var(--elg-surface-3-s);
-    --elg-bg-l: var(--elg-surface-3-l);
-}
-
-/* =========================================================
-   SEMANTIC COLORS
-========================================================= */
-.elg-primary {
-    --elg-bg-h: var(--elg-primary-h);
-    --elg-bg-s: var(--elg-primary-s);
-    --elg-bg-l: var(--elg-primary-l);
-
-    background-color: var(--elg-bg-rendered-color);
-    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
-}
-
-.elg-accent {
-    --elg-bg-h: var(--elg-accent-h);
-    --elg-bg-s: var(--elg-accent-s);
-    --elg-bg-l: var(--elg-accent-l);
-
-    background-color: var(--elg-bg-rendered-color);
-    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
-}
-
-.elg-neutral {
-    --elg-bg-h: var(--elg-neutral-h);
-    --elg-bg-s: var(--elg-neutral-s);
-    --elg-bg-l: var(--elg-neutral-l);
-
-    background-color: var(--elg-bg-rendered-color);
-    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
-    border-color: hsl(var(--elg-border-hsl));
-}
-
-.elg-success {
-    --elg-bg-h: var(--elg-success-h);
-    --elg-bg-s: var(--elg-success-s);
-    --elg-bg-l: var(--elg-success-l);
-
-    background-color: var(--elg-bg-rendered-color);
-    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
-}
-
-.elg-warning {
-    --elg-bg-h: var(--elg-warning-h);
-    --elg-bg-s: var(--elg-warning-s);
-    --elg-bg-l: var(--elg-warning-l);
-
-    background-color: var(--elg-bg-rendered-color);
-    color: hsl(var(--elg-text-h) var(--elg-text-s) var(--elg-text-l));
-    border-color: hsl(var(--elg-border-hsl));
-}
-
-.elg-danger {
-    --elg-bg-h: var(--elg-danger-h);
-    --elg-bg-s: var(--elg-danger-s);
-    --elg-bg-l: var(--elg-danger-l);
-
-    background-color: var(--elg-bg-rendered-color);
-    color: hsl(var(--elg-text-inverse-h) var(--elg-text-inverse-s) var(--elg-text-inverse-l));
-}
-
-
-.elg-text-primary {
-    color: hsl(var(--elg-primary-hsl))
-}
-
-.elg-text-neutral {
-    color: hsl(var(--elg-neutral-hsl))
-}
-
-
-.elg-text-success {
-    color: hsl(var(--elg-success-hsl))
-}
-
-.elg-text-warning {
-    color: hsl(var(--elg-warning-hsl))
-}
-
-.elg-text-danger {
-    color: hsl(var(--elg-danger-hsl))
-}
-
-.elg-primary,
-.elg-accent,
-.elg-success,
-.elg-warning,
-.elg-danger,
-.elg-neutral {
-    --elg-border-h: var(--elg-bg-h);
-    --elg-border-s: var(--elg-bg-s);
-    --elg-border-l: clamp(0, calc(var(--elg-bg-l) - 12), 100);
-    --elg-border-color: hsl(var(--elg-border-h) var(--elg-border-s) var(--elg-border-l));
-}
-
-
-/* =========================================================
-   STATE SLOT 1 (PERSISTENT)
-========================================================= */
-.elg-selected {
-    --elg-state-s-1: var(--elg-selected-s);
-    --elg-state-l-1: var(--elg-selected-l);
-}
-
-/* =========================================================
-   STATE SLOT 2 (SEMANTIC / CONTEXT)
-========================================================= */
-.elg-active {
-    --elg-state-s-2: var(--elg-active-s);
-    --elg-state-l-2: var(--elg-active-l);
-}
-
-/* =========================================================
-   STATE SLOT 3 (INTERACTION)
-========================================================= */
-.elg-hover:hover {
-    --elg-state-s-3: var(--elg-hover-s);
-    --elg-state-l-3: var(--elg-hover-l);
-}
-
-.elg-focus:focus-visible {
-    --elg-state-s-3: var(--elg-focus-s);
-    --elg-state-l-3: var(--elg-focus-l);
-}
-
-.elg-active:active {
-    --elg-state-s-3: 6;
-    --elg-state-l-3: -8;
-}
-
-/* =========================================================
-   BORDERS
-========================================================= */
-.elg-border {
-    border: 1px solid hsl(var(--elg-border-h) var(--elg-border-s) var(--elg-border-l));
-}
-
-.elg-border-strong {
-    border: 1px solid hsl(var(--elg-border-strong-h) var(--elg-border-strong-s) var(--elg-border-strong-l));
-}
-
-/* =========================================================
-   ELG BG ALPHA UTILITIES (MINIMAL SET)
-========================================================= */
-
-.elg-bg-a-05 {
-    --elg-bg-a: 0.05;
-}
-
-.elg-bg-a-10 {
-    --elg-bg-a: 0.10;
-}
-
-.elg-bg-a-25 {
-    --elg-bg-a: 0.25;
-}
-
-.elg-bg-a-50 {
-    --elg-bg-a: 0.50;
-}
-
-.elg-bg-a-75 {
-    --elg-bg-a: 0.75;
-}
-
-.elg-bg-a-100 {
-    --elg-bg-a: 1;
-}
-
-.elg-gradient {
-    --elg-bg-l: 50;
-    --elg-bg-color-2: transparent;
-
-    background-image: linear-gradient(300deg, var(--elg-bg-color), var(--elg-bg-color-2));
-    background-color: transparent;
 }

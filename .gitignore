@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+docs-dist/
 dist-ssr/
 build/
 
@@ -40,3 +41,9 @@ coverage/
 .cache/
 .eslintcache
 .vite/
+
+# TEMP work in progress files
+WIP.md
+
+# Local assistant configuration
+.claude/
