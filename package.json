@@ -16,12 +16,15 @@
     "prebuild": "npm run docs:api",
     "docs:prepare": "npm run docs:api && npm run docs:content",
     "docs:api": "node tools/generate-api-docs.mjs",
-    "docs:content": "node tools/generate-docs.mjs"
+    "docs:content": "node tools/generate-docs.mjs",
+    "test": "vitest run"
   },
   "devDependencies": {
+    "jsdom": "^29.1.1",
     "typescript": "^5.x",
     "vite": "^8.x",
-    "vite-plugin-dts": "^5.x"
+    "vite-plugin-dts": "^5.x",
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "remixicon": "^4.9.1"
