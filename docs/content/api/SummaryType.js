@@ -2,7 +2,7 @@ export default {
   "name": "SummaryType",
   "kind": "type",
   "type": "any",
-  "description": "Aggregation kind applied to a group column's summary value.\n`count` and `distinct` support all value types; `sum`, `min`, and `max`\nrequire a numeric column.",
+  "description": "Aggregation kind applied to a group column's summary value.\r\n`count` and `distinct` support all value types; `sum`, `min`, and `max`\r\nrequire a numeric column.",
   "tags": [],
   "topics": [],
   "group": "types",

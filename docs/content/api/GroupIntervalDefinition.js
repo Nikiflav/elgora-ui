@@ -9,5 +9,5 @@ export default {
   "namespace": "Components.DataGrid",
   "path": "/api-reference/GroupIntervalDefinition",
   "source": "src/components/datagrid/DataColumn.ts",
-  "definition": "{\n    name: string;\n    text: string;\n    getGroupValue: (row: TRow, value: any) => any;\n}"
+  "definition": "{\r\n    name: string;\r\n    text: string;\r\n    getGroupValue: (row: TRow, value: any) => any;\r\n}"
 };

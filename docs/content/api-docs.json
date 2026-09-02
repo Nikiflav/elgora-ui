@@ -1054,6 +1054,58 @@
       "definition": "{\n  tag?: string\r\n  key?: any\r\n  ui?: UiStyle | UiStyle[]\r\n\r\n  children?: ComponentChild\r\n} & ComponentLifecycleProps & DOMProps"
     },
     {
+      "name": "DataCell",
+      "kind": "type",
+      "type": "any",
+      "description": "A single resolved (value, text) pair for one column on one row.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataCell",
+      "source": "src/components/datagrid/DataColumn.ts",
+      "definition": "{\n    /** Column definition for this cell. */\n    column: DataColumn<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
+    },
+    {
+      "name": "DataCellRendererResult",
+      "kind": "type",
+      "type": "any",
+      "description": "A value returned by a custom cell renderer.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataCellRendererResult",
+      "source": "src/components/datagrid/DataColumn.ts",
+      "definition": "HTMLElement | Component | VNode<any> | string"
+    },
+    {
+      "name": "DataCellStyle",
+      "kind": "type",
+      "type": "any",
+      "description": "Per-cell visual overrides applied to the outer grid cell.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataCellStyle",
+      "source": "src/components/datagrid/DataColumn.ts",
+      "definition": "{\n    /** Additional classes for the outer grid cell. */\n    className?: string;\n    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */\n    style?: StyleObject;\n}"
+    },
+    {
+      "name": "DataColumn",
+      "kind": "type",
+      "type": "any",
+      "description": "Defines one grid/view column: its data access, display, editing and layout behavior.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataColumn",
+      "source": "src/components/datagrid/DataColumn.ts",
+      "definition": "{\r\n    /** Field name; also used as the column's unique identifier. */\r\n    name: string;\r\n    /** Display label; falls back to `name` when unset. */\r\n    caption?: string;\r\n    /** Column description, shown as a tooltip. */\r\n    description?: string;\r\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\r\n    width?: number;\r\n    /** Opaque, caller-defined data attached to the column (not used internally). */\r\n    userState?: any;\r\n    textAlign?: \"start\" | \"center\" | \"end\";\r\n    editorType?: EditorType;\r\n    readonly?: boolean;\r\n    required?: boolean;\r\n    resizable?: boolean;\r\n    reorderable?: boolean;\r\n    /** Relative ordering hint among columns. */\r\n    logicalOrder?: number;\r\n    /** True to skip the cell label in DataView. */\r\n    hideLabel?: boolean,\r\n    /** Provides visibility by row. Used in DataView. */\r\n    showInRow?(row: any): boolean;\r\n    /** Provides custom style for the outer grid cell. */\n    customCellStyle?(cell: DataCell<TRow>): DataCellStyle | undefined | null;\n\n    /** Returns content that replaces the default value/text display. */\n    renderCell?(cell: DataCell<TRow>): DataCellRendererResult;\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\r\n    getValue?(row: TRow): Promise<any>;\r\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\r\n    getText?(row: TRow): Promise<string>;\r\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\r\n    setValue?(row: TRow, value: any): Promise<any>;\r\n    /** Parses and writes a display-text edit onto a row. */\r\n    setText?(row: TRow, text: string): Promise<any>;\r\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\r\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\r\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\r\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\r\n    /** List of data cell actions displayed as popup menu for data cell. */\r\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\r\n    /** Produces context-menu items for cells in this column. */\r\n    contextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Produces context-menu items for this column's header. */\r\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Groups this column into a built-in or server-defined interval. */\r\n    groupInterval?: GroupInterval;\r\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\r\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\r\n}"
+    },
+    {
       "name": "DataFilter",
       "kind": "type",
       "type": "any",
@@ -1972,7 +2024,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/GroupInterval",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "| \"year\"\n    | \"yearQuarter\"\n    | \"quarter\"\n    | \"yearMonth\"\n    | \"month\"\n    | \"week\"\n    | \"day\"\n    | \"dayOfWeek\"\n    | \"hour\"\n    | \"minute\"\n    | \"second\"\n    | \"firstChar\"\n    | (string & {})"
+      "definition": "| \"year\"\r\n    | \"yearQuarter\"\r\n    | \"quarter\"\r\n    | \"yearMonth\"\r\n    | \"month\"\r\n    | \"week\"\r\n    | \"day\"\r\n    | \"dayOfWeek\"\r\n    | \"hour\"\r\n    | \"minute\"\r\n    | \"second\"\r\n    | \"firstChar\"\r\n    | (string & {})"
     },
     {
       "name": "GroupIntervalDefinition",
@@ -1985,7 +2037,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/GroupIntervalDefinition",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\n    name: string;\n    text: string;\n    getGroupValue: (row: TRow, value: any) => any;\n}"
+      "definition": "{\r\n    name: string;\r\n    text: string;\r\n    getGroupValue: (row: TRow, value: any) => any;\r\n}"
     },
     {
       "name": "MenuItem",
@@ -4242,7 +4294,7 @@
       "name": "SummaryType",
       "kind": "type",
       "type": "any",
-      "description": "Aggregation kind applied to a group column's summary value.\n`count` and `distinct` support all value types; `sum`, `min`, and `max`\nrequire a numeric column.",
+      "description": "Aggregation kind applied to a group column's summary value.\r\n`count` and `distinct` support all value types; `sum`, `min`, and `max`\r\nrequire a numeric column.",
       "tags": [],
       "topics": [],
       "group": "types",

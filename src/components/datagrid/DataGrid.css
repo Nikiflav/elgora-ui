@@ -1,13 +1,20 @@
 :root {
-    --elg-grid-sel-color: var(--elg-selection-border, var(--elg-primary-color, #3b82f6));
-    --elg-grid-sel-width: 1px;
-    --elg-grid-cell-color: var(--elg-bg-color);
     --elg-grid-bg-tint: 12%;
     --elg-grid-state-color: transparent;
 }
 
 
 .elg-grid {
+    --elg-grid-cell-bg: var(--elg-bg-color);
+    --elg-grid-cell-text: var(--elg-text-color);
+    --elg-grid-cell-border: var(--elg-border-color);
+    --elg-grid-header-bg: var(--elg-surface-color);
+    --elg-grid-header-border: var(--elg-border-color);
+    --elg-grid-resizer-color: var(--elg-surface-color-3);
+    --elg-grid-selection-border: var(--elg-selection-border);
+    --elg-grid-selection-width: 1px;
+    --elg-grid-sel-color: var(--elg-grid-selection-border);
+    --elg-grid-sel-width: var(--elg-grid-selection-width);
     overflow: hidden;
     width: 100%;
     height: 100%;
@@ -15,7 +22,7 @@
     flex-direction: column;
     position: relative;
     box-sizing: border-box;
-    border: 1px solid var(--elg-border-color);
+    border: 1px solid var(--elg-grid-cell-border);
 }
 
 .elg-grid .elg-icon {
@@ -27,11 +34,11 @@
 
 .elg-gridcell {
     padding: 4px 6px;
-    border-bottom: 1px solid var(--elg-border-color);
-    /* border-right: 1px solid var(--elg-border-color); */
-    background-color: var(--elg-bg-color);
-    background-color: color-mix(in srgb, var(--elg-grid-state-color) var(--elg-grid-bg-tint), var(--elg-bg-color));
-    color: var(--elg-text-color);
+    border-bottom: 1px solid var(--elg-grid-cell-border);
+    /* border-right: 1px solid var(--elg-grid-cell-border); */
+    background-color: var(--elg-grid-cell-bg);
+    background-color: color-mix(in srgb, var(--elg-grid-state-color) var(--elg-grid-bg-tint), var(--elg-grid-cell-bg));
+    color: var(--elg-grid-cell-text);
     box-sizing: border-box;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -51,25 +58,25 @@
     left: 5px;
     right: var(--elg-empty-right, 5px);
     bottom: 20%;
-    background-color: var(--elg-border-color);
+    background-color: var(--elg-grid-cell-border);
 }
 
 .elg-gridrow-footer .elg-gridcell {
-     border-top: 1px solid var(--elg-border-color);
+     border-top: 1px solid var(--elg-grid-cell-border);
 }
 
 .elg-gridrow-header .elg-gridcell {
-    border-top: 1px solid var(--elg-border-color);
+    border-top: 1px solid var(--elg-grid-cell-border);
 }
 
 
 .elg-gridcell-rowheader {
-    background-color: var(--elg-surface-color);
+    background-color: var(--elg-grid-header-bg);
 }
 
 thead .elg-gridcell,
 tfoot .elg-gridcell {
-    background-color: var(--elg-surface-color);
+    background-color: var(--elg-grid-header-bg);
 }
 
 thead .elg-gridcell {
@@ -92,13 +99,13 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
     display: block;
     width: 2px;
     height: 1em;
-    background-color: var(--elg-surface-color-3);
+    background-color: var(--elg-grid-resizer-color);
     transition: background-color 0.2s;
 }
 
-.elg-gridcell.elg-active-col {
-    --elg-text-color: gray;
-    --elg-bg-color: var(--elg-surface-color);
+.elg-gridcell.elg-column-dragging {
+    --elg-grid-cell-text: var(--elg-text-muted);
+    --elg-grid-state-color: var(--elg-surface-color);
 }
 
 .elg-gridcell.elg-selected-cell {
@@ -112,8 +119,8 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
 
 .elg-gridcell.elg-selected-row-header {
     font-weight: 600;
-    background: var(--elg-primary-color, #3b82f6);
-    color: var(--elg-text-inverse);
+    background: var(--elg-primary-bg);
+    color: var(--elg-primary-text);
 }
 
 .elg-grid-header {
@@ -124,7 +131,7 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
 }
 
 .elg-grid-header .elg-gridcell {
-    border: 1px solid var(--elg-border-color);
+    border: 1px solid var(--elg-grid-header-border);
     border-radius: 6px;
     padding: 2px 6px;
     background-color: var(--elg-surface-color-2);

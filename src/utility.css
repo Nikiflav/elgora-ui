@@ -700,6 +700,10 @@
     white-space: nowrap;
 }
 
+.elg-text-uppercase {
+    text-transform: uppercase;
+}
+
 .elg-underline {
     text-decoration-line: underline;
 }

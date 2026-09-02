@@ -47,9 +47,8 @@ type WritableCSSProperties = {
 }[keyof CSSStyleDeclaration]
 
 /** Inline CSS properties accepted by the typed element helpers. */
-export type StyleObject = Partial<
-    Record<WritableCSSProperties, string | number>
->
+export type StyleObject = Partial<Record<WritableCSSProperties, string | number>>
+    & Partial<Record<`--${string}`, string | number>>
 
 type ExtraProps = {
     /** Child content supplied through props. Positional children take precedence when both forms are used. */
@@ -369,14 +368,21 @@ function applySingleProp<T extends HTMLElement>(
         for (const prop in value) {
             const newVal = (value as any)[prop]
             const oldVal = oldStyle[prop]
-            if (newVal !== oldVal)
-                style[prop] = newVal
+            if (newVal !== oldVal) {
+                if (prop.startsWith("--"))
+                    style.setProperty(prop, String(newVal))
+                else
+                    style[prop] = newVal
+            }
         }
 
         if (!merge)
             for (const prop in oldStyle) {
                 if (!(prop in value))
-                    style[prop] = ""
+                    if (prop.startsWith("--"))
+                        style.removeProperty(prop)
+                    else
+                        style[prop] = ""
             }
         return
     }

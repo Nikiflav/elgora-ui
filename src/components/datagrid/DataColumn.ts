@@ -1,4 +1,6 @@
 import { Utils } from "../../core/Utils";
+import type { Component } from "../../core/Component";
+import type { StyleObject, VNode } from "../../core/e";
 import type { GridContextMenuItems } from "./DataGridContextMenu";
 import type { FilterSelector } from "../../data/filter";
 
@@ -105,26 +107,25 @@ export interface DataComponent {
 
 /** A single resolved (value, text) pair for one column on one row. */
 export type DataCell<TRow> = {
-    column: DataColumn<TRow>
-    rowData: TRow
-    value: any
-    text: string
+    /** Column definition for this cell. */
+    column: DataColumn<TRow>;
+    /** Original row data. */
+    rowData: TRow;
+    /** Resolved raw cell value. */
+    value: any;
+    /** Resolved display text. */
+    text: string;
 };
 
-/** Per-cell visual overrides, e.g. from DataColumn.customCellStyle. */
+/** A value returned by a custom cell renderer. */
+export type DataCellRendererResult = HTMLElement | Component | VNode<any> | string;
+
+/** Per-cell visual overrides applied to the outer grid cell. */
 export type DataCellStyle = {
-    /** Mithril class selector */
-    cssClass?: string;
-    /** The style HTML attribute */
-    cssStyle?: string;
-    /** Text color */
-    color?: string;
-    /** Background color */
-    backgroundColor?: string;
-    /** Inline cell icon */
-    icon?: string;
-    /** Inline cell image src */
-    image?: string;
+    /** Additional classes for the outer grid cell. */
+    className?: string;
+    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */
+    style?: StyleObject;
 };
 
 
@@ -152,11 +153,11 @@ export type DataColumn<TRow> = {
     hideLabel?: boolean,
     /** Provides visibility by row. Used in DataView. */
     showInRow?(row: any): boolean;
-    /** Provides custom cell style for data cells */
-    customCellStyle?(row: any): DataCellStyle | undefined | null;
+    /** Provides custom style for the outer grid cell. */
+    customCellStyle?(cell: DataCell<TRow>): DataCellStyle | undefined | null;
 
-    /** Custom cell rendering; overrides the default value/text display. */
-    renderCell?(cell: DataCell<TRow>): void;
+    /** Returns content that replaces the default value/text display. */
+    renderCell?(cell: DataCell<TRow>): DataCellRendererResult;
     /** Reads this column's raw value from a row; defaults to reading `row[name]`. */
     getValue?(row: TRow): Promise<any>;
     /** Reads this column's display text for a row; defaults to stringifying getValue(). */
@@ -168,7 +169,7 @@ export type DataColumn<TRow> = {
     /** Fetches the allowed-value list for dropdown-style editing/filtering. */
     getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;
     /** Resolves display text for a given value, without loading the full allowed-value list. */
-    getAllowedValueText?(value?: TRow): Promise<string | undefined>;
+    getAllowedValueText?(row?: TRow): Promise<string | undefined>;
     /** List of data cell actions displayed as popup menu for data cell. */
     //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;
     /** Produces context-menu items for cells in this column. */

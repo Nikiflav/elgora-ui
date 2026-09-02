@@ -282,6 +282,30 @@
         "custom scrollbar"
       ],
       "module": "./content/topics/scroll-engine.js"
+    },
+    {
+      "id": "datagrid-custom-cell-rendering",
+      "title": "Custom cell rendering",
+      "path": "/components/datagrid/custom-cell-rendering",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 70,
+      "description": "Customize DataGrid cell content and appearance while keeping grid states theme-aware.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataColumn",
+        "DataCell",
+        "DataCellStyle"
+      ],
+      "keywords": [
+        "data grid",
+        "custom cell",
+        "renderer",
+        "cell style",
+        "selection"
+      ],
+      "module": "./content/topics/datagrid-custom-cell-rendering.js"
     }
   ]
 }

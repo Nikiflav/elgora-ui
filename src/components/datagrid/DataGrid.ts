@@ -6,7 +6,7 @@ import { ScrollEngine } from "../scrollbar/scroll-engine";
 import { Scrollbar } from "../scrollbar/scrollbar";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
-import { DataCell, DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryDefinition, SummaryType } from "./DataColumn";
+import { DataCell, DataCellRendererResult, DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryDefinition, SummaryType } from "./DataColumn";
 import { ArrayDataSource, DataSource, LocalGroupingDataSource, RowIdentity } from "./DataSource";
 import type { FilterFunctionRegistry } from "../../data/filter";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
@@ -125,6 +125,7 @@ type GridView = {
 type CellView<TRow> = {
     col: GridColumn<TRow>
     props: any
+    customContent?: DataCellRendererResult
 }
 
 type GridColumn<T> = {
@@ -198,6 +199,7 @@ export class DataGrid<TRow> extends Component {
 
     private _dragDrop: DragDropController;
     private _cancelActiveResize?: () => void;
+    private _customCellContent = new WeakMap<HTMLTableCellElement, Component | Node>();
 
     private readonly _MAX_ROWS = 100
 
@@ -1600,6 +1602,7 @@ export class DataGrid<TRow> extends Component {
         const props: any = {
             className: `elg-gridcell elg-gridcell-${col.type}`,
         };
+        let customContent: DataCellRendererResult | undefined;
 
         switch (gridRow.type) {
 
@@ -1619,6 +1622,25 @@ export class DataGrid<TRow> extends Component {
                 if (!col.dataColumn) break;
 
                 const cellText = this.getCellText(gridRow, col);
+                const resolvedCell = gridRow.cells?.[col.dataColumn.name];
+                const dataCell: DataCell<TRow> = {
+                    column: col.dataColumn,
+                    rowData: gridRow.data as TRow,
+                    value: resolvedCell?.value ?? resolvedCell,
+                    text: cellText
+                };
+                const customStyle = col.dataColumn.customCellStyle?.(dataCell);
+                if (customStyle) {
+                    if (customStyle.className)
+                        props.className += " " + customStyle.className;
+                    if (customStyle.style)
+                        props.style = customStyle.style;
+                }
+                customContent = col.dataColumn.renderCell?.(dataCell);
+                if (customContent !== undefined) {
+                    if (customContent && typeof customContent === "object" && "tag" in customContent)
+                        props.vnodes = [customContent];
+                }
 
                 props.onmousedown = (e: MouseEvent) => this.beginCellSelection(e, gridRow, col.visibleIndex);
                 props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
@@ -1630,7 +1652,7 @@ export class DataGrid<TRow> extends Component {
                     col.visibleIndex - this.rowHeaderOffset
                 );
 
-                if (col.visibleIndex == 1) {
+                if (customContent === undefined && col.visibleIndex == 1) {
 
                     if (gridRow.expandable) {
 
@@ -1680,7 +1702,7 @@ export class DataGrid<TRow> extends Component {
                         ]
                     }
 
-                } else {
+                } else if (customContent === undefined) {
                     props.textContent = cellText;
                 }
             } break;
@@ -1734,7 +1756,7 @@ export class DataGrid<TRow> extends Component {
         }
 
         if (this._activeColIndex === col.visibleIndex) {
-            props.className += " elg-active-col";
+            props.className += " elg-column-dragging";
         }
 
         const selectionColIndex = col.type === "data"
@@ -1762,7 +1784,7 @@ export class DataGrid<TRow> extends Component {
             props.className += " elg-active-cell";
         }
 
-        return { col, props };
+        return { col, props, customContent };
     }
 
     private resizeColumn = (e: MouseEvent | TouchEvent, col: GridColumn<TRow>) => {
@@ -1984,7 +2006,7 @@ export class DataGrid<TRow> extends Component {
             return;
 
         const cells = this._gridColumns.map(col => this.getCellView(row.gridRow, col));
-        const cellElements: HTMLElement[] = [];
+        const cellElements: HTMLTableCellElement[] = [];
         let ix = 0;
         let offsetLeft = 0;
 
@@ -1992,7 +2014,7 @@ export class DataGrid<TRow> extends Component {
         for (let cell of cells) {
             let cellElement = row.tr.cells[ix];
             if (!cellElement) {
-                cellElement = document.createElement("td");
+                cellElement = document.createElement("td") as HTMLTableCellElement;
                 const r = Math.floor(Math.random() * 40) + 5;
                 cellElement.style.setProperty('--elg-empty-right', r + 'px');
                 row.tr.appendChild(cellElement);
@@ -2019,7 +2041,23 @@ export class DataGrid<TRow> extends Component {
         }
 
         for (let i = 0; i < cellElements.length; i++) {
+            const previousContent = this._customCellContent.get(cellElements[i]);
+            if (previousContent instanceof Component)
+                previousContent.dispose();
+            else if (previousContent?.parentNode === cellElements[i])
+                cellElements[i].removeChild(previousContent);
+            this._customCellContent.delete(cellElements[i]);
             setElementProps(cellElements[i], cells[i].props);
+            const content = cells[i].customContent;
+            if (content instanceof Component) {
+                content.mount(cellElements[i]);
+                this._customCellContent.set(cellElements[i], content);
+            } else if (content instanceof Node) {
+                cellElements[i].appendChild(content);
+                this._customCellContent.set(cellElements[i], content);
+            } else if (typeof content === "string") {
+                cellElements[i].appendChild(document.createTextNode(content));
+            }
         }
 
         // Remove excess cells
@@ -2241,7 +2279,7 @@ export class DataGrid<TRow> extends Component {
 
                 props.vnodes!.push(v("div",
                     {
-                        class: "elg-gridcell" + (this._activeGroupColumn === cn ? " elg-active-col" : ""),
+                        class: "elg-gridcell" + (this._activeGroupColumn === cn ? " elg-column-dragging" : ""),
                         onmousedown: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
                         ontouchstart: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
                         oncontextmenu: (e: MouseEvent) => this.showContextMenu(
