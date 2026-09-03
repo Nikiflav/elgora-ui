@@ -243,6 +243,161 @@
       "module": "./content/topics/datagrid-overview.js"
     },
     {
+      "id": "datagrid-columns",
+      "title": "Columns and layout",
+      "path": "/components/datagrid/columns",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 52,
+      "description": "Configure column captions, widths, alignment, visibility, and layout behavior.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridOptions",
+        "DataColumn"
+      ],
+      "keywords": [
+        "columns",
+        "resize",
+        "reorder",
+        "pinning",
+        "layout"
+      ],
+      "module": "./content/topics/datagrid-columns.js"
+    },
+    {
+      "id": "datagrid-sorting",
+      "title": "Sorting",
+      "path": "/components/datagrid/sorting",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 53,
+      "description": "Sort one or more DataGrid columns and control sort state programmatically.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridOptions",
+        "OrderByToken"
+      ],
+      "keywords": [
+        "sorting",
+        "order by",
+        "multi-column sort"
+      ],
+      "module": "./content/topics/datagrid-sorting.js"
+    },
+    {
+      "id": "datagrid-filtering",
+      "title": "Filtering",
+      "path": "/components/datagrid/filtering",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 54,
+      "description": "Filter local or remote DataGrid data with structured filter expressions.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataFilter",
+        "FilterFunctionRegistry"
+      ],
+      "keywords": [
+        "filtering",
+        "filter row",
+        "data filter"
+      ],
+      "module": "./content/topics/datagrid-filtering.js"
+    },
+    {
+      "id": "datagrid-grouping",
+      "title": "Grouping",
+      "path": "/components/datagrid/grouping",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 55,
+      "description": "Group rows by one or more columns, intervals, and interactive group chips.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "GroupInterval",
+        "GroupIntervalDefinition"
+      ],
+      "keywords": [
+        "grouping",
+        "group rows",
+        "intervals",
+        "group panel"
+      ],
+      "module": "./content/topics/datagrid-grouping.js"
+    },
+    {
+      "id": "datagrid-summaries",
+      "title": "Summaries",
+      "path": "/components/datagrid/summaries",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 56,
+      "description": "Display numeric and custom aggregate values for grouped DataGrid rows.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "SummaryType",
+        "SummaryDefinition",
+        "SummaryContext"
+      ],
+      "keywords": [
+        "summaries",
+        "aggregates",
+        "sum",
+        "count"
+      ],
+      "module": "./content/topics/datagrid-summaries.js"
+    },
+    {
+      "id": "datagrid-selection",
+      "title": "Selection",
+      "path": "/components/datagrid/selection",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 57,
+      "description": "Select cells, ranges, and rows with mouse and keyboard interaction.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "SelectionManager",
+        "CellSelectionState"
+      ],
+      "keywords": [
+        "selection",
+        "cell selection",
+        "range selection",
+        "copy"
+      ],
+      "module": "./content/topics/datagrid-selection.js"
+    },
+    {
+      "id": "datagrid-data-sources",
+      "title": "Data sources",
+      "path": "/components/datagrid/data-sources",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 58,
+      "description": "Connect DataGrid to local arrays, asynchronous loaders, and remote data contracts.",
+      "toc": true,
+      "api": [
+        "DataSource",
+        "ArrayDataSource",
+        "GridDataSource",
+        "DataGrid"
+      ],
+      "keywords": [
+        "data source",
+        "async",
+        "paging",
+        "remote data"
+      ],
+      "module": "./content/topics/datagrid-data-sources.js"
+    },
+    {
       "id": "datagrid-tree",
       "title": "DataGrid tree data",
       "path": "/components/datagrid/tree",
@@ -282,6 +437,51 @@
         "custom scrollbar"
       ],
       "module": "./content/topics/scroll-engine.js"
+    },
+    {
+      "id": "datagrid-context-menus",
+      "title": "Context menus",
+      "path": "/components/datagrid/context-menus",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 61,
+      "description": "Configure column, row, row-header, and cell context-menu actions.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridContextMenuContext",
+        "GridContextMenuItems",
+        "GridStandardContextMenuItem"
+      ],
+      "keywords": [
+        "context menu",
+        "row actions",
+        "column actions",
+        "custom actions"
+      ],
+      "module": "./content/topics/datagrid-context-menus.js"
+    },
+    {
+      "id": "datagrid-performance",
+      "title": "Virtualization and performance",
+      "path": "/components/datagrid/performance",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 62,
+      "description": "Render large datasets efficiently with virtual rows, paging, and reusable cell content.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "VirtualList",
+        "DataSource"
+      ],
+      "keywords": [
+        "virtualization",
+        "performance",
+        "large data",
+        "paging"
+      ],
+      "module": "./content/topics/datagrid-performance.js"
     },
     {
       "id": "datagrid-custom-cell-rendering",

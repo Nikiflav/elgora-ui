@@ -59,6 +59,21 @@ For parent/child data, configure the `ArrayDataSource` with its `parentField`.
 The dedicated [tree data topic](?!=/components/datagrid/tree) demonstrates a
 file-system style hierarchy.
 
+## Explore DataGrid features
+
+Continue with the focused topics:
+
+- [Columns and layout](?!=/components/datagrid/columns)
+- [Sorting](?!=/components/datagrid/sorting)
+- [Filtering](?!=/components/datagrid/filtering)
+- [Grouping](?!=/components/datagrid/grouping)
+- [Summaries](?!=/components/datagrid/summaries)
+- [Selection](?!=/components/datagrid/selection)
+- [Data sources](?!=/components/datagrid/data-sources)
+- [Custom cell rendering](?!=/components/datagrid/custom-cell-rendering)
+- [Context menus](?!=/components/datagrid/context-menus)
+- [Virtualization and performance](?!=/components/datagrid/performance)
+
 ## API reference
 
 See the [`DataGrid` API reference](?!=/api-reference/DataGrid),

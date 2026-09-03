@@ -1,0 +1,26 @@
+import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
+import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
+
+export default function demo(): void {
+  const rows = [
+    { region: "West", product: "Keyboard", total: 356 },
+    { region: "East", product: "Monitor", total: 498 },
+    { region: "West", product: "Webcam", total: 483 },
+    { region: "East", product: "Dock", total: 537 },
+    { region: "North", product: "Mouse", total: 118 },
+    { region: "North", product: "Keyboard", total: 267 }
+  ];
+  const grid = new DataGrid({
+    data: new ArrayDataSource(rows),
+    columns: [
+      { name: "region", caption: "Region", width: 140 },
+      { name: "product", caption: "Product", width: 220 },
+      { name: "total", caption: "Total", width: 120, textAlign: "end" }
+    ],
+    groupColumns: ["region"],
+    groupSummary: [{ field: "total", summaryType: "sum" }]
+  });
+  grid.dom.style.height = "360px";
+  grid.refresh();
+  grid.mount(document.body);
+}
