@@ -848,7 +848,12 @@ export class DataGrid<TRow> extends Component {
     private enterSelection = (row: GridRow, colIndex: number) => {
         if (!this._selectionMouseDown || !this.isSelectableGridRow(row)) return;
         if (this._selectionWholeRowDrag) this._selection.extendRowSelection(row.visibleIndex);
-        else this._selection.handleCellMouseEnter(row.visibleIndex, colIndex - this.rowHeaderOffset, true);
+        else {
+            // The row-header pseudo-column is not part of the cell-selection coordinate space.
+            // Ignore it during a cell drag so right-to-left selection cannot extend to -1.
+            if (colIndex < this.rowHeaderOffset) return;
+            this._selection.handleCellMouseEnter(row.visibleIndex, colIndex - this.rowHeaderOffset, true);
+        }
         this.refresh();
     };
 
@@ -1775,7 +1780,9 @@ export class DataGrid<TRow> extends Component {
                 }
             }
         }
-        if (this._selection.isWholeRowSelected(gridRow.visibleIndex) && col.type === "rowheader") {
+        if (this.isSelectableGridRow(gridRow)
+            && this._selection.isWholeRowSelected(gridRow.visibleIndex)
+            && col.type === "rowheader") {
             props.className += " elg-selected-row-header";
         }
         if (this.isSelectableGridRow(gridRow)
