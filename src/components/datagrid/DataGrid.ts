@@ -201,7 +201,6 @@ export class DataGrid<TRow> extends Component {
 
     private _dragDrop: DragDropController;
     private _cancelActiveResize?: () => void;
-    private _suppressHeaderClick = false;
     private _customCellContent = new WeakMap<HTMLTableCellElement, Component | Node>();
 
     private readonly _MAX_ROWS = 100
@@ -551,10 +550,52 @@ export class DataGrid<TRow> extends Component {
     };
 
     private clearColumnSort = (columnName: string) => {
+        if (this._gridOptions.groupColumns?.includes(columnName)) {
+            // A grouped column must remain sorted so that flat rows can be grouped into
+            // contiguous ranges. Clearing it resets the implicit grouping sort instead.
+            this.setColumnSort(columnName, "asc", true);
+            return;
+        }
+
         const orderBy = (this._gridOptions.orderBy ?? []).filter(item =>
             typeof item === "string" ? item !== columnName : item[0] !== columnName
         );
         this.setOptions({ orderBy });
+    };
+
+    /** Adds a column to grouping and makes it the primary sort criterion. */
+    public groupBy = (columnName: string, direction: "asc" | "desc" = "asc") => {
+        if (this._isHierarchicalData) return;
+
+        const groupColumns = [...(this._gridOptions.groupColumns ?? [])];
+        if (!groupColumns.includes(columnName)) groupColumns.push(columnName);
+
+        const orderBy = (this._gridOptions.orderBy ?? []).filter(item =>
+            typeof item === "string" ? item !== columnName : item[0] !== columnName
+        );
+        orderBy.unshift([columnName, direction]);
+
+        this.setOptions({ groupColumns, orderBy });
+    };
+
+    /** Keeps grouping and sorting synchronized, adding implicit ascending group sorts when needed. */
+    private normalizeGroupingSort = () => {
+        const groupColumns = this._gridOptions.groupColumns ?? [];
+        if (!groupColumns.length) return;
+
+        const orderBy = this._gridOptions.orderBy ?? [];
+        const grouped = new Set(groupColumns);
+        const groupedOrder = groupColumns.map(columnName => {
+            const token = orderBy.find(item =>
+                typeof item === "string" ? item === columnName : item[0] === columnName
+            );
+            return token ?? [columnName, "asc"] as OrderByToken;
+        });
+        const remaining = orderBy.filter(item => {
+            const columnName = typeof item === "string" ? item : item[0];
+            return !grouped.has(columnName);
+        });
+        this._gridOptions.orderBy = [...groupedOrder, ...remaining];
     };
 
     private toggleColumnGrouping = (columnName: string) => {
@@ -562,7 +603,10 @@ export class DataGrid<TRow> extends Component {
         const groupColumns = [...(this._gridOptions.groupColumns ?? [])];
         const index = groupColumns.indexOf(columnName);
         if (index >= 0) groupColumns.splice(index, 1);
-        else groupColumns.push(columnName);
+        else {
+            this.groupBy(columnName);
+            return;
+        }
         this.setOptions({ groupColumns });
     };
 
@@ -575,7 +619,7 @@ export class DataGrid<TRow> extends Component {
     private setColumnGroupInterval = (columnName: string, groupInterval?: GroupInterval) => {
         this.setColumnOptions(columnName, { groupInterval });
         if (!this._gridOptions.groupColumns?.includes(columnName)) {
-            this.setOptions({ groupColumns: [...(this._gridOptions.groupColumns ?? []), columnName] });
+            this.groupBy(columnName, this.getColumnSortDirection(columnName) ?? "asc");
         } else {
             this.reloadRows();
         }
@@ -626,7 +670,7 @@ export class DataGrid<TRow> extends Component {
                     action: event => this.setColumnSort(columnName, "desc", preserveExistingSort(event))
                 });
             }
-            if (sortDirection && hasStandard("clearSort" as GridStandardContextMenuItem)) {
+            if (sortDirection && !isGrouped && hasStandard("clearSort" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-close-line",
                     text: "Clear sorting",
@@ -1016,9 +1060,10 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.standardContextMenuItems ??= null;
         this._gridOptions.sortOnHeaderClick ??= true;
 
-        this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: options }));
-
         const firstCall = !this._initialized;
+        this.normalizeGroupingSort();
+
+        this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: options }));
 
         if (firstCall || "data" in options) {
             this._rebuildDataSource();
@@ -1782,10 +1827,6 @@ export class DataGrid<TRow> extends Component {
                     props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
                     props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
                     props.onclick = (e: MouseEvent) => {
-                        if (this._suppressHeaderClick) {
-                            this._suppressHeaderClick = false;
-                            return;
-                        }
                         if (this._gridOptions.sortOnHeaderClick !== false)
                             this.toggleColumnSort(col.dataColumn!.name, e.shiftKey);
                     };
@@ -1900,12 +1941,10 @@ export class DataGrid<TRow> extends Component {
         if (e instanceof MouseEvent && e.button !== 0) return;
         if (!col.dataColumn) return;
 
-        e.preventDefault();
-
         const sourceIndex = this._gridColumns.filter(c => c.type == "data").indexOf(col);
 
         this._activeColIndex = col.visibleIndex;
-        this.refresh();
+        headerTd.classList.add("elg-column-dragging");
 
         let dragMoved = false;
         this._dragDrop.beginDrag(
@@ -1913,7 +1952,8 @@ export class DataGrid<TRow> extends Component {
                 kind: "column",
                 id: col.dataColumn.name,
                 label: col.dataColumn.caption ?? col.dataColumn.name,
-                ghostClassName: "elg-box elg-gridcell",
+                ghostClassName: "elg-box elg-grid-drag-ghost",
+                ghostSize: "content",
                 sourceZoneId: "grid-header",
                 sourceIndex
             },
@@ -1922,10 +1962,12 @@ export class DataGrid<TRow> extends Component {
             "x",
             () => {
                 this._activeColIndex = -1;
-                this._suppressHeaderClick = dragMoved;
-                this.refresh();
+                headerTd.classList.remove("elg-column-dragging");
+                if (dragMoved) this.refresh();
             },
-            () => { dragMoved = true; }
+            () => {
+                dragMoved = true;
+            }
         );
     }
 
@@ -1933,14 +1975,13 @@ export class DataGrid<TRow> extends Component {
 
         if (e instanceof MouseEvent && e.button !== 0) return;
 
-        e.preventDefault();
-
         const col = this._columnsIndex.get(columnName);
         if (!col) return;
 
         this._activeGroupColumn = columnName;
-        this.refresh();
+        chipEl.classList.add("elg-column-dragging");
 
+        let dragMoved = false;
         // Ghost keeps the chip's own width, but reads as a header cell height-wise. Height comes
         // from the header row itself, not _headerHeight (which is tHead's total height and would
         // include a filter row too, once DataGridLayoutInfo.showFilterRow is implemented).
@@ -1958,7 +1999,8 @@ export class DataGrid<TRow> extends Component {
                 kind: "column",
                 id: columnName,
                 label: col.caption ?? col.name,
-                ghostClassName: "elg-box elg-gridcell",
+                ghostClassName: "elg-box elg-grid-drag-ghost",
+                ghostSize: "content",
                 sourceZoneId: "group-panel",
                 sourceIndex
             },
@@ -1967,7 +2009,11 @@ export class DataGrid<TRow> extends Component {
             "x",
             () => {
                 this._activeGroupColumn = undefined;
-                this.refresh();
+                chipEl.classList.remove("elg-column-dragging");
+                if (dragMoved) this.refresh();
+            },
+            () => {
+                dragMoved = true;
             }
         );
     }
@@ -2055,6 +2101,7 @@ export class DataGrid<TRow> extends Component {
             || groupColumnsBefore.some((name, ix) => name !== groupColumns[ix]);
 
         if (groupColumnsChanged) {
+            this.normalizeGroupingSort();
             this.reloadRows();
         } else {
             this.refresh();
@@ -2332,6 +2379,9 @@ export class DataGrid<TRow> extends Component {
         groupColumns.forEach((cn: string, sourceIndex: number) => {
             let col = this._columnsIndex.get(cn);
             if (col) {
+                const sortDirection = this.getColumnSortDirection(cn);
+                const sortOrder = this.getColumnSortOrder(cn);
+                const showSortOrder = sortOrder !== undefined && (this._gridOptions.orderBy?.length ?? 0) > 1;
 
                 if (props.vnodes!.length)
                     props.vnodes?.push(v("i", {
@@ -2343,6 +2393,10 @@ export class DataGrid<TRow> extends Component {
                         class: "elg-gridcell" + (this._activeGroupColumn === cn ? " elg-column-dragging" : ""),
                         onmousedown: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
                         ontouchstart: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
+                        onclick: (e: MouseEvent) => {
+                            if (this._gridOptions.sortOnHeaderClick !== false)
+                                this.toggleColumnSort(cn, e.shiftKey);
+                        },
                         oncontextmenu: (e: MouseEvent) => this.showContextMenu(
                             e,
                             "columnHeader",
@@ -2351,8 +2405,22 @@ export class DataGrid<TRow> extends Component {
                         ),
                     },
                     v("span", col.caption ?? col.name),
+                    showSortOrder
+                        ? v("span", {
+                            textContent: String(sortOrder),
+                            ui: ["ms-1", "text-muted", "fs-80"],
+                            ariaLabel: `Sort priority ${sortOrder}`
+                        })
+                        : null,
+                    sortDirection
+                        ? v("i", {
+                            class: sortDirection === "asc" ? "ri-arrow-up-line" : "ri-arrow-down-line",
+                            ui: ["ms-1", "text-muted"],
+                            ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
+                        })
+                        : null,
                     v("i", {
-                        style: { float: "right", marginRight: "0" },
+                        style: { marginRight: "0" },
                         class: "elg-icon ri-close-line",
                         onclick: (e, el) => {
                             e.stopPropagation();

@@ -79,7 +79,8 @@ tfoot .elg-gridcell {
     background-color: var(--elg-grid-header-bg);
 }
 
-thead .elg-gridcell {
+thead .elg-gridcell,
+.elg-grid-header .elg-gridcell {
     position: relative;
     cursor: pointer;
 }
@@ -132,12 +133,43 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
 }
 
 .elg-grid-header .elg-gridcell {
+    display: inline-flex;
+    align-items: center;
     border: 1px solid var(--elg-grid-header-border);
     border-radius: 6px;
-    padding: 2px 6px;
+    padding: 1px 6px;
+    height: auto;
     background-color: var(--elg-surface-color-2);
-    cursor: grab;
+    cursor: pointer;
     flex: none;
+}
+
+thead .elg-gridcell:hover,
+.elg-grid-header .elg-gridcell:hover {
+    color: var(--elg-primary-color);
+}
+
+.elg-grid-header .elg-gridcell > .elg-icon {
+    padding: 0;
+    margin-left: auto;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.elg-grid-header .elg-gridcell > .elg-icon.ri-close-line {
+    color: var(--elg-text-color);
+}
+
+.elg-grid-drag-ghost {
+    max-width: min(320px, calc(100vw - 24px));
+    min-width: 0;
+    padding: 1px 6px;
+    border: 1px solid var(--elg-grid-header-border);
+    border-radius: 6px;
+    background-color: var(--elg-surface-color-2);
+    color: var(--elg-text-color);
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .elg-grid-header-empty {

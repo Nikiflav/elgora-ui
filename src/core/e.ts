@@ -235,7 +235,7 @@ interface StoredProps {
 }
 
 interface EventListenerEntry {
-    listener: EventListener
+    listener: Function
     wrapper: EventListener
 }
 
@@ -272,6 +272,11 @@ export function setElementProps<T extends HTMLElement>(
 
     const stored = (el as any)[STORED_PROPS_KEY] as StoredProps | undefined
     const eventMap = (el as any)[EVENT_LISTENERS_KEY] as Map<string, EventListenerEntry> | undefined
+        ?? new Map<string, EventListenerEntry>()
+
+    if (!(el as any)[EVENT_LISTENERS_KEY]) {
+        (el as any)[EVENT_LISTENERS_KEY] = eventMap
+    }
 
     let contentSet = false;
 
@@ -340,20 +345,23 @@ function applySingleProp<T extends HTMLElement>(
         typeof value === "function"
     ) {
         const eventName = key.slice(2).toLowerCase()
-        const map = eventMap || new Map<string, EventListenerEntry>()
+        const map = eventMap!
 
         const existing = map.get(eventName)
         if (existing) {
-            el.removeEventListener(eventName, existing.wrapper)
+            // Keep the DOM listener stable. Replacing a listener while an event
+            // is being dispatched can cause the browser to invoke the new
+            // listener during the same dispatch cycle.
+            existing.listener = value as Function
+            return
         }
 
-        const wrapper = (ev: Event) => (value as Function)(ev, el)
-        el.addEventListener(eventName, wrapper)
+        const entry = {} as EventListenerEntry
+        entry.listener = value as Function
+        entry.wrapper = (ev: Event) => entry.listener(ev, el)
+        el.addEventListener(eventName, entry.wrapper)
 
-        map.set(eventName, { listener: value, wrapper })
-        if (!(el as any)[EVENT_LISTENERS_KEY]) {
-            (el as any)[EVENT_LISTENERS_KEY] = map
-        }
+        map.set(eventName, entry)
 
         return
     }

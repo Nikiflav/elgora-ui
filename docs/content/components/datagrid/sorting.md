@@ -33,9 +33,10 @@ The example starts with a two-column sort. Try the following interactions:
   update only that column. The other sort columns and their priorities remain
   unchanged.
 - Open a column's context menu and choose `Sort Ascending`, `Sort Descending`,
-  or `Clear sorting`. Holding `Shift` while choosing an action applies it only
-  to the current column; without `Shift`, the selected column becomes the only
-  sort criterion.
+  or `Clear sorting`. `Clear sorting` is not shown for grouped columns because
+  a grouped column must remain sorted. Holding `Shift` while choosing an action
+  applies it only to the current column; without `Shift`, the selected column
+  becomes the only sort criterion.
 
 Dragging a header still reorders the column and does not trigger sorting. When
 multiple columns are sorted, each header shows its sort priority.

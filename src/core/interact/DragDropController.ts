@@ -9,6 +9,8 @@ export interface DragPayload {
     label: string;
     /** CSS class(es) applied to the floating ghost, e.g. to match the dragged item's own styling. */
     ghostClassName?: string;
+    /** Uses the dragged item's label size instead of copying the source element dimensions. */
+    ghostSize?: "content";
     sourceZoneId: string;
     sourceIndex: number;
 }
@@ -146,7 +148,7 @@ export class DragDropController implements Disposable {
 
                 onDragMove?.();
 
-                if (!ghost) ghost = createDragGhost(payload.label, anchorRect, payload.ghostClassName);
+                if (!ghost) ghost = createDragGhost(payload.label, anchorRect, payload.ghostClassName, payload.ghostSize);
                 ghost.moveTo(dx, dy);
 
                 lastX = x; lastY = y;

@@ -27,6 +27,43 @@ describe("native and component composition", () => {
     expect(component.dom.firstElementChild).toBe(nativeChild);
     expect(component.dom.textContent).toBe("Native child");
   });
+
+  it("does not invoke a replaced event callback twice during one dispatch", () => {
+    const root = e("button");
+    let calls = 0;
+    let currentHandler = () => {
+      calls++;
+      setElementProps(root, { onclick: currentHandler });
+    };
+
+    setElementProps(root, { onclick: currentHandler });
+    root.click();
+
+    expect(calls).toBe(1);
+  });
+
+  it("keeps all event wrappers stable when multiple event props are updated", () => {
+    const root = e("button");
+    let clicks = 0;
+    let currentClick = () => {
+      clicks++;
+      setElementProps(root, {
+        onmousedown: () => undefined,
+        onclick: currentClick,
+        oncontextmenu: () => undefined
+      });
+    };
+
+    setElementProps(root, {
+      onmousedown: () => undefined,
+      onclick: currentClick,
+      oncontextmenu: () => undefined
+    });
+    root.click();
+    root.click();
+
+    expect(clicks).toBe(2);
+  });
 });
 
 describe("virtual nodes", () => {
