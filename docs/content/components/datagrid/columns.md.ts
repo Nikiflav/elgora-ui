@@ -1,6 +1,5 @@
 import { e } from "../../../../src/core/e";
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
-import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
 
 export default function demo(): void {
   const rows = [
@@ -10,7 +9,7 @@ export default function demo(): void {
     { id: 4, product: "Dock", quantity: 3, total: 537 }
   ];
   const grid = new DataGrid({
-    data: new ArrayDataSource(rows),
+    data: rows,
     columns: [
       { name: "id", caption: "ID", width: 60, textAlign: "end" },
       { name: "product", caption: "Product", width: 220 },

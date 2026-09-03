@@ -1,6 +1,5 @@
 import { e } from "../../../../src/core/e";
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
-import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
 
 type OrderRow = {
   id: number;
@@ -22,7 +21,7 @@ export default function demo(): void {
   ];
 
   const grid = new DataGrid({
-    data: new ArrayDataSource(rows),
+    data: rows,
     columns: [
       { name: "id", caption: "ID", editorType: "number", width: 60 },
       { name: "product", caption: "Product", editorType: "text", width: 220 },

@@ -1,5 +1,4 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
-import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
 
 export default function demo(): void {
   const products = ["Laptop", "Monitor", "Keyboard", "Mouse", "Headphones", "Webcam", "Desk Chair", "Desk Lamp"];
@@ -23,7 +22,7 @@ export default function demo(): void {
     };
   });
   const grid = new DataGrid({
-    data: new ArrayDataSource(data),
+    data,
     columns: [
       { name: "customer", caption: "Customer", editorType: "text", groupInterval: "firstChar" },
       { name: "id", caption: "ID", editorType: "number", width: 50 },
@@ -48,4 +47,3 @@ export default function demo(): void {
   grid.refresh();
   grid.mount(document.body);
 }
-

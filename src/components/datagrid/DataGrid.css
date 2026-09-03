@@ -81,6 +81,7 @@ tfoot .elg-gridcell {
 
 thead .elg-gridcell {
     position: relative;
+    cursor: pointer;
 }
 
 thead .elg-gridcell .elg-grid-header-resizer {
@@ -145,7 +146,7 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
 }
 
 thead .elg-gridrow-header .elg-gridcell-data {
-    cursor: grab;
+    cursor: pointer;
 }
 
 /* Selection box - each selected cell is marked with every side of the selection

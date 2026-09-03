@@ -39,7 +39,7 @@ summaries:
 
 ```js
 const grid = new DataGrid({
-  data: new ArrayDataSource(rows),
+  data: rows,
   columns: [
     { name: "customer", editorType: "text" },
     { name: "quantity", editorType: "number" },

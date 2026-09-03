@@ -1,5 +1,4 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
-import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
 
 export default function demo(): void {
   const rows = [
@@ -9,7 +8,7 @@ export default function demo(): void {
     { id: 4, customer: "Adventure Works", total: 537 }
   ];
   const grid = new DataGrid({
-    data: new ArrayDataSource(rows),
+    data: rows,
     columns: [
       { name: "id", caption: "ID", width: 60 },
       { name: "customer", caption: "Customer", width: 240 },

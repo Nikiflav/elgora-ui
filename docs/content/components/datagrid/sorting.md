@@ -25,8 +25,20 @@ direction.
 
 <live-demo id="datagrid-sorting" height="360px"></live-demo>
 
-The header shows the current direction. The example starts with a two-column
-sort and allows the normal column menu to replace or clear it.
+The example starts with a two-column sort. Try the following interactions:
+
+- Click a column header to cycle through ascending, descending, and clear. This
+  behavior is enabled by `sortOnHeaderClick` (true by default).
+- Hold `Shift` while clicking a header to add the column to the current sort or
+  update only that column. The other sort columns and their priorities remain
+  unchanged.
+- Open a column's context menu and choose `Sort Ascending`, `Sort Descending`,
+  or `Clear sorting`. Holding `Shift` while choosing an action applies it only
+  to the current column; without `Shift`, the selected column becomes the only
+  sort criterion.
+
+Dragging a header still reorders the column and does not trigger sorting. When
+multiple columns are sorted, each header shows its sort priority.
 
 ```js
 grid.setOptions({ orderBy: [["region", "asc"], ["total", "desc"]] });

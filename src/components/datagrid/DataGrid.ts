@@ -60,6 +60,8 @@ export type DataGridOptions<TRow> = {
     visibleColumns?: string[],
     /** The sort order for the data rows. */
     orderBy?: OrderByToken[],
+    /** Sort a data column when its header is clicked. Defaults to true. */
+    sortOnHeaderClick?: boolean,
     /** Filter applied to the data rows. */
     filter?: DataFilter,
     /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */
@@ -199,6 +201,7 @@ export class DataGrid<TRow> extends Component {
 
     private _dragDrop: DragDropController;
     private _cancelActiveResize?: () => void;
+    private _suppressHeaderClick = false;
     private _customCellContent = new WeakMap<HTMLTableCellElement, Component | Node>();
 
     private readonly _MAX_ROWS = 100
@@ -521,8 +524,30 @@ export class DataGrid<TRow> extends Component {
         void this.layoutChanged();
     };
 
-    private setColumnSort = (columnName: string, direction: "asc" | "desc") => {
-        this.setOptions({ orderBy: [[columnName, direction]] });
+    private setColumnSort = (columnName: string, direction: "asc" | "desc", preserveExisting = false) => {
+        if (!preserveExisting) {
+            this.setOptions({ orderBy: [[columnName, direction]] });
+            return;
+        }
+
+        const orderBy = [...(this._gridOptions.orderBy ?? [])];
+        const index = orderBy.findIndex(item =>
+            typeof item === "string" ? item === columnName : item[0] === columnName
+        );
+        const token: OrderByToken = [columnName, direction];
+        if (index >= 0) orderBy[index] = token;
+        else orderBy.push(token);
+        this.setOptions({ orderBy });
+    };
+
+    private toggleColumnSort = (columnName: string, preserveExisting = false) => {
+        const direction = this.getColumnSortDirection(columnName);
+        if (direction === undefined)
+            this.setColumnSort(columnName, "asc", preserveExisting);
+        else if (direction === "asc")
+            this.setColumnSort(columnName, "desc", preserveExisting);
+        else
+            this.clearColumnSort(columnName);
     };
 
     private clearColumnSort = (columnName: string) => {
@@ -564,6 +589,13 @@ export class DataGrid<TRow> extends Component {
         return typeof token === "string" ? "asc" : token[1];
     };
 
+    private getColumnSortOrder = (columnName: string): number | undefined => {
+        const index = this._gridOptions.orderBy?.findIndex(item =>
+            typeof item === "string" ? item === columnName : item[0] === columnName
+        ) ?? -1;
+        return index >= 0 ? index + 1 : undefined;
+    };
+
     private getContextMenuItems = async (context: DataGridContextMenuContext<TRow>): Promise<MenuItem[]> => {
         const items: MenuItem[] = [];
         const standard = this._gridOptions.standardContextMenuItems;
@@ -578,19 +610,20 @@ export class DataGrid<TRow> extends Component {
             const pinPosition = this.getColumnPinPosition(columnName);
             const isGrouped = this._gridOptions.groupColumns?.includes(columnName) === true;
             const sortDirection = this.getColumnSortDirection(columnName);
+            const preserveExistingSort = (event?: Event) => event instanceof MouseEvent && event.shiftKey;
 
             if ((!sortDirection || sortDirection === "desc") && hasStandard("sortAscending" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-arrow-up-line",
                     text: "Sort Ascending",
-                    action: () => this.setColumnSort(columnName, "asc")
+                    action: event => this.setColumnSort(columnName, "asc", preserveExistingSort(event))
                 });
             }
             if ((!sortDirection || sortDirection === "asc") && hasStandard("sortDescending" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-arrow-down-line",
                     text: "Sort Descending",
-                    action: () => this.setColumnSort(columnName, "desc")
+                    action: event => this.setColumnSort(columnName, "desc", preserveExistingSort(event))
                 });
             }
             if (sortDirection && hasStandard("clearSort" as GridStandardContextMenuItem)) {
@@ -981,6 +1014,7 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.texts ??= {};
         this._gridOptions.contextMenu ??= true;
         this._gridOptions.standardContextMenuItems ??= null;
+        this._gridOptions.sortOnHeaderClick ??= true;
 
         this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: options }));
 
@@ -1715,12 +1749,21 @@ export class DataGrid<TRow> extends Component {
             case "header":
                 if (col.type == "data" && col.dataColumn) {
                     const sortDirection = this.getColumnSortDirection(col.dataColumn.name);
+                    const sortOrder = this.getColumnSortOrder(col.dataColumn.name);
+                    const showSortOrder = sortOrder !== undefined && (this._gridOptions.orderBy?.length ?? 0) > 1;
                     props.vnodes = [
                         v("span", String(col.dataColumn.caption ?? col.dataColumn.name)),
+                        showSortOrder
+                            ? v("span", {
+                                textContent: String(sortOrder),
+                                ui: ["ms-1", "text-muted", "fs-80"],
+                                ariaLabel: `Sort priority ${sortOrder}`
+                            })
+                            : null,
                         sortDirection
                             ? v("i", {
                                 class: `${sortDirection === "asc" ? "ri-arrow-up-line" : "ri-arrow-down-line"}`,
-                                ui: ["ms-1"],
+                                ui: ["ms-1", "text-muted"],
                                 ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
                             })
                             : null,
@@ -1738,6 +1781,14 @@ export class DataGrid<TRow> extends Component {
                     ]
                     props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
                     props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
+                    props.onclick = (e: MouseEvent) => {
+                        if (this._suppressHeaderClick) {
+                            this._suppressHeaderClick = false;
+                            return;
+                        }
+                        if (this._gridOptions.sortOnHeaderClick !== false)
+                            this.toggleColumnSort(col.dataColumn!.name, e.shiftKey);
+                    };
                     props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
                         e,
                         "columnHeader",
@@ -1856,6 +1907,7 @@ export class DataGrid<TRow> extends Component {
         this._activeColIndex = col.visibleIndex;
         this.refresh();
 
+        let dragMoved = false;
         this._dragDrop.beginDrag(
             {
                 kind: "column",
@@ -1870,8 +1922,10 @@ export class DataGrid<TRow> extends Component {
             "x",
             () => {
                 this._activeColIndex = -1;
+                this._suppressHeaderClick = dragMoved;
                 this.refresh();
-            }
+            },
+            () => { dragMoved = true; }
         );
     }
 

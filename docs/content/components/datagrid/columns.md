@@ -31,7 +31,7 @@ columns. Column headers can also be resized and reordered directly.
 
 ```js
 const grid = new DataGrid({
-  data: new ArrayDataSource(rows),
+  data: rows,
   columns: [
     { name: "product", caption: "Product", width: 220 },
     { name: "quantity", caption: "Qty", width: 80, textAlign: "end" },

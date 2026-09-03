@@ -86,7 +86,7 @@ export class DragDropController implements Disposable {
     }
 
     /** `onDragEnd` runs once the gesture is over regardless of outcome (dropped or cancelled) - the reliable place for a caller to clear its own "this item is being dragged" styling. */
-    beginDrag(payload: DragPayload, startEvent: MouseEvent | TouchEvent, anchorRect: DOMRect, axis: GestureAxis = "free", onDragEnd?: () => void): void {
+    beginDrag(payload: DragPayload, startEvent: MouseEvent | TouchEvent, anchorRect: DOMRect, axis: GestureAxis = "free", onDragEnd?: () => void, onDragMove?: () => void): void {
 
         if (this.disposed) return;
         this.activeCancel?.();
@@ -143,6 +143,8 @@ export class DragDropController implements Disposable {
             threshold: 6,
 
             onMove: (dx, dy, x, y) => {
+
+                onDragMove?.();
 
                 if (!ghost) ghost = createDragGhost(payload.label, anchorRect, payload.ghostClassName);
                 ghost.moveTo(dx, dy);

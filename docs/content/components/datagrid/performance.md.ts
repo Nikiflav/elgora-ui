@@ -1,5 +1,4 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
-import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
 
 export default function demo(): void {
   const rows = Array.from({ length: 100_000 }, (_, index) => ({
@@ -8,7 +7,7 @@ export default function demo(): void {
     score: (index * 17) % 1000
   }));
   const grid = new DataGrid({
-    data: new ArrayDataSource(rows),
+    data: rows,
     pageSize: 100,
     columns: [
       { name: "id", caption: "ID", width: 80, textAlign: "end" },
