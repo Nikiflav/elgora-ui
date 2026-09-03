@@ -23,6 +23,7 @@ export type DocumentationComponent = Component;
 
 export interface MarkdownDemo {
     id: string;
+    module?: string;
     source: string;
     code: string;
     mode?: "readonly";

@@ -1,9 +1,17 @@
+import { v } from "../../../../src/core/e";
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
 
 export default function demo(): void {
   const products = ["Laptop", "Monitor", "Keyboard", "Mouse", "Headphones", "Webcam", "Desk Chair", "Desk Lamp"];
   const customers = ["Acme Corp", "Apex Systems", "Atlas Industries", "TechStart", "TechNova", "Global Solutions", "Greenfield Labs", "Innovate Inc", "Ionix", "Digital Dynamics", "Delta Works", "ByteWorks", "Brightside"];
-  const regions = ["North", "South", "East", "West"];
+  const countries = ["United States", "Germany", "France", "Japan", "Bulgaria"];
+  const countryFlags: Record<string, string> = {
+    "United States": "./assets/flags/us.svg",
+    Germany: "./assets/flags/de.svg",
+    France: "./assets/flags/fr.svg",
+    Japan: "./assets/flags/jp.svg",
+    Bulgaria: "./assets/flags/bg.svg"
+  };
   const statuses = ["Pending", "Shipped", "Delivered", "Cancelled"];
   const data = Array.from({ length: 100_000 }, (_, index) => {
     const quantity = Math.floor(Math.random() * 50) + 1;
@@ -13,7 +21,7 @@ export default function demo(): void {
       orderNumber: `ORD-2024-${String(index + 1).padStart(5, "0")}`,
       product: products[Math.floor(Math.random() * products.length)],
       customer: customers[Math.floor(Math.random() * customers.length)],
-      region: regions[Math.floor(Math.random() * regions.length)],
+      country: countries[Math.floor(Math.random() * countries.length)],
       status: statuses[Math.floor(Math.random() * statuses.length)],
       quantity,
       unitPrice,
@@ -24,18 +32,34 @@ export default function demo(): void {
   const grid = new DataGrid({
     data,
     columns: [
+      {
+        name: "country",
+        caption: "Country",
+        editorType: "text",
+        renderCell: cell => v(
+          "span",
+          { ui: ["d-flex", "items-center"] },
+          v("img", {
+            src: countryFlags[String(cell.value)] ?? "./assets/flags/unknown.svg",
+            alt: `${cell.value} flag`,
+            width: 20,
+            height: 14,
+            ui: ["me-1"]
+          }),
+          v("span", cell.text)
+        )
+      },
       { name: "customer", caption: "Customer", editorType: "text", groupInterval: "firstChar" },
       { name: "id", caption: "ID", editorType: "number", width: 50 },
       { name: "orderNumber", caption: "Order number", editorType: "text" },
-      { name: "product", caption: "Product", editorType: "text" },
-      { name: "region", caption: "Region", editorType: "text" },
+      { name: "product", caption: "Product", editorType: "text" },      
       { name: "status", caption: "Status", editorType: "text" },
       { name: "quantity", caption: "Quantity", editorType: "number" },
       { name: "unitPrice", caption: "Unit price", editorType: "number" },
       { name: "totalAmount", caption: "Total amount", editorType: "number" },
       { name: "orderDate", caption: "Order date", editorType: "date" }
     ],
-    groupColumns: ["customer"],
+    groupColumns: ["country"],
     groupSummary: [
       { field: "quantity", summaryType: "sum" },
       { field: "totalAmount", summaryType: "sum" },

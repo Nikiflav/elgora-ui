@@ -1,6 +1,5 @@
 import { Utils } from "../../core/Utils";
-import type { Component } from "../../core/Component";
-import type { StyleObject, VNode } from "../../core/e";
+import type { StyleObject } from "../../core/e";
 import type { GridContextMenuItems } from "./DataGridContextMenu";
 import type { FilterSelector } from "../../data/filter";
 
@@ -117,8 +116,6 @@ export type DataCell<TRow> = {
     text: string;
 };
 
-/** A value returned by a custom cell renderer. */
-export type DataCellRendererResult = HTMLElement | Component | VNode<any> | string;
 
 /** Per-cell visual overrides applied to the outer grid cell. */
 export type DataCellStyle = {
@@ -153,11 +150,6 @@ export type DataColumn<TRow> = {
     hideLabel?: boolean,
     /** Provides visibility by row. Used in DataView. */
     showInRow?(row: any): boolean;
-    /** Provides custom style for the outer grid cell. */
-    customCellStyle?(cell: DataCell<TRow>): DataCellStyle | undefined | null;
-
-    /** Returns content that replaces the default value/text display. */
-    renderCell?(cell: DataCell<TRow>): DataCellRendererResult;
     /** Reads this column's raw value from a row; defaults to reading `row[name]`. */
     getValue?(row: TRow): Promise<any>;
     /** Reads this column's display text for a row; defaults to stringifying getValue(). */

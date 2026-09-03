@@ -92,15 +92,6 @@
       "module": "./content/api/DataCell.js"
     },
     {
-      "name": "DataCellRendererResult",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.DataGrid",
-      "path": "/api-reference/DataCellRendererResult",
-      "description": "A value returned by a custom cell renderer.",
-      "module": "./content/api/DataCellRendererResult.js"
-    },
-    {
       "name": "DataCellStyle",
       "kind": "type",
       "group": "types",
@@ -135,6 +126,15 @@
       "path": "/api-reference/DataGrid",
       "description": "Virtualized, selectable, and optionally grouped data grid component.",
       "module": "./content/api/DataGrid.js"
+    },
+    {
+      "name": "DataGridColumn",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridColumn",
+      "description": "DataColumn extended with DataGrid-specific cell presentation callbacks.",
+      "module": "./content/api/DataGridColumn.js"
     },
     {
       "name": "DataGridContextMenuContext",
@@ -225,6 +225,15 @@
       "path": "/api-reference/FixedSizeManager",
       "description": "Size manager for lists whose rows share one fixed height.",
       "module": "./content/api/FixedSizeManager.js"
+    },
+    {
+      "name": "GridCell",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridCell",
+      "description": "Cell context supplied to DataGrid presentation callbacks.",
+      "module": "./content/api/GridCell.js"
     },
     {
       "name": "GridContext",

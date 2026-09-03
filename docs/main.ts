@@ -5,7 +5,7 @@ import { ObservableValue } from '../src/core/ElgoraUI';
 import { UiStyle } from '../src/core/UiStyle';
 import { overviewRouterHandler } from './overview-demo';
 import { MarkdownTopicPage } from './app/MarkdownTopicPage';
-import { ApiDocsFile, TopicManifest } from './app/types';
+import { TopicManifest } from './app/types';
 import { TopicLoader } from './app/TopicLoader';
 import { ApiLoader } from './app/ApiLoader';
 import { ApiTopicPage } from './app/ApiTopicPage';
@@ -136,17 +136,15 @@ function createDocsHeader(sidebar: HTMLElement) {
 }
 
 async function bootstrap(): Promise<void> {
-    const [manifestResponse, apiResponse, apiManifestResponse] = await Promise.all([
+    const [manifestResponse, apiManifestResponse] = await Promise.all([
         fetch("./content/topics-manifest.json"),
-        fetch("./content/api-docs.json"),
         fetch("./content/api/manifest.json")
     ]);
-    if (!manifestResponse.ok || !apiResponse.ok || !apiManifestResponse.ok) {
+    if (!manifestResponse.ok || !apiManifestResponse.ok) {
         throw new Error("Documentation metadata could not be loaded.");
     }
 
     const manifest = await manifestResponse.json() as TopicManifest;
-    const apiDocs = await apiResponse.json() as ApiDocsFile;
     const apiManifest = await apiManifestResponse.json() as import("./app/types-api").ApiManifest;
     const markdownTopics = manifest.topics;
     const currentPath = new ObservableValue(new URLSearchParams(window.location.search).get("!") || "/");
@@ -163,7 +161,7 @@ async function bootstrap(): Promise<void> {
                 async init() {
                     try {
                         const topic = await topicLoader.load(entry);
-                        const page = new MarkdownTopicPage(topic, apiDocs.exports);
+                        const page = new MarkdownTopicPage(topic, apiLoader, apiManifest.entries);
                         pageRoot.replaceChildren(page.dom);
                     } catch (error) {
                         pageRoot.className = "elg p-4 text-danger";

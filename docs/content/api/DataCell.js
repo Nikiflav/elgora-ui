@@ -9,5 +9,5 @@ export default {
   "namespace": "Components.DataGrid",
   "path": "/api-reference/DataCell",
   "source": "src/components/datagrid/DataColumn.ts",
-  "definition": "{\n    /** Column definition for this cell. */\n    column: DataColumn<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
+  "definition": "{\n    /** Column definition for this cell. */\r\n    column: DataColumn<TRow>;\r\n    /** Original row data. */\r\n    rowData: TRow;\r\n    /** Resolved raw cell value. */\r\n    value: any;\r\n    /** Resolved display text. */\r\n    text: string;\r\n}"
 };

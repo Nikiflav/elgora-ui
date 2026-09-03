@@ -9,7 +9,8 @@ description: Customize DataGrid cell content and appearance while keeping grid s
 toc: true
 api:
   - DataGrid
-  - DataColumn
+  - DataGridColumn
+  - GridCell
   - DataCell
   - DataCellStyle
 keywords:
@@ -32,7 +33,7 @@ Use `customCellStyle` to style the outer grid cell. In particular,
 `--elg-grid-cell-bg` is the base background used by DataGrid when it mixes a
 cell state such as selection with the custom color.
 
-The renderer below returns a native element for the status text. `Ready` cells
+The renderer below returns a VNode for the status text. `Ready` cells
 use a soft green base color, while `Delayed` cells use a muted red one. The
 status text is also rendered in uppercase. Select one or more cells to see the
 selection border and background tint applied without changing the renderer's
@@ -51,15 +52,18 @@ const grid = new DataGrid({
         className: "elg-text-uppercase",
         style: { "--elg-grid-cell-bg": cell.value === "Ready" ? "#d9f2e3" : "#f7dfdf" }
       }),
-      renderCell: cell => e("strong", { ui: ["fw-600"] }, cell.text)
+      renderCell: cell => v("strong", { ui: ["fw-600"] }, cell.text)
     }
   ]
 });
 ```
 
-`renderCell` receives a `DataCell` with the column, original row, raw value,
-and display text. It may return an `HTMLElement`, a Component, a virtual node,
-or a string. Returning `undefined` uses the default renderer.
+`renderCell` receives a `GridCell` with the column, raw value, display text,
+the render-ready `gridRow`, and the original `rowData` when the cell belongs to
+a data row. Group rows do not have one original data row, so `rowData` is
+undefined; use `value`, `text`, and `gridRow` instead. The renderer must return
+a virtual node. The VNode becomes the content inside the grid cell wrapper, so
+DataGrid can preserve its own selection, hover, and interaction behavior.
 
 `customCellStyle` affects the outer `.elg-gridcell`, not only the returned
 content. This is important because the grid can then apply state styling to a
@@ -68,6 +72,7 @@ selection or hover colors are implemented.
 
 ## API reference
 
-See [`DataColumn`](?!=/api-reference/DataColumn), [`DataCell`](?!=/api-reference/DataCell),
+See [`DataGridColumn`](?!=/api-reference/DataGridColumn), [`GridCell`](?!=/api-reference/GridCell),
+[`DataColumn`](?!=/api-reference/DataColumn), [`DataCell`](?!=/api-reference/DataCell),
 and [`DataCellStyle`](?!=/api-reference/DataCellStyle) for the complete
 renderer and style contracts.

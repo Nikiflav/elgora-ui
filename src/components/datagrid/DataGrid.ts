@@ -6,7 +6,8 @@ import { ScrollEngine } from "../scrollbar/scroll-engine";
 import { Scrollbar } from "../scrollbar/scrollbar";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
-import { DataCell, DataCellRendererResult, DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryDefinition, SummaryType } from "./DataColumn";
+import { DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryDefinition, SummaryType } from "./DataColumn";
+import { DataGridColumn, GridCell } from "./DataGridColumn";
 import { ArrayDataSource, DataSource, LocalGroupingDataSource, RowIdentity } from "./DataSource";
 import type { FilterFunctionRegistry } from "../../data/filter";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
@@ -49,7 +50,7 @@ type SelectionCell = { rowIndex: number, colIndex: number, wholeRow?: true };
 export type DataGridOptions<TRow> = {
     /** Row data; defaults to an empty array if omitted. */
     data?: GridDataSource<TRow>,
-    columns: DataColumn<TRow>[],
+    columns: DataGridColumn<TRow>[],
     /** Number of leading columns kept sticky, in addition to the row-header column. */
     fixedLeftColumns?: number,
     /** Number of trailing columns kept sticky. */
@@ -106,7 +107,7 @@ export type DataGridOptions<TRow> = {
     /** Whether to show the column footer row. Defaults to true. */
     showColumnFooters?: boolean,
     /** The default options for each column. Can be specified to provide default column behavior. */
-    defaultColumnOptions?: Partial<DataColumn<TRow>>
+    defaultColumnOptions?: Partial<DataGridColumn<TRow>>
 }
 
 type GridViewRow = {
@@ -127,14 +128,13 @@ type GridView = {
 type CellView<TRow> = {
     col: GridColumn<TRow>
     props: any
-    customContent?: DataCellRendererResult
 }
 
 type GridColumn<T> = {
 
     type: "data" | "rowheader";
     width: number;
-    dataColumn?: DataColumn<T>;
+    dataColumn?: DataGridColumn<T>;
     visibleIndex: number;
     groupIndex: number;
     textAlign: "left" | "center" | "right";
@@ -157,7 +157,7 @@ export class DataGrid<TRow> extends Component {
 
     // Options.
     private _gridOptions: DataGridOptions<TRow> = { columns: [] };
-    private _columnsIndex: Map<string, DataColumn<TRow>> = new Map();
+    private _columnsIndex: Map<string, DataGridColumn<TRow>> = new Map();
     private _dataSource!: DataSource<TRow>;
     private _isHierarchicalData: boolean = false;
     private _gridColumns: GridColumn<TRow>[] = [];
@@ -192,7 +192,7 @@ export class DataGrid<TRow> extends Component {
     private _headerHeight = 0
     private _footerHeight = 0
     private _groupPadding = 10
-    private _activeColIndex = -1
+    private _draggingColIndex = -1
     private _activeGroupColumn?: string
     private _selection = new SelectionManager();
     private _selectionMouseDown = false;
@@ -201,7 +201,6 @@ export class DataGrid<TRow> extends Component {
 
     private _dragDrop: DragDropController;
     private _cancelActiveResize?: () => void;
-    private _customCellContent = new WeakMap<HTMLTableCellElement, Component | Node>();
 
     private readonly _MAX_ROWS = 100
 
@@ -638,6 +637,13 @@ export class DataGrid<TRow> extends Component {
             typeof item === "string" ? item === columnName : item[0] === columnName
         ) ?? -1;
         return index >= 0 ? index + 1 : undefined;
+    };
+
+    /** Returns the compact column label, including its configured summary type when present. */
+    private getColumnHeaderText = (column: DataColumn<TRow>): string => {
+        const label = column.caption ?? column.name;
+        const summary = this._gridOptions.groupSummary?.find(item => item.field === column.name);
+        return summary ? `${label} (${summary.summaryType})` : label;
     };
 
     private getContextMenuItems = async (context: DataGridContextMenuContext<TRow>): Promise<MenuItem[]> => {
@@ -1679,164 +1685,204 @@ export class DataGrid<TRow> extends Component {
         return "";
     }
 
+    private createCellProps = (col: GridColumn<TRow>): any => ({
+        className: `elg-gridcell elg-gridcell-${col.type}`
+    });
+
+    private applyRowHeaderCell = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
+        props.textContent = this.getCellText(gridRow, col);
+        if (!this.isSelectableGridRow(gridRow)) return;
+
+        props.onmousedown = (e: MouseEvent) => this.beginRowSelection(e, gridRow);
+        props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
+        props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(e, "rowHeader", gridRow);
+    };
+
+    private createExpandIcon = (gridRow: GridRow) => v("i", {
+        class: "elg-icon " + (gridRow.expanded ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line"),
+        ui: ["elg", "hover", "me-1"],
+        onclick: async (e, el) => {
+            assignElementProps(el, {
+                class: "elg-spinner-ring",
+                ui: ["elg", "me-1", "text-primary"]
+            });
+
+            const rowIndex = gridRow.visibleIndex;
+            await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
+
+            if (el.closest(".elg-gridrow-sticky")) this.scrollToRow(rowIndex);
+            else this.render(this.renderBody);
+        }
+    });
+
+    private createIndentedCellContent = (gridRow: GridRow, cellContent: VNode<any>): VNode<any> => {
+        const wrapperProps: any = {
+            ui: ["d-inline-flex", "items-center"],
+            style: { marginLeft: (this._groupPadding * gridRow.level) + "px" }
+        };
+
+        if (gridRow.expandable)
+            wrapperProps.vnodes = [this.createExpandIcon(gridRow), cellContent];
+        else
+            wrapperProps.vnodes = [
+                v("i", {
+                    class: "elg-icon ri-arrow-right-s-line",
+                    ui: ["elg", "me-1"],
+                    style: { visibility: "hidden" }
+                }),
+                cellContent
+            ];
+
+        return v("span", wrapperProps);
+    };
+
+    private createDataCell = (gridRow: GridRow, col: GridColumn<TRow>, text: string): GridCell<TRow> | undefined => {
+        if (!col.dataColumn) return;
+
+        const resolvedCell = gridRow.cells?.[col.dataColumn.name];
+        const groupData = gridRow.type === "group" ? gridRow.data?.data : undefined;
+        const groupValue = groupData?.groupField === col.dataColumn.name
+            ? groupData.groupValue
+            : undefined;
+        return {
+            column: col.dataColumn,
+            rowData: gridRow.type === "group" ? undefined : (gridRow.data?.data ?? gridRow.data) as TRow,
+            value: groupValue ?? resolvedCell?.value ?? resolvedCell,
+            gridRow,
+            text
+        };
+    };
+
+    private applyDataCellStyle = (props: any, dataCell: GridCell<TRow>) => {
+        const customStyle = dataCell.column.customCellStyle?.(dataCell);
+        if (!customStyle) return;
+
+        if (customStyle.className) props.className += " " + customStyle.className;
+        if (customStyle.style) props.style = customStyle.style;
+    };
+
+    private applyDataCellInteractions = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
+        props.onmousedown = (e: MouseEvent) => this.beginCellSelection(e, gridRow, col.visibleIndex);
+        props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
+        props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
+            e, "cell", gridRow, col.dataColumn, col.visibleIndex - this.rowHeaderOffset
+        );
+    };
+
+    private applyDataCellContent = (
+        props: any,
+        gridRow: GridRow,
+        col: GridColumn<TRow>,
+        dataCell: GridCell<TRow>
+    ) => {
+        const customVNode = col.dataColumn!.renderCell?.(dataCell);
+        if (col.visibleIndex == this.rowHeaderOffset)
+            props.vnodes = [
+                this.createIndentedCellContent(
+                    gridRow,
+                    customVNode ?? v("span", dataCell.text))
+            ];
+        else if (customVNode)
+            props.vnodes = [customVNode];
+        else
+            props.textContent = dataCell.text;
+    };
+
+    private applyDataCell = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
+        if (col.type == "rowheader") {
+            this.applyRowHeaderCell(props, gridRow, col);
+            return;
+        }
+        if (!col.dataColumn) return;
+
+        const cellText = this.getCellText(gridRow, col);
+        const dataCell = this.createDataCell(gridRow, col, cellText);
+        if (!dataCell) return;
+
+        this.applyDataCellStyle(props, dataCell);
+        this.applyDataCellInteractions(props, gridRow, col);
+        this.applyDataCellContent(props, gridRow, col, dataCell);
+    };
+
+    private applyHeaderCell = (props: any, col: GridColumn<TRow>) => {
+        if (col.type != "data" || !col.dataColumn) return;
+
+        const sortDirection = this.getColumnSortDirection(col.dataColumn.name);
+        const sortOrder = this.getColumnSortOrder(col.dataColumn.name);
+        const showSortOrder = sortOrder !== undefined && (this._gridOptions.orderBy?.length ?? 0) > 1;
+        props.vnodes = [
+            v("span", this.getColumnHeaderText(col.dataColumn)),
+            showSortOrder ? v("span", {
+                textContent: String(sortOrder),
+                ui: ["ms-1", "text-muted", "fs-80"],
+                ariaLabel: `Sort priority ${sortOrder}`
+            }) : null,
+            sortDirection ? v("i", {
+                class: sortDirection === "asc" ? "ri-arrow-up-line" : "ri-arrow-down-line",
+                ui: ["ms-1", "text-muted"],
+                ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
+            }) : null,
+            v("em", {
+                class: "elg-grid-header-resizer",
+                onmousedown: (e, el) => this.resizeColumn(e, col),
+                ontouchstart: (e, el) => this.resizeColumn(e, col),
+                ondblclick: (e, el) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.autoSizeColumn(col.dataColumn!.name);
+                }
+            })
+        ];
+        props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
+        props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
+        props.onclick = (e: MouseEvent) => {
+            if (this._gridOptions.sortOnHeaderClick !== false)
+                this.toggleColumnSort(col.dataColumn!.name, e.shiftKey);
+        };
+        props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(e, "columnHeader", undefined, col.dataColumn);
+    };
+
+    private applyCellState = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
+        if (this._draggingColIndex === col.visibleIndex)
+            props.className += " elg-column-dragging";
+
+        const selectionColIndex = col.type === "data" ? col.visibleIndex - this.rowHeaderOffset : 0;
+        if (this.isSelectableGridRow(gridRow) && col.type === "data") {
+            const state = this._selection.getSelectionState(
+                gridRow.visibleIndex, selectionColIndex, this.getSelectionContext()
+            );
+            if (state.selected) {
+                props.className += " elg-selected-cell";
+                for (const side of state.edges) props.className += " elg-selected-cell-" + side;
+            }
+        }
+        if (this.isSelectableGridRow(gridRow)
+            && this._selection.isWholeRowSelected(gridRow.visibleIndex)
+            && col.type === "rowheader")
+            props.className += " elg-selected-row-header";
+        if (this.isSelectableGridRow(gridRow)
+            && col.type === "data"
+            && this._selection.isActive(gridRow.visibleIndex, selectionColIndex))
+            props.className += " elg-active-cell";
+    };
+
     private getCellView = (
         gridRow: GridRow,
         col: GridColumn<TRow>): CellView<TRow> => {
 
-        const props: any = {
-            className: `elg-gridcell elg-gridcell-${col.type}`,
-        };
-        let customContent: DataCellRendererResult | undefined;
+        const props = this.createCellProps(col);
 
         switch (gridRow.type) {
 
             case "group":
             case "data":
             case "node":
-            case "summary": {
-                if (col.type == "rowheader") {
-                    props.textContent = this.getCellText(gridRow, col);
-                    if (this.isSelectableGridRow(gridRow)) {
-                        props.onmousedown = (e: MouseEvent) => this.beginRowSelection(e, gridRow);
-                        props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
-                        props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(e, "rowHeader", gridRow);
-                    }
-                    break;
-                }
-                if (!col.dataColumn) break;
-
-                const cellText = this.getCellText(gridRow, col);
-                const resolvedCell = gridRow.cells?.[col.dataColumn.name];
-                const dataCell: DataCell<TRow> = {
-                    column: col.dataColumn,
-                    rowData: gridRow.data as TRow,
-                    value: resolvedCell?.value ?? resolvedCell,
-                    text: cellText
-                };
-                const customStyle = col.dataColumn.customCellStyle?.(dataCell);
-                if (customStyle) {
-                    if (customStyle.className)
-                        props.className += " " + customStyle.className;
-                    if (customStyle.style)
-                        props.style = customStyle.style;
-                }
-                customContent = col.dataColumn.renderCell?.(dataCell);
-                if (customContent !== undefined) {
-                    if (customContent && typeof customContent === "object" && "tag" in customContent)
-                        props.vnodes = [customContent];
-                }
-
-                props.onmousedown = (e: MouseEvent) => this.beginCellSelection(e, gridRow, col.visibleIndex);
-                props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
-                props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
-                    e,
-                    "cell",
-                    gridRow,
-                    col.dataColumn,
-                    col.visibleIndex - this.rowHeaderOffset
-                );
-
-                if (customContent === undefined && col.visibleIndex == 1) {
-
-                    if (gridRow.expandable) {
-
-                        props.vnodes = [
-                            v("i", {
-                                class: "elg-icon " + (gridRow.expanded ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line"),
-                                ui: ["elg", "hover", "me-1"],
-                                style: {
-                                    marginLeft: (this._groupPadding * gridRow.level) + "px",
-                                },
-                                onclick: async (e, el) => {
-
-                                    assignElementProps(el, {
-                                        class: "elg-spinner-ring",
-                                        ui: ["elg", "me-1", "text-primary"]
-                                    })
-
-                                    const rowIndex = gridRow.visibleIndex;
-
-                                    await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
-
-                                    // If current row is sticky group row - scroll to that row in the grid body.
-                                    if (el.closest(".elg-gridrow-sticky")) {
-                                        this.scrollToRow(rowIndex);
-                                    }
-                                    else {
-                                        // Refresh grid rows.
-                                        this.render(this.renderBody);
-                                    }
-                                }
-                            }),
-                            v("span", cellText)
-                        ]
-                    } else {
-                        // Reserve the same width as the expand arrow (hidden, not just omitted) so leaf
-                        // rows' text lines up with their expandable siblings' text at the same level.
-                        props.vnodes = [
-                            v("i", {
-                                class: "elg-icon ri-arrow-right-s-line",
-                                ui: ["elg", "me-1"],
-                                style: {
-                                    marginLeft: (this._groupPadding * gridRow.level) + "px",
-                                    visibility: "hidden"
-                                }
-                            }),
-                            v("span", cellText)
-                        ]
-                    }
-
-                } else if (customContent === undefined) {
-                    props.textContent = cellText;
-                }
-            } break;
+            case "summary":
+                this.applyDataCell(props, gridRow, col);
+                break;
 
             case "header":
-                if (col.type == "data" && col.dataColumn) {
-                    const sortDirection = this.getColumnSortDirection(col.dataColumn.name);
-                    const sortOrder = this.getColumnSortOrder(col.dataColumn.name);
-                    const showSortOrder = sortOrder !== undefined && (this._gridOptions.orderBy?.length ?? 0) > 1;
-                    props.vnodes = [
-                        v("span", String(col.dataColumn.caption ?? col.dataColumn.name)),
-                        showSortOrder
-                            ? v("span", {
-                                textContent: String(sortOrder),
-                                ui: ["ms-1", "text-muted", "fs-80"],
-                                ariaLabel: `Sort priority ${sortOrder}`
-                            })
-                            : null,
-                        sortDirection
-                            ? v("i", {
-                                class: `${sortDirection === "asc" ? "ri-arrow-up-line" : "ri-arrow-down-line"}`,
-                                ui: ["ms-1", "text-muted"],
-                                ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
-                            })
-                            : null,
-                        v("em", {
-                            class: "elg-grid-header-resizer",
-                            onmousedown: (e, el) => this.resizeColumn(e, col),
-                            ontouchstart: (e, el) => this.resizeColumn(e, col),
-                            ondblclick: (e, el) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (col.dataColumn)
-                                    this.autoSizeColumn(col.dataColumn.name);
-                            },
-                        }),
-                    ]
-                    props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
-                    props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
-                    props.onclick = (e: MouseEvent) => {
-                        if (this._gridOptions.sortOnHeaderClick !== false)
-                            this.toggleColumnSort(col.dataColumn!.name, e.shiftKey);
-                    };
-                    props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
-                        e,
-                        "columnHeader",
-                        undefined,
-                        col.dataColumn
-                    );
-                }
+                this.applyHeaderCell(props, col);
                 break;
 
             case "footer":
@@ -1852,38 +1898,9 @@ export class DataGrid<TRow> extends Component {
                 break;
         }
 
-        if (this._activeColIndex === col.visibleIndex) {
-            props.className += " elg-column-dragging";
-        }
+        this.applyCellState(props, gridRow, col);
 
-        const selectionColIndex = col.type === "data"
-            ? col.visibleIndex - this.rowHeaderOffset
-            : 0;
-        if (this.isSelectableGridRow(gridRow) && col.type === "data") {
-            const state = this._selection.getSelectionState(
-                gridRow.visibleIndex,
-                selectionColIndex,
-                this.getSelectionContext()
-            );
-            if (state.selected) {
-                props.className += " elg-selected-cell";
-                for (const side of state.edges) {
-                    props.className += " elg-selected-cell-" + side;
-                }
-            }
-        }
-        if (this.isSelectableGridRow(gridRow)
-            && this._selection.isWholeRowSelected(gridRow.visibleIndex)
-            && col.type === "rowheader") {
-            props.className += " elg-selected-row-header";
-        }
-        if (this.isSelectableGridRow(gridRow)
-            && col.type === "data"
-            && this._selection.isActive(gridRow.visibleIndex, selectionColIndex)) {
-            props.className += " elg-active-cell";
-        }
-
-        return { col, props, customContent };
+        return { col, props };
     }
 
     private resizeColumn = (e: MouseEvent | TouchEvent, col: GridColumn<TRow>) => {
@@ -1943,7 +1960,7 @@ export class DataGrid<TRow> extends Component {
 
         const sourceIndex = this._gridColumns.filter(c => c.type == "data").indexOf(col);
 
-        this._activeColIndex = col.visibleIndex;
+        this._draggingColIndex = col.visibleIndex;
         headerTd.classList.add("elg-column-dragging");
 
         let dragMoved = false;
@@ -1961,7 +1978,7 @@ export class DataGrid<TRow> extends Component {
             headerTd.getBoundingClientRect(),
             "x",
             () => {
-                this._activeColIndex = -1;
+                this._draggingColIndex = -1;
                 headerTd.classList.remove("elg-column-dragging");
                 if (dragMoved) this.refresh();
             },
@@ -2149,23 +2166,7 @@ export class DataGrid<TRow> extends Component {
         }
 
         for (let i = 0; i < cellElements.length; i++) {
-            const previousContent = this._customCellContent.get(cellElements[i]);
-            if (previousContent instanceof Component)
-                previousContent.dispose();
-            else if (previousContent?.parentNode === cellElements[i])
-                cellElements[i].removeChild(previousContent);
-            this._customCellContent.delete(cellElements[i]);
             setElementProps(cellElements[i], cells[i].props);
-            const content = cells[i].customContent;
-            if (content instanceof Component) {
-                content.mount(cellElements[i]);
-                this._customCellContent.set(cellElements[i], content);
-            } else if (content instanceof Node) {
-                cellElements[i].appendChild(content);
-                this._customCellContent.set(cellElements[i], content);
-            } else if (typeof content === "string") {
-                cellElements[i].appendChild(document.createTextNode(content));
-            }
         }
 
         // Remove excess cells
@@ -2404,7 +2405,7 @@ export class DataGrid<TRow> extends Component {
                             col
                         ),
                     },
-                    v("span", col.caption ?? col.name),
+                    v("span", this.getColumnHeaderText(col)),
                     showSortOrder
                         ? v("span", {
                             textContent: String(sortOrder),

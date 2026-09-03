@@ -231,7 +231,8 @@
         "DataGridOptions",
         "ArrayDataSource",
         "DataSource",
-        "DataColumn",
+        "DataGridColumn",
+        "GridCell",
         "SummaryDefinition"
       ],
       "keywords": [
@@ -494,7 +495,8 @@
       "toc": true,
       "api": [
         "DataGrid",
-        "DataColumn",
+        "DataGridColumn",
+        "GridCell",
         "DataCell",
         "DataCellStyle"
       ],

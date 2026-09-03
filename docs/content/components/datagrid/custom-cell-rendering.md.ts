@@ -1,4 +1,4 @@
-import { e } from "../../../../src/core/e";
+import { v } from "../../../../src/core/e";
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
 
 type OrderRow = {
@@ -35,14 +35,14 @@ export default function demo(): void {
             "--elg-grid-cell-bg": cell.value === "Ready" ? "#d9f2e3" : "#f7dfdf"
           }
         }),
-        renderCell: cell => e("strong", { ui: ["fw-600"] }, cell.text)
+        renderCell: cell => v("strong", { ui: ["fw-600"] }, cell.text)
       },
       {
         name: "amount",
         caption: "Amount",
         editorType: "number",
         textAlign: "end",
-        renderCell: cell => e("span", { ui: ["fw-600"] }, `$${cell.value}`)
+        renderCell: cell => v("span", { ui: ["fw-600"] }, `$${cell.value}`)
       }
     ]
   });

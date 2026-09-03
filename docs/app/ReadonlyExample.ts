@@ -33,7 +33,12 @@ export class ReadonlyExample extends Component {
             if (event.source !== this.preview.contentWindow) return;
             const message = event.data as { type?: string; message?: string };
             if (message.type === "ready") {
-                this.preview.contentWindow?.postMessage({ type: "run", code: demo.code }, "*");
+                this.preview.contentWindow?.postMessage(
+                    demo.module
+                        ? { type: "run-module", module: demo.module }
+                        : { type: "run", code: demo.code },
+                    "*"
+                );
             } else if (message.type === "success") {
                 this.status.className = "elg elg-text-muted fs-80";
                 this.status.textContent = "Live preview";

@@ -22,8 +22,9 @@ export default {
   "demos": [
     {
       "id": "datagrid-performance",
+      "module": "./content/components/datagrid/performance.md.ts",
       "source": "const rows = Array.from({ length: 100000 }, (_, index) => ({\n    id: index + 1,\n    name: `Generated record ${index + 1}`,\n    score: (index * 17) % 1000\n}));\nconst grid = new DataGrid({\n    data: rows,\n    pageSize: 100,\n    columns: [\n        { name: \"id\", caption: \"ID\", width: 80, textAlign: \"end\" },\n        { name: \"name\", caption: \"Name\", width: 280 },\n        { name: \"score\", caption: \"Score\", width: 110, textAlign: \"end\" }\n    ]\n});\ngrid.dom.style.height = \"360px\";\ngrid.refresh();\ngrid.mount(document.body);",
-      "code": "with (Elgora) {\nfunction createDemo() {\n    const rows = Array.from({ length: 100000 }, (_, index) => ({\n        id: index + 1,\n        name: `Generated record ${index + 1}`,\n        score: (index * 17) % 1000\n    }));\n    const grid = new DataGrid({\n        data: rows,\n        pageSize: 100,\n        columns: [\n            { name: \"id\", caption: \"ID\", width: 80, textAlign: \"end\" },\n            { name: \"name\", caption: \"Name\", width: 280 },\n            { name: \"score\", caption: \"Score\", width: 110, textAlign: \"end\" }\n        ]\n    });\n    grid.dom.style.height = \"360px\";\n    grid.refresh();\n    grid.mount(document.body);\n}\ncreateDemo();\n}",
+      "code": "const rows = Array.from({ length: 100000 }, (_, index) => ({\n    id: index + 1,\n    name: `Generated record ${index + 1}`,\n    score: (index * 17) % 1000\n}));\nconst grid = new DataGrid({\n    data: rows,\n    pageSize: 100,\n    columns: [\n        { name: \"id\", caption: \"ID\", width: 80, textAlign: \"end\" },\n        { name: \"name\", caption: \"Name\", width: 280 },\n        { name: \"score\", caption: \"Score\", width: 110, textAlign: \"end\" }\n    ]\n});\ngrid.dom.style.height = \"360px\";\ngrid.refresh();\ngrid.mount(document.body);",
       "height": "360px"
     }
   ]

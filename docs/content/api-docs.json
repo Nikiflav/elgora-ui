@@ -1064,20 +1064,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataCell",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\n    /** Column definition for this cell. */\n    column: DataColumn<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
-    },
-    {
-      "name": "DataCellRendererResult",
-      "kind": "type",
-      "type": "any",
-      "description": "A value returned by a custom cell renderer.",
-      "tags": [],
-      "topics": [],
-      "group": "types",
-      "namespace": "Components.DataGrid",
-      "path": "/api-reference/DataCellRendererResult",
-      "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "HTMLElement | Component | VNode<any> | string"
+      "definition": "{\n    /** Column definition for this cell. */\r\n    column: DataColumn<TRow>;\r\n    /** Original row data. */\r\n    rowData: TRow;\r\n    /** Resolved raw cell value. */\r\n    value: any;\r\n    /** Resolved display text. */\r\n    text: string;\r\n}"
     },
     {
       "name": "DataCellStyle",
@@ -1090,7 +1077,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataCellStyle",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\n    /** Additional classes for the outer grid cell. */\n    className?: string;\n    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */\n    style?: StyleObject;\n}"
+      "definition": "{\r\n    /** Additional classes for the outer grid cell. */\r\n    className?: string;\r\n    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */\r\n    style?: StyleObject;\r\n}"
     },
     {
       "name": "DataColumn",
@@ -1103,7 +1090,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataColumn",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\r\n    /** Field name; also used as the column's unique identifier. */\r\n    name: string;\r\n    /** Display label; falls back to `name` when unset. */\r\n    caption?: string;\r\n    /** Column description, shown as a tooltip. */\r\n    description?: string;\r\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\r\n    width?: number;\r\n    /** Opaque, caller-defined data attached to the column (not used internally). */\r\n    userState?: any;\r\n    textAlign?: \"start\" | \"center\" | \"end\";\r\n    editorType?: EditorType;\r\n    readonly?: boolean;\r\n    required?: boolean;\r\n    resizable?: boolean;\r\n    reorderable?: boolean;\r\n    /** Relative ordering hint among columns. */\r\n    logicalOrder?: number;\r\n    /** True to skip the cell label in DataView. */\r\n    hideLabel?: boolean,\r\n    /** Provides visibility by row. Used in DataView. */\r\n    showInRow?(row: any): boolean;\r\n    /** Provides custom style for the outer grid cell. */\n    customCellStyle?(cell: DataCell<TRow>): DataCellStyle | undefined | null;\n\n    /** Returns content that replaces the default value/text display. */\n    renderCell?(cell: DataCell<TRow>): DataCellRendererResult;\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\r\n    getValue?(row: TRow): Promise<any>;\r\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\r\n    getText?(row: TRow): Promise<string>;\r\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\r\n    setValue?(row: TRow, value: any): Promise<any>;\r\n    /** Parses and writes a display-text edit onto a row. */\r\n    setText?(row: TRow, text: string): Promise<any>;\r\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\r\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\r\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\r\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\r\n    /** List of data cell actions displayed as popup menu for data cell. */\r\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\r\n    /** Produces context-menu items for cells in this column. */\r\n    contextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Produces context-menu items for this column's header. */\r\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Groups this column into a built-in or server-defined interval. */\r\n    groupInterval?: GroupInterval;\r\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\r\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\r\n}"
+      "definition": "{\r\n    /** Field name; also used as the column's unique identifier. */\r\n    name: string;\r\n    /** Display label; falls back to `name` when unset. */\r\n    caption?: string;\r\n    /** Column description, shown as a tooltip. */\r\n    description?: string;\r\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\r\n    width?: number;\r\n    /** Opaque, caller-defined data attached to the column (not used internally). */\r\n    userState?: any;\r\n    textAlign?: \"start\" | \"center\" | \"end\";\r\n    editorType?: EditorType;\r\n    readonly?: boolean;\r\n    required?: boolean;\r\n    resizable?: boolean;\r\n    reorderable?: boolean;\r\n    /** Relative ordering hint among columns. */\r\n    logicalOrder?: number;\r\n    /** True to skip the cell label in DataView. */\r\n    hideLabel?: boolean,\r\n    /** Provides visibility by row. Used in DataView. */\r\n    showInRow?(row: any): boolean;\r\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\n    getValue?(row: TRow): Promise<any>;\r\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\r\n    getText?(row: TRow): Promise<string>;\r\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\r\n    setValue?(row: TRow, value: any): Promise<any>;\r\n    /** Parses and writes a display-text edit onto a row. */\r\n    setText?(row: TRow, text: string): Promise<any>;\r\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\r\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\r\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\r\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\r\n    /** List of data cell actions displayed as popup menu for data cell. */\r\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\r\n    /** Produces context-menu items for cells in this column. */\r\n    contextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Produces context-menu items for this column's header. */\r\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Groups this column into a built-in or server-defined interval. */\r\n    groupInterval?: GroupInterval;\r\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\r\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\r\n}"
     },
     {
       "name": "DataFilter",
@@ -1448,6 +1435,19 @@
       ]
     },
     {
+      "name": "DataGridColumn",
+      "kind": "type",
+      "type": "any",
+      "description": "DataColumn extended with DataGrid-specific cell presentation callbacks.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridColumn",
+      "source": "src/components/datagrid/DataGridColumn.ts",
+      "definition": "DataColumn<TRow> & {\n    /** Provides custom style for the outer grid cell. */\n    customCellStyle?(cell: GridCell<TRow>): DataCellStyle | undefined | null;\n    /** Returns a VNode that replaces the default value/text display inside the grid cell wrapper. */\n    renderCell?(cell: GridCell<TRow>): VNode<any>;\n}"
+    },
+    {
       "name": "DataGridContextMenuContext",
       "kind": "interface",
       "type": "DataGridContextMenuContext<TRow>",
@@ -1552,7 +1552,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
       "source": "src/components/datagrid/DataGrid.ts",
-      "definition": "{\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\n    orderBy?: OrderByToken[],\n    /** Sort a data column when its header is clicked. Defaults to true. */\n    sortOnHeaderClick?: boolean,\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\n    /** Custom summary accumulators available for locally grouped data. */\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */\r\n    autoFillViewportWidth?: boolean,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataColumn<TRow>>\r\n}"
+      "definition": "{\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataGridColumn<TRow>[],\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */\r\n    autoFillViewportWidth?: boolean,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\n}"
     },
     {
       "name": "DataList",
@@ -1916,6 +1916,19 @@
           "signature": "(index: number) => number"
         }
       ]
+    },
+    {
+      "name": "GridCell",
+      "kind": "type",
+      "type": "any",
+      "description": "Cell context supplied to DataGrid presentation callbacks.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridCell",
+      "source": "src/components/datagrid/DataGridColumn.ts",
+      "definition": "Omit<DataCell<TRow>, \"column\" | \"rowData\"> & {\n    /** Column definition currently rendered by DataGrid. */\n    column: DataGridColumn<TRow>;\n    /** Business row data. Undefined for group rows, which have no single business row. */\n    rowData?: TRow;\n    /** Render-ready row context, including grouping and tree state. */\n    gridRow: GridRow;\n}"
     },
     {
       "name": "GridContext",

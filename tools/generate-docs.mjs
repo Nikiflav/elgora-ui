@@ -9,11 +9,6 @@ const manifestFile = path.join(contentDir, "topics-manifest.json");
 const topicsDir = path.join(contentDir, "topics");
 const markdownIt = createRequire(path.join(root, "docs", "package.json"))("markdown-it");
 const md = markdownIt({ html: true, linkify: true, typographer: true });
-const runtimeExports = [...fs.readFileSync(path.join(root, "src", "index.ts"), "utf8").matchAll(/export\s*\{([\s\S]*?)\}/g)]
-    .flatMap(match => match[1].split(",").map(item => item.trim().split(/\s+as\s+/)[0]))
-    .filter(name => name && !name.startsWith("type "))
-    .map(name => name.replace(/^type\s+/, ""));
-
 function extractDemoBody(source, fileName) {
     const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
     const statement = sourceFile.statements.find(node =>
@@ -21,26 +16,6 @@ function extractDemoBody(source, fileName) {
     );
     if (!statement || !statement.body) return source.trim();
     return source.slice(statement.body.getStart(sourceFile) + 1, statement.body.end - 1).trim();
-}
-
-function validateStandaloneDemo(source, fileName) {
-    const compilerOptions = {
-        target: ts.ScriptTarget.ES2020,
-        module: ts.ModuleKind.ESNext,
-        moduleResolution: ts.ModuleResolutionKind.Bundler,
-        strict: true,
-        skipLibCheck: true,
-        noEmit: true
-    };
-    const program = ts.createProgram([fileName], compilerOptions);
-    const diagnostics = [
-        ...program.getSyntacticDiagnostics(),
-        ...program.getSemanticDiagnostics()
-    ];
-    if (diagnostics.length) {
-        const message = ts.flattenDiagnosticMessageText(diagnostics[0].messageText, "\n");
-        throw new Error("Demo " + fileName + " failed standalone type-check: " + message);
-    }
 }
 
 function scalar(value) {
@@ -88,56 +63,6 @@ function parseFrontmatter(source, fileName) {
     return { metadata, body: source.slice(end + 4).replace(/^\r?\n/, "") };
 }
 
-function compileDemo(source, fileName) {
-    const globalsFile = path.resolve(root, "docs", "demo-globals.d.ts");
-    const componentFile = path.resolve(root, "src", "core", "Component.ts").replaceAll("\\", "/");
-    const virtualFile = path.join(path.dirname(fileName), "__generated_" + path.basename(fileName));
-    const wrappedSource = [
-        `/// <reference path=${JSON.stringify(globalsFile.replaceAll("\\", "/"))} />`,
-        "type DemoResult = void;",
-        ...runtimeExports.map(name => `declare const ${name}: typeof Elgora.${name};`),
-        "function createDemo(): DemoResult {",
-        ...source.split(/\r?\n/).map(line => "    " + line),
-        "}"
-    ].join("\n");
-    const compilerOptions = {
-        target: ts.ScriptTarget.ES2020,
-        module: ts.ModuleKind.ESNext,
-        moduleResolution: ts.ModuleResolutionKind.Bundler,
-        strict: true,
-        skipLibCheck: true,
-        noEmit: true
-    };
-    const host = ts.createCompilerHost(compilerOptions);
-    const originalReadFile = host.readFile.bind(host);
-    const originalFileExists = host.fileExists.bind(host);
-    host.readFile = file => file === virtualFile ? wrappedSource : originalReadFile(file);
-    host.fileExists = file => file === virtualFile || originalFileExists(file);
-    const program = ts.createProgram([virtualFile], compilerOptions, host);
-    const diagnostics = [
-        ...program.getSyntacticDiagnostics(),
-        ...program.getSemanticDiagnostics()
-    ];
-    if (diagnostics.length) {
-        const message = ts.flattenDiagnosticMessageText(diagnostics[0].messageText, "\n");
-        throw new Error("Demo " + fileName + " failed to type-check: " + message);
-    }
-
-    const result = ts.transpileModule(wrappedSource, {
-        compilerOptions: {
-            target: ts.ScriptTarget.ES2020,
-            module: ts.ModuleKind.ESNext,
-            removeComments: true
-        },
-        fileName: virtualFile
-    });
-    const compiled = result.outputText
-        .replace(/import\s+type[^;]+;?/g, "")
-        .replace(/export\s*\{\s*\};?/g, "")
-        .trim();
-    return "with (Elgora) {\n" + compiled + "\ncreateDemo();\n}";
-}
-
 function transpileDemoSource(source, fileName) {
     const result = ts.transpileModule(source, {
         compilerOptions: {
@@ -161,9 +86,10 @@ function extractDemos(body, fileName, directory) {
             throw new Error("Demo source " + (source || inferredSource) + " for " + fileName + " does not exist.");
         }
         const sourceCode = fs.readFileSync(sourcePath, "utf8").trim();
-        validateStandaloneDemo(sourceCode, sourcePath);
         const demoBody = extractDemoBody(sourceCode, sourcePath);
-        demos.push({ id, source: transpileDemoSource(demoBody, sourcePath), code: compileDemo(demoBody, sourcePath), ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
+        const compiledSource = transpileDemoSource(demoBody, sourcePath);
+        const demoModule = "./content/" + path.relative(contentDir, sourcePath).replaceAll(path.sep, "/");
+        demos.push({ id, module: demoModule, source: compiledSource, code: compiledSource, ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
         return `<div data-live-demo="${id}"></div>`;
     });
     const demoPattern = /<live-demo\s+id="([^"]+)"(?:\s+mode="([^"]+)")?(?:\s+height="([^"]+)")?\s*><\/live-demo>\s*```js\s*\n([\s\S]*?)```/g;

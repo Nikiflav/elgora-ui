@@ -12,7 +12,8 @@ api:
   - DataGridOptions
   - ArrayDataSource
   - DataSource
-  - DataColumn
+  - DataGridColumn
+  - GridCell
   - SummaryDefinition
 keywords:
   - data grid

@@ -2,12 +2,14 @@ import { applyUi, Component } from "../../src/core/Component";
 import { cdiv } from "../../src/core/c";
 import { a, e } from "../../src/core/e";
 import { ApiReference } from "./ApiReference";
+import { ApiLoader } from "./ApiLoader";
 import { EditableExample } from "./EditableExample";
 import { ReadonlyExample } from "./ReadonlyExample";
-import { ApiEntry, MarkdownTopic } from "./types";
+import { MarkdownTopic } from "./types";
+import { ApiManifestEntry } from "./types-api";
 
 export class MarkdownTopicPage extends Component {
-    constructor(topic: MarkdownTopic, apiEntries: ApiEntry[]) {
+    constructor(topic: MarkdownTopic, apiLoader: ApiLoader, apiManifest: ApiManifestEntry[]) {
         const article = e("article", { ui: ["elg", "min-w-0"] });
         article.innerHTML = topic.html;
         const title = article.querySelector<HTMLHeadingElement>("h1");
@@ -82,11 +84,12 @@ export class MarkdownTopicPage extends Component {
             const names = (rawNames ? rawNames.split(",") : topic.api)
                 .map(name => name.trim())
                 .filter(Boolean);
-            const selected = apiEntries.filter(entry => names.some(name =>
-                name === entry.name || name.startsWith(`${entry.name}.`)));
             const api = new ApiReference();
-            api.setEntries(selected);
             reference.replaceWith(api.dom);
+            const selected = apiManifest.filter(entry => names.some(name =>
+                name === entry.name || name.startsWith(`${entry.name}.`)));
+            void Promise.all(selected.map(entry => apiLoader.load(entry)))
+                .then(entries => api.setEntries(entries));
         }
 
         const navigation = cdiv({ ui: ["elg", "d-flex", "justify-between", "gap-2", "mt-3", "pt-3", "border-top"] });
