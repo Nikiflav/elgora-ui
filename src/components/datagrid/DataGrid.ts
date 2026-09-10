@@ -1717,7 +1717,7 @@ export class DataGrid<TRow> extends Component {
 
     private createIndentedCellContent = (gridRow: GridRow, cellContent: VNode<any>): VNode<any> => {
         const wrapperProps: any = {
-            ui: ["d-inline-flex", "items-center"],
+            ui: ["d-flex", "items-center", "min-w-0", "w-100"],
             style: { marginLeft: (this._groupPadding * gridRow.level) + "px" }
         };
 
@@ -1830,13 +1830,17 @@ export class DataGrid<TRow> extends Component {
                     e.preventDefault();
                     e.stopPropagation();
                     this.autoSizeColumn(col.dataColumn!.name);
+                },
+                onclick: e => {
+                    e.preventDefault();
+                    e.stopPropagation();
                 }
             })
         ];
         props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
         props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
-        props.onclick = (e: MouseEvent) => {
-            if (this._gridOptions.sortOnHeaderClick !== false)
+        props.onclick = (e: MouseEvent, td: HTMLTableCellElement) => {
+            if (this._gridOptions.sortOnHeaderClick !== false && td.dataset["dragMoved"] !== "true")
                 this.toggleColumnSort(col.dataColumn!.name, e.shiftKey);
         };
         props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(e, "columnHeader", undefined, col.dataColumn);
@@ -1905,8 +1909,12 @@ export class DataGrid<TRow> extends Component {
 
     private resizeColumn = (e: MouseEvent | TouchEvent, col: GridColumn<TRow>) => {
 
+        if (e instanceof MouseEvent && e.button !== 0) return;
         e.preventDefault();
         e.stopPropagation();
+
+        this._cancelActiveResize?.();
+        this.dom.classList.add("elg-grid-resizing");
 
         const startWidth = col.width;
         const startIsAutoWidth = col.isAutoWidth;
@@ -1914,7 +1922,6 @@ export class DataGrid<TRow> extends Component {
         // Manually resizing a column takes it out of the auto-fill pool permanently.
         col.isAutoWidth = false;
 
-        this._cancelActiveResize?.();
         let cancelResize: (() => void) | undefined;
         const clearResize = () => {
             if (this._cancelActiveResize === cancelResize)
@@ -1933,6 +1940,7 @@ export class DataGrid<TRow> extends Component {
                 // _gridOptions.columns) so getColumn()/getOptions() reflect what's on screen.
                 if (col.dataColumn)
                     col.dataColumn.width = col.width;
+                this.dom.classList.remove("elg-grid-resizing");
                 clearResize();
             },
             onCancel: () => {
@@ -1940,6 +1948,7 @@ export class DataGrid<TRow> extends Component {
                 col.isAutoWidth = startIsAutoWidth;
                 this.redistributeColumnWidths();
                 this.render(this.renderColGroup);
+                this.dom.classList.remove("elg-grid-resizing");
                 clearResize();
             }
         });
@@ -1950,6 +1959,7 @@ export class DataGrid<TRow> extends Component {
     public override dispose(): void {
         this._cancelActiveResize?.();
         this._cancelActiveResize = undefined;
+        this.dom.classList.remove("elg-grid-resizing", "elg-grid-dragging");
         super.dispose();
     }
 
@@ -1959,11 +1969,12 @@ export class DataGrid<TRow> extends Component {
         if (!col.dataColumn) return;
 
         const sourceIndex = this._gridColumns.filter(c => c.type == "data").indexOf(col);
-
         this._draggingColIndex = col.visibleIndex;
+        this.dom.classList.add("elg-grid-dragging");
         headerTd.classList.add("elg-column-dragging");
 
         let dragMoved = false;
+        headerTd.dataset["dragMoved"] = "false";
         this._dragDrop.beginDrag(
             {
                 kind: "column",
@@ -1979,11 +1990,13 @@ export class DataGrid<TRow> extends Component {
             "x",
             () => {
                 this._draggingColIndex = -1;
+                this.dom.classList.remove("elg-grid-dragging");
                 headerTd.classList.remove("elg-column-dragging");
                 if (dragMoved) this.refresh();
             },
             () => {
                 dragMoved = true;
+                headerTd.dataset["dragMoved"] = "true";
             }
         );
     }
@@ -1996,6 +2009,7 @@ export class DataGrid<TRow> extends Component {
         if (!col) return;
 
         this._activeGroupColumn = columnName;
+        this.dom.classList.add("elg-grid-dragging");
         chipEl.classList.add("elg-column-dragging");
 
         let dragMoved = false;
@@ -2026,6 +2040,7 @@ export class DataGrid<TRow> extends Component {
             "x",
             () => {
                 this._activeGroupColumn = undefined;
+                this.dom.classList.remove("elg-grid-dragging");
                 chipEl.classList.remove("elg-column-dragging");
                 if (dragMoved) this.refresh();
             },

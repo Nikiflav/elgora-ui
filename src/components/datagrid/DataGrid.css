@@ -105,6 +105,16 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
     transition: background-color 0.2s;
 }
 
+.elg-grid.elg-grid-resizing,
+.elg-grid.elg-grid-resizing * {
+    cursor: ew-resize !important;
+}
+
+.elg-grid.elg-grid-dragging,
+.elg-grid.elg-grid-dragging * {
+    cursor: pointer !important;
+}
+
 .elg-gridcell.elg-column-dragging {
     --elg-grid-cell-text: var(--elg-text-muted);
     --elg-grid-state-color: var(--elg-surface-color);

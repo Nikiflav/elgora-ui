@@ -700,6 +700,10 @@
     white-space: nowrap;
 }
 
+.elg-text-ellipsis {
+    text-overflow: ellipsis;
+}
+
 .elg-text-uppercase {
     text-transform: uppercase;
 }

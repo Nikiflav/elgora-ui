@@ -133,6 +133,7 @@ export type UiStyle =
   | "text-end"
   | "text-wrap"
   | "text-nowrap"
+  | "text-ellipsis"
 
   // ------------------
   // Border

@@ -38,7 +38,7 @@ export default function demo(): void {
         editorType: "text",
         renderCell: cell => v(
           "span",
-          { ui: ["d-flex", "items-center"] },
+          { ui: ["d-flex", "items-center", "min-w-0", "w-100"] },
           v("img", {
             src: countryFlags[String(cell.value)] ?? "./assets/flags/unknown.svg",
             alt: `${cell.value} flag`,
@@ -46,7 +46,7 @@ export default function demo(): void {
             height: 14,
             ui: ["me-1"]
           }),
-          v("span", cell.text)
+          v("span", {ui:["flex-1", "overflow-hidden", "text-ellipsis"]}, cell.text)
         )
       },
       { name: "customer", caption: "Customer", editorType: "text", groupInterval: "firstChar" },
@@ -62,8 +62,7 @@ export default function demo(): void {
     groupColumns: ["country"],
     groupSummary: [
       { field: "quantity", summaryType: "sum" },
-      { field: "totalAmount", summaryType: "sum" },
-      { field: "unitPrice", summaryType: "average" }
+      { field: "totalAmount", summaryType: "sum" }
     ],
     stickyGroupRows: true
   });
