@@ -1,6 +1,6 @@
 import { DataFilter, filterAnd } from "../../data/filter";
 import { DataColumn, DataColumnUtils, OrderByToken, SummaryType } from "./DataColumn";
-import { DataSource, GroupItem, QueryArgs } from "./DataSource";
+import { DataSource, GroupItem, QueryArgs, SummaryResult } from "./DataSource";
 import { GridViewportArgs, GridResult, GridRow, GridRowsProvider } from "./GridRow";
 
 // ========================================================
@@ -66,8 +66,8 @@ class Paginator {
         return this._totalCount < 0 ? 1 : this._totalCount;
     }
 
-    private async loadPage(pageIndex: number): Promise<GridNode[]> {
-        if (this._loadingPages.has(pageIndex)) return [];
+    private async loadPage(pageIndex: number): Promise<{ page: GridNode[], totalSummary?: SummaryResult[] }> {
+        if (this._loadingPages.has(pageIndex)) return { page: [] };
         this._loadingPages.add(pageIndex);
 
         try {
@@ -84,6 +84,7 @@ class Paginator {
                 groupColumn,
                 groupInterval: groupColumn ? this._gridState.columns.get(groupColumn)?.groupInterval : undefined,
                 groupSummary: this._gridState.groupSummary,
+                totalSummary: this._node.type === "root" ? this._gridState.totalSummary : undefined,
                 parentId: this._isHierarchy ? this._parentId : undefined,
                 requireTotalCount: requireTotalCount
             });
@@ -168,21 +169,27 @@ class Paginator {
             if (requireTotalCount && result.totalCount !== undefined) {
                 this._totalCount = result.totalCount;
             }
+            if (this._node.type === "root" && result.totalSummary)
+                return { page, totalSummary: result.totalSummary };
 
-            return page;
+            return { page };
         } finally {
             this._loadingPages.delete(pageIndex);
         }
     }
 
     async getAsync(index: number): Promise<GridNode> {
+        return (await this.getAsyncWithResult(index)).node;
+    }
+
+    async getAsyncWithResult(index: number): Promise<{ node: GridNode, totalSummary?: SummaryResult[] }> {
         const pageIndex = Math.floor(index / this._pageSize);
         const itemIndex = index % this._pageSize;
         let page = this._pages.get(pageIndex);
-        if (page) return page[itemIndex];
+        if (page) return { node: page[itemIndex] };
 
-        page = await this.loadPage(pageIndex);
-        return page[itemIndex];
+        const result = await this.loadPage(pageIndex);
+        return { node: result.page[itemIndex], totalSummary: result.totalSummary };
     }
 }
 
@@ -200,6 +207,8 @@ export type DataGridState<TRow> = {
     groupColumns?: string[],
     /** Aggregations to compute per group, per column. */
     groupSummary?: { field: string, summaryType: SummaryType }[],
+    /** Aggregations for the complete filtered result, independently of paging and grouping. */
+    totalSummary?: { field: string, summaryType: SummaryType }[],
     /** Filter applied in addition to any per-group filter. */
     baseFilter?: DataFilter,
     orderBy?: OrderByToken[],
@@ -232,6 +241,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     }
 
     async load(args: GridViewportArgs): Promise<GridResult> {
+        let totalSummary: SummaryResult[] | undefined;
         if (!this._rootNode) {
             this._rootNode = {
                 type: 'root',
@@ -256,7 +266,8 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
                     groupIndex: 0
                 });
 
-            await this._rootNode.children.getAsync(0);
+            const initial = await this._rootNode.children.getAsyncWithResult(0);
+            totalSummary = initial.totalSummary;
             this._rootNode.childrenCount = this._rootNode.children.count;
             this._rootNode.totalExpandedChildren = this._rootNode.childrenCount;
             this.refreshGlobalExpandedNodes();
@@ -317,7 +328,8 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
 
         return {
             totalCount: this._rootNode.totalExpandedChildren,
-            rows: gridRows
+            rows: gridRows,
+            totalSummary
         };
     }
 

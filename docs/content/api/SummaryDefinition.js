@@ -31,6 +31,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "dependsOnOrder",
+      "type": "boolean | undefined",
+      "description": "Whether the result can change when the input rows are sorted. Defaults to false.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/datagrid/DataColumn.ts",
+      "kind": "property"
+    },
+    {
       "name": "start",
       "type": "(context: SummaryContext<TRow>) => TState | Promise<TState>",
       "description": "Creates the accumulator state for one group and field.",

@@ -19,6 +19,12 @@ export interface QueryArgs {
     groupInterval?: GroupInterval;
     /** Aggregations to compute per group, per field. */
     groupSummary?: { field: string, summaryType: SummaryType }[];
+    /**
+     * Optional, demand-driven aggregations for the complete filtered result,
+     * independently of paging and grouping. When omitted, the datasource
+     * should not calculate or return total summaries.
+     */
+    totalSummary?: SummaryRequest[];
     /** Value to match against the data source's parent-reference field; present only in hierarchical (parent/child) mode. */
     parentId?: any;
     /** Whether the caller needs an accurate total row/group count back. */
@@ -41,13 +47,33 @@ type SummaryAccumulator = {
 };
 
 function isNumericSummary(summaryType: SummaryType): boolean {
-    return summaryType === "sum" || summaryType === "min" || summaryType === "max";
+    return summaryType === "sum" || summaryType === "avg"
+        || summaryType === "min" || summaryType === "max";
 }
+
+/** A summary request for one field. Multiple summaries may target the same field. */
+export type SummaryRequest = { field: string, summaryType: SummaryType };
+
+/** A resolved summary value returned alongside the requested data. */
+export type SummaryResult = { field: string, summaryType: SummaryType, value: any };
+
+const averageSummary: SummaryDefinition<any, any, any> = {
+    name: "avg",
+    text: "Average",
+    dependsOnOrder: false,
+    start: () => ({ sum: 0, count: 0 }),
+    accumulate: (state, value) => {
+        state.sum += value;
+        state.count++;
+    },
+    finalize: state => state.count ? state.sum / state.count : undefined
+};
 
 const standardSummaries: Record<string, SummaryDefinition<any, any, any>> = {
     count: {
         name: "count",
         text: "Count",
+        dependsOnOrder: false,
         start: () => 0,
         accumulate: state => state + 1,
         finalize: state => state
@@ -55,6 +81,7 @@ const standardSummaries: Record<string, SummaryDefinition<any, any, any>> = {
     distinct: {
         name: "distinct",
         text: "Distinct",
+        dependsOnOrder: false,
         start: () => new Set<any>(),
         accumulate: (state, value) => state.add(value),
         finalize: state => state.size
@@ -62,6 +89,7 @@ const standardSummaries: Record<string, SummaryDefinition<any, any, any>> = {
     sum: {
         name: "sum",
         text: "Sum",
+        dependsOnOrder: false,
         start: () => ({ value: 0, hasValue: false }),
         accumulate: (state, value) => {
             if (typeof value === "number" && Number.isFinite(value)) {
@@ -71,9 +99,11 @@ const standardSummaries: Record<string, SummaryDefinition<any, any, any>> = {
         },
         finalize: state => state.hasValue ? state.value : undefined
     },
+    avg: averageSummary,
     min: {
         name: "min",
         text: "Minimum",
+        dependsOnOrder: false,
         start: () => ({ value: Infinity, hasValue: false }),
         accumulate: (state, value) => {
             if (typeof value === "number" && Number.isFinite(value)) {
@@ -86,6 +116,7 @@ const standardSummaries: Record<string, SummaryDefinition<any, any, any>> = {
     max: {
         name: "max",
         text: "Maximum",
+        dependsOnOrder: false,
         start: () => ({ value: -Infinity, hasValue: false }),
         accumulate: (state, value) => {
             if (typeof value === "number" && Number.isFinite(value)) {
@@ -104,6 +135,64 @@ export interface DataResult<TRow> {
     dataItems?: TRow[];
     /** Used exclusively when args.groupColumn is set. */
     groups?: GroupItem[];
+    /**
+     * Aggregations for the complete filtered result, before paging and
+     * grouping. Returned only when `args.totalSummary` was requested; values
+     * must not be calculated from the returned page alone.
+     */
+    totalSummary?: SummaryResult[];
+}
+
+async function calculateSummaryResults<TRow>(
+    rows: TRow[],
+    summaries: SummaryRequest[],
+    getValue: (row: TRow, field: string) => Promise<any>,
+    getColumn?: (field: string) => DataColumn<TRow> | undefined,
+    customSummaries?: SummaryDefinition<TRow, any, any>[]
+): Promise<SummaryResult[]> {
+    const states = new Map<number, SummaryAccumulator>();
+
+    for (const row of rows) {
+        for (const [index, summary] of summaries.entries()) {
+            const value = await getValue(row, summary.field);
+            let state = states.get(index);
+            if (!state) {
+                const definition = standardSummaries[summary.summaryType]
+                    ?? customSummaries?.find(x => x.name === summary.summaryType);
+                if (!definition) continue;
+                state = {
+                    definition,
+                    state: await definition.start({ field: summary.field, groupValue: undefined, row, value })
+                };
+                states.set(index, state);
+            }
+
+            if (isNumericSummary(summary.summaryType)) {
+                const summaryColumn = getColumn?.(summary.field);
+                const numericColumn = !summaryColumn
+                    || summaryColumn.editorType === "number"
+                    || (!summaryColumn.editorType && typeof value === "number");
+                if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
+                    continue;
+            }
+
+            const context = { field: summary.field, groupValue: undefined, row, value };
+            const nextState = await state.definition.accumulate(state.state, value, row, context);
+            if (nextState !== undefined) state.state = nextState;
+        }
+    }
+
+    const result: SummaryResult[] = [];
+    for (const [index, state] of states) {
+        const summary = summaries[index];
+        const value = await state.definition.finalize(state.state, {
+            field: summary.field,
+            groupValue: undefined
+        });
+        if (value !== undefined)
+            result.push({ field: summary.field, summaryType: summary.summaryType, value });
+    }
+    return result;
 }
 /** Represents data row ID. */
 export type RowIdentity = string | number;
@@ -131,11 +220,17 @@ export interface DataSource<TRow> {
      *
      * `skip` and `top` apply to the returned rows or groups. `totalCount`,
      * when requested, must describe the complete result before pagination.
+     * When `args.totalSummary` is present, the datasource must return a
+     * matching `totalSummary` for the complete filtered result, before
+     * pagination and grouping. The request is optional so remote sources can
+     * avoid an expensive aggregate query when the grid does not need the
+     * footer values; when it is absent, `totalSummary` should be omitted.
      * Implementations should preserve `args` in the returned `DataResult` so
      * consumers can associate a response with the query that produced it.
      *
      * @param args Query, filtering, grouping, pagination, and summary options.
-     * @returns The loaded rows or groups and optional total count.
+     * @returns The loaded rows or groups, optional total count, and any
+     * requested total summaries.
      */
     loadData(args: QueryArgs): Promise<DataResult<TRow>>;
     
@@ -179,6 +274,9 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             if (args.groupSummary)
                 for (let g of args.groupSummary)
                     select.add(g.field);
+            if (args.totalSummary)
+                for (let summary of args.totalSummary)
+                    select.add(summary.field);
 
             flatArgs.select = Array.from(select);
 
@@ -186,6 +284,15 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             // A flat response may be only the requested page; reload without paging so
             // client-side fallback grouping sees the complete filtered set.
             const flatResult = await this.ds.loadData(flatArgs);
+            const totalSummary = args.totalSummary?.length
+                ? await calculateSummaryResults(
+                    flatResult.dataItems ?? [],
+                    args.totalSummary,
+                    this.getValue,
+                    this.getColumn,
+                    this.customSummaries
+                )
+                : undefined;
 
             const map = new Map<any, GroupItem>();
             const summaryStates = new Map<any, Map<string, SummaryAccumulator>>();
@@ -268,10 +375,28 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             return {
                 args: args,
                 groups: groups,
-                totalCount: map.size
+                totalCount: map.size,
+                totalSummary
             };
         }
-        return this.ds.loadData(args);
+
+        const result = await this.ds.loadData(args);
+        if (args.totalSummary?.length && this.ds instanceof ArrayDataSource) {
+            const allResult = await this.ds.loadData({
+                ...args,
+                skip: undefined,
+                top: undefined,
+                totalSummary: undefined
+            });
+            result.totalSummary = await calculateSummaryResults(
+                allResult.dataItems ?? [],
+                args.totalSummary,
+                this.getValue,
+                this.getColumn,
+                this.customSummaries
+            );
+        }
+        return result;
     }
 
     getRowId(row: TRow): any {
@@ -329,6 +454,14 @@ export class ArrayDataSource<T> implements DataSource<T> {
         };
         if (args.requireTotalCount) {
             result.totalCount = workingSet.length;
+        }
+
+        if (args.totalSummary?.length) {
+            result.totalSummary = await calculateSummaryResults(
+                workingSet,
+                args.totalSummary,
+                async (row, field) => (row as any)[field]
+            );
         }
 
         const skip = args.skip ?? 0;

@@ -31,6 +31,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "tag",
+      "type": "string | undefined",
+      "description": "Small secondary label rendered next to the visible item label.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/popup/PopupMenu.ts",
+      "kind": "property"
+    },
+    {
       "name": "icon",
       "type": "RemixIcon | undefined",
       "description": "Remix Icon class name rendered before the label.",

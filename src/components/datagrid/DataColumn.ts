@@ -58,10 +58,10 @@ export function orderByTokenToString(tok: OrderByToken) {
 
 /**
  * Aggregation kind applied to a group column's summary value.
- * `count` and `distinct` support all value types; `sum`, `min`, and `max`
+ * `count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`
  * require a numeric column.
  */
-export type SummaryType = "count" | "sum" | "min" | "max" | "distinct" | string;
+export type SummaryType = "count" | "sum" | "avg" | "min" | "max" | "distinct" | string;
 
 /** Context supplied to a custom summary lifecycle method. */
 export interface SummaryContext<TRow> {
@@ -81,6 +81,8 @@ export interface SummaryDefinition<TRow, TState = any, TResult = any> {
     name: string;
     /** Display text for summary selectors and documentation. */
     text: string;
+    /** Whether the result can change when the input rows are sorted. Defaults to false. */
+    dependsOnOrder?: boolean;
     /** Creates the accumulator state for one group and field. */
     start(context: SummaryContext<TRow>): TState | Promise<TState>;
     /** Adds one row value to the accumulator. Returning a value replaces the state. */

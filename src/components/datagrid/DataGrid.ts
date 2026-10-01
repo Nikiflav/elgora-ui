@@ -8,7 +8,7 @@ import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
 import { DataColumn, DataColumnLayoutInfo, DataColumnUtils, GroupInterval, GroupIntervalDefinition, OrderByToken, orderByTokenToString, SummaryDefinition, SummaryType } from "./DataColumn";
 import { DataGridColumn, GridCell } from "./DataGridColumn";
-import { ArrayDataSource, DataSource, LocalGroupingDataSource, RowIdentity } from "./DataSource";
+import { ArrayDataSource, DataSource, LocalGroupingDataSource, RowIdentity, SummaryResult } from "./DataSource";
 import type { FilterFunctionRegistry } from "../../data/filter";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
 import { GridRow, GridRowsProvider } from "./GridRow";
@@ -69,6 +69,8 @@ export type DataGridOptions<TRow> = {
     groupColumns?: string[],
     /** The aggregation summary for group rows. */
     groupSummary?: { field: string, summaryType: SummaryType }[],
+    /** Aggregations for the complete filtered result, independently of paging and grouping. */
+    totalSummary?: { field: string, summaryType: SummaryType }[],
     /** Custom group intervals available in the Group by context-menu submenu. */
     groupIntervals?: GroupIntervalDefinition<TRow>[],
     /** Custom summary accumulators available for locally grouped data. */
@@ -191,6 +193,8 @@ export class DataGrid<TRow> extends Component {
     private _totalWidth = 0
     private _headerHeight = 0
     private _footerHeight = 0
+    private _totalSummary: SummaryResult[] = []
+    private _totalSummaryLoaded = false
     private _groupPadding = 10
     private _draggingColIndex = -1
     private _activeGroupColumn?: string
@@ -610,9 +614,13 @@ export class DataGrid<TRow> extends Component {
     };
 
     private setColumnSummary = (columnName: string, summaryType?: SummaryType) => {
-        const summaries = (this._gridOptions.groupSummary ?? []).filter(s => s.field !== columnName);
-        if (summaryType) summaries.push({ field: columnName, summaryType });
-        this.setOptions({ groupSummary: summaries });
+        const groupSummaries = (this._gridOptions.groupSummary ?? []).filter(s => s.field !== columnName);
+        const totalSummaries = (this._gridOptions.totalSummary ?? []).filter(s => s.field !== columnName);
+        if (summaryType) {
+            groupSummaries.push({ field: columnName, summaryType });
+            totalSummaries.push({ field: columnName, summaryType });
+        }
+        this.setOptions({ groupSummary: groupSummaries, totalSummary: totalSummaries });
     };
 
     private setColumnGroupInterval = (columnName: string, groupInterval?: GroupInterval) => {
@@ -779,7 +787,6 @@ export class DataGrid<TRow> extends Component {
                 }
             }
             addDivider();
-            const currentSummary = this._gridOptions.groupSummary?.find(s => s.field === columnName)?.summaryType;
             items.push({
                 icon: "ri-calculator-line",
                 text: "Summary",
@@ -789,6 +796,7 @@ export class DataGrid<TRow> extends Component {
                         { label: "None" },
                         { label: "Count", value: "count" },
                         { label: "Sum", value: "sum" },
+                        { label: "Average", value: "avg" },
                         { label: "Minimum", value: "min" },
                         { label: "Maximum", value: "max" },
                         { label: "Distinct", value: "distinct" },
@@ -797,11 +805,24 @@ export class DataGrid<TRow> extends Component {
                             value: summary.name as SummaryType
                         }))
                     ];
-                    return summaryTypes.map(summary => ({
-                        text: summary.label,
-                        checked: () => currentSummary === summary.value,
-                        action: () => this.setColumnSummary(columnName, summary.value)
-                    }));
+                    const groupSummary = this._gridOptions.groupSummary?.find(s => s.field === columnName)?.summaryType;
+                    const totalSummary = this._gridOptions.totalSummary?.find(s => s.field === columnName)?.summaryType;
+                    return summaryTypes.map(summary => {
+                        const groupMatches = groupSummary === summary.value;
+                        const totalMatches = totalSummary === summary.value;
+                        const sameSummary = groupSummary === totalSummary && groupMatches && totalMatches;
+                        const locations = [
+                            groupMatches ? "group" : undefined,
+                            totalMatches ? "total" : undefined
+                        ].filter(Boolean) as string[];
+
+                        return {
+                            text: summary.label,
+                            tag: sameSummary || locations.length === 0 ? undefined : locations.join(", "),
+                            checked: () => sameSummary,
+                            action: () => this.setColumnSummary(columnName, summary.value)
+                        };
+                    });
                 }
             });
         }
@@ -1016,10 +1037,11 @@ export class DataGrid<TRow> extends Component {
      * later change - fires an "optionChanged" DOM event on this.dom with the applied patch as detail.
      */
     public setOptions = (options: Partial<DataGridOptions<TRow>>) => {
+        const previousFooterVisible = this._gridOptions.showColumnFooters !== false;
 
         if (this._initialized && ("data" in options || "groupColumns" in options || "hierarchyRootId" in options
             || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
-            || "groupIntervals" in options || "customSummaries" in options)) {
+            || "totalSummary" in options || "groupIntervals" in options || "customSummaries" in options)) {
             this._selection.clear();
         }
 
@@ -1047,6 +1069,7 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.visibleColumns ??= this._gridOptions.columns.map(c => c.name);
         this._gridOptions.groupColumns ??= [];
         this._gridOptions.groupSummary ??= [];
+        this._gridOptions.totalSummary ??= [];
         this._gridOptions.groupIntervals ??= [];
         this._gridOptions.customSummaries ??= [];
         this._gridOptions.pageSize ??= 100;
@@ -1086,13 +1109,27 @@ export class DataGrid<TRow> extends Component {
 
         const reloadsRows = "data" in options || "groupColumns" in options || "hierarchyRootId" in options
             || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
-            || "groupIntervals" in options || "customSummaries" in options;
+            || "totalSummary" in options || "groupIntervals" in options || "customSummaries" in options;
+        const orderByOnly = Object.keys(options).length === 1 && "orderBy" in options;
+        const footerBecameVisible = "showColumnFooters" in options
+            && !previousFooterVisible
+            && this._gridOptions.showColumnFooters !== false;
+        const invalidatesTotalSummary = "data" in options
+            || "filter" in options
+            || "totalSummary" in options
+            || "customSummaries" in options
+            || "hierarchyRootId" in options
+            || (orderByOnly && this.totalSummaryDependsOnOrder());
         const changesLayout = "columns" in options || "visibleColumns" in options || "fixedLeftColumns" in options
             || "fixedRightColumns" in options || "autoFillViewportWidth" in options || "showRowHeader" in options;
         const changesStaticRows = "showColumnHeaders" in options || "showFilterRow" in options || "showColumnFooters" in options;
 
         if (changesLayout) this.layoutChanged();
-        if (reloadsRows) this.reloadRows();
+        if (invalidatesTotalSummary) {
+            this._totalSummary = [];
+            this._totalSummaryLoaded = false;
+        }
+        if (reloadsRows || footerBecameVisible) this.reloadRows();
         if (!changesLayout && !reloadsRows && ("texts" in options || "stickyGroupRows" in options || "selectableGroupRows" in options || "selectableHierarchyNodes" in options || changesStaticRows)) this.refresh();
     }
 
@@ -1281,15 +1318,34 @@ export class DataGrid<TRow> extends Component {
             baseFilter: this._gridOptions.filter,
             groupColumns: this._gridOptions.groupColumns,
             groupSummary: this._gridOptions.groupSummary,
+            totalSummary: this._totalSummaryLoaded
+                || this._gridOptions.showColumnFooters === false
+                || !this._gridOptions.totalSummary?.length
+                ? undefined
+                : this._gridOptions.totalSummary,
             orderBy: this._gridOptions.orderBy,
             hierarchyRootId: this._gridOptions.hierarchyRootId,
         };
     }
 
+    /** Returns whether any configured total summary can change when rows are reordered. */
+    private totalSummaryDependsOnOrder = (): boolean => {
+        const orderIndependent = new Set(["count", "distinct", "sum", "avg", "min", "max"]);
+        return (this._gridOptions.totalSummary ?? []).some(summary => {
+            if (orderIndependent.has(summary.summaryType)) return false;
+            return this._gridOptions.customSummaries?.find(item => item.name === summary.summaryType)
+                ?.dependsOnOrder === true;
+        });
+    };
+
     private createGridRows() {
 
         var provider = new DefaultGridRowsProvider<TRow>(this.getState());
         return new VirtualGridRows(provider, this._gridOptions.pageSize!, (args, result) => {
+            if (result.totalSummary) {
+                this._totalSummary = result.totalSummary;
+                this._totalSummaryLoaded = true;
+            }
             this.refresh();
         })
     }
@@ -1666,7 +1722,28 @@ export class DataGrid<TRow> extends Component {
         }
     }
 
+    private getTotalSummary = (gridRow: GridRow, field: string): SummaryResult[] => {
+        if (gridRow.type !== "footer") return [];
+        return (gridRow.data?.totalSummary as SummaryResult[] | undefined)
+            ?.filter(summary => summary.field === field) ?? [];
+    };
+
     private getCellText = (gridRow: GridRow, col: GridColumn<TRow>): string => {
+
+        if (gridRow.type === "footer") {
+            if (!col.dataColumn) return "";
+            const summaries = this.getTotalSummary(gridRow, col.dataColumn.name);
+            const groupSummary = this._gridOptions.groupSummary
+                ?.find(summary => summary.field === col.dataColumn!.name);
+            return summaries.map(summary => {
+                const showType = summaries.length > 1
+                    || (!!groupSummary && groupSummary.summaryType !== summary.summaryType);
+                return showType
+                    ? `${summary.summaryType}: ${summary.value ?? ""}`
+                    : String(summary.value ?? "");
+            })
+                .join(", ");
+        }
 
         // First column in a group row displays the group label.
         if (false && col.visibleIndex == 1
@@ -1721,8 +1798,12 @@ export class DataGrid<TRow> extends Component {
             style: { marginLeft: (this._groupPadding * gridRow.level) + "px" }
         };
 
+        const valueContent = v("span", {
+            ui: ["flex-1", "min-w-0", "overflow-hidden", "text-nowrap", "text-ellipsis"]
+        }, cellContent);
+
         if (gridRow.expandable)
-            wrapperProps.vnodes = [this.createExpandIcon(gridRow), cellContent];
+            wrapperProps.vnodes = [this.createExpandIcon(gridRow), valueContent];
         else
             wrapperProps.vnodes = [
                 v("i", {
@@ -1730,7 +1811,7 @@ export class DataGrid<TRow> extends Component {
                     ui: ["elg", "me-1"],
                     style: { visibility: "hidden" }
                 }),
-                cellContent
+                valueContent
             ];
 
         return v("span", wrapperProps);
@@ -1741,13 +1822,18 @@ export class DataGrid<TRow> extends Component {
 
         const resolvedCell = gridRow.cells?.[col.dataColumn.name];
         const groupData = gridRow.type === "group" ? gridRow.data?.data : undefined;
+        const totalSummary = this.getTotalSummary(gridRow, col.dataColumn.name);
         const groupValue = groupData?.groupField === col.dataColumn.name
             ? groupData.groupValue
             : undefined;
         return {
             column: col.dataColumn,
             rowData: gridRow.type === "group" ? undefined : (gridRow.data?.data ?? gridRow.data) as TRow,
-            value: groupValue ?? resolvedCell?.value ?? resolvedCell,
+            value: groupValue ?? (totalSummary.length === 1
+                ? totalSummary[0].value
+                : totalSummary.length > 1
+                    ? totalSummary.map(summary => summary.value)
+                    : resolvedCell?.value ?? resolvedCell),
             gridRow,
             text
         };
@@ -1776,7 +1862,7 @@ export class DataGrid<TRow> extends Component {
         dataCell: GridCell<TRow>
     ) => {
         const customVNode = col.dataColumn!.renderCell?.(dataCell);
-        if (col.visibleIndex == this.rowHeaderOffset)
+        if (gridRow.type !== "footer" && col.visibleIndex == this.rowHeaderOffset)
             props.vnodes = [
                 this.createIndentedCellContent(
                     gridRow,
@@ -1800,7 +1886,8 @@ export class DataGrid<TRow> extends Component {
         if (!dataCell) return;
 
         this.applyDataCellStyle(props, dataCell);
-        this.applyDataCellInteractions(props, gridRow, col);
+        if (gridRow.type !== "footer")
+            this.applyDataCellInteractions(props, gridRow, col);
         this.applyDataCellContent(props, gridRow, col, dataCell);
     };
 
@@ -1870,6 +1957,19 @@ export class DataGrid<TRow> extends Component {
             props.className += " elg-active-cell";
     };
 
+    /** Keeps empty grid cells at the normal line height without affecting real content or VNodes. */
+    private ensureCellContent = (props: any) => {
+        const hasVNodes = Array.isArray(props.vnodes)
+            && props.vnodes.some((node: any) => node !== null && node !== undefined && node !== "");
+        const hasText = typeof props.textContent === "string"
+            ? props.textContent.length > 0
+            : props.textContent !== undefined && props.textContent !== null;
+        const hasHtml = typeof props.innerHTML === "string" && props.innerHTML.length > 0;
+
+        if (!hasVNodes && !hasText && !hasHtml)
+            props.textContent = "\u00A0";
+    };
+
     private getCellView = (
         gridRow: GridRow,
         col: GridColumn<TRow>): CellView<TRow> => {
@@ -1890,18 +1990,19 @@ export class DataGrid<TRow> extends Component {
                 break;
 
             case "footer":
+                this.applyDataCell(props, gridRow, col);
+                break;
             case "filter":
-                // Placeholder cells; footer summaries and per-column filter controls land later.
-                if (col.type == "data") props.innerHTML = "&#8203;";
+                // Filter controls are still rendered separately.
                 break;
 
             default:
                 // loading / empty / error / detail rows: still show a row number, placeholder data cell.
                 if (col.type == "rowheader") props.textContent = this.getCellText(gridRow, col);
-                else if (col.type == "data") props.innerHTML = "&#8203;";
                 break;
         }
 
+        this.ensureCellContent(props);
         this.applyCellState(props, gridRow, col);
 
         return { col, props };
@@ -2337,7 +2438,8 @@ export class DataGrid<TRow> extends Component {
                     type: "footer",
                     visibleIndex: 0,
                     level: 0,
-                    cells: {}
+                    cells: {},
+                    data: { totalSummary: this._totalSummary }
                 },
                 tr: fr,
                 index: 0

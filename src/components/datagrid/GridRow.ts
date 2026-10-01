@@ -1,6 +1,6 @@
 import { DataFilter } from "../../data/filter";
 import { DataColumn, DataColumnUtils, OrderByToken } from "./DataColumn";
-import { DataSource } from "./DataSource";
+import { DataSource, SummaryResult } from "./DataSource";
 
 /** Discriminates how a GridRow should be rendered. */
 export type RowType = 'data' | 'group' | 'node' | 'summary' | 'loading' | 'error' | 'empty' | 'header' | 'filter' | 'footer' | 'detail';
@@ -35,6 +35,8 @@ export interface GridResult {
     totalCount: number;
     /** Slice of data fitting the viewport */
     rows: GridRow[];
+    /** Aggregations for the complete filtered result, when requested by the data source. */
+    totalSummary?: SummaryResult[];
 }
 
 /**

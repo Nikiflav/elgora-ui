@@ -18,7 +18,7 @@ export { type DataCell, type DataCellStyle, type DataColumn, type GroupInterval,
 export { type DataGridColumn, type GridCell } from './components/datagrid/DataGridColumn';
 export { SelectionManager, type SelectionCell, type SelectionRange, type GridContext, type SelectionEdge, type CellSelectionState } from './components/datagrid/SelectionManager';
 export { type GridContextMenuTarget, type GridStandardContextMenuItem, type DataGridContextMenuContext, type GridContextMenuItems } from './components/datagrid/DataGridContextMenu';
-export { type DataSource, ArrayDataSource, type RowIdentity } from './components/datagrid/DataSource';
+export { type DataSource, ArrayDataSource, type RowIdentity, type SummaryRequest, type SummaryResult } from './components/datagrid/DataSource';
 export { type DataFilter, type FilterSelector, type FilterFunction, type FilterFunctionRegistry } from './data/filter';
 export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement, type PopoverCloseMode } from './components/popup/popover';
 export { PopupMenu, type PopupMenuOptions, type PopupMenuShowOptions, type MenuItem } from './components/popup/PopupMenu';

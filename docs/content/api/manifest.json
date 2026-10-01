@@ -515,12 +515,30 @@
       "module": "./content/api/SummaryDefinition.js"
     },
     {
+      "name": "SummaryRequest",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/SummaryRequest",
+      "description": "A summary request for one field. Multiple summaries may target the same field.",
+      "module": "./content/api/SummaryRequest.js"
+    },
+    {
+      "name": "SummaryResult",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/SummaryResult",
+      "description": "A resolved summary value returned alongside the requested data.",
+      "module": "./content/api/SummaryResult.js"
+    },
+    {
       "name": "SummaryType",
       "kind": "type",
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/SummaryType",
-      "description": "Aggregation kind applied to a group column's summary value.\r\n`count` and `distinct` support all value types; `sum`, `min`, and `max`\r\nrequire a numeric column.",
+      "description": "Aggregation kind applied to a group column's summary value.\r\n`count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`\nrequire a numeric column.",
       "module": "./content/api/SummaryType.js"
     },
     {

@@ -13,6 +13,8 @@ export interface MenuItem {
     key?: string | number;
     /** Visible item label. */
     text?: string;
+    /** Small secondary label rendered next to the visible item label. */
+    tag?: string;
     /** Remix Icon class name rendered before the label. */
     icon?: RemixIcon;
     /** Destination URL for a leaf item. */
@@ -229,6 +231,11 @@ export class PopupMenu extends Component {
                 ariaHidden: "true"
             } as any);
             const text = item.showText === false ? null : v("span", { className: "elg-menu-item-text", vnodes: [item.text || ""] });
+            const tag = item.tag ? v("span", {
+                className: "elg-menu-item-tag",
+                textContent: `[${item.tag}]`,
+                ariaHidden: "true"
+            } as any) : null;
             const arrow = hasSubmenu ? v("i", {
                 className: "elg-menu-item-arrow ri-arrow-right-s-line",
                 ariaHidden: "true"
@@ -246,7 +253,7 @@ export class PopupMenu extends Component {
             } as any, v(control as any, {
                 ...itemProps(item, id, hasSubmenu, open),
                 key: `${id}:control`
-            } as any, icon, text, check, arrow), hasSubmenu ? v("div", {
+            } as any, icon, text, tag, check, arrow), hasSubmenu ? v("div", {
                 key: `${id}:submenu`,
                 className: "elg-menu-submenu",
                 role: "menu",
