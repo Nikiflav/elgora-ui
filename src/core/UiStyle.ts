@@ -2,6 +2,9 @@
 // ElgoraUI Utility Styles (typed)
 // ======================================================
 
+/** Shared UI density used by components with adjustable internal spacing. */
+export type UiDensity = "default" | "compact";
+
 /** Typed Elgora UI utility class name without the `elg-` prefix. */
 export type UiStyle =
   // ------------------

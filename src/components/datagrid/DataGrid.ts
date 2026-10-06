@@ -23,6 +23,9 @@ import { createListDropZone } from "../../core/interact/ListDropZone";
 import { SelectionManager, GridContext } from "./SelectionManager";
 import type { DataGridContextMenuContext, GridContextMenuItems, GridStandardContextMenuItem } from "./DataGridContextMenu";
 import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
+import { Popover } from "../popup/popover";
+import { FilterEditor } from "./FilterEditor";
+import { DataFilterRow } from "./DataFilterRow";
 
 
 /** Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource. */
@@ -202,6 +205,8 @@ export class DataGrid<TRow> extends Component {
     private _selectionMouseDown = false;
     private _selectionWholeRowDrag = false;
     private _contextMenu: PopupMenu;
+    private _filterPopover?: Popover;
+    private _filterRow?: DataFilterRow<TRow>;
 
     private _dragDrop: DragDropController;
     private _cancelActiveResize?: () => void;
@@ -363,6 +368,19 @@ export class DataGrid<TRow> extends Component {
     });
 
     private handleSelectionKeyDown = async (event: KeyboardEvent) => {
+        // Form controls own their keyboard navigation. In particular, arrow keys
+        // in the filter row must move the caret/value instead of moving the grid
+        // selection behind the editor.
+        const target = event.target as Element | null;
+        if (target instanceof HTMLInputElement
+            || target instanceof HTMLTextAreaElement
+            || target instanceof HTMLSelectElement
+            || target?.closest("[contenteditable='true']")) {
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key))
+                event.stopPropagation();
+            return;
+        }
+
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
             if (this._selection.getRanges().length === 0) return;
 
@@ -1933,6 +1951,175 @@ export class DataGrid<TRow> extends Component {
         props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(e, "columnHeader", undefined, col.dataColumn);
     };
 
+    private getFilterField = (filter: any): string | undefined => {
+        if (!Array.isArray(filter) || filter.length !== 3) return undefined;
+        const selector = filter[0];
+        return typeof selector === "string" ? selector : selector?.field;
+    };
+
+    private removeColumnFilter = (filter: any, field: string): any => {
+        if (Array.isArray(filter) && filter.length === 3
+            && typeof filter[1] === "string"
+            && ["=", "<>", ">", ">=", "<", "<=", "startswith", "endswith", "contains", "notcontains"].includes(filter[1])) {
+            return this.getFilterField(filter) === field ? undefined : filter;
+        }
+        if (!Array.isArray(filter)) return filter;
+
+        const explicit = filter[0] === "and" || filter[0] === "or";
+        const operator = explicit ? filter[0] : "and";
+        const children = (explicit ? filter.slice(1) : filter)
+            .map((child: any) => this.removeColumnFilter(child, field))
+            .filter((child: any) => child !== undefined);
+        if (!children.length) return undefined;
+        if (children.length === 1) return children[0];
+        return [operator, ...children];
+    };
+
+    private setColumnFilter = (column: DataColumn<TRow>, rawValue: string) => {
+        const value = rawValue.trim();
+        const remaining = this.removeColumnFilter(this._gridOptions.filter, column.name);
+        const nextFilter = value
+            ? (this._filterRow ??= new DataFilterRow(this.getVisibleColumns())).parse(column.name, value)
+            : undefined;
+        const targetFilter = nextFilter
+            ? (remaining ? ["and", remaining, nextFilter] as any : nextFilter)
+            : remaining;
+        if (JSON.stringify(targetFilter) === JSON.stringify(this._gridOptions.filter)) return;
+        if (!nextFilter) {
+            this.setOptions({ filter: remaining });
+            return;
+        }
+
+        this.setOptions({ filter: targetFilter });
+    };
+
+    private openFilterEditor = (anchor: HTMLElement) => {
+        this._filterPopover?.dispose();
+
+        const editor = new FilterEditor<TRow>({
+            columns: this.getVisibleColumns(),
+            filter: this._gridOptions.filter,
+            ui: ["elg", "p-3"],
+            onApply: filter => {
+                this.setOptions({ filter });
+                this._filterPopover?.hide();
+            },
+            onCancel: () => this._filterPopover?.hide()
+        });
+        const popover = new Popover({
+            anchorElement: anchor,
+            placement: "bottom-start",
+            gap: 6,
+            children: editor,
+            closeMode: "auto"
+        });
+        this._filterPopover = popover;
+        this.addCleanup(() => popover.dispose());
+        popover.mount(document.body);
+        popover.show();
+    };
+
+    /** Uses the filter-row funnel as the stable anchor for the full filter editor. */
+    private openFilterEditorFromSummary = (fallback: HTMLButtonElement) => {
+        const funnel = this._contentTable.tHead?.querySelector<HTMLButtonElement>(
+            ".elg-gridrow-filter .elg-gridcell-rowheader button"
+        );
+        this.openFilterEditor(funnel ?? fallback);
+    };
+
+    private applyFilterCell = (props: any, col: GridColumn<TRow>) => {
+        const filterRow = this._filterRow ??= new DataFilterRow(this.getVisibleColumns());
+        const filterValues = filterRow.fromFilter(this._gridOptions.filter);
+        const filterText = filterRow.toText(this._gridOptions.filter);
+        const complexFilter = filterValues === false;
+        const hasFilter = Array.isArray(this._gridOptions.filter)
+            ? this._gridOptions.filter.length > 0
+            : this._gridOptions.filter !== undefined;
+
+        if (col.type === "rowheader") {
+            props.vnodes = [v("button", {
+                key: "filter-editor-button",
+                class: "elg-grid-filter-button",
+                ui: ["elg", "btn", "text-muted"],
+                type: "button",
+                ariaLabel: "Edit filter",
+                onclick: (event: MouseEvent, button: HTMLButtonElement) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.openFilterEditor(button);
+                }
+            }, v("i", {
+                class: "elg-icon ri-filter-3-line",
+                ui: ["elg", hasFilter ? "text-primary" : "text-muted"]
+            }))];
+            return;
+        }
+        if (!col.dataColumn) return;
+
+        if (!complexFilter) {
+            const column = col.dataColumn;
+            const inputValue = filterValues.find(value => value.field === column.name)?.text ?? "";
+            const input = v("input", {
+                key: `filter-${column.name}`,
+                class: "elg-grid-filter-input",
+                ui: ["elg", "w-100"],
+                type: "search",
+                value: inputValue,
+                ariaLabel: `Filter ${column.caption ?? column.name}`,
+                onchange: (event: Event) => this.setColumnFilter(column, (event.target as HTMLInputElement).value),
+                onkeydown: (event: KeyboardEvent) => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        this.setColumnFilter(column, (event.target as HTMLInputElement).value);
+                    }
+                }
+            } as any);
+            const clearButton = inputValue
+                ? v("button", {
+                    key: `clear-filter-${column.name}`,
+                    class: "elg-grid-filter-clear",
+                    ui: ["elg", "btn", "text-muted", "p-0"],
+                    type: "button",
+                    tabIndex: -1,
+                    ariaLabel: `Clear filter ${column.caption ?? column.name}`,
+                    onmousedown: (event: MouseEvent) => event.preventDefault(),
+                    onclick: (event: MouseEvent) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        this.setColumnFilter(column, "");
+                    }
+                }, v("i", { class: "ri-close-line" }))
+                : null;
+            props.vnodes = [v("span", {
+                key: `filter-control-${column.name}`,
+                class: "elg-grid-filter-control",
+                ui: ["elg", "d-block", "position-relative"]
+            }, input, clearButton)];
+            return;
+        }
+
+        const firstDataColumn = col.visibleIndex === this.rowHeaderOffset;
+        if (!firstDataColumn) {
+            props.style = { ...(props.style ?? {}), display: "none" };
+            props.vnodes = [];
+            return;
+        }
+
+        props.colSpan = this._gridColumns.filter(item => item.type === "data").length;
+        props.vnodes = [v("button", {
+            key: "filter-summary",
+            ui: ["elg", "btn", "d-inline-block", "text-start", "text-ellipsis", "no-underline", "w-100", "px-1", "py-0"],
+            type: "button",
+            ariaLabel: filterText ? `Edit filter: ${filterText}` : "Add filter",
+            title: filterText || "Add filter",
+            onclick: (event: MouseEvent, button: HTMLButtonElement) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.openFilterEditorFromSummary(button);
+            }
+        }, filterText || "Add filter")];
+    };
+
     private applyCellState = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
         if (this._draggingColIndex === col.visibleIndex)
             props.className += " elg-column-dragging";
@@ -1993,7 +2180,7 @@ export class DataGrid<TRow> extends Component {
                 this.applyDataCell(props, gridRow, col);
                 break;
             case "filter":
-                // Filter controls are still rendered separately.
+                this.applyFilterCell(props, col);
                 break;
 
             default:

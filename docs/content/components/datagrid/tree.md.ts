@@ -25,10 +25,10 @@ export default function demo(): void {
   const grid = new DataGrid({
     data: new ArrayDataSource(rows, { parentField: "parentId" }),
     columns: [
-      { name: "name", caption: "Name", editorType: "text", width: 350, getText: async row => (row.type === "folder" ? "📁 " : "📄 ") + row.name },
-      { name: "type", caption: "Type", editorType: "text" },
-      { name: "size", caption: "Size", editorType: "number", textAlign: "end", getText: async row => row.type === "folder" ? "" : `${(row.size / 1024).toFixed(1)} KB` },
-      { name: "modified", caption: "Modified", editorType: "date" }
+      { name: "name", caption: "Name", dataType: "string", width: 350, getText: async row => (row.type === "folder" ? "📁 " : "📄 ") + row.name },
+      { name: "type", caption: "Type", dataType: "string" },
+      { name: "size", caption: "Size", dataType: "number", textAlign: "end", getText: async row => row.type === "folder" ? "" : `${(row.size / 1024).toFixed(1)} KB` },
+      { name: "modified", caption: "Modified", dataType: "date" }
     ],
     stickyGroupRows: true
   });
@@ -36,5 +36,4 @@ export default function demo(): void {
   grid.refresh();
   grid.mount(document.body);
 }
-
 

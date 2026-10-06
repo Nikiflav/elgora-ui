@@ -37,9 +37,9 @@ const data = new ArrayDataSource(rows, { parentField: "parentId" });
 const grid = new DataGrid({
   data,
   columns: [
-    { name: "name", editorType: "text" },
-    { name: "type", editorType: "text" },
-    { name: "modified", editorType: "date" }
+    { name: "name", dataType: "string" },
+    { name: "type", dataType: "string" },
+    { name: "modified", dataType: "date" }
   ],
   stickyGroupRows: true
 });

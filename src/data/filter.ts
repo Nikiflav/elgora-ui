@@ -98,7 +98,7 @@ export function evalFilter(item: Record<string, any>, filter: DataFilter, functi
         if (filter.length !== 2) {
             throw new Error(`Invalid Unary Filter: Expected length 2, got ${filter.length}.`);
         }
-        return !evalFilter(item, second);
+        return !evalFilter(item, second, filterFunctions);
     }
 
     // 3. Handle Explicit Group Filter: ["and" | "or", ...]

@@ -35,7 +35,7 @@ export default function demo(): void {
       {
         name: "country",
         caption: "Country",
-        editorType: "text",
+        dataType: "string",
         renderCell: cell => v(
           "span",
           { ui: ["d-flex", "items-center", "min-w-0", "w-100"] },
@@ -49,15 +49,15 @@ export default function demo(): void {
           v("span", {ui:["flex-1", "overflow-hidden", "text-ellipsis"]}, cell.text)
         )
       },
-      { name: "customer", caption: "Customer", editorType: "text", groupInterval: "firstChar" },
-      { name: "id", caption: "ID", editorType: "number", width: 50 },
-      { name: "orderNumber", caption: "Order number", editorType: "text" },
-      { name: "product", caption: "Product", editorType: "text" },      
-      { name: "status", caption: "Status", editorType: "text" },
-      { name: "quantity", caption: "Quantity", editorType: "number" },
-      { name: "unitPrice", caption: "Unit price", editorType: "number" },
-      { name: "totalAmount", caption: "Total amount", editorType: "number" },
-      { name: "orderDate", caption: "Order date", editorType: "date" }
+      { name: "customer", caption: "Customer", dataType: "string", groupInterval: "firstChar" },
+      { name: "id", caption: "ID", dataType: "number", width: 50 },
+      { name: "orderNumber", caption: "Order number", dataType: "string" },
+      { name: "product", caption: "Product", dataType: "string" },      
+      { name: "status", caption: "Status", dataType: "string" },
+      { name: "quantity", caption: "Quantity", dataType: "number" },
+      { name: "unitPrice", caption: "Unit price", dataType: "number" },
+      { name: "totalAmount", caption: "Total amount", dataType: "number" },
+      { name: "orderDate", caption: "Order date", dataType: "date" }
     ],
     groupColumns: ["country"],
     groupSummary: [

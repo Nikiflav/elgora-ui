@@ -1090,7 +1090,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataColumn",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\r\n    /** Field name; also used as the column's unique identifier. */\r\n    name: string;\r\n    /** Display label; falls back to `name` when unset. */\r\n    caption?: string;\r\n    /** Column description, shown as a tooltip. */\r\n    description?: string;\r\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\r\n    width?: number;\r\n    /** Opaque, caller-defined data attached to the column (not used internally). */\r\n    userState?: any;\r\n    textAlign?: \"start\" | \"center\" | \"end\";\r\n    editorType?: EditorType;\r\n    readonly?: boolean;\r\n    required?: boolean;\r\n    resizable?: boolean;\r\n    reorderable?: boolean;\r\n    /** Relative ordering hint among columns. */\r\n    logicalOrder?: number;\r\n    /** True to skip the cell label in DataView. */\r\n    hideLabel?: boolean,\r\n    /** Provides visibility by row. Used in DataView. */\r\n    showInRow?(row: any): boolean;\r\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\n    getValue?(row: TRow): Promise<any>;\r\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\r\n    getText?(row: TRow): Promise<string>;\r\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\r\n    setValue?(row: TRow, value: any): Promise<any>;\r\n    /** Parses and writes a display-text edit onto a row. */\r\n    setText?(row: TRow, text: string): Promise<any>;\r\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\r\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\r\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\r\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\r\n    /** List of data cell actions displayed as popup menu for data cell. */\r\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\r\n    /** Produces context-menu items for cells in this column. */\r\n    contextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Produces context-menu items for this column's header. */\r\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Groups this column into a built-in or server-defined interval. */\r\n    groupInterval?: GroupInterval;\r\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\r\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\r\n}"
+      "definition": "{\r\n    /** Field name; also used as the column's unique identifier. */\r\n    name: string;\r\n    /** Display label; falls back to `name` when unset. */\r\n    caption?: string;\r\n    /** Column description, shown as a tooltip. */\r\n    description?: string;\r\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\r\n    width?: number;\r\n    /** Opaque, caller-defined data attached to the column (not used internally). */\r\n    userState?: any;\r\n    textAlign?: \"start\" | \"center\" | \"end\";\n    /** Semantic value type used by filtering, grouping, sorting, summaries, and formatting. */\n    dataType?: DataType;\n    /** UI editor type used when the value is edited. */\n    editorType?: EditorType;\n    readonly?: boolean;\r\n    required?: boolean;\r\n    resizable?: boolean;\r\n    reorderable?: boolean;\r\n    /** Relative ordering hint among columns. */\r\n    logicalOrder?: number;\r\n    /** True to skip the cell label in DataView. */\r\n    hideLabel?: boolean,\r\n    /** Provides visibility by row. Used in DataView. */\r\n    showInRow?(row: any): boolean;\r\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\n    getValue?(row: TRow): Promise<any>;\r\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\r\n    getText?(row: TRow): Promise<string>;\r\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\r\n    setValue?(row: TRow, value: any): Promise<any>;\r\n    /** Parses and writes a display-text edit onto a row. */\r\n    setText?(row: TRow, text: string): Promise<any>;\r\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\r\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\r\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\r\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\r\n    /** List of data cell actions displayed as popup menu for data cell. */\r\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\r\n    /** Produces context-menu items for cells in this column. */\r\n    contextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Produces context-menu items for this column's header. */\r\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Groups this column into a built-in or server-defined interval. */\r\n    groupInterval?: GroupInterval;\r\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\r\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\r\n}"
     },
     {
       "name": "DataFilter",
@@ -1104,6 +1104,208 @@
       "path": "/api-reference/DataFilter",
       "source": "src/data/filter.ts",
       "definition": "BinaryFilter | UnaryFilter | GroupFilter"
+    },
+    {
+      "name": "DataFilterRow",
+      "kind": "class",
+      "type": "DataFilterRow<TRow>",
+      "description": "Converts a DataFilter to the compact, per-column expressions used by a filter row.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRow",
+      "source": "src/components/datagrid/DataFilterRow.ts",
+      "members": [
+        {
+          "name": "columns",
+          "type": "DataFilterRowColumn<TRow>[]",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataFilterRow.ts",
+          "kind": "property"
+        },
+        {
+          "name": "parse",
+          "type": "(field: string, text: string) => DataFilter | undefined",
+          "description": "Parses one column expression into a DataFilter.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "```ts\nrow.parse(\"price\", \"1..100\");\n// [\"and\", [\"price\", \">=\", 1], [\"price\", \"<=\", 100]]\n\nrow.parse(\"price\", \"500..\");\n// [\"price\", \">=\", 500]\n\nrow.parse(\"created\", \"..10.12.26\");\n// [\"created\", \"<=\", new Date(2026, 11, 10)]\n\nrow.parse(\"name\", \"\\\\=abc\");\n// [\"name\", \"contains\", \"=abc\"]\n```"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataFilterRow.ts",
+          "parameters": [
+            {
+              "name": "field",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataFilter | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(field: string, text: string) => DataFilter | undefined"
+        },
+        {
+          "name": "toFilter",
+          "type": "(values: readonly DataFilterRowValue[]) => DataFilter | undefined",
+          "description": "Combines the current filter-row values into an implicit AND filter.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "```ts\nrow.toFilter([\n  { field: \"name\", text: \"phone\" },\n  { field: \"price\", text: \">=100\" }\n]);\n// [\"and\", [\"name\", \"contains\", \"phone\"], [\"price\", \">=\", 100]]\n```"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataFilterRow.ts",
+          "parameters": [
+            {
+              "name": "values",
+              "type": "readonly DataFilterRowValue[]",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataFilter | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(values: readonly DataFilterRowValue[]) => DataFilter | undefined"
+        },
+        {
+          "name": "fromFilter",
+          "type": "(filter?: DataFilter) => DataFilterRowValue[] | false",
+          "description": "Formats a simple filter as one expression per column.\nReturns `false` when OR, negation, selectors, or ambiguous conditions are present.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "```ts\nrow.fromFilter([\"and\", [\"name\", \"contains\", \"phone\"], [\"price\", \">=\", 100]]);\n// [{ field: \"name\", text: \"phone\" }, { field: \"price\", text: \"100..\" }]\n\nrow.fromFilter([\"or\", [\"name\", \"=\", \"phone\"], [\"name\", \"=\", \"tablet\"]]);\n// false"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataFilterRow.ts",
+          "parameters": [
+            {
+              "name": "filter",
+              "type": "DataFilter | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataFilterRowValue[] | false",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(filter?: DataFilter) => DataFilterRowValue[] | false"
+        },
+        {
+          "name": "toText",
+          "type": "(filter?: DataFilter) => string",
+          "description": "Formats any supported filter, including OR and nested groups, as readable text.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "```ts\nrow.toText([\"or\", [\"region\", \"contains\", \"123\"], [\"product\", \"=\", \"567\"]]);\n// \"Region contains '123' or Product = '567'\"\n```"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataFilterRow.ts",
+          "parameters": [
+            {
+              "name": "filter",
+              "type": "DataFilter | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(filter?: DataFilter) => string"
+        }
+      ]
+    },
+    {
+      "name": "DataFilterRowColumn",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRowColumn",
+      "source": "src/components/datagrid/DataFilterRow.ts",
+      "definition": "Pick<DataColumn<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+    },
+    {
+      "name": "DataFilterRowOperator",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRowOperator",
+      "source": "src/components/datagrid/DataFilterRow.ts",
+      "definition": "\"=\" | \"<>\" | \">\" | \">=\" | \"<\" | \"<=\" | \"contains\" | \"notcontains\" | \"startswith\" | \"endswith\""
+    },
+    {
+      "name": "DataFilterRowValue",
+      "kind": "interface",
+      "type": "DataFilterRowValue",
+      "description": "One text expression displayed by a filter-row column.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRowValue",
+      "source": "src/components/datagrid/DataFilterRow.ts",
+      "members": [
+        {
+          "name": "field",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataFilterRow.ts",
+          "kind": "property"
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataFilterRow.ts",
+          "kind": "property"
+        }
+      ]
     },
     {
       "name": "DataGrid",
@@ -1700,6 +1902,19 @@
       ]
     },
     {
+      "name": "DataType",
+      "kind": "type",
+      "type": "any",
+      "description": "Semantic type of the value stored by a data column.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataType",
+      "source": "src/components/datagrid/DataColumn.ts",
+      "definition": "\"string\" | \"number\" | \"boolean\" | \"date\" | \"datetime\" | \"object\""
+    },
+    {
       "name": "e",
       "kind": "function",
       "type": "<K extends keyof HTMLElementTagNameMap>(tag: K, ...args: ElementArgs<HTMLElementTagNameMap[K]>) => HTMLElementTagNameMap[K]",
@@ -1745,6 +1960,187 @@
       "namespace": "Core",
       "path": "/api-reference/ElgoraUI",
       "source": "src/core/ElgoraUI.ts"
+    },
+    {
+      "name": "FilterEditor",
+      "kind": "class",
+      "type": "FilterEditor<TRow>",
+      "description": "A reusable builder for structured DataFilter expressions.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditor",
+      "source": "src/components/datagrid/FilterEditor.ts",
+      "members": [
+        {
+          "name": "getFilter",
+          "type": "() => DataFilter | undefined",
+          "description": "Returns the currently edited filter, or undefined when no condition exists.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "DataFilter | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => DataFilter | undefined"
+        },
+        {
+          "name": "setFilter",
+          "type": "(filter?: DataFilter) => void",
+          "description": "Replaces the editor state without invoking the apply callback.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "parameters": [
+            {
+              "name": "filter",
+              "type": "DataFilter | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(filter?: DataFilter) => void"
+        },
+        {
+          "name": "apply",
+          "type": "() => void",
+          "description": "Applies the current draft filter.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "cancel",
+          "type": "() => void",
+          "description": "Discards the current draft and notifies the cancel callback.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "clear",
+          "type": "() => void",
+          "description": "Clears the draft and applies an empty filter.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "FilterEditorColumn",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditorColumn",
+      "source": "src/components/datagrid/FilterEditor.ts",
+      "definition": "Pick<DataColumn<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+    },
+    {
+      "name": "FilterEditorOperator",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditorOperator",
+      "source": "src/components/datagrid/FilterEditor.ts",
+      "definition": "\"=\" | \"<>\" | \">\" | \">=\" | \"<\" | \"<=\" | \"contains\" | \"notcontains\" | \"startswith\" | \"endswith\""
+    },
+    {
+      "name": "FilterEditorOptions",
+      "kind": "interface",
+      "type": "FilterEditorOptions<TRow>",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditorOptions",
+      "source": "src/components/datagrid/FilterEditor.ts",
+      "members": [
+        {
+          "name": "columns",
+          "type": "FilterEditorColumn<TRow>[]",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "filter",
+          "type": "DataFilter | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onApply",
+          "type": "((filter: DataFilter | undefined, editor: FilterEditor<TRow>) => void) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onCancel",
+          "type": "((editor: FilterEditor<TRow>) => void) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/FilterEditor.ts",
+          "kind": "property"
+        }
+      ]
     },
     {
       "name": "FilterFunction",
@@ -3008,6 +3404,16 @@
           "name": "closeOnAction",
           "type": "boolean | undefined",
           "description": "Whether to hide the menu after a leaf item is activated.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/popup/PopupMenu.ts",
+          "kind": "property"
+        },
+        {
+          "name": "density",
+          "type": "UiDensity | undefined",
+          "description": "Controls the vertical spacing of menu items.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -4613,6 +5019,19 @@
           "kind": "property"
         }
       ]
+    },
+    {
+      "name": "UiDensity",
+      "kind": "type",
+      "type": "any",
+      "description": "Shared UI density used by components with adjustable internal spacing.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UiDensity",
+      "source": "src/core/UiStyle.ts",
+      "definition": "\"default\" | \"compact\""
     },
     {
       "name": "UiStyle",

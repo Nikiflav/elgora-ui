@@ -1,6 +1,7 @@
 import { Component, ComponentOptions } from "../../core/Component";
 import { setElementProps, v, VNodeChild } from "../../core/e";
 import type { RemixIcon } from "../../core/RemixIcon";
+import type { UiDensity } from "../../core/UiStyle";
 import { PopoverCloseMode, PopoverPlacement, PopoverPoint } from "./popover";
 import "./Popover.css";
 import "./PopupMenu.css";
@@ -49,6 +50,8 @@ export interface MenuItem {
 export interface PopupMenuOptions extends Omit<ComponentOptions, "children"> {
     /** Whether to hide the menu after a leaf item is activated. */
     closeOnAction?: boolean;
+    /** Controls the vertical spacing of menu items. */
+    density?: UiDensity;
 }
 
 /** Positioning and content supplied when a PopupMenu is opened. */
@@ -122,6 +125,7 @@ function itemProps(item: MenuItem, id: string, hasSubmenu: boolean, open: boolea
 /** A dynamically rendered, nested menu backed by one native popover. */
 export class PopupMenu extends Component {
     private readonly closeOnAction: boolean;
+    private readonly density: UiDensity;
     private items: readonly MenuItem[] = [];
     private itemStates = new Map<string, MenuState>();
     private openItems = new Set<string>();
@@ -135,11 +139,13 @@ export class PopupMenu extends Component {
     private readonly onClose = () => this.stopTracking();
 
     constructor(options: PopupMenuOptions = {}) {
-        const { closeOnAction = true, ...rest } = options;
+        const { closeOnAction = true, density = "default", ...rest } = options;
         super({ ...rest, tag: options.tag || "div" });
 
         this.closeOnAction = closeOnAction;
+        this.density = density;
         this.dom.classList.add("elg-popover", "elg-popup-menu");
+        if (this.density === "compact") this.dom.classList.add("elg-popup-menu-compact");
         this.dom.setAttribute("role", "menu");
         this.dom.setAttribute("popover", this.closeMode);
         this.dom.id ||= menuId();

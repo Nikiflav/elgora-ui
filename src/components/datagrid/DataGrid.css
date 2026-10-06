@@ -135,6 +135,72 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
     color: var(--elg-primary-text);
 }
 
+.elg-gridrow-filter .elg-gridcell {
+    padding: 2px 4px;
+    background-color: var(--elg-grid-cell-bg);
+}
+
+.elg-grid-filter-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 3px 5px;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    color: var(--elg-text-color);
+    cursor: text;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.elg-grid-filter-input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+}
+
+.elg-grid-filter-control .elg-grid-filter-input {
+    padding-right: 22px;
+}
+
+.elg-grid-filter-clear {
+    position: absolute;
+    top: 50%;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    line-height: 1;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.elg-grid-filter-clear:hover,
+.elg-grid-filter-clear:focus-visible {
+    color: var(--elg-primary-color);
+}
+
+.elg-grid-filter-input:hover {
+    background-color: var(--elg-selection-bg);
+}
+
+.elg-grid-filter-input:focus {
+    outline: none;
+    border-bottom-color: var(--elg-primary-color);
+}
+
+.elg-grid-filter-button {
+    width: 100%;
+    padding: 3px 5px;
+    border: 0;
+    background: transparent;
+}
+
+.elg-grid-filter-button:hover .elg-icon {
+    color: var(--elg-primary-color);
+}
+
 .elg-grid-header {
     display: flex;
     padding: 6px;

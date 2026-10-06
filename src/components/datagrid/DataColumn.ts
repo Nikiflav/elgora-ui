@@ -95,6 +95,9 @@ export interface SummaryDefinition<TRow, TState = any, TResult = any> {
 /** Input control used to edit a column's value. */
 export type EditorType = "text" | "number" | "date" | "datetime-local" | "time" | "checkbox" | "file" | "password" | "textarea" | "color";
 
+/** Semantic type of the value stored by a data column. */
+export type DataType = "string" | "number" | "boolean" | "date" | "datetime" | "object";
+
 
 /** Contract for a component hosting data-bound UI (e.g. a grid) that can be told to reload. */
 export interface DataComponent {
@@ -141,6 +144,9 @@ export type DataColumn<TRow> = {
     /** Opaque, caller-defined data attached to the column (not used internally). */
     userState?: any;
     textAlign?: "start" | "center" | "end";
+    /** Semantic value type used by filtering, grouping, sorting, summaries, and formatting. */
+    dataType?: DataType;
+    /** UI editor type used when the value is edited. */
     editorType?: EditorType;
     readonly?: boolean;
     required?: boolean;
@@ -179,8 +185,21 @@ export type DataColumn<TRow> = {
 
 export class DataColumnUtils {
 
+    /** Returns the declared data type, or infers it from the legacy editorType. */
+    static getDataType<TRow>(col: Pick<DataColumn<TRow>, "dataType" | "editorType">): DataType {
+        if (col.dataType) return col.dataType;
+        switch (col.editorType) {
+            case "number": return "number";
+            case "checkbox": return "boolean";
+            case "date": return "date";
+            case "datetime-local": return "datetime";
+            default: return "string";
+        }
+    }
+
     static isDateColumn<TRow>(col: DataColumn<TRow>): boolean {
-        return col.editorType === "date" || col.editorType === "datetime-local";
+        const dataType = DataColumnUtils.getDataType(col);
+        return dataType === "date" || dataType === "datetime";
     }
 
     static getGroupFilterSelector<TRow>(col: DataColumn<TRow>): FilterSelector {
@@ -198,7 +217,7 @@ export class DataColumnUtils {
                 "week", "day", "dayOfWeek", "hour", "minute", "second"
             ];
         }
-        if (col.editorType === "text") return ["firstChar"];
+        if (DataColumnUtils.getDataType(col) === "string") return ["firstChar"];
         return [];
     }
 

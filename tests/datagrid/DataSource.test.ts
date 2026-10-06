@@ -52,6 +52,22 @@ describe("DataSource totalSummary contract", () => {
     ]);
   });
 
+  it("applies both bounds of a numeric range filter", async () => {
+    const source = new ArrayDataSource([
+      { amount: 118 },
+      { amount: 356 },
+      { amount: 498 },
+      { amount: 537 }
+    ]);
+    const result = await source.loadData({
+      filter: ["and", ["amount", ">=", 1], ["amount", "<=", 400]],
+      requireTotalCount: true
+    });
+
+    expect(result.totalCount).toBe(2);
+    expect(result.dataItems).toEqual([{ amount: 118 }, { amount: 356 }]);
+  });
+
   it("keeps remote total summaries separate from the current page", async () => {
     const requests: QueryArgs[] = [];
     const source: DataSource<Row> = {

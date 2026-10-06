@@ -23,12 +23,12 @@ export default function demo(): void {
   const grid = new DataGrid({
     data: rows,
     columns: [
-      { name: "id", caption: "ID", editorType: "number", width: 60 },
-      { name: "product", caption: "Product", editorType: "text", width: 220 },
+      { name: "id", caption: "ID", dataType: "number", width: 60 },
+      { name: "product", caption: "Product", dataType: "string", width: 220 },
       {
         name: "status",
         caption: "Status",
-        editorType: "text",
+        dataType: "string",
         customCellStyle: cell => ({
           className: "elg-text-uppercase",
           style: {
@@ -40,7 +40,7 @@ export default function demo(): void {
       {
         name: "amount",
         caption: "Amount",
-        editorType: "number",
+        dataType: "number",
         textAlign: "end",
         renderCell: cell => v("span", { ui: ["fw-600"] }, `$${cell.value}`)
       }

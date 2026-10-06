@@ -119,6 +119,42 @@
       "module": "./content/api/DataFilter.js"
     },
     {
+      "name": "DataFilterRow",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRow",
+      "description": "Converts a DataFilter to the compact, per-column expressions used by a filter row.",
+      "module": "./content/api/DataFilterRow.js"
+    },
+    {
+      "name": "DataFilterRowColumn",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRowColumn",
+      "description": "",
+      "module": "./content/api/DataFilterRowColumn.js"
+    },
+    {
+      "name": "DataFilterRowOperator",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRowOperator",
+      "description": "",
+      "module": "./content/api/DataFilterRowOperator.js"
+    },
+    {
+      "name": "DataFilterRowValue",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataFilterRowValue",
+      "description": "One text expression displayed by a filter-row column.",
+      "module": "./content/api/DataFilterRowValue.js"
+    },
+    {
       "name": "DataGrid",
       "kind": "class",
       "group": "components",
@@ -173,6 +209,15 @@
       "module": "./content/api/DataSource.js"
     },
     {
+      "name": "DataType",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataType",
+      "description": "Semantic type of the value stored by a data column.",
+      "module": "./content/api/DataType.js"
+    },
+    {
       "name": "e",
       "kind": "function",
       "group": "core",
@@ -189,6 +234,42 @@
       "path": "/api-reference/ElgoraUI",
       "description": "Global UI runtime instance.\r\nUsed to invalidate components and manage scheduling.",
       "module": "./content/api/ElgoraUI.js"
+    },
+    {
+      "name": "FilterEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditor",
+      "description": "A reusable builder for structured DataFilter expressions.",
+      "module": "./content/api/FilterEditor.js"
+    },
+    {
+      "name": "FilterEditorColumn",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditorColumn",
+      "description": "",
+      "module": "./content/api/FilterEditorColumn.js"
+    },
+    {
+      "name": "FilterEditorOperator",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditorOperator",
+      "description": "",
+      "module": "./content/api/FilterEditorOperator.js"
+    },
+    {
+      "name": "FilterEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/FilterEditorOptions",
+      "description": "",
+      "module": "./content/api/FilterEditorOptions.js"
     },
     {
       "name": "FilterFunction",
@@ -576,6 +657,15 @@
       "path": "/api-reference/TooltipShowOptions",
       "description": "Positioning, content, and timing options for Tooltip.show().",
       "module": "./content/api/TooltipShowOptions.js"
+    },
+    {
+      "name": "UiDensity",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UiDensity",
+      "description": "Shared UI density used by components with adjustable internal spacing.",
+      "module": "./content/api/UiDensity.js"
     },
     {
       "name": "UiStyle",

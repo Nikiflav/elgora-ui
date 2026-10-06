@@ -170,8 +170,8 @@ async function calculateSummaryResults<TRow>(
             if (isNumericSummary(summary.summaryType)) {
                 const summaryColumn = getColumn?.(summary.field);
                 const numericColumn = !summaryColumn
-                    || summaryColumn.editorType === "number"
-                    || (!summaryColumn.editorType && typeof value === "number");
+                    || DataColumnUtils.getDataType(summaryColumn) === "number"
+                    || (!summaryColumn.dataType && !summaryColumn.editorType && typeof value === "number");
                 if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
                     continue;
             }
@@ -331,8 +331,8 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
                         if (isNumericSummary(g.summaryType)) {
                             const summaryColumn = this.getColumn?.(g.field);
                             const numericColumn = !summaryColumn
-                                || summaryColumn.editorType === "number"
-                                || (!summaryColumn.editorType && typeof value === "number");
+                                || DataColumnUtils.getDataType(summaryColumn) === "number"
+                                || (!summaryColumn.dataType && !summaryColumn.editorType && typeof value === "number");
                             if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
                                 continue;
                         }

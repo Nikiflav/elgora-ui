@@ -26,6 +26,11 @@
     cursor: pointer;
 }
 
+.elg-popup-menu-compact .elg-menu-item {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
 .elg-popup-menu .elg-menu-item:hover,
 .elg-popup-menu .elg-menu-item:focus-visible,
 .elg-menu-item-container.is-open > .elg-menu-item {

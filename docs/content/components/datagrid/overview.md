@@ -42,9 +42,9 @@ summaries:
 const grid = new DataGrid({
   data: rows,
   columns: [
-    { name: "customer", editorType: "text" },
-    { name: "quantity", editorType: "number" },
-    { name: "totalAmount", editorType: "number" }
+    { name: "customer", dataType: "string" },
+    { name: "quantity", dataType: "number" },
+    { name: "totalAmount", dataType: "number" }
   ],
   groupColumns: ["customer"],
   groupSummary: [{ field: "totalAmount", summaryType: "sum" }]

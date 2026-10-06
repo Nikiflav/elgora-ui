@@ -8,12 +8,13 @@ export default function demo(): void {
     { region: "East", product: "Dock", total: 537 },
     { region: "North", product: "Mouse", total: 118 }
   ];
-  const grid = new DataGrid({
-    data: rows,
-    columns: [
-      { name: "region", caption: "Region", width: 130 },
-      { name: "product", caption: "Product", width: 220 },
-      { name: "total", caption: "Total", width: 120, textAlign: "end" }
+    const grid = new DataGrid({
+        data: rows,
+        showFilterRow: true,
+        columns: [
+      { name: "region", caption: "Region", dataType: "string", width: 130 },
+      { name: "product", caption: "Product", dataType: "string", width: 220 },
+      { name: "total", caption: "Total", dataType: "number", width: 120, textAlign: "end" }
     ],
     filter: ["product", "contains", "o"]
   });

@@ -19,6 +19,16 @@ export default {
       "optional": true,
       "source": "src/components/popup/PopupMenu.ts",
       "kind": "property"
+    },
+    {
+      "name": "density",
+      "type": "UiDensity | undefined",
+      "description": "Controls the vertical spacing of menu items.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/popup/PopupMenu.ts",
+      "kind": "property"
     }
   ]
 };
