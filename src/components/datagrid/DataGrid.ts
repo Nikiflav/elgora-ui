@@ -2108,7 +2108,7 @@ export class DataGrid<TRow> extends Component {
         props.colSpan = this._gridColumns.filter(item => item.type === "data").length;
         props.vnodes = [v("button", {
             key: "filter-summary",
-            ui: ["elg", "btn", "d-inline-block", "text-start", "text-ellipsis", "no-underline", "w-100", "px-1", "py-0"],
+            ui: ["elg", "d-inline-block", "text-start", "text-primary", "text-ellipsis", "no-underline", "w-100", "px-1", "py-0", "border-0", "bg-transparent"],
             type: "button",
             ariaLabel: filterText ? `Edit filter: ${filterText}` : "Add filter",
             title: filterText || "Add filter",

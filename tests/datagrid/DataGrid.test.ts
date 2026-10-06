@@ -126,6 +126,13 @@ describe("DataGrid data contracts", () => {
     expect(dataCells).toHaveLength(2);
     expect(dataCells[0].colSpan).toBe(2);
     expect(dataCells[1].style.display).toBe("none");
+    const summaryButton = grid.dom.querySelector<HTMLButtonElement>(
+      '.elg-gridrow-filter button[aria-label^="Edit filter:"]'
+    );
+    expect(summaryButton).not.toBeNull();
+    expect(summaryButton!.classList.contains("elg-btn")).toBe(false);
+    expect(summaryButton!.classList.contains("elg-text-primary")).toBe(true);
+    expect(summaryButton!.classList.contains("elg-border-0")).toBe(true);
   });
 
   it("keeps separate inputs when the filter is representable by DataFilterRow", async () => {
