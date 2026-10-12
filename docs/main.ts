@@ -176,15 +176,24 @@ async function bootstrap(): Promise<void> {
         path: entry.path,
         createPage() {
             const pageRoot = div({ ui: ["elg", "p-4", "text-muted"] }, "Loading API reference…");
+            const revealMember = () => {
+                if (!window.location.hash) return;
+                try {
+                    const id = decodeURIComponent(window.location.hash.slice(1));
+                    pageRoot.querySelector("#" + CSS.escape(id))?.scrollIntoView({ block: "start" });
+                } catch { /* An invalid fragment must not prevent the API page from loading. */ }
+            };
             return {
                 title: entry.name,
                 description: entry.description || `${entry.kind} ${entry.name}`,
                 dom: pageRoot,
+                onUrlChanged: async () => { revealMember(); },
                 async init() {
                     try {
                         const apiEntry = await apiLoader.load(entry);
                         const page = new ApiTopicPage(apiEntry, markdownTopics);
                         pageRoot.replaceChildren(page.dom);
+                        revealMember();
                     } catch (error) {
                         pageRoot.className = "elg p-4 text-danger";
                         pageRoot.textContent = error instanceof Error ? error.message : String(error);
@@ -219,6 +228,13 @@ const componentLinks = buildSidebarTree([
 const styleLinks = buildSidebarTree(markdownTopics
     .filter(topic => topic.group === "styles")
     .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
+
+    const dataLinks = buildSidebarTree(markdownTopics
+        .filter(topic => topic.group === "data")
+        .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
+    const coreLinks = buildSidebarTree(markdownTopics
+        .filter(topic => topic.group === "core")
+        .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
 
     const featureLinks = buildSidebarTree([
         { href: "/getting-started/framework-overview", title: "Framework fundamentals" },
@@ -278,6 +294,8 @@ const styleLinks = buildSidebarTree(markdownTopics
     createSidebarGroup("Getting started", gettingStartedLinks, currentPath),
     createSidebarGroup("Styles", styleLinks, currentPath),
             createSidebarGroup("Components", componentLinks, currentPath),
+            createSidebarGroup("Data", dataLinks, currentPath),
+            createSidebarGroup("Core", coreLinks, currentPath),
             createSidebarGroup("Features", featureLinks, currentPath),
             createSidebarGroup("API Reference", apiLinks, currentPath)
     );

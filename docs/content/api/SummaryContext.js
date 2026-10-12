@@ -6,9 +6,9 @@ export default {
   "tags": [],
   "topics": [],
   "group": "types",
-  "namespace": "Components.DataGrid",
+  "namespace": "Data",
   "path": "/api-reference/SummaryContext",
-  "source": "src/components/datagrid/DataColumn.ts",
+  "source": "src/data/summary.ts",
   "members": [
     {
       "name": "field",
@@ -17,7 +17,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/summary.ts",
       "kind": "property"
     },
     {
@@ -27,7 +27,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/summary.ts",
       "kind": "property"
     },
     {
@@ -37,7 +37,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/summary.ts",
       "kind": "property"
     },
     {
@@ -47,7 +47,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/summary.ts",
       "kind": "property"
     }
   ]

@@ -2,12 +2,12 @@ export default {
   "name": "RowIdentity",
   "kind": "type",
   "type": "any",
-  "description": "Represents data row ID.",
+  "description": "Stable row identity shared by data sources, changes and UI components.",
   "tags": [],
   "topics": [],
   "group": "types",
   "namespace": "Data",
   "path": "/api-reference/RowIdentity",
-  "source": "src/components/datagrid/DataSource.ts",
+  "source": "src/data/RowIdentity.ts",
   "definition": "string | number"
 };

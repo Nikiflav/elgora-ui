@@ -76,6 +76,7 @@ export class MarkdownTopicPage extends Component {
                     ? new ReadonlyExample(demo)
                     : new EditableExample(demo);
                 placeholder.replaceWith(example.dom);
+                this.addCleanup(example);
             }
         }
 

@@ -1,6 +1,8 @@
 import { DataFilter, filterAnd } from "../../data/filter";
-import { DataColumn, DataColumnUtils, OrderByToken, SummaryType } from "./DataColumn";
-import { DataSource, GroupItem, QueryArgs, SummaryResult } from "./DataSource";
+import { DataColumn, DataColumnUtils } from "./DataColumn";
+import type { OrderByToken } from "../../data/grouping";
+import type { SummaryType, SummaryResult } from "../../data/summary";
+import type { DataSource, GroupItem, QueryArgs } from "../../data/DataSource";
 import { GridViewportArgs, GridResult, GridRow, GridRowsProvider } from "./GridRow";
 
 // ========================================================

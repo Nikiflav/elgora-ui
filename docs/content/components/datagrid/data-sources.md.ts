@@ -1,5 +1,5 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
-import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
+import { ArrayDataSource } from "../../../../src/data/ArrayDataSource";
 
 export default function demo(): void {
   const rows = Array.from({ length: 80 }, (_, index) => ({

@@ -20,6 +20,8 @@ function memberSection(title: string, members: NonNullable<ApiEntry["members"]>)
     return div({ ui: ["elg", "d-flex", "flex-col", "gap-1"] },
         e("h3", { ui: ["elg", "m-0", "mt-2"] }, title),
         ...members.map(member => div({
+            id: member.name,
+            style: { scrollMarginTop: "1rem" },
             ui: ["elg", "d-flex", "flex-col", "gap-1", "p-2", "border-bottom"]
         },
             e("span", { ui: ["elg", "d-block", "text-wrap", "fs-100", "fw-500"] }, member.kind === "method"

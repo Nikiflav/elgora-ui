@@ -1,5 +1,5 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
-import { ArrayDataSource } from "../../../../src/components/datagrid/DataSource";
+import { ArrayDataSource } from "../../../../src/data/ArrayDataSource";
 
 type FileSystemRow = { id: number; parentId: number | null; name: string; type: "folder" | "file"; size: number; modified: string };
 
@@ -36,4 +36,3 @@ export default function demo(): void {
   grid.refresh();
   grid.mount(document.body);
 }
-

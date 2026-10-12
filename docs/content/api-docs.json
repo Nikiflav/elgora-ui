@@ -11,10 +11,10 @@
       "description": "DataSource implementation backed by an in-memory array.",
       "tags": [],
       "topics": [],
-      "group": "components",
+      "group": "core",
       "namespace": "Data",
       "path": "/api-reference/ArrayDataSource",
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/ArrayDataSource.ts",
       "members": [
         {
           "name": "array",
@@ -23,7 +23,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/ArrayDataSource.ts",
           "kind": "property"
         },
         {
@@ -33,7 +33,7 @@
           "tags": [],
           "topics": [],
           "optional": true,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/ArrayDataSource.ts",
           "kind": "property"
         },
         {
@@ -43,7 +43,7 @@
           "tags": [],
           "topics": [],
           "optional": true,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/ArrayDataSource.ts",
           "kind": "property"
         },
         {
@@ -53,7 +53,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/ArrayDataSource.ts",
           "parameters": [
             {
               "name": "args",
@@ -76,7 +76,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/ArrayDataSource.ts",
           "parameters": [
             {
               "name": "row",
@@ -91,8 +91,130 @@
           },
           "kind": "method",
           "signature": "(row: T) => Promise<number>"
+        },
+        {
+          "name": "saveChanges",
+          "type": "(changes: ChangeSet) => Promise<SaveChangesResult>",
+          "description": "Applies a ChangeSet directly to the backing array.\n\nArrayDataSource uses the change key to find existing rows. Inserted rows\nkeep the supplied key because there is no server that can assign a new\nidentity; therefore the successful result never needs keyMappings.\n\nThe complete batch is validated before the array is changed, so a bad\nkey does not leave a partially applied in-memory update.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await source.saveChanges?.([\n    { type: \"update\", key: 1, data: { amount: 25 } },\n    { type: \"remove\", key: 2 }\n]);"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ArrayDataSource.ts",
+          "parameters": [
+            {
+              "name": "changes",
+              "type": "ChangeSet",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<SaveChangesResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(changes: ChangeSet) => Promise<SaveChangesResult>"
         }
       ]
+    },
+    {
+      "name": "AsyncObservableEvent",
+      "kind": "class",
+      "type": "AsyncObservableEvent<T>",
+      "description": "Event stream that awaits subscribers sequentially, in subscription order.\ninvokeAsync() is the only dispatch method. A thrown error or rejected Promise stops dispatch\nand rejects the invocation. Different invocations are independent and may overlap.\nSubscriptions added during dispatch run on the next invocation; removed subscriptions are skipped.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const event = new AsyncObservableEvent<string>();\nconst subscription = event.subscribe(async value => { await persist(value); });\nawait event.invokeAsync(\"updated\");\nsubscription.dispose();"
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/AsyncObservableEvent",
+      "source": "src/core/AsyncObservableEvent.ts",
+      "members": [
+        {
+          "name": "subscribe",
+          "type": "(handler: AsyncObservableHandler<T>) => Disposable",
+          "description": "Registers a handler; dispose the returned subscription to unsubscribe. Duplicate handlers run once.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/AsyncObservableEvent.ts",
+          "parameters": [
+            {
+              "name": "handler",
+              "type": "AsyncObservableHandler<T>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Disposable",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(handler: AsyncObservableHandler<T>) => Disposable"
+        },
+        {
+          "name": "invokeAsync",
+          "type": "(payload: T) => Promise<void>",
+          "description": "Awaits each handler before starting the next. Failure rejects and prevents later handlers from running.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/AsyncObservableEvent.ts",
+          "parameters": [
+            {
+              "name": "payload",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(payload: T) => Promise<void>"
+        },
+        {
+          "name": "dispose",
+          "type": "() => void",
+          "description": "Removes subscriptions; an already running handler is still awaited and is not cancelled.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/AsyncObservableEvent.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "AsyncObservableHandler",
+      "kind": "type",
+      "type": "any",
+      "description": "A synchronous or asynchronous event handler. Return or await all work that later handlers depend on.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/AsyncObservableHandler",
+      "source": "src/core/AsyncObservableEvent.ts",
+      "definition": "(value: T) => void | PromiseLike<void>"
     },
     {
       "name": "BrowserRouter",
@@ -306,6 +428,19 @@
           "kind": "property"
         }
       ]
+    },
+    {
+      "name": "ChangeSet",
+      "kind": "type",
+      "type": "any",
+      "description": "Changes for one table/source, submitted together. Keys always use RowIdentity.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/ChangeSet",
+      "source": "src/data/ChangeSet.ts",
+      "definition": "DataChange[]"
     },
     {
       "name": "Component",
@@ -1064,7 +1199,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataCell",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\n    /** Column definition for this cell. */\r\n    column: DataColumn<TRow>;\r\n    /** Original row data. */\r\n    rowData: TRow;\r\n    /** Resolved raw cell value. */\r\n    value: any;\r\n    /** Resolved display text. */\r\n    text: string;\r\n}"
+      "definition": "{\n    /** Column definition for this cell. */\n    column: DataColumn<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
     },
     {
       "name": "DataCellStyle",
@@ -1077,7 +1212,51 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataCellStyle",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\r\n    /** Additional classes for the outer grid cell. */\r\n    className?: string;\r\n    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */\r\n    style?: StyleObject;\r\n}"
+      "definition": "{\n    /** Additional classes for the outer grid cell. */\n    className?: string;\n    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */\n    style?: StyleObject;\n}"
+    },
+    {
+      "name": "DataChange",
+      "kind": "interface",
+      "type": "DataChange",
+      "description": "A transport change containing field values, never a domain row object.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataChange",
+      "source": "src/data/ChangeSet.ts",
+      "members": [
+        {
+          "name": "type",
+          "type": "\"update\" | \"insert\" | \"remove\"",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ChangeSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "key",
+          "type": "RowIdentity | undefined",
+          "description": "Insert may omit this when its data already contains the identity field.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/ChangeSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "data",
+          "type": "Record<string, unknown> | undefined",
+          "description": "All insert values, or changed update fields; absent for removal.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/ChangeSet.ts",
+          "kind": "property"
+        }
+      ]
     },
     {
       "name": "DataColumn",
@@ -1090,14 +1269,392 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataColumn",
       "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\r\n    /** Field name; also used as the column's unique identifier. */\r\n    name: string;\r\n    /** Display label; falls back to `name` when unset. */\r\n    caption?: string;\r\n    /** Column description, shown as a tooltip. */\r\n    description?: string;\r\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\r\n    width?: number;\r\n    /** Opaque, caller-defined data attached to the column (not used internally). */\r\n    userState?: any;\r\n    textAlign?: \"start\" | \"center\" | \"end\";\n    /** Semantic value type used by filtering, grouping, sorting, summaries, and formatting. */\n    dataType?: DataType;\n    /** UI editor type used when the value is edited. */\n    editorType?: EditorType;\n    readonly?: boolean;\r\n    required?: boolean;\r\n    resizable?: boolean;\r\n    reorderable?: boolean;\r\n    /** Relative ordering hint among columns. */\r\n    logicalOrder?: number;\r\n    /** True to skip the cell label in DataView. */\r\n    hideLabel?: boolean,\r\n    /** Provides visibility by row. Used in DataView. */\r\n    showInRow?(row: any): boolean;\r\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\n    getValue?(row: TRow): Promise<any>;\r\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\r\n    getText?(row: TRow): Promise<string>;\r\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\r\n    setValue?(row: TRow, value: any): Promise<any>;\r\n    /** Parses and writes a display-text edit onto a row. */\r\n    setText?(row: TRow, text: string): Promise<any>;\r\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\r\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\r\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\r\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\r\n    /** List of data cell actions displayed as popup menu for data cell. */\r\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\r\n    /** Produces context-menu items for cells in this column. */\r\n    contextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Produces context-menu items for this column's header. */\r\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\r\n    /** Groups this column into a built-in or server-defined interval. */\r\n    groupInterval?: GroupInterval;\r\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\r\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\r\n}"
+      "definition": "{\n    /** Field name; also used as the column's unique identifier. */\n    name: string;\n    /** Display label; falls back to `name` when unset. */\n    caption?: string;\n    /** Column description, shown as a tooltip. */\n    description?: string;\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\n    width?: number;\n    /** Opaque, caller-defined data attached to the column (not used internally). */\n    userState?: any;\n    textAlign?: \"start\" | \"center\" | \"end\";\n    /** Semantic value type used by filtering, grouping, sorting, summaries, and formatting. */\n    dataType?: DataType;\n    /** UI editor type used when the value is edited. */\n    editorType?: EditorType;\n    readonly?: boolean;\n    required?: boolean;\n    resizable?: boolean;\n    reorderable?: boolean;\n    /** Relative ordering hint among columns. */\n    logicalOrder?: number;\n    /** True to skip the cell label in DataView. */\n    hideLabel?: boolean,\n    /** Provides visibility by row. Used in DataView. */\n    showInRow?(row: any): boolean;\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\n    getValue?(row: TRow): Promise<any>;\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\n    getText?(row: TRow): Promise<string>;\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\n    setValue?(row: TRow, value: any): Promise<any>;\n    /** Parses and writes a display-text edit onto a row. */\n    setText?(row: TRow, text: string): Promise<any>;\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\n    /** List of data cell actions displayed as popup menu for data cell. */\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\n    /** Produces context-menu items for cells in this column. */\n    contextMenuItems?: GridContextMenuItems<TRow>;\n    /** Produces context-menu items for this column's header. */\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\n    /** Groups this column into a built-in or server-defined interval. */\n    groupInterval?: GroupInterval;\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\n}"
+    },
+    {
+      "name": "DataEditContext",
+      "kind": "class",
+      "type": "DataEditContext",
+      "description": "Transaction-bound access to the same dataset, tables and rows, without copying them.\nUse event.context for derived edits; ordinary row.setValue() cannot join an active transaction.\nThe context expires when its transaction completes.\nRe-entering a changed field in the same causal chain rejects the edit as a cycle.\nEqual values do not re-enter the chain. Independent sequential edits remain allowed.\nAsync subscribers are awaited sequentially. Await derived edits before reading their results.\nChains longer than 100 steps are rejected as a safety limit.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "orders.rowChanged.subscribe(async e => {\n    if (e.fields.includes(\"quantity\"))\n        await e.context.setValue(e.row, \"total\", Number(e.row.getValue(\"quantity\")) * 10);\n});"
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataEditContext",
+      "source": "src/data/dataset/DataEditContext.ts",
+      "members": [
+        {
+          "name": "getTable",
+          "type": "(name: string) => DataTable | undefined",
+          "description": "Looks up an existing table. Example: context.getTable(\"orders\").",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataTable | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(name: string) => DataTable | undefined"
+        },
+        {
+          "name": "setValue",
+          "type": "(row: DataRow, field: string, value: unknown) => Promise<MutationResult>",
+          "description": "Changes a field and tracks the operation even when the event handler does not await it.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "field",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "unknown",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, field: string, value: unknown) => Promise<MutationResult>"
+        },
+        {
+          "name": "update",
+          "type": "(row: DataRow, values: Record<string, unknown>) => Promise<MutationResult>",
+          "description": "Applies several fields in this transaction. Example: context.update(row, { price: 5 }).",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "values",
+              "type": "Record<string, unknown>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, values: Record<string, unknown>) => Promise<MutationResult>"
+        },
+        {
+          "name": "delete",
+          "type": "(row: DataRow) => Promise<MutationResult>",
+          "description": "Deletes a confirmed row in this transaction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow) => Promise<MutationResult>"
+        },
+        {
+          "name": "createNewRow",
+          "type": "(table: DataTable) => Promise<NewRowSession<DataRow>>",
+          "description": "Creates a pending row in the specified table. Example: context.createNewRow(items).",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "table",
+              "type": "DataTable",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<NewRowSession<DataRow>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(table: DataTable) => Promise<NewRowSession<DataRow>>"
+        },
+        {
+          "name": "insert",
+          "type": "(session: NewRowSession<DataRow>) => Promise<MutationResult>",
+          "description": "Includes a pending session in the table, without persisting it to a server.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "session",
+              "type": "NewRowSession<DataRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(session: NewRowSession<DataRow>) => Promise<MutationResult>"
+        },
+        {
+          "name": "cancel",
+          "type": "(session: NewRowSession<DataRow>) => Promise<void>",
+          "description": "Discards a pending session in the same transaction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "session",
+              "type": "NewRowSession<DataRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(session: NewRowSession<DataRow>) => Promise<void>"
+        },
+        {
+          "name": "_checkTarget",
+          "type": "(row?: DataRow) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Prevents pending-row rules from modifying other rows before insertion."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row?: DataRow) => void"
+        },
+        {
+          "name": "_enter",
+          "type": "(row: DataRow, fields: readonly string[], kind?: string) => DataEditContext",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Extends this immutable causal chain; checks only fields that actually change."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "fields",
+              "type": "readonly string[]",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "optional": true,
+              "defaultValue": "\"update\"",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataEditContext",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, fields: readonly string[], kind?: string) => DataEditContext"
+        }
+      ]
+    },
+    {
+      "name": "DataField",
+      "kind": "interface",
+      "type": "DataField<TRow>",
+      "description": "Minimal field metadata required for local data operations.\nUI column definitions can implement this structurally without coupling data engines to a grid.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataField",
+      "source": "src/data/DataField.ts",
+      "members": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "dataType",
+          "type": "DataType | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "editorType",
+          "type": "string | undefined",
+          "description": "Legacy editor hint used only when no semantic dataType was provided.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getValue",
+          "type": "((row: TRow) => Promise<any>) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<any>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow) => Promise<any>) | undefined"
+        },
+        {
+          "name": "groupInterval",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").GroupInterval | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getGroupValue",
+          "type": "((row: TRow, value: any) => any | Promise<any>) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "any",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "any | Promise<any>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow, value: any) => any | Promise<any>) | undefined"
+        }
+      ]
     },
     {
       "name": "DataFilter",
       "kind": "type",
       "type": "any",
-      "description": "",
-      "tags": [],
+      "description": "A serializable filter condition, negation or group. Nested arrays combine conditions with AND.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const filter: DataFilter = [\"and\", [\"quantity\", \">=\", 1], [\"quantity\", \"<=\", 100]];"
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Data",
@@ -1810,16 +2367,1083 @@
       ]
     },
     {
+      "name": "DataResult",
+      "kind": "interface",
+      "type": "DataResult<TRow>",
+      "description": "The response to a QueryArgs request: either flat data rows or, when grouping, group buckets.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataResult",
+      "source": "src/data/DataSource.ts",
+      "members": [
+        {
+          "name": "totalCount",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "args",
+          "type": "QueryArgs",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "dataItems",
+          "type": "TRow[] | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "groups",
+          "type": "GroupItem[] | undefined",
+          "description": "Used exclusively when args.groupColumn is set.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "totalSummary",
+          "type": "SummaryResult[] | undefined",
+          "description": "Aggregations for the complete filtered result, before paging and\ngrouping. Returned only when `args.totalSummary` was requested; values\nmust not be calculated from the returned page alone.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "DataRow",
+      "kind": "class",
+      "type": "DataRow",
+      "description": "Represents one table row with current values, accepted values and persistence state.\nRead values with getValue() and change them with setValue() or table.update().\nObjects, arrays and dates are stored and returned by reference; field values are not cloned.\nReplace a field value to track an edit. In-place changes are not tracked or rolled back.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const row = table.getRow(1)!;\nawait row.setValue(\"quantity\", 3);\nconsole.log(row.getOriginal(\"quantity\"), row.getValue(\"quantity\"));"
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataRow",
+      "source": "src/data/dataset/DataRow.ts",
+      "members": [
+        {
+          "name": "table",
+          "type": "DataTable",
+          "description": "Owning table, including while the row is pending, cancelled or removed. Use isPending to check session membership.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "kind": "property"
+        },
+        {
+          "name": "key",
+          "type": "RowIdentity",
+          "description": "Current identity; server mapping updates the key without replacing this row.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "kind": "property"
+        },
+        {
+          "name": "state",
+          "type": "DataRowState",
+          "description": "Current persistence state, e.g. an added row remains added after local insert.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "kind": "property"
+        },
+        {
+          "name": "isPending",
+          "type": "boolean",
+          "description": "True while this row belongs to a pending new-row session and is excluded from table queries.\nInsert or cancel makes it false; undo/redo and rollback restore it with the session state.\nFalse does not guarantee table membership: a cancelled or removed row is not pending either.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "if (!event.row.isPending) {\n    await event.context.setValue(relatedRow, \"amount\", total);\n}"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getValue",
+          "type": "(field: string) => unknown",
+          "description": "Reads the current field value without copying it. Example: row.getValue(\"quantity\").",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "field",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "unknown",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(field: string) => unknown"
+        },
+        {
+          "name": "getOriginal",
+          "type": "(field: string) => unknown",
+          "description": "Reads the accepted value. An added row has no accepted original version.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "field",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "unknown",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(field: string) => unknown"
+        },
+        {
+          "name": "isModified",
+          "type": "(field: string) => boolean",
+          "description": "Checks a field against its original snapshot; all present fields of an added row are new.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "field",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(field: string) => boolean"
+        },
+        {
+          "name": "toObject",
+          "type": "() => Record<string, unknown>",
+          "description": "Returns a new field container without cloning its values; object-valued fields retain their references.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Record<string, unknown>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Record<string, unknown>"
+        },
+        {
+          "name": "changes",
+          "type": "() => Record<string, unknown>",
+          "description": "Returns modified field values when an original snapshot exists; otherwise returns all values.\nUse table.getChanges() to obtain persistence entries for changed rows only.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await row.setValue(\"quantity\", 3);\nrow.changes(); // { quantity: 3 }"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Record<string, unknown>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Record<string, unknown>"
+        },
+        {
+          "name": "setValue",
+          "type": "(field: string, value: unknown) => Promise<MutationResult>",
+          "description": "Edits through the owning table. Example: await row.setValue(\"quantity\", 3).",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "field",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "unknown",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(field: string, value: unknown) => Promise<MutationResult>"
+        },
+        {
+          "name": "_applyValues",
+          "type": "(values: Record<string, unknown>) => string[]",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Applies an owned patch after source validation; captures original values on first edit."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "values",
+              "type": "Record<string, unknown>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string[]",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(values: Record<string, unknown>) => string[]"
+        },
+        {
+          "name": "_replaceValues",
+          "type": "(values: Record<string, unknown>) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Replaces accepted values when importing refreshed data; row identity stays unchanged."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "values",
+              "type": "Record<string, unknown>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(values: Record<string, unknown>) => void"
+        },
+        {
+          "name": "_markDeleted",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Marks deletion; values remain available for rejectChanges()."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_acceptChanges",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Accepts the current version and releases the lazy original snapshot."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_rejectChanges",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Restores accepted values. The table separately removes unsaved added rows."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_snapshot",
+          "type": "() => DataRowSnapshot",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Copies row containers and state without cloning field values."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [],
+          "returns": {
+            "type": "DataRowSnapshot",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => DataRowSnapshot"
+        },
+        {
+          "name": "_restore",
+          "type": "(snapshot: DataRowSnapshot) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Restores a captured version without invoking edits or business rules."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "snapshot",
+              "type": "DataRowSnapshot",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(snapshot: DataRowSnapshot) => void"
+        },
+        {
+          "name": "_changeId",
+          "type": "(key: RowIdentity) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Applies a prevalidated server mapping without generating a user edit."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataRow.ts",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "RowIdentity",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(key: RowIdentity) => void"
+        }
+      ]
+    },
+    {
+      "name": "DataRowChangeEvent",
+      "kind": "interface",
+      "type": "DataRowChangeEvent",
+      "description": "Business-rule notification delivered inside the current transaction, never during undo/redo.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataRowChangeEvent",
+      "source": "src/data/dataset/DataEditContext.ts",
+      "members": [
+        {
+          "name": "kind",
+          "type": "\"create\" | \"update\" | \"insert\" | \"delete\" | \"cancel\"",
+          "description": "The local operation being validated or processed by a business rule.\n\n- create: createNewRow() initialized a pending row. It is not in table.rows or query/save\n  results yet. Only rowChanged emits this kind, after identity and defaults are available.\n- update: one or more field values change, on either a confirmed or pending row.\n  rowChanging sees proposed values; rowChanged sees applied values.\n- insert: NewRowSession.insert() includes the pending row in its table.\n  rowChanging sees isPending === true; rowChanged sees isPending === false.\n  This is local insertion, not a server save; the row remains in added state.\n- delete: table.delete() marks a confirmed row deleted, or removes an unsaved added row.\n  Pending rows must be cancelled instead of deleted.\n- cancel: NewRowSession.cancel() discards a pending row without inserting it.\n  rowChanging sees the pending session; rowChanged sees the cancelled session.\n\ncreate and insert are separate steps: a user can fill in a created draft, then insert\nit or cancel it. Lifecycle kinds have empty fields; only update identifies changed fields.\nBusiness events do not emit reset and are not invoked during undo/redo or import.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "table.rowChanged.subscribe(async e => {\n    if (e.kind === \"create\") {\n        await e.context.setValue(e.row, \"quantity\", 1); // initialize the draft\n    } else if (e.kind === \"insert\") {\n        await updateRelatedTotals(e.context); // the row now participates in table queries\n    }\n});"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "kind": "property"
+        },
+        {
+          "name": "row",
+          "type": "DataRow",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "kind": "property"
+        },
+        {
+          "name": "fields",
+          "type": "readonly string[]",
+          "description": "Names of fields that actually change for update; empty for create, insert, delete and cancel.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "kind": "property"
+        },
+        {
+          "name": "oldValues",
+          "type": "Readonly<Record<string, unknown>>",
+          "description": "Previous values of changed fields for updates; the row's values for lifecycle operations.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "kind": "property"
+        },
+        {
+          "name": "values",
+          "type": "Readonly<Record<string, unknown>>",
+          "description": "Proposed values before an update, applied values after it; field values are not cloned.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "kind": "property"
+        },
+        {
+          "name": "context",
+          "type": "DataEditContext",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "kind": "property"
+        },
+        {
+          "name": "reject",
+          "type": "(error: string, fieldErrors?: Record<string, string>) => void",
+          "description": "Rejects the complete transaction. Example: e.reject(\"Quantity must be positive\").",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataEditContext.ts",
+          "parameters": [
+            {
+              "name": "error",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "fieldErrors",
+              "type": "Record<string, string> | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(error: string, fieldErrors?: Record<string, string>) => void"
+        }
+      ]
+    },
+    {
+      "name": "DataRowState",
+      "kind": "type",
+      "type": "any",
+      "description": "Persistence state, independent of whether a new row's editing session is inserted.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataRowState",
+      "source": "src/data/dataset/DataRow.ts",
+      "definition": "\"unchanged\" | \"added\" | \"modified\" | \"deleted\""
+    },
+    {
+      "name": "DataSet",
+      "kind": "class",
+      "type": "DataSet",
+      "description": "Manages named tables and saves their pending changes as one application-defined batch.\nEdit rows through their tables, then call saveChanges() to persist and accept the batch.\nUse rejectChanges() to restore accepted values without sending a request.\nBefore saving, finish active field edits and explicitly insert each new-row session\nthat should be included. To discard edits, cancel pending sessions before rejecting.\nsaveChanges(), acceptChanges() and rejectChanges() throw if any table has a pending\nsession or an unfinished createNewRow() request. They never insert or cancel it automatically.\nEach successful edit and its business effects form one undo operation; failed edits add none.\nUndo/redo restores recorded versions without rerunning business rules.\nSaving, accepting, rejecting or importing refreshed rows clears this dataset's history only.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const dataset = new DataSet({ createRowId: () => crypto.randomUUID() });\nconst orders = dataset.createTable(\"orders\", [{ id: 1, quantity: 2 }]);\nawait orders.rows[0].setValue(\"quantity\", 3);\nawait dataset.undoCoordinator.undo();\nawait dataset.undoCoordinator.redo();"
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataSet",
+      "source": "src/data/dataset/DataSet.ts",
+      "members": [
+        {
+          "name": "undoCoordinator",
+          "type": "UndoCoordinator",
+          "description": "Coordinator shared with tables; call undo()/redo() here, never on individual history scopes.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "undoHistory",
+          "type": "UndoHistory",
+          "description": "This dataset's history scope; save/discard clears only this scope.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createRowId",
+          "type": "NewRowIdFactory | undefined",
+          "description": "Default identity generator passed the requesting table; table-level generators take priority.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/dataset/DataSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "tables",
+          "type": "readonly DataTable[]",
+          "description": "Registered tables in creation order; modifying this list cannot change the dataset.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "isSaving",
+          "type": "boolean",
+          "description": "True while persistence and acceptance are running; editing is blocked during that time.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createTable",
+          "type": "(name: string, values?: readonly Record<string, unknown>[], options?: DataTableOptions) => DataTable",
+          "description": "Creates a named table. Example: createTable(\"orders\", [], { idField: \"orderId\" }).",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "values",
+              "type": "readonly Record<string, unknown>[]",
+              "optional": true,
+              "defaultValue": "[]",
+              "description": ""
+            },
+            {
+              "name": "options",
+              "type": "DataTableOptions | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataTable",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(name: string, values?: readonly Record<string, unknown>[], options?: DataTableOptions) => DataTable"
+        },
+        {
+          "name": "getTable",
+          "type": "(name: string) => DataTable | undefined",
+          "description": "Looks up an existing table; missing names return undefined.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataTable | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(name: string) => DataTable | undefined"
+        },
+        {
+          "name": "getChanges",
+          "type": "() => DataSetChanges",
+          "description": "Returns copied change containers without cloning field values, excluding pending sessions.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [],
+          "returns": {
+            "type": "DataSetChanges",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => DataSetChanges"
+        },
+        {
+          "name": "acceptChanges",
+          "type": "() => void",
+          "description": "Accepts values that have already been persisted externally; does not send a request.\nAll new-row sessions must first be inserted or cancelled, and createNewRow() calls awaited.\nThrows before changing any table if a session or identity request is still pending.\nDo not accept a newly inserted row unless it was included in the successful external save.\nsaveChanges() performs acceptance automatically after a successful save.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await persist(dataset.getChanges());\ndataset.acceptChanges();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "rejectChanges",
+          "type": "() => void",
+          "description": "Restores accepted values and removes confirmed, unsaved insertions without a server request.\nExplicitly cancel pending new-row sessions first; this method does not cancel them.\nThrows before changing any table if any new-row session or identity request is pending.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "for (const newRowSession of newRowSessions) {\n    if (newRowSession.state === \"pending\") await newRowSession.cancel();\n}\ndataset.rejectChanges();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "saveChanges",
+          "type": "(save: DataSetSaveHandler) => Promise<DataSetSaveChangesResult>",
+          "description": "Sends one dataset-wide batch; failures retain edits, success accepts the new baseline.\nNo changes means no request. Editing is blocked while awaiting the application callback.\nAll ID mappings are validated before applying any; row object references are preserved.\nKey mappings update row identities only. Related field values must be updated by the application.\n\nA Save action should finish active field edits, await outstanding createNewRow() calls,\nthen explicitly insert the sessions to include. Check each insert result before saving.\nA failed insert must stop the Save action so the user can correct or cancel that row.\nThis method throws before calling save if any table still has a pending session or\nidentity request, even when getChanges() is empty. No sessions are inserted automatically.\nIf several views share the dataset, coordinate their pending sessions before saving.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await dataset.saveChanges(async changes => api.save(changes));\n// Success may return { success: true, keyMappings: { orders: [\n//     { temporaryKey: \"client-id\", key: 123 }\n// ] } }."
+            },
+            {
+              "name": "example",
+              "text": "// Application-provided UI and persistence callbacks:\nasync function onSaveClick() {\n    try {\n        if (!await finishActiveCellEdit()) return;\n        // newRowSessions contains session handles from completed createNewRow() calls.\n        for (const newRowSession of newRowSessions) {\n            if (newRowSession.state !== \"pending\") continue;\n            const result = await newRowSession.insert();\n            if (!result.success) {\n                showError(result.error);\n                return;\n            }\n        }\n        const result = await dataset.saveChanges(changes => api.save(changes));\n        if (!result.success) showError(result.error);\n    } catch (error) {\n        showError(error instanceof Error ? error.message : String(error));\n    }\n}\nsaveButton.addEventListener(\"click\", onSaveClick);\n\n// A successful local insert remains in getChanges() if the later save fails.\n// Correct the data and retry Save, or explicitly reject the confirmed changes."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "save",
+              "type": "DataSetSaveHandler",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<DataSetSaveChangesResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(save: DataSetSaveHandler) => Promise<DataSetSaveChangesResult>"
+        },
+        {
+          "name": "transaction",
+          "type": "(label: string, operation: (tx: DataTransaction) => void | MutationResult | Promise<void | MutationResult>) => Promise<MutationResult>",
+          "description": "Applies a named edit across tables that succeeds or is rolled back as a whole.\nUse only the supplied tx for mutations.\nValidation failure returns success:false; exceptions reject. Both restore all affected rows.\nUI notifications run only after success. Observer errors do not roll back committed edits.\nAwait context operations. Save, import, acceptance and unrelated edits are blocked while active.\ntx.context provides dataset access with edits bound to this transaction.\nAll direct and business-rule edits are recorded as one operation on success.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await dataset.transaction(\"Change quantities\", async tx => {\n    await tx.update(orders, firstRow, { quantity: 5 });\n    await tx.update(orders, secondRow, { quantity: 10 });\n});"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "label",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "operation",
+              "type": "(tx: DataTransaction) => void | MutationResult | Promise<void | MutationResult>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(label: string, operation: (tx: DataTransaction) => void | MutationResult | Promise<void | MutationResult>) => Promise<MutationResult>"
+        },
+        {
+          "name": "_mutate",
+          "type": "<T>(operation: string, transaction: DataTransaction | undefined, mutation: (tx: DataTransaction) => T | Promise<T>, rejected?: (result: Extract<MutationResult, { success: false; }>) => T) => Promise<T>",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Executes a mutation in its supplied context, or creates an independent transaction."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "operation",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "transaction",
+              "type": "DataTransaction | undefined",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "mutation",
+              "type": "(tx: DataTransaction) => T | Promise<T>",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "rejected",
+              "type": "((result: Extract<MutationResult, { success: false; }>) => T) | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<T>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "<T>(operation: string, transaction: DataTransaction | undefined, mutation: (tx: DataTransaction) => T | Promise<T>, rejected?: (result: Extract<MutationResult, { success: false; }>) => T) => Promise<T>"
+        },
+        {
+          "name": "_clearHistory",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Establishes a new dataset history baseline without clearing other application scopes."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_restoreHistory",
+          "type": "(restorations: readonly (() => void)[]) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Restores recorded versions without business events or additional history entries."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "restorations",
+              "type": "readonly (() => void)[]",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(restorations: readonly (() => void)[]) => void"
+        },
+        {
+          "name": "_ensureTransaction",
+          "type": "(transaction: DataTransaction) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Rejects foreign or completed transaction contexts."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "transaction",
+              "type": "DataTransaction",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(transaction: DataTransaction) => void"
+        },
+        {
+          "name": "ensureEditable",
+          "type": "(operation: string, transaction?: DataTransaction) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Checks save, transaction ownership and notification reentrancy before mutations."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataSet.ts",
+          "parameters": [
+            {
+              "name": "operation",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "transaction",
+              "type": "DataTransaction | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(operation: string, transaction?: DataTransaction) => void"
+        }
+      ]
+    },
+    {
+      "name": "DataSetChanges",
+      "kind": "type",
+      "type": "any",
+      "description": "Transport changes grouped by table name; update entries contain changed fields only.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetChanges",
+      "source": "src/data/dataset/DataSet.ts",
+      "definition": "Record<string, ChangeSet>"
+    },
+    {
+      "name": "DataSetOptions",
+      "kind": "interface",
+      "type": "DataSetOptions",
+      "description": "Configuration shared by the dataset's tables.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetOptions",
+      "source": "src/data/dataset/DataSet.ts",
+      "members": [
+        {
+          "name": "undoCoordinator",
+          "type": "UndoCoordinator | undefined",
+          "description": "Shared application coordinator. If omitted, this dataset creates its own coordinator.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/dataset/DataSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createRowId",
+          "type": "NewRowIdFactory | undefined",
+          "description": "Used by tables without their own createRowId. Receives the requesting DataTable.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "createRowId: table => table.name + \"-\" + crypto.randomUUID()"
+            }
+          ],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/dataset/DataSet.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "DataSetSaveChangesResult",
+      "kind": "type",
+      "type": "any",
+      "description": "Result of saving the complete batch. Mappings apply to successfully inserted rows, grouped by table.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetSaveChangesResult",
+      "source": "src/data/dataset/DataSet.ts",
+      "definition": "| { success: true; keyMappings?: Record<string, KeyMapping[]> }\n    | { success: false; error: string; fieldErrors?: Record<string, string> }"
+    },
+    {
+      "name": "DataSetSaveHandler",
+      "kind": "type",
+      "type": "any",
+      "description": "Persists one batch for all changed tables; resolve success only after the complete batch is saved.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetSaveHandler",
+      "source": "src/data/dataset/DataSet.ts",
+      "definition": "(changes: DataSetChanges) => Promise<DataSetSaveChangesResult>"
+    },
+    {
       "name": "DataSource",
       "kind": "interface",
       "type": "DataSource<TRow>",
-      "description": "Query-level access to row data, with optional native grouping support.",
+      "description": "Query and optional row-edit access, independent of DataTable or a remote implementation.",
       "tags": [],
       "topics": [],
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/DataSource",
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/DataSource.ts",
       "members": [
         {
           "name": "loadData",
@@ -1837,7 +3461,7 @@
           ],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/DataSource.ts",
           "parameters": [
             {
               "name": "args",
@@ -1854,13 +3478,101 @@
           "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
         },
         {
+          "name": "changed",
+          "type": "Observable<DataSourceChanged<TRow>> | undefined",
+          "description": "Optional notifications; consumers dispose their subscription, never the source's event.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "undoCoordinator",
+          "type": "UndoCoordinator | undefined",
+          "description": "Optional shared history. Execute undo/redo only through this coordinator.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createNewRow",
+          "type": "(() => Promise<NewRowSession<TRow>>) | undefined",
+          "description": "Creates an independently owned new-row session; multiple sessions may coexist.\nThe row has a stable temporary identity and is excluded from normal queries\nuntil insert. Pending edits may read other rows but must not mutate them.\nExample: const newRowSession = await source.createNewRow?.();",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<NewRowSession<TRow>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(() => Promise<NewRowSession<TRow>>) | undefined"
+        },
+        {
+          "name": "update",
+          "type": "((row: TRow, values: Record<string, unknown>) => Promise<MutationResult>) | undefined",
+          "description": "Applies values to the actual source row, including a pending session row.\nEach successful command and its business effects form one transaction if\nthe source supports history. Example: await source.update?.(row, { price: 20 }).",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "values",
+              "type": "Record<string, unknown>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow, values: Record<string, unknown>) => Promise<MutationResult>) | undefined"
+        },
+        {
+          "name": "delete",
+          "type": "((row: TRow) => Promise<MutationResult>) | undefined",
+          "description": "Deletes a confirmed row. Use the pending session's cancel() for an unconfirmed row.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow) => Promise<MutationResult>) | undefined"
+        },
+        {
           "name": "getRowId",
           "type": "((row: TRow) => RowIdentity) | undefined",
           "description": "Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children.",
           "tags": [],
           "topics": [],
           "optional": true,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/DataSource.ts",
           "parameters": [
             {
               "name": "row",
@@ -1883,7 +3595,7 @@
           "tags": [],
           "topics": [],
           "optional": true,
-          "source": "src/components/datagrid/DataSource.ts",
+          "source": "src/data/DataSource.ts",
           "parameters": [
             {
               "name": "row",
@@ -1902,16 +3614,1279 @@
       ]
     },
     {
-      "name": "DataType",
-      "kind": "type",
-      "type": "any",
-      "description": "Semantic type of the value stored by a data column.",
+      "name": "DataSourceChanged",
+      "kind": "interface",
+      "type": "DataSourceChanged<TRow>",
+      "description": "Working data changed, not necessarily persisted data. Pending rows notify too.\n`row` is the actual source object; absent row means a broader invalidation.\nSources supporting this event must notify for successful mutations and replay.\nComponents may repaint pending values without reloading/reordering the dataset.",
       "tags": [],
       "topics": [],
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
+      "path": "/api-reference/DataSourceChanged",
+      "source": "src/data/DataSource.ts",
+      "members": [
+        {
+          "name": "kind",
+          "type": "\"create\" | \"update\" | \"insert\" | \"delete\" | \"cancel\" | \"reset\"",
+          "description": "The completed working-data operation. For DataTable, emitted only after transaction success.\ncreate initializes a pending draft outside table queries; insert includes that draft locally\ninto the table (not to a server). update changes field values, including pending values.\ndelete removes/marks a confirmed row; cancel discards a pending draft.\nreset requests a broader repaint after undo/redo, import, acceptance or rejection.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "row",
+          "type": "TRow | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "fields",
+          "type": "readonly string[] | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "DataTable",
+      "kind": "class",
+      "type": "DataTable",
+      "description": "Stores rows indexed by identity and exposes them through the DataSource contract.\nupdate() and delete() change local data; getChanges() returns the batch for persistence.\nNew-row sessions remain outside queries until insert() and can be discarded with cancel().",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const table = dataset.createTable(\"orders\", [], { createRowId: () => crypto.randomUUID() });\nconst newRowSession = await table.createNewRow();\nawait newRowSession.row.setValue(\"quantity\", 2);\nawait newRowSession.insert();\n// dataset.saveChanges(...) persists the inserted row."
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataTable",
+      "source": "src/data/dataset/DataTable.ts",
+      "members": [
+        {
+          "name": "idField",
+          "type": "string",
+          "description": "Field containing each row's unique identity; defaults to id.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "changed",
+          "type": "ObservableEvent<DataSourceChanged<DataRow>>",
+          "description": "Reports local row changes, including edits in pending sessions.\nSubscribe to repaint consumers; dispose the returned subscription when no longer needed.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "const subscription = table.changed.subscribe(event => console.log(event.kind, event.row?.key));"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "rowChanging",
+          "type": "AsyncObservableEvent<DataRowChangeEvent>",
+          "description": "Before update, insertion, deletion or cancellation, inside the current transaction.\nreject() aborts the complete edit and stops dispatch. Async handlers are awaited in subscription order.\nCreation reports rowChanged after defaults and identity have been initialized.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "table.rowChanging.subscribe(e => {\n    if (e.kind === \"update\" && Number(e.values.quantity) < 0)\n        e.reject(\"Quantity must be nonnegative\", { quantity: \"Must be nonnegative\" });\n});"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "rowChanged",
+          "type": "AsyncObservableEvent<DataRowChangeEvent>",
+          "description": "After a mutation, inside the transaction; also reports creation and pending-row edits.\nDerived edits join the same undo operation. Never emitted during replay, import or acceptance.\nAsync handlers are awaited in subscription order. Await or return derived edits before the next rule.\nPending-row rules can initialize that row, but cannot modify other rows until insertion.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "table.rowChanged.subscribe(async e => {\n    if (e.fields.includes(\"quantity\"))\n        await e.context.setValue(e.row, \"total\", Number(e.row.getValue(\"quantity\")) * 10);\n});"
+            },
+            {
+              "name": "example",
+              "text": "table.rowChanged.subscribe(async e => {\n    if (e.fields.includes(\"code\")) {\n        const price = await lookupPrice(e.row.getValue(\"code\"));\n        await e.context.setValue(e.row, \"price\", price);\n    }\n});"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "undoCoordinator",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").UndoCoordinator",
+          "description": "Shared dataset coordinator; undo/redo must be executed through it.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "rows",
+          "type": "readonly DataRow[]",
+          "description": "Confirmed rows, including deleted entries awaiting acceptance; returns a copied list.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getRow",
+          "type": "(key: RowIdentity) => DataRow | undefined",
+          "description": "Finds a confirmed row by current ID. Pending rows are owned by their session handles.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "RowIdentity",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataRow | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(key: RowIdentity) => DataRow | undefined"
+        },
+        {
+          "name": "getRowId",
+          "type": "(row: DataRow) => RowIdentity",
+          "description": "Stable/current row ID for the DataSource contract. Mapping preserves the row reference.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "RowIdentity",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow) => RowIdentity"
+        },
+        {
+          "name": "importRows",
+          "type": "(values: readonly Record<string, unknown>[], preserveChanges?: boolean) => DataRow[]",
+          "description": "Imports refreshed values by ID, preserving row references and, by default, local edits.\nExample: table.importRows(serverPage). Pending IDs cannot be overwritten by imports.\nIdentity validation completes for the entire batch before any existing row changes.\nA nonempty import clears the dataset's complete history scope to prevent stale replay.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "values",
+              "type": "readonly Record<string, unknown>[]",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "preserveChanges",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": "true",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataRow[]",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(values: readonly Record<string, unknown>[], preserveChanges?: boolean) => DataRow[]"
+        },
+        {
+          "name": "createNewRow",
+          "type": "(transaction?: DataTransaction, context?: DataEditContext) => Promise<NewRowSession<DataRow>>",
+          "description": "Creates a pending added row using table.createRowId or the dataset's default generator.\nThe generator receives this table. Its result must be unique among stored and pending rows.\ninsert() includes the row in queries and persistence changes; cancel() discards it.\nKeep the returned session handle until it is inserted or cancelled.\nAwait this call before saving or accepting/rejecting changes; an unfinished identity\nrequest blocks those operations, as does a session whose state is still pending.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "const newRowSession = await table.createNewRow();\nawait table.update(newRowSession.row, { quantity: 3 });\nawait newRowSession.insert();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "transaction",
+              "type": "DataTransaction | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "DataEditContext | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<NewRowSession<DataRow>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(transaction?: DataTransaction, context?: DataEditContext) => Promise<NewRowSession<DataRow>>"
+        },
+        {
+          "name": "_insertNewRow",
+          "type": "(row: DataRow, transaction?: DataTransaction, context?: DataEditContext) => Promise<MutationResult>",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Inserts the table-owned session using an explicit or automatic transaction."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "transaction",
+              "type": "DataTransaction | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "DataEditContext | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, transaction?: DataTransaction, context?: DataEditContext) => Promise<MutationResult>"
+        },
+        {
+          "name": "_cancelNewRow",
+          "type": "(row: DataRow, transaction?: DataTransaction, context?: DataEditContext) => Promise<void>",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Cancels the table-owned session using an explicit or automatic transaction."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "transaction",
+              "type": "DataTransaction | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "DataEditContext | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, transaction?: DataTransaction, context?: DataEditContext) => Promise<void>"
+        },
+        {
+          "name": "update",
+          "type": "(row: DataRow, values: Record<string, unknown>, transaction?: DataTransaction, context?: DataEditContext) => Promise<MutationResult>",
+          "description": "Updates field values without cloning them, in an automatic transaction; use tx.update() to join a larger edit.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "values",
+              "type": "Record<string, unknown>",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "transaction",
+              "type": "DataTransaction | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "DataEditContext | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, values: Record<string, unknown>, transaction?: DataTransaction, context?: DataEditContext) => Promise<MutationResult>"
+        },
+        {
+          "name": "delete",
+          "type": "(row: DataRow, transaction?: DataTransaction, context?: DataEditContext) => Promise<MutationResult>",
+          "description": "Marks an existing row deleted; removes an unsaved added row without a delete entry.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "transaction",
+              "type": "DataTransaction | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "DataEditContext | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, transaction?: DataTransaction, context?: DataEditContext) => Promise<MutationResult>"
+        },
+        {
+          "name": "loadData",
+          "type": "(args: QueryArgs) => Promise<DataResult<DataRow>>",
+          "description": "Loads confirmed, non-deleted rows. Pending rows never participate in pages, counts or summaries.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "args",
+              "type": "QueryArgs",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<DataResult<DataRow>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(args: QueryArgs) => Promise<DataResult<DataRow>>"
+        },
+        {
+          "name": "getChanges",
+          "type": "() => ChangeSet",
+          "description": "Returns confirmed insert/update/remove changes. Pending sessions are excluded.\nInsert entries contain all field values; update entries contain only modified fields.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "table.getChanges(); // [{ type: \"update\", key: 1, data: { quantity: 3 } }]"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [],
+          "returns": {
+            "type": "ChangeSet",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => ChangeSet"
+        },
+        {
+          "name": "acceptChanges",
+          "type": "() => void",
+          "description": "Accepts externally persisted values as the new baseline; does not save them.\nExplicitly insert or cancel this table's pending sessions and await new-row creation first.\nThrows without accepting changes if any session or identity request is still pending.\nClears the complete dataset history scope, including operations involving other tables.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await persist(table.getChanges());\ntable.acceptChanges();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "rejectChanges",
+          "type": "() => void",
+          "description": "Restores accepted values, removes unsaved added rows and restores deleted rows.\nExplicitly cancel pending sessions first; throws without changing rows if any remain\nor a createNewRow() request has not completed.\nClears the complete dataset history scope, including operations involving other tables.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "if (newRowSession.state === \"pending\") await newRowSession.cancel();\ntable.rejectChanges();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "ensureNoPending",
+          "type": "(operation: string) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Rejects an operation while a new-row session or identity request is pending.\nCallers must await row creation and explicitly insert or cancel the returned handles.\nDoes not change session state or row values."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "operation",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(operation: string) => void"
+        },
+        {
+          "name": "_acceptChanges",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Accepts after successful dataset save while the save lock is still held."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_validateKeyMappings",
+          "type": "(mappings: readonly KeyMapping[]) => Map<DataRow, RowIdentity>",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Validates the entire mapping without changing rows or indexes, including key swaps."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "mappings",
+              "type": "readonly KeyMapping[]",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Map<DataRow, RowIdentity>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(mappings: readonly KeyMapping[]) => Map<DataRow, RowIdentity>"
+        },
+        {
+          "name": "_applyKeyMappings",
+          "type": "(mappings: Map<DataRow, RowIdentity>) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Applies a prevalidated mapping and rebuilds the index, preserving all row objects."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "mappings",
+              "type": "Map<DataRow, RowIdentity>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(mappings: Map<DataRow, RowIdentity>) => void"
+        },
+        {
+          "name": "_equals",
+          "type": "(field: string, a: unknown, b: unknown) => boolean",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Uses the table's configured equality consistently for edits and persistence differences."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "field",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "a",
+              "type": "unknown",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "b",
+              "type": "unknown",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(field: string, a: unknown, b: unknown) => boolean"
+        },
+        {
+          "name": "_isPending",
+          "type": "(row: DataRow) => boolean",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Identifies sessions still outside confirmed queries."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow) => boolean"
+        },
+        {
+          "name": "_isCreating",
+          "type": "() => boolean",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Blocks replay while asynchronous identity/default generation is still running."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
+        }
+      ]
+    },
+    {
+      "name": "DataTableOptions",
+      "kind": "interface",
+      "type": "DataTableOptions",
+      "description": "Configures identity lookup and initial values for new rows.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataTableOptions",
+      "source": "src/data/dataset/DataTable.ts",
+      "members": [
+        {
+          "name": "idField",
+          "type": "string | undefined",
+          "description": "Identity field. Default: id. String and numeric keys are both supported.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaults",
+          "type": "Record<string, unknown> | ((table: DataTable) => Record<string, unknown> | Promise<Record<string, unknown>>) | undefined",
+          "description": "Initial field values for each new row; object-valued fields retain their references.\nA factory runs for every session and may be asynchronous. createRowId supplies the identity.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "defaults: () => ({ quantity: 0, createdAt: new Date(), ownerId: currentUser.id })"
+            }
+          ],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "equals",
+          "type": "((field: string, a: unknown, b: unknown) => boolean) | undefined",
+          "description": "Synchronous, side-effect-free comparison used for edits and accepted-value differences.\nDefaults to Object.is. Equal values retain the current reference and emit no business events.\nMust be reflexive, symmetric and transitive. A thrown exception aborts an edit.\nIn-place object changes cannot be detected because field values are not cloned.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "equals: (field, a, b) => field === \"code\"\n    ? String(a).toLowerCase() === String(b).toLowerCase()\n    : Object.is(a, b)"
+            }
+          ],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createRowId",
+          "type": "NewRowIdFactory | undefined",
+          "description": "Generates new-row identities for this table, overriding the dataset generator.\nReceives this table and may return a Promise. Example: createRowId: () => crypto.randomUUID().",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "DataTransaction",
+      "kind": "class",
+      "type": "DataTransaction",
+      "description": "Explicit ownership context for a dataset edit that succeeds or is rolled back as a whole.\nUse its methods inside dataset.transaction(); ordinary table edits cannot join implicitly.\nField values are not cloned. Rollback restores previous references, not changes inside objects.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "await dataset.transaction(\"Change quantities\", async tx => {\n    await tx.update(orders, firstRow, { quantity: 5 });\n    await tx.update(orders, secondRow, { quantity: 10 });\n});"
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataTransaction",
+      "source": "src/data/dataset/DataTransaction.ts",
+      "members": [
+        {
+          "name": "context",
+          "type": "DataEditContext",
+          "description": "Dataset access bound to this transaction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "kind": "property"
+        },
+        {
+          "name": "update",
+          "type": "(table: DataTable, row: DataRow, values: Record<string, unknown>) => Promise<MutationResult>",
+          "description": "Updates a row in this transaction; an unsuccessful result aborts the complete transaction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "table",
+              "type": "DataTable",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "values",
+              "type": "Record<string, unknown>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(table: DataTable, row: DataRow, values: Record<string, unknown>) => Promise<MutationResult>"
+        },
+        {
+          "name": "delete",
+          "type": "(table: DataTable, row: DataRow) => Promise<MutationResult>",
+          "description": "Deletes a confirmed row as part of this transaction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "table",
+              "type": "DataTable",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(table: DataTable, row: DataRow) => Promise<MutationResult>"
+        },
+        {
+          "name": "createNewRow",
+          "type": "(table: DataTable) => Promise<NewRowSession<DataRow>>",
+          "description": "Creates a pending session in this transaction; rollback cancels the created session.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "table",
+              "type": "DataTable",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<NewRowSession<DataRow>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(table: DataTable) => Promise<NewRowSession<DataRow>>"
+        },
+        {
+          "name": "insert",
+          "type": "(newRowSession: NewRowSession<DataRow>) => Promise<MutationResult>",
+          "description": "Confirms a session locally; rollback restores its previous state and membership.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "newRowSession",
+              "type": "NewRowSession<DataRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(newRowSession: NewRowSession<DataRow>) => Promise<MutationResult>"
+        },
+        {
+          "name": "cancel",
+          "type": "(newRowSession: NewRowSession<DataRow>) => Promise<void>",
+          "description": "Cancels a session; rollback restores the same pending row and session objects.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "newRowSession",
+              "type": "NewRowSession<DataRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(newRowSession: NewRowSession<DataRow>) => Promise<void>"
+        },
+        {
+          "name": "_ensureActive",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Checks ownership and lifetime, including after an asynchronous continuation."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_hasCaptured",
+          "type": "(row: DataRow) => boolean",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Avoids repeated snapshots when a row is edited several times."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow) => boolean"
+        },
+        {
+          "name": "_capture",
+          "type": "(row: DataRow, restore: () => void, captureAfter: () => () => void) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Captures each affected row once, before its first mutation."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "restore",
+              "type": "() => void",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "captureAfter",
+              "type": "() => () => void",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, restore: () => void, captureAfter: () => () => void) => void"
+        },
+        {
+          "name": "_notify",
+          "type": "(table: DataTable, event: DataSourceChanged<DataRow>) => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Defers UI observation until the complete transaction has succeeded."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "table",
+              "type": "DataTable",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "event",
+              "type": "DataSourceChanged<DataRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(table: DataTable, event: DataSourceChanged<DataRow>) => void"
+        },
+        {
+          "name": "_fail",
+          "type": "(result: Extract<MutationResult, { success: false; }>) => MutationResult",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Remembers validation rejection even when the caller ignores its result."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "result",
+              "type": "{ success: false; error: string; fieldErrors?: Record<string, string>; }",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "MutationResult",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(result: Extract<MutationResult, { success: false; }>) => MutationResult"
+        },
+        {
+          "name": "_throwIfFailed",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Stops processing after a business rule rejects the edit."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_isValidationFailure",
+          "type": "(error: unknown) => boolean",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Distinguishes expected business rejection from an exception."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "error",
+              "type": "unknown",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(error: unknown) => boolean"
+        },
+        {
+          "name": "_result",
+          "type": "() => MutationResult",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Returns the first validation rejection or success."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "MutationResult",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => MutationResult"
+        },
+        {
+          "name": "_finish",
+          "type": "() => Promise<MutationResult>",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Waits for started context operations so an unawaited operation cannot escape rollback."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<MutationResult>"
+        },
+        {
+          "name": "_settle",
+          "type": "() => Promise<void>",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Waits for all started operations before restoring a failed transaction."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<void>"
+        },
+        {
+          "name": "_rollback",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Restores captured row state and membership in reverse mutation order."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_operation",
+          "type": "() => UndoOperation | undefined",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Captures the completed edit for replay without rerunning business rules."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "UndoOperation | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => UndoOperation | undefined"
+        },
+        {
+          "name": "_publish",
+          "type": "() => void",
+          "description": "",
+          "tags": [
+            {
+              "name": "internal",
+              "text": "Delivers committed notifications; observer errors do not reverse the transaction."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "_track",
+          "type": "<T>(operation: Promise<T>) => Promise<T>",
+          "description": "Tracks context operations, recording asynchronous failures for transaction completion.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTransaction.ts",
+          "parameters": [
+            {
+              "name": "operation",
+              "type": "Promise<T>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<T>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "<T>(operation: Promise<T>) => Promise<T>"
+        }
+      ]
+    },
+    {
+      "name": "DataType",
+      "kind": "type",
+      "type": "any",
+      "description": "Semantic type of a stored value, independent of a particular UI component.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
       "path": "/api-reference/DataType",
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/DataField.ts",
       "definition": "\"string\" | \"number\" | \"boolean\" | \"date\" | \"datetime\" | \"object\""
     },
     {
@@ -2440,10 +5415,10 @@
       "tags": [],
       "topics": [],
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/GroupInterval",
-      "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "| \"year\"\r\n    | \"yearQuarter\"\r\n    | \"quarter\"\r\n    | \"yearMonth\"\r\n    | \"month\"\r\n    | \"week\"\r\n    | \"day\"\r\n    | \"dayOfWeek\"\r\n    | \"hour\"\r\n    | \"minute\"\r\n    | \"second\"\r\n    | \"firstChar\"\r\n    | (string & {})"
+      "source": "src/data/grouping.ts",
+      "definition": "| \"year\"\n    | \"yearQuarter\"\n    | \"quarter\"\n    | \"yearMonth\"\n    | \"month\"\n    | \"week\"\n    | \"day\"\n    | \"dayOfWeek\"\n    | \"hour\"\n    | \"minute\"\n    | \"second\"\n    | \"firstChar\"\n    | (string & {})"
     },
     {
       "name": "GroupIntervalDefinition",
@@ -2453,10 +5428,117 @@
       "tags": [],
       "topics": [],
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/GroupIntervalDefinition",
-      "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\r\n    name: string;\r\n    text: string;\r\n    getGroupValue: (row: TRow, value: any) => any;\r\n}"
+      "source": "src/data/grouping.ts",
+      "definition": "{\n    name: string;\n    text: string;\n    getGroupValue: (row: TRow, value: any) => any;\n}"
+    },
+    {
+      "name": "GroupItem",
+      "kind": "type",
+      "type": "any",
+      "description": "A single group bucket produced when a QueryArgs.groupColumn is set.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/GroupItem",
+      "source": "src/data/DataSource.ts",
+      "definition": "{\n    groupField: string;\n    groupValue: any;\n    count: number;\n    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */\n    summaryValues?: Record<string, any>;\n}"
+    },
+    {
+      "name": "KeyMapping",
+      "kind": "interface",
+      "type": "KeyMapping",
+      "description": "Maps a client-side temporary key to the key assigned by the server.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/KeyMapping",
+      "source": "src/data/ChangeSet.ts",
+      "members": [
+        {
+          "name": "temporaryKey",
+          "type": "RowIdentity",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ChangeSet.ts",
+          "kind": "property"
+        },
+        {
+          "name": "key",
+          "type": "RowIdentity",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ChangeSet.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "LocalGroupingDataSource",
+      "kind": "class",
+      "type": "LocalGroupingDataSource<TRow>",
+      "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.",
+      "tags": [],
+      "topics": [],
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/LocalGroupingDataSource",
+      "source": "src/data/LocalGroupingDataSource.ts",
+      "members": [
+        {
+          "name": "loadData",
+          "type": "(args: QueryArgs) => Promise<DataResult<TRow>>",
+          "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupColumn` is not provided, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "parameters": [
+            {
+              "name": "args",
+              "type": "QueryArgs",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<DataResult<TRow>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
+        },
+        {
+          "name": "getRowId",
+          "type": "(row: TRow) => any",
+          "description": "Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "any",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: TRow) => any"
+        }
+      ]
     },
     {
       "name": "MenuItem",
@@ -2639,6 +5721,108 @@
           "optional": true,
           "source": "src/components/popup/PopupMenu.ts",
           "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "MutationResult",
+      "kind": "type",
+      "type": "any",
+      "description": "Result of a row mutation. Expected validation failures resolve; transport failures reject.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/MutationResult",
+      "source": "src/data/DataSource.ts",
+      "definition": "{ success: true } | {\n    success: false;\n    error: string;\n    /** Optional field-specific validation messages, e.g. { quantity: \"Must be positive\" }. */\n    fieldErrors?: Record<string, string>;\n}"
+    },
+    {
+      "name": "NewRowIdFactory",
+      "kind": "type",
+      "type": "any",
+      "description": "Generates a unique identity for a new row. Receives the table requesting the identity.\nReturn a string or finite number, directly or asynchronously.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const createRowId: NewRowIdFactory = table => table.name + \"-\" + crypto.randomUUID();"
+        }
+      ],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/NewRowIdFactory",
+      "source": "src/data/dataset/DataSet.ts",
+      "definition": "(table: DataTable) => RowIdentity | Promise<RowIdentity>"
+    },
+    {
+      "name": "NewRowSession",
+      "kind": "interface",
+      "type": "NewRowSession<TRow>",
+      "description": "A new-row editing session owned by its source.\nThe application retains this handle and explicitly chooses insert() or cancel().\nFor DataTable, pending sessions block saveChanges(), acceptChanges() and rejectChanges().",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const newRowSession = await source.createNewRow!();\nawait source.update!(newRowSession.row, { quantity: 3 });\nconst result = await newRowSession.insert();\nif (!result.success) showError(result.error);"
+        }
+      ],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/NewRowSession",
+      "source": "src/data/DataSource.ts",
+      "members": [
+        {
+          "name": "row",
+          "type": "TRow",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "state",
+          "type": "\"pending\" | \"inserted\" | \"cancelled\"",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "insert",
+          "type": "() => Promise<MutationResult>",
+          "description": "Confirms insertion. A rejected result leaves the session pending for correction.\nFor DataTable this is local; remote sources may persist here. Repeated insert\nafter success is harmless. Insert after cancellation must reject.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataSource.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<MutationResult>"
+        },
+        {
+          "name": "cancel",
+          "type": "() => Promise<void>",
+          "description": "Discards this pending session. Repeated cancel is harmless; cancel after insert rejects.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataSource.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<void>"
         }
       ]
     },
@@ -2884,6 +6068,19 @@
           "signature": "() => any"
         }
       ]
+    },
+    {
+      "name": "OrderByToken",
+      "kind": "type",
+      "type": "any",
+      "description": "A sort instruction: either a bare field name, or a [field, direction] pair.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/OrderByToken",
+      "source": "src/data/grouping.ts",
+      "definition": "string | [string, \"asc\" | \"desc\"]"
     },
     {
       "name": "Popover",
@@ -3497,6 +6694,140 @@
       ]
     },
     {
+      "name": "QueryArgs",
+      "kind": "interface",
+      "type": "QueryArgs",
+      "description": "A single page/query request made against a DataSource.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/QueryArgs",
+      "source": "src/data/DataSource.ts",
+      "members": [
+        {
+          "name": "filter",
+          "type": "DataFilter | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "orderby",
+          "type": "OrderByToken[] | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "select",
+          "type": "string[] | undefined",
+          "description": "Field names to include; omit to fetch all fields.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "skip",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "top",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "groupColumn",
+          "type": "string | undefined",
+          "description": "Column to bucket rows by; when set, the result carries `groups` instead of `dataItems`.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "groupInterval",
+          "type": "GroupInterval | undefined",
+          "description": "Interval requested for groupColumn; arbitrary strings may be server-defined.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "groupSummary",
+          "type": "{ field: string; summaryType: SummaryType; }[] | undefined",
+          "description": "Aggregations to compute per group, per field.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "totalSummary",
+          "type": "SummaryRequest[] | undefined",
+          "description": "Optional, demand-driven aggregations for the complete filtered result,\nindependently of paging and grouping. When omitted, the datasource\nshould not calculate or return total summaries.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "parentId",
+          "type": "any",
+          "description": "Value to match against the data source's parent-reference field; present only in hierarchical (parent/child) mode.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "requireTotalCount",
+          "type": "boolean | undefined",
+          "description": "Whether the caller needs an accurate total row/group count back.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "abortSignal",
+          "type": "AbortSignal | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "RemixIcon",
       "kind": "type",
       "type": "any",
@@ -3526,14 +6857,27 @@
       "name": "RowIdentity",
       "kind": "type",
       "type": "any",
-      "description": "Represents data row ID.",
+      "description": "Stable row identity shared by data sources, changes and UI components.",
       "tags": [],
       "topics": [],
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/RowIdentity",
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/RowIdentity.ts",
       "definition": "string | number"
+    },
+    {
+      "name": "SaveChangesResult",
+      "kind": "type",
+      "type": "any",
+      "description": "Result returned after a data source processes a batch of edits.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/SaveChangesResult",
+      "source": "src/data/ChangeSet.ts",
+      "definition": "| {\n        success: true;\n        /** Present when the server replaced one or more temporary insert keys. */\n        keyMappings?: KeyMapping[];\n    }\n    | {\n        success: false;\n        /** A user-facing or application-level explanation of the rejected batch. */\n        error: string;\n    }"
     },
     {
       "name": "Scheduler",
@@ -4556,9 +7900,9 @@
       "tags": [],
       "topics": [],
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/SummaryContext",
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/summary.ts",
       "members": [
         {
           "name": "field",
@@ -4567,7 +7911,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "kind": "property"
         },
         {
@@ -4577,7 +7921,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "kind": "property"
         },
         {
@@ -4587,7 +7931,7 @@
           "tags": [],
           "topics": [],
           "optional": true,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "kind": "property"
         },
         {
@@ -4597,7 +7941,7 @@
           "tags": [],
           "topics": [],
           "optional": true,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "kind": "property"
         }
       ]
@@ -4610,9 +7954,9 @@
       "tags": [],
       "topics": [],
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/SummaryDefinition",
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/summary.ts",
       "members": [
         {
           "name": "name",
@@ -4621,7 +7965,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "kind": "property"
         },
         {
@@ -4631,7 +7975,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "kind": "property"
         },
         {
@@ -4641,7 +7985,7 @@
           "tags": [],
           "topics": [],
           "optional": true,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "kind": "property"
         },
         {
@@ -4651,7 +7995,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "parameters": [
             {
               "name": "context",
@@ -4674,7 +8018,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "parameters": [
             {
               "name": "state",
@@ -4715,7 +8059,7 @@
           "tags": [],
           "topics": [],
           "optional": false,
-          "source": "src/components/datagrid/DataColumn.ts",
+          "source": "src/data/summary.ts",
           "parameters": [
             {
               "name": "state",
@@ -4749,7 +8093,7 @@
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/SummaryRequest",
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/summary.ts",
       "definition": "{ field: string, summaryType: SummaryType }"
     },
     {
@@ -4762,20 +8106,20 @@
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/SummaryResult",
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/summary.ts",
       "definition": "{ field: string, summaryType: SummaryType, value: any }"
     },
     {
       "name": "SummaryType",
       "kind": "type",
       "type": "any",
-      "description": "Aggregation kind applied to a group column's summary value.\r\n`count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`\nrequire a numeric column.",
+      "description": "Aggregation kind applied to a group column's summary value.\n`count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`\nrequire a numeric column.",
       "tags": [],
       "topics": [],
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/SummaryType",
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/data/summary.ts",
       "definition": "\"count\" | \"sum\" | \"avg\" | \"min\" | \"max\" | \"distinct\" | string"
     },
     {
@@ -5045,6 +8389,365 @@
       "path": "/api-reference/UiStyle",
       "source": "src/core/UiStyle.ts",
       "definition": "| \"d-none\"\r\n  | \"d-block\"\r\n  | \"d-inline\"\r\n  | \"d-inline-block\"\r\n  | \"d-flex\"\r\n  | \"d-inline-flex\"\r\n  | \"d-grid\"\r\n\r\n  // ------------------\r\n  // Flex direction\r\n  // ------------------\r\n  | \"flex-row\"\r\n  | \"flex-row-reverse\"\r\n  | \"flex-col\"\r\n  | \"flex-col-reverse\"\r\n\r\n  // ------------------\r\n  // Flex wrap\r\n  // ------------------\r\n  | \"flex-wrap\"\r\n  | \"flex-nowrap\"\r\n  | \"flex-wrap-reverse\"\r\n\r\n  // ------------------\r\n  // Justify\r\n  // ------------------\r\n  | \"justify-start\"\r\n  | \"justify-center\"\r\n  | \"justify-end\"\r\n  | \"justify-between\"\r\n  | \"justify-around\"\r\n  | \"justify-evenly\"\r\n\r\n  // ------------------\r\n  // Align items\r\n  // ------------------\r\n  | \"items-start\"\r\n  | \"items-center\"\r\n  | \"items-end\"\r\n  | \"items-stretch\"\r\n  | \"items-baseline\"\r\n\r\n  // ------------------\r\n  // Align self\r\n  // ------------------\r\n  | \"self-auto\"\r\n  | \"self-start\"\r\n  | \"self-center\"\r\n  | \"self-end\"\r\n  | \"self-stretch\"\r\n\r\n  // ------------------\r\n  // Gap\r\n  // ------------------\r\n  | \"gap-0\" | \"gap-1\" | \"gap-2\" | \"gap-3\" | \"gap-4\" | \"gap-5\"\r\n\r\n  // ------------------\r\n  // Flex sizing\r\n  // ------------------\r\n  | \"flex-1\"\r\n  | \"flex-auto\"\r\n  | \"flex-initial\"\r\n  | \"flex-none\"\r\n\r\n  // Grow / Shrink\r\n  | \"grow-0\" | \"grow-1\"\r\n  | \"shrink-0\" | \"shrink-1\"\r\n\r\n  // Min constraints (IMPORTANT)\r\n  | \"min-w-0\"\r\n  | \"min-h-0\"\r\n\r\n  // ------------------\r\n  // Margin\r\n  // ------------------\r\n  | \"m-0\" | \"m-1\" | \"m-2\" | \"m-3\" | \"m-4\" | \"m-5\" | \"m-auto\"\r\n  | \"mx-0\" | \"mx-1\" | \"mx-2\" | \"mx-3\" | \"mx-4\" | \"mx-5\" | \"mx-auto\"\r\n  | \"my-0\" | \"my-1\" | \"my-2\" | \"my-3\" | \"my-4\" | \"my-5\" | \"my-auto\"\r\n  | \"mt-0\" | \"mt-1\" | \"mt-2\" | \"mt-3\" | \"mt-4\" | \"mt-5\" | \"mt-auto\"\r\n  | \"mb-0\" | \"mb-1\" | \"mb-2\" | \"mb-3\" | \"mb-4\" | \"mb-5\" | \"mb-auto\"\r\n  | \"ms-0\" | \"ms-1\" | \"ms-2\" | \"ms-3\" | \"ms-4\" | \"ms-5\" | \"ms-auto\"\r\n  | \"me-0\" | \"me-1\" | \"me-2\" | \"me-3\" | \"me-4\" | \"me-5\" | \"me-auto\"\r\n\r\n  // ------------------\r\n  // Padding\r\n  // ------------------\r\n  | \"p-0\" | \"p-1\" | \"p-2\" | \"p-3\" | \"p-4\" | \"p-5\"\r\n  | \"px-0\" | \"px-1\" | \"px-2\" | \"px-3\" | \"px-4\" | \"px-5\"\r\n  | \"py-0\" | \"py-1\" | \"py-2\" | \"py-3\" | \"py-4\" | \"py-5\"\r\n  | \"pt-0\" | \"pt-1\" | \"pt-2\" | \"pt-3\" | \"pt-4\" | \"pt-5\"\r\n  | \"pb-0\" | \"pb-1\" | \"pb-2\" | \"pb-3\" | \"pb-4\" | \"pb-5\"\r\n  | \"ps-0\" | \"ps-1\" | \"ps-2\" | \"ps-3\" | \"ps-4\" | \"ps-5\"\r\n  | \"pe-0\" | \"pe-1\" | \"pe-2\" | \"pe-3\" | \"pe-4\" | \"pe-5\"\r\n\r\n  // ------------------\r\n  // Size\r\n  // ------------------\r\n  | \"w-100\" | \"w-auto\"\r\n  | \"h-100\" | \"h-auto\"\r\n\r\n  // ------------------\r\n  // Overflow\r\n  // ------------------\r\n  | \"overflow-auto\"\r\n  | \"overflow-hidden\"\r\n  | \"overflow-scroll\"\r\n  | \"overflow-x-auto\"\r\n  | \"overflow-y-auto\"\r\n\r\n  // ------------------\r\n  // Position\r\n  // ------------------\r\n  | \"position-relative\"\n  | \"position-absolute\"\n  | \"position-fixed\"\n  | \"position-sticky\"\n  | \"top-0\" | \"bottom-0\" | \"start-0\" | \"end-0\"\r\n\r\n  // ------------------\r\n  // Text\r\n  // ------------------\r\n  | \"text-start\"\r\n  | \"text-center\"\r\n  | \"text-end\"\n  | \"text-wrap\"\n  | \"text-nowrap\"\n  | \"text-ellipsis\"\n\r\n  // ------------------\r\n  // Border\r\n  // ------------------\r\n  | \"border\"\r\n  | \"border-0\"\r\n  | \"border-top\"\r\n  | \"border-bottom\"\r\n  | \"border-start\"\r\n  | \"border-end\"\r\n\r\n  // Border style\r\n  | \"border-solid\"\r\n  | \"border-dashed\"\r\n  | \"border-dotted\"\r\n  | \"border-none\"\r\n\r\n  // Border width\r\n  | \"border-1\"\r\n  | \"border-2\"\r\n  | \"border-3\"\r\n\r\n  // ------------------\r\n  // Radius\r\n  // ------------------\r\n  | \"rounded-0\"\r\n  | \"rounded-1\"\r\n  | \"rounded-2\"\r\n  | \"rounded-3\"\r\n  | \"rounded-4\"\r\n  | \"rounded-pill\"\r\n  | \"rounded-circle\"\r\n\r\n  // ------------------\r\n  // Colors (CSS class mirror)\r\n  // ------------------\r\n  // ======================================================\r\n  // BASE ELEMENT \r\n  // ======================================================\r\n  | \"elg\"\r\n\r\n  // ======================================================\r\n  // SURFACES\r\n  // ======================================================\r\n  | \"page\"\r\n  | \"surface\"\r\n  | \"surface-2\"\r\n  | \"surface-3\"\r\n\r\n  // ======================================================\r\n  // SEMANTIC COLORS\r\n  // ======================================================\r\n  | \"primary\"\n  | \"accent\"\n  | \"success\"\n  | \"warning\"\r\n  | \"danger\"\r\n  | \"neutral\"\r\n\r\n  | \"text-primary\"\n  | \"text-muted\"\n  | \"text-success\"\n  | \"text-warning\"\r\n  | \"text-danger\"\n  | \"text-neutral\"\n\n  // ======================================================\n  // TEXT DECORATION\n  // ======================================================\n  | \"underline\"\n  | \"overline\"\n  | \"line-through\"\n  | \"no-underline\"\n\n  // ======================================================\n  // STATE SLOT 1 (PERSISTENT)\r\n  // ======================================================\r\n  | \"selected\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 2 (SEMANTIC / CONTEXT)\r\n  // ======================================================\r\n  | \"active\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 3 (INTERACTION)\r\n  // ======================================================\r\n  | \"hover\"\r\n  | \"focus\"\r\n\r\n  // NOTE:\r\n  // active:active is pseudo-class usage, not a class,\r\n  // so it is NOT included separately.\r\n\r\n  // ======================================================\r\n  // BORDER\r\n  // ======================================================\r\n  | \"border\"\r\n  | \"border-strong\"\r\n\r\n  // ======================================================\r\n  // BG ALPHA UTILITIES\r\n  // ======================================================\r\n  | \"bg-a-05\"\r\n  | \"bg-a-10\"\r\n  | \"bg-a-25\"\r\n  | \"bg-a-50\"\r\n  | \"bg-a-75\"\r\n  | \"bg-a-100\"\r\n\r\n  // ======================================================\r\n  // Font Size\n  // ======================================================\n  | \"fs-50\"\n  | \"fs-60\"\n  | \"fs-70\"\n  | \"fs-80\"\n  | \"fs-90\"\n  | \"fs-100\"\n  | \"fs-110\"\n  | \"fs-120\"\n  | \"fs-130\"\n  | \"fs-140\"\n  | \"fs-150\"\n  | \"fs-200\"\r\n\r\n  // ======================================================\r\n  // Font Weight\r\n  // ======================================================\r\n  | \"fw-100\"\r\n  | \"fw-200\"\r\n  | \"fw-300\"\r\n  | \"fw-400\"\r\n  | \"fw-500\"\r\n  | \"fw-600\"\r\n  | \"fw-700\"\r\n  | \"fw-800\"\r\n\r\n  // ======================================================\r\n  // Components\n  // ======================================================\n  | \"btn\"\n  | \"box\"\n  | \"field\"\n  | \"shadow\"\n  | \"table\"\n  | \"table-bordered\"\n  | \"table-row-borders\"\n\n  | \"user-select-none\"\n  | \"cursor-pointer\"\n  | \"cursor-default\"\n  | \"bg-transparent\"\n  | \"opacity-50\""
+    },
+    {
+      "name": "UndoBaselineEvent",
+      "kind": "interface",
+      "type": "UndoBaselineEvent",
+      "description": "Register async cleanup synchronously: `event.waitUntil(dataset.rejectChanges())`.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UndoBaselineEvent",
+      "source": "src/core/UndoCoordinator.ts",
+      "members": [
+        {
+          "name": "waitUntil",
+          "type": "(completion: PromiseLike<void>) => void",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [
+            {
+              "name": "completion",
+              "type": "PromiseLike<void>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(completion: PromiseLike<void>) => void"
+        }
+      ]
+    },
+    {
+      "name": "UndoCoordinator",
+      "kind": "class",
+      "type": "UndoCoordinator",
+      "description": "One chronological journal for data, views, and other application actions.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const coordinator = new UndoCoordinator();\nconst data = coordinator.createHistory(\"data\");\ndata.record({ undo: () => restoreOldValue(), redo: () => restoreNewValue() });\nawait coordinator.undo();\ncoordinator.clear(data); // after persistence; other scopes remain intact\n\nReplay is exclusive, including async baseline cleanup. A failed action keeps\nthe journal position unchanged. Observers run after committed actions; an\nobserver error does not undo that action. Event handlers must not mutate the\njournal synchronously. Returning to baseline is per scope, not per journal."
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/UndoCoordinator",
+      "source": "src/core/UndoCoordinator.ts",
+      "members": [
+        {
+          "name": "changed",
+          "type": "ObservableEvent<void>",
+          "description": "Emitted when journal state changes. Read `busy`, `canUndo` and `canRedo`.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "busy",
+          "type": "boolean",
+          "description": "True during replay or synchronous journal notifications.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "canUndo",
+          "type": "boolean",
+          "description": "Whether a global applied operation exists.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "canRedo",
+          "type": "boolean",
+          "description": "Whether a global undone operation exists.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createHistory",
+          "type": "(name: string) => UndoHistory",
+          "description": "Creates a separate baseline scope. Identical labels do not imply shared state.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "UndoHistory",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(name: string) => UndoHistory"
+        },
+        {
+          "name": "clear",
+          "type": "(history: UndoHistory) => void",
+          "description": "Establishes a new scope baseline after save/discard, removing its applied AND redo entries.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [
+            {
+              "name": "history",
+              "type": "UndoHistory",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(history: UndoHistory) => void"
+        },
+        {
+          "name": "undo",
+          "type": "() => Promise<boolean>",
+          "description": "Undoes the last global action; e.g. `await coordinator.undo()`.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
+          "name": "redo",
+          "type": "() => Promise<boolean>",
+          "description": "Redoes the next global action in chronological order.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
+          "name": "ensureIdle",
+          "type": "() => void",
+          "description": "Call before editing to reject changes during an async undo/redo.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "UndoHistory",
+      "kind": "interface",
+      "type": "UndoHistory",
+      "description": "One recording scope. Only its coordinator can execute or clear history.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UndoHistory",
+      "source": "src/core/UndoCoordinator.ts",
+      "members": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "coordinator",
+          "type": "UndoCoordinator",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "canUndo",
+          "type": "boolean",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "canRedo",
+          "type": "boolean",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "changed",
+          "type": "ObservableEvent<\"record\" | \"undo\" | \"redo\" | \"clear\">",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "returnedToBaseline",
+          "type": "ObservableEvent<UndoBaselineEvent>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "record",
+          "type": "(operation: UndoOperation) => void",
+          "description": "Records an applied action, e.g. `scope.record({ undo, redo })`.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [
+            {
+              "name": "operation",
+              "type": "UndoOperation",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(operation: UndoOperation) => void"
+        }
+      ]
+    },
+    {
+      "name": "UndoOperation",
+      "kind": "interface",
+      "type": "UndoOperation",
+      "description": "An already-applied action. A failed replay must leave the action's state unchanged.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UndoOperation",
+      "source": "src/core/UndoCoordinator.ts",
+      "members": [
+        {
+          "name": "label",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/core/UndoCoordinator.ts",
+          "kind": "property"
+        },
+        {
+          "name": "undo",
+          "type": "() => void | Promise<void>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void | Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void | Promise<void>"
+        },
+        {
+          "name": "redo",
+          "type": "() => void | Promise<void>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void | Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void | Promise<void>"
+        },
+        {
+          "name": "afterReplay",
+          "type": "(() => void | Promise<void>) | undefined",
+          "description": "Runs after replay commits its journal position; observer failures do not reverse replay.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/core/UndoCoordinator.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void | Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(() => void | Promise<void>) | undefined"
+        }
+      ]
     },
     {
       "name": "v",

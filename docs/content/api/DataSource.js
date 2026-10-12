@@ -2,13 +2,13 @@ export default {
   "name": "DataSource",
   "kind": "interface",
   "type": "DataSource<TRow>",
-  "description": "Query-level access to row data, with optional native grouping support.",
+  "description": "Query and optional row-edit access, independent of DataTable or a remote implementation.",
   "tags": [],
   "topics": [],
   "group": "types",
   "namespace": "Data",
   "path": "/api-reference/DataSource",
-  "source": "src/components/datagrid/DataSource.ts",
+  "source": "src/data/DataSource.ts",
   "members": [
     {
       "name": "loadData",
@@ -26,7 +26,7 @@ export default {
       ],
       "topics": [],
       "optional": false,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/DataSource.ts",
       "parameters": [
         {
           "name": "args",
@@ -43,13 +43,101 @@ export default {
       "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
     },
     {
+      "name": "changed",
+      "type": "Observable<DataSourceChanged<TRow>> | undefined",
+      "description": "Optional notifications; consumers dispose their subscription, never the source's event.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataSource.ts",
+      "kind": "property"
+    },
+    {
+      "name": "undoCoordinator",
+      "type": "UndoCoordinator | undefined",
+      "description": "Optional shared history. Execute undo/redo only through this coordinator.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataSource.ts",
+      "kind": "property"
+    },
+    {
+      "name": "createNewRow",
+      "type": "(() => Promise<NewRowSession<TRow>>) | undefined",
+      "description": "Creates an independently owned new-row session; multiple sessions may coexist.\nThe row has a stable temporary identity and is excluded from normal queries\nuntil insert. Pending edits may read other rows but must not mutate them.\nExample: const newRowSession = await source.createNewRow?.();",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataSource.ts",
+      "parameters": [],
+      "returns": {
+        "type": "Promise<NewRowSession<TRow>>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(() => Promise<NewRowSession<TRow>>) | undefined"
+    },
+    {
+      "name": "update",
+      "type": "((row: TRow, values: Record<string, unknown>) => Promise<MutationResult>) | undefined",
+      "description": "Applies values to the actual source row, including a pending session row.\nEach successful command and its business effects form one transaction if\nthe source supports history. Example: await source.update?.(row, { price: 20 }).",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataSource.ts",
+      "parameters": [
+        {
+          "name": "row",
+          "type": "TRow",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "values",
+          "type": "Record<string, unknown>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<MutationResult>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "((row: TRow, values: Record<string, unknown>) => Promise<MutationResult>) | undefined"
+    },
+    {
+      "name": "delete",
+      "type": "((row: TRow) => Promise<MutationResult>) | undefined",
+      "description": "Deletes a confirmed row. Use the pending session's cancel() for an unconfirmed row.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataSource.ts",
+      "parameters": [
+        {
+          "name": "row",
+          "type": "TRow",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<MutationResult>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "((row: TRow) => Promise<MutationResult>) | undefined"
+    },
+    {
       "name": "getRowId",
       "type": "((row: TRow) => RowIdentity) | undefined",
       "description": "Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children.",
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/DataSource.ts",
       "parameters": [
         {
           "name": "row",
@@ -72,7 +160,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/DataSource.ts",
       "parameters": [
         {
           "name": "row",

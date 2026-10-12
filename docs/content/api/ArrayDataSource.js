@@ -5,10 +5,10 @@ export default {
   "description": "DataSource implementation backed by an in-memory array.",
   "tags": [],
   "topics": [],
-  "group": "components",
+  "group": "core",
   "namespace": "Data",
   "path": "/api-reference/ArrayDataSource",
-  "source": "src/components/datagrid/DataSource.ts",
+  "source": "src/data/ArrayDataSource.ts",
   "members": [
     {
       "name": "array",
@@ -17,7 +17,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/ArrayDataSource.ts",
       "kind": "property"
     },
     {
@@ -27,7 +27,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/ArrayDataSource.ts",
       "kind": "property"
     },
     {
@@ -37,7 +37,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/ArrayDataSource.ts",
       "kind": "property"
     },
     {
@@ -47,7 +47,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/ArrayDataSource.ts",
       "parameters": [
         {
           "name": "args",
@@ -70,7 +70,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/datagrid/DataSource.ts",
+      "source": "src/data/ArrayDataSource.ts",
       "parameters": [
         {
           "name": "row",
@@ -85,6 +85,34 @@ export default {
       },
       "kind": "method",
       "signature": "(row: T) => Promise<number>"
+    },
+    {
+      "name": "saveChanges",
+      "type": "(changes: ChangeSet) => Promise<SaveChangesResult>",
+      "description": "Applies a ChangeSet directly to the backing array.\n\nArrayDataSource uses the change key to find existing rows. Inserted rows\nkeep the supplied key because there is no server that can assign a new\nidentity; therefore the successful result never needs keyMappings.\n\nThe complete batch is validated before the array is changed, so a bad\nkey does not leave a partially applied in-memory update.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "await source.saveChanges?.([\n    { type: \"update\", key: 1, data: { amount: 25 } },\n    { type: \"remove\", key: 2 }\n]);"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/ArrayDataSource.ts",
+      "parameters": [
+        {
+          "name": "changes",
+          "type": "ChangeSet",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<SaveChangesResult>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(changes: ChangeSet) => Promise<SaveChangesResult>"
     }
   ]
 };

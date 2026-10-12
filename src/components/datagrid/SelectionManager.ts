@@ -1,4 +1,4 @@
-import { RowIdentity } from "./DataSource";
+import type { RowIdentity } from "../../data/RowIdentity";
 
 /** Coordinates and selection metadata for a visible grid cell. */
 export interface SelectionCell {

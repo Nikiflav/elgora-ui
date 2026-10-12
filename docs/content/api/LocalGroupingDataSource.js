@@ -1,0 +1,60 @@
+export default {
+  "name": "LocalGroupingDataSource",
+  "kind": "class",
+  "type": "LocalGroupingDataSource<TRow>",
+  "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.",
+  "tags": [],
+  "topics": [],
+  "group": "core",
+  "namespace": "Data",
+  "path": "/api-reference/LocalGroupingDataSource",
+  "source": "src/data/LocalGroupingDataSource.ts",
+  "members": [
+    {
+      "name": "loadData",
+      "type": "(args: QueryArgs) => Promise<DataResult<TRow>>",
+      "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupColumn` is not provided, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/LocalGroupingDataSource.ts",
+      "parameters": [
+        {
+          "name": "args",
+          "type": "QueryArgs",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<DataResult<TRow>>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
+    },
+    {
+      "name": "getRowId",
+      "type": "(row: TRow) => any",
+      "description": "Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/LocalGroupingDataSource.ts",
+      "parameters": [
+        {
+          "name": "row",
+          "type": "TRow",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "any",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(row: TRow) => any"
+    }
+  ]
+};

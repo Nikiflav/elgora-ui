@@ -1,6 +1,7 @@
 import type { DataFilter } from "../../data/filter";
 import { DataColumnUtils } from "./DataColumn";
-import type { DataColumn, DataType } from "./DataColumn";
+import type { DataColumn } from "./DataColumn";
+import type { DataType } from "../../data/DataField";
 
 export type DataFilterRowColumn<TRow = any> = Pick<DataColumn<TRow>, "name" | "caption" | "dataType" | "editorType">;
 

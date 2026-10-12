@@ -69,6 +69,25 @@
       "module": "./content/topics/components-overview.js"
     },
     {
+      "id": "dataset",
+      "title": "DataSet",
+      "path": "/data/dataset",
+      "group": "data",
+      "order": 10,
+      "description": "Edit related tables locally, run business rules in transactions, undo changes and save one batch.",
+      "next": "/core/undo-coordinator",
+      "toc": true,
+      "api": [
+        "DataSet",
+        "DataTable",
+        "DataRow",
+        "DataEditContext",
+        "DataRowChangeEvent"
+      ],
+      "keywords": [],
+      "module": "./content/topics/dataset.js"
+    },
+    {
       "id": "semantic-colors",
       "title": "Semantic colors",
       "path": "/styles/semantic-colors",
@@ -86,6 +105,24 @@
         "dark"
       ],
       "module": "./content/topics/semantic-colors.js"
+    },
+    {
+      "id": "undo-coordinator",
+      "title": "UndoCoordinator",
+      "path": "/core/undo-coordinator",
+      "group": "core",
+      "order": 10,
+      "description": "Combine data and view actions into one chronological undo journal with separate history scopes.",
+      "prev": "/data/dataset",
+      "toc": true,
+      "api": [
+        "UndoCoordinator",
+        "UndoHistory",
+        "UndoOperation",
+        "UndoBaselineEvent"
+      ],
+      "keywords": [],
+      "module": "./content/topics/undo-coordinator.js"
     },
     {
       "id": "html-elements",

@@ -4,7 +4,12 @@
   "type": "module",
   "dependencies": {
     "elgora-ui": "file:..",
-    "markdown-it": "^14.1.0"
+    "markdown-it": "^14.3.1",
+    "monaco-editor": "^0.57.0",
+    "shiki": "^4.5.0"
+  },
+  "overrides": {
+    "dompurify": "^3.4.16"
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2"

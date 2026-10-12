@@ -2,6 +2,7 @@
 
 
 export { ElgoraUI, type Scheduler, type Observable, ObservableValue, ObservableEvent } from './core/ElgoraUI';
+export { AsyncObservableEvent, type AsyncObservableHandler } from './core/AsyncObservableEvent';
 export { Component, type ComponentOptions, type ComponentChild } from './core/Component';
 export { type UiDensity, type UiStyle } from './core/UiStyle';
 export { c, cdiv, cbutton } from './core/c';
@@ -14,12 +15,25 @@ export { Throttle } from './core/Throttle';
 export { BrowserRouter } from './components/browser-router/BrowserRouter';
 export { ScrollEngine } from './components/scrollbar/scroll-engine';
 export { DataGrid, type DataGridOptions, type GridDataSource } from './components/datagrid/DataGrid';
-export { type DataCell, type DataCellStyle, type DataColumn, type DataType, type GroupInterval, type GroupIntervalDefinition, type SummaryDefinition, type SummaryContext, type SummaryType } from './components/datagrid/DataColumn';
+export { type DataCell, type DataCellStyle, type DataColumn } from './components/datagrid/DataColumn';
+export { type DataType, type DataField } from './data/DataField';
+export { type GroupInterval, type GroupIntervalDefinition, type OrderByToken } from './data/grouping';
+export { type SummaryDefinition, type SummaryContext, type SummaryType, type SummaryRequest, type SummaryResult } from './data/summary';
 export { type DataGridColumn, type GridCell } from './components/datagrid/DataGridColumn';
 export { SelectionManager, type SelectionCell, type SelectionRange, type GridContext, type SelectionEdge, type CellSelectionState } from './components/datagrid/SelectionManager';
 export { type GridContextMenuTarget, type GridStandardContextMenuItem, type DataGridContextMenuContext, type GridContextMenuItems } from './components/datagrid/DataGridContextMenu';
-export { type DataSource, ArrayDataSource, type RowIdentity, type SummaryRequest, type SummaryResult } from './components/datagrid/DataSource';
+export { type DataSource, type QueryArgs, type DataResult, type GroupItem, type MutationResult, type NewRowSession, type DataSourceChanged } from './data/DataSource';
+export { ArrayDataSource } from './data/ArrayDataSource';
+export { LocalGroupingDataSource } from './data/LocalGroupingDataSource';
+export { type RowIdentity } from './data/RowIdentity';
+export { type DataChange, type ChangeSet, type KeyMapping, type SaveChangesResult } from './data/ChangeSet';
+export { DataSet, DataTable, DataRow, type DataRowState, type DataTableOptions,
+    type NewRowIdFactory, type DataSetOptions, type DataSetChanges,
+    type DataSetSaveChangesResult, type DataSetSaveHandler } from './data/dataset/DataSet';
 export { type DataFilter, type FilterSelector, type FilterFunction, type FilterFunctionRegistry } from './data/filter';
+export { UndoCoordinator, type UndoHistory, type UndoOperation, type UndoBaselineEvent } from './core/UndoCoordinator';
+export { DataTransaction } from './data/dataset/DataTransaction';
+export { DataEditContext, type DataRowChangeEvent } from './data/dataset/DataEditContext';
 export { FilterEditor, type FilterEditorOptions, type FilterEditorColumn, type FilterEditorOperator } from './components/datagrid/FilterEditor';
 export { DataFilterRow, type DataFilterRowColumn, type DataFilterRowValue, type DataFilterRowOperator } from './components/datagrid/DataFilterRow';
 export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement, type PopoverCloseMode } from './components/popup/popover';

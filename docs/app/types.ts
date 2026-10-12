@@ -25,6 +25,7 @@ export interface MarkdownDemo {
     id: string;
     module?: string;
     source: string;
+    sourceHtml?: string;
     code: string;
     mode?: "readonly";
     height?: string;

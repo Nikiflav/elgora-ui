@@ -1,6 +1,8 @@
 import { DataFilter } from "../../data/filter";
-import { DataColumn, DataColumnUtils, OrderByToken } from "./DataColumn";
-import { DataSource, SummaryResult } from "./DataSource";
+import { DataColumn, DataColumnUtils } from "./DataColumn";
+import type { OrderByToken } from "../../data/grouping";
+import type { SummaryResult } from "../../data/summary";
+import type { DataSource } from "../../data/DataSource";
 
 /** Discriminates how a GridRow should be rendered. */
 export type RowType = 'data' | 'group' | 'node' | 'summary' | 'loading' | 'error' | 'empty' | 'header' | 'filter' | 'footer' | 'detail';

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { DataGrid } from "../../src/components/datagrid/DataGrid";
-import { DataSource, QueryArgs } from "../../src/components/datagrid/DataSource";
+import type { DataSource, QueryArgs } from "../../src/data/DataSource";
 
 class TestResizeObserver {
   observe(): void { }

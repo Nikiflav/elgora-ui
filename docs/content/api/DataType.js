@@ -2,12 +2,12 @@ export default {
   "name": "DataType",
   "kind": "type",
   "type": "any",
-  "description": "Semantic type of the value stored by a data column.",
+  "description": "Semantic type of a stored value, independent of a particular UI component.",
   "tags": [],
   "topics": [],
   "group": "types",
-  "namespace": "Components.DataGrid",
+  "namespace": "Data",
   "path": "/api-reference/DataType",
-  "source": "src/components/datagrid/DataColumn.ts",
+  "source": "src/data/DataField.ts",
   "definition": "\"string\" | \"number\" | \"boolean\" | \"date\" | \"datetime\" | \"object\""
 };

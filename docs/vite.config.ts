@@ -35,7 +35,7 @@ function emitDocumentationContent() {
             server.watcher.on("unlink", refresh);
         },
         generateBundle() {
-            for (const fileName of ["topics-manifest.json", "api-docs.json"]) {
+            for (const fileName of ["topics-manifest.json", "api-docs.json", "editor-types.json"]) {
                 const filePath = path.join(docsDirectory, "content", fileName);
                 this.emitFile({
                     type: "asset",

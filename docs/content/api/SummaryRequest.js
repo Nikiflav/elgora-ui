@@ -8,6 +8,6 @@ export default {
   "group": "types",
   "namespace": "Data",
   "path": "/api-reference/SummaryRequest",
-  "source": "src/components/datagrid/DataSource.ts",
+  "source": "src/data/summary.ts",
   "definition": "{ field: string, summaryType: SummaryType }"
 };

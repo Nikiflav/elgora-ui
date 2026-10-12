@@ -1,14 +1,25 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import ts from "typescript";
 
 const root = process.cwd();
 const contentDir = path.join(root, "docs", "content");
 const manifestFile = path.join(contentDir, "topics-manifest.json");
 const topicsDir = path.join(contentDir, "topics");
-const markdownIt = createRequire(path.join(root, "docs", "package.json"))("markdown-it");
-const md = markdownIt({ html: true, linkify: true, typographer: true });
+const docsRequire = createRequire(path.join(root, "docs", "package.json"));
+const markdownIt = docsRequire("markdown-it");
+const { createHighlighter } = await import(pathToFileURL(docsRequire.resolve("shiki")).href);
+const highlighter = await createHighlighter({
+    themes: ["github-light", "github-dark"],
+    langs: ["javascript", "typescript", "json", "html", "css", "bash", "sql"]
+});
+const highlight = (code, language = "text") => highlighter.codeToHtml(code, {
+    lang: highlighter.getLoadedLanguages().includes(language) ? language : "text",
+    themes: { light: "github-light", dark: "github-dark" }
+});
+const md = markdownIt({ html: true, linkify: true, typographer: true, highlight });
 function extractDemoBody(source, fileName) {
     const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
     const statement = sourceFile.statements.find(node =>
@@ -89,14 +100,14 @@ function extractDemos(body, fileName, directory) {
         const demoBody = extractDemoBody(sourceCode, sourcePath);
         const compiledSource = transpileDemoSource(demoBody, sourcePath);
         const demoModule = "./content/" + path.relative(contentDir, sourcePath).replaceAll(path.sep, "/");
-        demos.push({ id, module: demoModule, source: compiledSource, code: compiledSource, ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
-        return `<div data-live-demo="${id}"></div>`;
+        demos.push({ id, module: demoModule, source: compiledSource, code: compiledSource, sourceHtml: highlight(compiledSource, "javascript"), ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
+        return `\n\n<div data-live-demo="${id}"></div>\n\n`;
     });
     const demoPattern = /<live-demo\s+id="([^"]+)"(?:\s+mode="([^"]+)")?(?:\s+height="([^"]+)")?\s*><\/live-demo>\s*```js\s*\n([\s\S]*?)```/g;
     const renderedBody = externalBody.replace(demoPattern, (_match, id, mode, height, code) => {
         const sourceCode = code.trim();
-        demos.push({ id, source: sourceCode, code: sourceCode, ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
-        return `<div data-live-demo="${id}"></div>`;
+        demos.push({ id, source: sourceCode, code: sourceCode, sourceHtml: highlight(sourceCode, "javascript"), ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
+        return `\n\n<div data-live-demo="${id}"></div>\n\n`;
     });
 
     const unknownDemo = [...body.matchAll(/<live-demo\s+id="([^"]+)"/g)]

@@ -1,3 +1,6 @@
+import { getFieldDataType, type DataType } from "../../data/DataField";
+import { getFieldGroupValue, applyGroupInterval, type GroupInterval, type GroupIntervalDefinition } from "../../data/grouping";
+import type { SummaryType } from "../../data/summary";
 import { Utils } from "../../core/Utils";
 import type { StyleObject } from "../../core/e";
 import type { GridContextMenuItems } from "./DataGridContextMenu";
@@ -12,8 +15,6 @@ export type DisplayValue = {
     image?: string;
 }
 
-
-
 /** Lightweight per-column override, e.g. for persisted layout/visible-column state. */
 export type DataColumnLayoutInfo = {
     name: string,
@@ -22,82 +23,8 @@ export type DataColumnLayoutInfo = {
     userState?: any;
 }
 
-/** A sort instruction: either a bare field name, or a [field, direction] pair. */
-export type OrderByToken = string | [string, "asc" | "desc"];
-
-/** Built-in grouping buckets, plus names understood by a server DataSource. */
-export type GroupInterval =
-    | "year"
-    | "yearQuarter"
-    | "quarter"
-    | "yearMonth"
-    | "month"
-    | "week"
-    | "day"
-    | "dayOfWeek"
-    | "hour"
-    | "minute"
-    | "second"
-    | "firstChar"
-    | (string & {});
-
-/** A custom grouping interval with a serializable name and local fallback evaluator. */
-export type GroupIntervalDefinition<TRow> = {
-    name: string;
-    text: string;
-    getGroupValue: (row: TRow, value: any) => any;
-};
-
-export function orderByTokenToString(tok: OrderByToken) {
-    if (typeof tok == "string")
-        return tok;
-    return tok.join(" ");
-}
-
-
-
-/**
- * Aggregation kind applied to a group column's summary value.
- * `count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`
- * require a numeric column.
- */
-export type SummaryType = "count" | "sum" | "avg" | "min" | "max" | "distinct" | string;
-
-/** Context supplied to a custom summary lifecycle method. */
-export interface SummaryContext<TRow> {
-    /** Field being summarized. */
-    field: string;
-    /** Value of the group currently being accumulated. */
-    groupValue: any;
-    /** Current source row, when the lifecycle method is processing a row. */
-    row?: TRow;
-    /** Current field value, when the lifecycle method is processing a row. */
-    value?: any;
-}
-
-/** Defines a locally calculated summary identified by its serializable name. */
-export interface SummaryDefinition<TRow, TState = any, TResult = any> {
-    /** Name used in `SummaryType` requests. */
-    name: string;
-    /** Display text for summary selectors and documentation. */
-    text: string;
-    /** Whether the result can change when the input rows are sorted. Defaults to false. */
-    dependsOnOrder?: boolean;
-    /** Creates the accumulator state for one group and field. */
-    start(context: SummaryContext<TRow>): TState | Promise<TState>;
-    /** Adds one row value to the accumulator. Returning a value replaces the state. */
-    accumulate(state: TState, value: any, row: TRow, context: SummaryContext<TRow>): void | TState | Promise<void | TState>;
-    /** Converts the final accumulator state into the value displayed by the group row. */
-    finalize(state: TState, context: SummaryContext<TRow>): TResult | Promise<TResult>;
-}
-
-
 /** Input control used to edit a column's value. */
 export type EditorType = "text" | "number" | "date" | "datetime-local" | "time" | "checkbox" | "file" | "password" | "textarea" | "color";
-
-/** Semantic type of the value stored by a data column. */
-export type DataType = "string" | "number" | "boolean" | "date" | "datetime" | "object";
-
 
 /** Contract for a component hosting data-bound UI (e.g. a grid) that can be told to reload. */
 export interface DataComponent {
@@ -107,7 +34,6 @@ export interface DataComponent {
 
     //getActiveEditor?: () => DataEditor | undefined;
 }
-
 
 /** A single resolved (value, text) pair for one column on one row. */
 export type DataCell<TRow> = {
@@ -121,7 +47,6 @@ export type DataCell<TRow> = {
     text: string;
 };
 
-
 /** Per-cell visual overrides applied to the outer grid cell. */
 export type DataCellStyle = {
     /** Additional classes for the outer grid cell. */
@@ -129,7 +54,6 @@ export type DataCellStyle = {
     /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */
     style?: StyleObject;
 };
-
 
 /** Defines one grid/view column: its data access, display, editing and layout behavior. */
 export type DataColumn<TRow> = {
@@ -182,19 +106,11 @@ export type DataColumn<TRow> = {
     getGroupValue?(row: TRow, value: any): any | Promise<any>;
 }
 
-
 export class DataColumnUtils {
 
     /** Returns the declared data type, or infers it from the legacy editorType. */
     static getDataType<TRow>(col: Pick<DataColumn<TRow>, "dataType" | "editorType">): DataType {
-        if (col.dataType) return col.dataType;
-        switch (col.editorType) {
-            case "number": return "number";
-            case "checkbox": return "boolean";
-            case "date": return "date";
-            case "datetime-local": return "datetime";
-            default: return "string";
-        }
+        return getFieldDataType(col);
     }
 
     static isDateColumn<TRow>(col: DataColumn<TRow>): boolean {
@@ -223,55 +139,17 @@ export class DataColumnUtils {
 
     /** Resolves the value used for a local group, including custom and built-in intervals. */
     static async getGroupValue<TRow>(col: DataColumn<TRow>, row: TRow, customIntervals?: GroupIntervalDefinition<TRow>[]): Promise<any> {
-        const value = await DataColumnUtils.getValue(col, row);
-        const customInterval = customIntervals?.find(x => x.name === col.groupInterval);
-        if (customInterval)
-            return await customInterval.getGroupValue(row, value);
-        if (col.getGroupValue)
-            return await col.getGroupValue(row, value);
-        return DataColumnUtils.applyGroupInterval(value, col.groupInterval);
+        return getFieldGroupValue(col, row, customIntervals);
     }
 
     static applyGroupInterval(value: any, interval?: GroupInterval): any {
-        if (!interval || value === null || value === undefined || value === "") return value ?? "";
-        if (interval === "firstChar") return String(value).charAt(0);
-
-        const date = value instanceof Date ? value : new Date(value);
-        if (Number.isNaN(date.getTime())) return value;
-
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const quarter = Math.floor(date.getMonth() / 3) + 1;
-        switch (interval) {
-            case "year": return year;
-            case "yearQuarter": return `${year}-Q${quarter}`;
-            case "quarter": return quarter;
-            case "yearMonth": return `${year}-${String(month).padStart(2, "0")}`;
-            case "month": return month;
-            case "week": {
-                // ISO 8601 week: Monday-based, with the year's first Thursday in week 1.
-                const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-                const day = utc.getUTCDay() || 7;
-                utc.setUTCDate(utc.getUTCDate() + 4 - day);
-                const isoYear = utc.getUTCFullYear();
-                const yearStart = new Date(Date.UTC(isoYear, 0, 1));
-                const isoWeek = Math.ceil((((utc.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-                return `${isoYear}-W${String(isoWeek).padStart(2, "0")}`;
-            }
-            case "day": return date.getDate();
-            case "dayOfWeek": return date.getDay() || 7;
-            case "hour": return date.getHours();
-            case "minute": return date.getMinutes();
-            case "second": return date.getSeconds();
-            default: return value;
-        }
+        return applyGroupInterval(value, interval);
     }
 
     static hasDropdown<TRow>(col: DataColumn<TRow>) {
         return col.editorType == "date" || col.editorType == "datetime-local"
             || !!col.getAllowedValues;
     }
-
 
     static async toggleBooleanValue<TRow>(col: DataColumn<TRow>, row: any) {
 

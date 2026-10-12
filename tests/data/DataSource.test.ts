@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { ArrayDataSource, DataSource, LocalGroupingDataSource, QueryArgs } from "../../src/components/datagrid/DataSource";
+import { ArrayDataSource } from "../../src/data/ArrayDataSource";
+import { LocalGroupingDataSource } from "../../src/data/LocalGroupingDataSource";
+import type { DataSource, QueryArgs } from "../../src/data/DataSource";
 
 type Row = { id: number, region: string, amount: number };
 
@@ -133,5 +135,68 @@ describe("DataSource totalSummary contract", () => {
       { field: "amount", summaryType: "sum", value: 60 }
     ]);
     expect(loadData).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("ArrayDataSource saveChanges contract", () => {
+  it("applies insert, partial update, and remove in one batch", async () => {
+    const sourceRows: Row[] = [
+      { id: 1, region: "West", amount: 10 },
+      { id: 2, region: "East", amount: 20 }
+    ];
+    const source = new ArrayDataSource(sourceRows);
+
+    const result = await source.saveChanges!([
+      { type: "update", key: 1, data: { amount: 15 } },
+      { type: "insert", key: -1, data: { region: "North", amount: 30 } },
+      { type: "remove", key: 2 }
+    ]);
+
+    expect(result).toEqual({ success: true });
+    expect(sourceRows).toEqual([
+      { id: 1, region: "West", amount: 15 },
+      { id: -1, region: "North", amount: 30 }
+    ]);
+  });
+
+  it("uses a supplied idField for inserts and updates", async () => {
+    const sourceRows = [{ code: "A", value: 1 }];
+    const source = new ArrayDataSource(sourceRows, { idField: "code" });
+
+    const result = await source.saveChanges!([
+      { type: "update", key: "A", data: { value: 2 } },
+      { type: "insert", key: "B", data: { value: 3 } }
+    ]);
+
+    expect(result).toEqual({ success: true });
+    expect(sourceRows).toEqual([
+      { code: "A", value: 2 },
+      { code: "B", value: 3 }
+    ]);
+  });
+
+  it("returns a common error and leaves the array unchanged for an invalid batch", async () => {
+    const sourceRows: Row[] = [{ id: 1, region: "West", amount: 10 }];
+    const source = new ArrayDataSource(sourceRows);
+
+    const result = await source.saveChanges!([
+      { type: "update", key: 1, data: { amount: 20 } },
+      { type: "remove", key: 999 }
+    ]);
+
+    expect(result).toEqual({ success: false, error: "Failed to delete row. Unknown row key: 999." });
+    expect(sourceRows).toEqual([{ id: 1, region: "West", amount: 10 }]);
+  });
+
+  it("rejects duplicate inserts and changes to the identity field", async () => {
+    const source = new ArrayDataSource<Row>([{ id: 1, region: "West", amount: 10 }]);
+
+    await expect(source.saveChanges!([
+      { type: "insert", key: 1, data: { id: 1, region: "East", amount: 20 } }
+    ])).resolves.toEqual({ success: false, error: "Failed to insert row. Duplicate row key: 1." });
+
+    await expect(source.saveChanges!([
+      { type: "update", key: 1, data: { id: 2 } }
+    ])).resolves.toEqual({ success: false, error: "Failed to update row. Update cannot change 'id'." });
   });
 });

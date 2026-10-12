@@ -30,7 +30,8 @@ const program = ts.createProgram([entryFile], {
     strict: true,
     skipLibCheck: true,
     esModuleInterop: true,
-    noEmit: true
+    declaration: true,
+    emitDeclarationOnly: true
 });
 
 const checker = program.getTypeChecker();
@@ -79,7 +80,6 @@ function namespaceOf(source) {
     if (parts[1] === "core") return "Core";
     if (parts[1] === "data") return "Data";
     if (parts[1] === "components" && parts[2]) {
-        if (parts[2] === "datagrid" && parts[3] === "DataSource.ts") return "Data";
         const title = parts[2] === "datagrid"
             ? "DataGrid"
             : parts[2].split("-").map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
@@ -280,3 +280,25 @@ fs.writeFileSync(apiManifestFile, `${JSON.stringify({
     }))
 }, null, 2)}\n`, "utf8");
 console.log(`Generated ${exports.length} API entries at ${path.relative(root, outputFile)}.`);
+
+// Monaco consumes declarations only when an example is opened for editing.
+const editorModules = {};
+const emit = program.emit(undefined, (fileName, text) => {
+    if (!fileName.endsWith(".d.ts")) return;
+    const relative = path.relative(root, fileName).replaceAll(path.sep, "/");
+    if (!relative.startsWith("src/")) return;
+    editorModules["file:///node_modules/elgora-ui/" + relative] = text;
+});
+if (emit.emitSkipped) throw new Error("Failed to generate demo editor declarations.");
+editorModules["file:///node_modules/elgora-ui/index.d.ts"] = 'export * from "./src/index";';
+const globalDeclarations = ['declare module "*.css";'];
+for (const symbol of checker.getExportsOfModule(moduleSymbol)) {
+    const target = resolveSymbol(symbol);
+    const typeOnly = symbol.declarations?.some(node => ts.isExportSpecifier(node) &&
+        (node.isTypeOnly || node.parent.parent.isTypeOnly));
+    if (!typeOnly && (target.flags & ts.SymbolFlags.Value))
+        globalDeclarations.push(`declare const ${symbol.name}: typeof import("elgora-ui").${symbol.name};`);
+}
+editorModules["file:///demo-globals.d.ts"] = globalDeclarations.join("\n");
+fs.writeFileSync(path.join(root, "docs", "content", "editor-types.json"),
+    JSON.stringify({ modules: editorModules }) + "\n", "utf8");

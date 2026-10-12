@@ -6,8 +6,8 @@ export default {
   "tags": [],
   "topics": [],
   "group": "types",
-  "namespace": "Components.DataGrid",
+  "namespace": "Data",
   "path": "/api-reference/GroupIntervalDefinition",
-  "source": "src/components/datagrid/DataColumn.ts",
-  "definition": "{\r\n    name: string;\r\n    text: string;\r\n    getGroupValue: (row: TRow, value: any) => any;\r\n}"
+  "source": "src/data/grouping.ts",
+  "definition": "{\n    name: string;\n    text: string;\n    getGroupValue: (row: TRow, value: any) => any;\n}"
 };

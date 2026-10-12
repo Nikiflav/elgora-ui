@@ -26,6 +26,11 @@ type GroupFilter =
     | [GroupOperator, ...DataFilter[]]
     | DataFilter[];
 
+/**
+ * A serializable filter condition, negation or group. Nested arrays combine conditions with AND.
+ * @example
+ * const filter: DataFilter = ["and", ["quantity", ">=", 1], ["quantity", "<=", 100]];
+ */
 export type DataFilter = BinaryFilter | UnaryFilter | GroupFilter;
 
 const DEFAULT_FILTER_FUNCTIONS: FilterFunctionRegistry = {
@@ -77,17 +82,23 @@ function getFieldValue(item: Record<string, any>, field: string): any {
 function resolveSelector(item: Record<string, any>, selector: FilterSelector, functions: FilterFunctionRegistry): any {
     if (typeof selector === "string") return getFieldValue(item, selector);
     const fn = functions[selector.function];
-    if (!fn) throw new Error(`Unsupported filter function: "${selector.function}".`);
+    if (!fn) throw new Error(`Failed to evaluate filter. Unsupported filter function: "${selector.function}".`);
     return fn(getFieldValue(item, selector.field), selector.args ?? [], item);
 }
 
 
+/**
+ * Evaluates a filter against one row. Empty filters match every row.
+ * Supply custom functions to resolve selectors such as { function: "category", field: "code" }.
+ * @example
+ * rows.filter(row => evalFilter(row, ["quantity", ">=", 10]));
+ */
 export function evalFilter(item: Record<string, any>, filter: DataFilter, functions?: FilterFunctionRegistry): boolean {
     const filterFunctions = functions ? { ...DEFAULT_FILTER_FUNCTIONS, ...functions } : DEFAULT_FILTER_FUNCTIONS;
     // 1. Basic sanity check
     if (filter === undefined || filter === null) return true;
     if (!Array.isArray(filter)) {
-        throw new Error(`Invalid filter: Expected an array, but received ${typeof filter}.`);
+        throw new Error(`Failed to evaluate filter. Invalid filter: Expected an array, but received ${typeof filter}.`);
     }
     if (filter.length === 0) return true;
 
@@ -96,7 +107,7 @@ export function evalFilter(item: Record<string, any>, filter: DataFilter, functi
     // 2. Handle Unary Filter: ["!", [...]]
     if (first === "!") {
         if (filter.length !== 2) {
-            throw new Error(`Invalid Unary Filter: Expected length 2, got ${filter.length}.`);
+            throw new Error(`Failed to evaluate filter. Invalid Unary Filter: Expected length 2, got ${filter.length}.`);
         }
         return !evalFilter(item, second, filterFunctions);
     }
@@ -107,12 +118,12 @@ export function evalFilter(item: Record<string, any>, filter: DataFilter, functi
         if (first === "and") {
             return operands.every((f, idx) => {
                 try { return evalFilter(item, f, filterFunctions); }
-                catch (e: any) { throw new Error(`Error in "and" group at index ${idx + 1}: ${e.message}`); }
+                catch (e: any) { throw new Error(`Failed to evaluate filter. Error in "and" group at index ${idx + 1}: ${e.message}`); }
             });
         } else {
             return operands.some((f, idx) => {
                 try { return evalFilter(item, f, filterFunctions); }
-                catch (e: any) { throw new Error(`Error in "or" group at index ${idx + 1}: ${e.message}`); }
+                catch (e: any) { throw new Error(`Failed to evaluate filter. Error in "or" group at index ${idx + 1}: ${e.message}`); }
             });
         }
     }
@@ -124,19 +135,19 @@ export function evalFilter(item: Record<string, any>, filter: DataFilter, functi
             return compare(resolveSelector(item, first, filterFunctions), second, third);
         }
         // If it looks like a binary filter but has a bad operator
-        throw new Error(`Invalid Binary Operator: "${second}" is not supported.`);
+        throw new Error(`Failed to evaluate filter. Invalid Binary Operator: "${second}" is not supported.`);
     }
 
     // 5. Handle Implicit AND: [[...], [...]]
     if (Array.isArray(first)) {
         return filter.every((f, idx) => {
                 try { return evalFilter(item, f, filterFunctions); }
-            catch (e: any) { throw new Error(`Error in implicit "and" group at index ${idx}: ${e.message}`); }
+            catch (e: any) { throw new Error(`Failed to evaluate filter. Error in implicit "and" group at index ${idx}: ${e.message}`); }
         });
     }
 
     // 6. Fallback for unrecognized structures
-    throw new Error(`Malformed Filter: Structure at ${JSON.stringify(filter)} is not a valid Binary, Unary, or Group filter.`);
+    throw new Error(`Failed to evaluate filter. Malformed Filter: Structure at ${JSON.stringify(filter)} is not a valid Binary, Unary, or Group filter.`);
 }
 
 function compare(actual: any, op: string, target: any): boolean {

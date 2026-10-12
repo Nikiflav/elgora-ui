@@ -6,6 +6,28 @@
   font-weight: 100 900;
 }
 
+/* Static code is highlighted during documentation generation, not in the browser. */
+.shiki {
+  overflow: auto;
+  padding: 1rem;
+  margin: 0;
+  font-size: 0.9em;
+}
+[data-theme="dark"] .shiki,
+[data-theme="dark"] .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+.docs-code-preview {
+  max-height: 400px;
+  overflow: auto;
+}
+.docs-code-preview > pre {
+  overflow: visible;
+  width: max-content;
+  min-width: 100%;
+}
+
 @font-face {
   font-family: "Geist Mono";
   src: url("./assets/fonts/geist-mono.ttf") format("truetype");

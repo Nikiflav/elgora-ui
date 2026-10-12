@@ -2,7 +2,8 @@ import { Component, ComponentOptions } from "../../core/Component";
 import { e } from "../../core/e";
 import type { UiStyle } from "../../core/UiStyle";
 import { DataColumnUtils } from "./DataColumn";
-import type { DataColumn, DataType } from "./DataColumn";
+import type { DataColumn } from "./DataColumn";
+import type { DataType } from "../../data/DataField";
 import type { DataFilter, FilterSelector } from "../../data/filter";
 import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
 

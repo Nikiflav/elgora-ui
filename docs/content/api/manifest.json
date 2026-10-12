@@ -4,11 +4,29 @@
     {
       "name": "ArrayDataSource",
       "kind": "class",
-      "group": "components",
+      "group": "core",
       "namespace": "Data",
       "path": "/api-reference/ArrayDataSource",
       "description": "DataSource implementation backed by an in-memory array.",
       "module": "./content/api/ArrayDataSource.js"
+    },
+    {
+      "name": "AsyncObservableEvent",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/AsyncObservableEvent",
+      "description": "Event stream that awaits subscribers sequentially, in subscription order.\ninvokeAsync() is the only dispatch method. A thrown error or rejected Promise stops dispatch\nand rejects the invocation. Different invocations are independent and may overlap.\nSubscriptions added during dispatch run on the next invocation; removed subscriptions are skipped.",
+      "module": "./content/api/AsyncObservableEvent.js"
+    },
+    {
+      "name": "AsyncObservableHandler",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/AsyncObservableHandler",
+      "description": "A synchronous or asynchronous event handler. Return or await all work that later handlers depend on.",
+      "module": "./content/api/AsyncObservableHandler.js"
     },
     {
       "name": "BrowserRouter",
@@ -56,6 +74,15 @@
       "module": "./content/api/CellSelectionState.js"
     },
     {
+      "name": "ChangeSet",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/ChangeSet",
+      "description": "Changes for one table/source, submitted together. Keys always use RowIdentity.",
+      "module": "./content/api/ChangeSet.js"
+    },
+    {
       "name": "Component",
       "kind": "class",
       "group": "core",
@@ -101,6 +128,15 @@
       "module": "./content/api/DataCellStyle.js"
     },
     {
+      "name": "DataChange",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataChange",
+      "description": "A transport change containing field values, never a domain row object.",
+      "module": "./content/api/DataChange.js"
+    },
+    {
       "name": "DataColumn",
       "kind": "type",
       "group": "types",
@@ -110,12 +146,30 @@
       "module": "./content/api/DataColumn.js"
     },
     {
+      "name": "DataEditContext",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataEditContext",
+      "description": "Transaction-bound access to the same dataset, tables and rows, without copying them.\nUse event.context for derived edits; ordinary row.setValue() cannot join an active transaction.\nThe context expires when its transaction completes.\nRe-entering a changed field in the same causal chain rejects the edit as a cycle.\nEqual values do not re-enter the chain. Independent sequential edits remain allowed.\nAsync subscribers are awaited sequentially. Await derived edits before reading their results.\nChains longer than 100 steps are rejected as a safety limit.",
+      "module": "./content/api/DataEditContext.js"
+    },
+    {
+      "name": "DataField",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataField",
+      "description": "Minimal field metadata required for local data operations.\nUI column definitions can implement this structurally without coupling data engines to a grid.",
+      "module": "./content/api/DataField.js"
+    },
+    {
       "name": "DataFilter",
       "kind": "type",
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/DataFilter",
-      "description": "",
+      "description": "A serializable filter condition, negation or group. Nested arrays combine conditions with AND.",
       "module": "./content/api/DataFilter.js"
     },
     {
@@ -200,21 +254,138 @@
       "module": "./content/api/DataList.js"
     },
     {
+      "name": "DataResult",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataResult",
+      "description": "The response to a QueryArgs request: either flat data rows or, when grouping, group buckets.",
+      "module": "./content/api/DataResult.js"
+    },
+    {
+      "name": "DataRow",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataRow",
+      "description": "Represents one table row with current values, accepted values and persistence state.\nRead values with getValue() and change them with setValue() or table.update().\nObjects, arrays and dates are stored and returned by reference; field values are not cloned.\nReplace a field value to track an edit. In-place changes are not tracked or rolled back.",
+      "module": "./content/api/DataRow.js"
+    },
+    {
+      "name": "DataRowChangeEvent",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataRowChangeEvent",
+      "description": "Business-rule notification delivered inside the current transaction, never during undo/redo.",
+      "module": "./content/api/DataRowChangeEvent.js"
+    },
+    {
+      "name": "DataRowState",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataRowState",
+      "description": "Persistence state, independent of whether a new row's editing session is inserted.",
+      "module": "./content/api/DataRowState.js"
+    },
+    {
+      "name": "DataSet",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataSet",
+      "description": "Manages named tables and saves their pending changes as one application-defined batch.\nEdit rows through their tables, then call saveChanges() to persist and accept the batch.\nUse rejectChanges() to restore accepted values without sending a request.\nBefore saving, finish active field edits and explicitly insert each new-row session\nthat should be included. To discard edits, cancel pending sessions before rejecting.\nsaveChanges(), acceptChanges() and rejectChanges() throw if any table has a pending\nsession or an unfinished createNewRow() request. They never insert or cancel it automatically.\nEach successful edit and its business effects form one undo operation; failed edits add none.\nUndo/redo restores recorded versions without rerunning business rules.\nSaving, accepting, rejecting or importing refreshed rows clears this dataset's history only.",
+      "module": "./content/api/DataSet.js"
+    },
+    {
+      "name": "DataSetChanges",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetChanges",
+      "description": "Transport changes grouped by table name; update entries contain changed fields only.",
+      "module": "./content/api/DataSetChanges.js"
+    },
+    {
+      "name": "DataSetOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetOptions",
+      "description": "Configuration shared by the dataset's tables.",
+      "module": "./content/api/DataSetOptions.js"
+    },
+    {
+      "name": "DataSetSaveChangesResult",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetSaveChangesResult",
+      "description": "Result of saving the complete batch. Mappings apply to successfully inserted rows, grouped by table.",
+      "module": "./content/api/DataSetSaveChangesResult.js"
+    },
+    {
+      "name": "DataSetSaveHandler",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSetSaveHandler",
+      "description": "Persists one batch for all changed tables; resolve success only after the complete batch is saved.",
+      "module": "./content/api/DataSetSaveHandler.js"
+    },
+    {
       "name": "DataSource",
       "kind": "interface",
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/DataSource",
-      "description": "Query-level access to row data, with optional native grouping support.",
+      "description": "Query and optional row-edit access, independent of DataTable or a remote implementation.",
       "module": "./content/api/DataSource.js"
+    },
+    {
+      "name": "DataSourceChanged",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataSourceChanged",
+      "description": "Working data changed, not necessarily persisted data. Pending rows notify too.\n`row` is the actual source object; absent row means a broader invalidation.\nSources supporting this event must notify for successful mutations and replay.\nComponents may repaint pending values without reloading/reordering the dataset.",
+      "module": "./content/api/DataSourceChanged.js"
+    },
+    {
+      "name": "DataTable",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataTable",
+      "description": "Stores rows indexed by identity and exposes them through the DataSource contract.\nupdate() and delete() change local data; getChanges() returns the batch for persistence.\nNew-row sessions remain outside queries until insert() and can be discarded with cancel().",
+      "module": "./content/api/DataTable.js"
+    },
+    {
+      "name": "DataTableOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataTableOptions",
+      "description": "Configures identity lookup and initial values for new rows.",
+      "module": "./content/api/DataTableOptions.js"
+    },
+    {
+      "name": "DataTransaction",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/DataTransaction",
+      "description": "Explicit ownership context for a dataset edit that succeeds or is rolled back as a whole.\nUse its methods inside dataset.transaction(); ordinary table edits cannot join implicitly.\nField values are not cloned. Rollback restores previous references, not changes inside objects.",
+      "module": "./content/api/DataTransaction.js"
     },
     {
       "name": "DataType",
       "kind": "type",
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/DataType",
-      "description": "Semantic type of the value stored by a data column.",
+      "description": "Semantic type of a stored value, independent of a particular UI component.",
       "module": "./content/api/DataType.js"
     },
     {
@@ -365,7 +536,7 @@
       "name": "GroupInterval",
       "kind": "type",
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/GroupInterval",
       "description": "Built-in grouping buckets, plus names understood by a server DataSource.",
       "module": "./content/api/GroupInterval.js"
@@ -374,10 +545,37 @@
       "name": "GroupIntervalDefinition",
       "kind": "type",
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/GroupIntervalDefinition",
       "description": "A custom grouping interval with a serializable name and local fallback evaluator.",
       "module": "./content/api/GroupIntervalDefinition.js"
+    },
+    {
+      "name": "GroupItem",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/GroupItem",
+      "description": "A single group bucket produced when a QueryArgs.groupColumn is set.",
+      "module": "./content/api/GroupItem.js"
+    },
+    {
+      "name": "KeyMapping",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/KeyMapping",
+      "description": "Maps a client-side temporary key to the key assigned by the server.",
+      "module": "./content/api/KeyMapping.js"
+    },
+    {
+      "name": "LocalGroupingDataSource",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/LocalGroupingDataSource",
+      "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.",
+      "module": "./content/api/LocalGroupingDataSource.js"
     },
     {
       "name": "MenuItem",
@@ -387,6 +585,33 @@
       "path": "/api-reference/MenuItem",
       "description": "A declarative action, link, divider, or nested submenu entry.",
       "module": "./content/api/MenuItem.js"
+    },
+    {
+      "name": "MutationResult",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/MutationResult",
+      "description": "Result of a row mutation. Expected validation failures resolve; transport failures reject.",
+      "module": "./content/api/MutationResult.js"
+    },
+    {
+      "name": "NewRowIdFactory",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/NewRowIdFactory",
+      "description": "Generates a unique identity for a new row. Receives the table requesting the identity.\nReturn a string or finite number, directly or asynchronously.",
+      "module": "./content/api/NewRowIdFactory.js"
+    },
+    {
+      "name": "NewRowSession",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/NewRowSession",
+      "description": "A new-row editing session owned by its source.\nThe application retains this handle and explicitly chooses insert() or cancel().\nFor DataTable, pending sessions block saveChanges(), acceptChanges() and rejectChanges().",
+      "module": "./content/api/NewRowSession.js"
     },
     {
       "name": "Observable",
@@ -414,6 +639,15 @@
       "path": "/api-reference/ObservableValue",
       "description": "Mutable observable value that notifies subscribers when its value changes.",
       "module": "./content/api/ObservableValue.js"
+    },
+    {
+      "name": "OrderByToken",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/OrderByToken",
+      "description": "A sort instruction: either a bare field name, or a [field, direction] pair.",
+      "module": "./content/api/OrderByToken.js"
     },
     {
       "name": "Popover",
@@ -488,6 +722,15 @@
       "module": "./content/api/PopupMenuShowOptions.js"
     },
     {
+      "name": "QueryArgs",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/QueryArgs",
+      "description": "A single page/query request made against a DataSource.",
+      "module": "./content/api/QueryArgs.js"
+    },
+    {
       "name": "RemixIcon",
       "kind": "type",
       "group": "types",
@@ -511,8 +754,17 @@
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/RowIdentity",
-      "description": "Represents data row ID.",
+      "description": "Stable row identity shared by data sources, changes and UI components.",
       "module": "./content/api/RowIdentity.js"
+    },
+    {
+      "name": "SaveChangesResult",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/SaveChangesResult",
+      "description": "Result returned after a data source processes a batch of edits.",
+      "module": "./content/api/SaveChangesResult.js"
     },
     {
       "name": "Scheduler",
@@ -581,7 +833,7 @@
       "name": "SummaryContext",
       "kind": "interface",
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/SummaryContext",
       "description": "Context supplied to a custom summary lifecycle method.",
       "module": "./content/api/SummaryContext.js"
@@ -590,7 +842,7 @@
       "name": "SummaryDefinition",
       "kind": "interface",
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/SummaryDefinition",
       "description": "Defines a locally calculated summary identified by its serializable name.",
       "module": "./content/api/SummaryDefinition.js"
@@ -617,9 +869,9 @@
       "name": "SummaryType",
       "kind": "type",
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/SummaryType",
-      "description": "Aggregation kind applied to a group column's summary value.\r\n`count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`\nrequire a numeric column.",
+      "description": "Aggregation kind applied to a group column's summary value.\n`count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`\nrequire a numeric column.",
       "module": "./content/api/SummaryType.js"
     },
     {
@@ -675,6 +927,42 @@
       "path": "/api-reference/UiStyle",
       "description": "Typed Elgora UI utility class name without the `elg-` prefix.",
       "module": "./content/api/UiStyle.js"
+    },
+    {
+      "name": "UndoBaselineEvent",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UndoBaselineEvent",
+      "description": "Register async cleanup synchronously: `event.waitUntil(dataset.rejectChanges())`.",
+      "module": "./content/api/UndoBaselineEvent.js"
+    },
+    {
+      "name": "UndoCoordinator",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/UndoCoordinator",
+      "description": "One chronological journal for data, views, and other application actions.",
+      "module": "./content/api/UndoCoordinator.js"
+    },
+    {
+      "name": "UndoHistory",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UndoHistory",
+      "description": "One recording scope. Only its coordinator can execute or clear history.",
+      "module": "./content/api/UndoHistory.js"
+    },
+    {
+      "name": "UndoOperation",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Core",
+      "path": "/api-reference/UndoOperation",
+      "description": "An already-applied action. A failed replay must leave the action's state unchanged.",
+      "module": "./content/api/UndoOperation.js"
     },
     {
       "name": "v",
