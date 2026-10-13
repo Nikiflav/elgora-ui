@@ -60,6 +60,19 @@ The `c*` factories create `Component` instances, while `e()` creates native elem
 
 Elgora UI styles are composable classes backed by CSS custom properties. The classes describe the visual role of an element, while theme tokens decide the actual colors and proportions. This separation makes an application’s markup stable when its visual theme changes.
 
+`class`, `className` and `ui` are combined into one declarative class set,
+independently of prop order. Duplicate class tokens appear only once. This behavior
+is shared by `e()`, `c()` and virtual nodes created with `v()`.
+
+```ts
+e("div", { className: "customer-field", ui: ["col-12", "col-sm-6"] });
+// class="customer-field elg-col-12 elg-col-sm-6"
+```
+
+When props are patched, only obsolete declarative classes are removed; unrelated
+classes added through `bindClass()` or `classList` are retained. Do not manage the
+same class token through both props and a binding or imperative code.
+
 ### The `elg` base class
 
 The `elg` class opts an element into the ElgoraUI style vocabulary. Add it together with a semantic or utility class:

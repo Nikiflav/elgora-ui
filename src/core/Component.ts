@@ -4,6 +4,7 @@
 
 import { Disposable, ObservableValue, RenderTask, Observable, ElgoraUI } from "./ElgoraUI"
 import { UiStyle } from "./UiStyle"
+import { isClassProp, patchClassProps, uiClassNames } from "./ClassProps"
 
 
 // ------------------------------------------------------
@@ -164,6 +165,7 @@ export class Component implements Disposable {
 
   private applyProps(options: ComponentOptions) {
     const el = this.dom
+    patchClassProps(el, options);
 
     for (const key in options) {
       if (
@@ -172,6 +174,8 @@ export class Component implements Disposable {
         key === "key" ||
         ComponentLifecycleKeys.indexOf(key as any) > -1
       ) continue
+
+      if (isClassProp(key)) continue
 
       const value = options[key]
 
@@ -185,19 +189,6 @@ export class Component implements Disposable {
       // Style
       if (key === "style" && typeof value === "object") {
         Object.assign(el.style, value)
-        continue
-      }
-
-      // UI
-      if (key === "ui") {
-        applyUi(el, value)
-        continue
-      }
-
-      // Class
-      if (key === "class" || key === "className") {
-        if (value)
-          el.classList.add(...value.split(" "))
         continue
       }
 
@@ -534,6 +525,7 @@ export class Component implements Disposable {
    * The class is enabled when the optional predicate returns true, or when
    * the source value is truthy if no predicate is supplied. The subscription
    * is disposed automatically with the component.
+   * Do not use declarative class/className/ui props to control the same class token.
    *
    * @param className One literal CSS class name, or an array of class names, to toggle.
    * @param obs The observable source.
@@ -576,7 +568,7 @@ export class Component implements Disposable {
     predicate?: (value: T) => boolean
   ): void {
     const styles = Array.isArray(uiStyle) ? uiStyle : [uiStyle]
-    const classNames = styles.map(style => style === "elg" ? "elg" : `elg-${style}`)
+    const classNames = uiClassNames(styles)
     this.bindClass(classNames, obs, predicate)
   }
 
@@ -708,15 +700,7 @@ export function applyUi(
 ): void {
   if (!ui) return
 
-  const list = Array.isArray(ui) ? ui : [ui]
-
-  for (const s of list) {
-    if (!s) continue
-    if (s == "elg")
-      el.classList.add("elg")
-    else
-      el.classList.add(`elg-${s}`)
-  }
+  for (const className of uiClassNames(ui)) el.classList.add(className)
 }
 
 export function component(options: ComponentOptions): Component {

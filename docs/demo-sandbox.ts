@@ -2,7 +2,7 @@
 
 import * as Elgora from "../src/index";
 
-const demoModules = import.meta.glob("./content/**/*.md.ts");
+const demoModules = import.meta.glob(["./content/**/*.md.ts", "./content/**/*.md.*.ts"]);
 
 function send(message: Record<string, unknown>): void {
     window.parent.postMessage(message, "*");

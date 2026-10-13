@@ -487,7 +487,7 @@ export default {
     {
       "name": "bindClass",
       "type": "<T>(className: string | string[], obs: Observable<T>, predicate?: (value: T) => boolean) => void",
-      "description": "Toggles a CSS class from an observable value.\n\nThe class is enabled when the optional predicate returns true, or when\nthe source value is truthy if no predicate is supplied. The subscription\nis disposed automatically with the component.",
+      "description": "Toggles a CSS class from an observable value.\n\nThe class is enabled when the optional predicate returns true, or when\nthe source value is truthy if no predicate is supplied. The subscription\nis disposed automatically with the component.\nDo not use declarative class/className/ui props to control the same class token.",
       "tags": [
         {
           "name": "param",

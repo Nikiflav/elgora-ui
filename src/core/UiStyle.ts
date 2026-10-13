@@ -5,6 +5,8 @@
 /** Shared UI density used by components with adjustable internal spacing. */
 export type UiDensity = "default" | "compact";
 
+type GridColumnSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
 /** Typed Elgora UI utility class name without the `elg-` prefix. */
 export type UiStyle =
   // ------------------
@@ -17,6 +19,13 @@ export type UiStyle =
   | "d-flex"
   | "d-inline-flex"
   | "d-grid"
+
+  // Twelve-column grid; responsive variants query the parent grid's width.
+  | "grid"
+  | `col-${GridColumnSpan}`
+  | `col-sm-${GridColumnSpan}`
+  | `col-md-${GridColumnSpan}`
+  | `col-lg-${GridColumnSpan}`
 
   // ------------------
   // Flex direction

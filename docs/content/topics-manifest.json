@@ -230,6 +230,18 @@
       "module": "./content/topics/popover.js"
     },
     {
+      "id": "layout",
+      "title": "Layout and responsive grid",
+      "path": "/styles/layout",
+      "group": "styles",
+      "order": 30,
+      "description": "Compose twelve-column layouts with container-responsive utilities using e(), c() or v().",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/layout.js"
+    },
+    {
       "id": "popup-menu",
       "title": "PopupMenu",
       "path": "/popup",

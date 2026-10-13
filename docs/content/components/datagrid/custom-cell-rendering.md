@@ -23,6 +23,10 @@ keywords:
 
 # Custom cell rendering
 
+DataGrid uses the root class `elg-data-grid`, row classes `elg-data-grid-row-*`
+and cell classes `elg-data-grid-cell-*`. These are separate from the `elg-grid`
+layout utility. Cell color tokens such as `--elg-grid-cell-bg` keep their names.
+
 Use `renderCell` when the default text representation is not enough. The
 renderer returns the content for the cell, while DataGrid continues to own
 selection, hover, dragging, and other cell states.
@@ -65,7 +69,7 @@ undefined; use `value`, `text`, and `gridRow` instead. The renderer must return
 a virtual node. The VNode becomes the content inside the grid cell wrapper, so
 DataGrid can preserve its own selection, hover, and interaction behavior.
 
-`customCellStyle` affects the outer `.elg-gridcell`, not only the returned
+`customCellStyle` affects the outer `.elg-data-grid-cell`, not only the returned
 content. This is important because the grid can then apply state styling to a
 custom green or red background. The renderer does not need to know how
 selection or hover colors are implemented.

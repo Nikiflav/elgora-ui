@@ -4,7 +4,7 @@
 }
 
 
-.elg-grid {
+.elg-data-grid {
     --elg-grid-cell-bg: var(--elg-bg-color);
     --elg-grid-cell-text: var(--elg-text-color);
     --elg-grid-cell-border: var(--elg-border-color);
@@ -25,14 +25,14 @@
     border: 1px solid var(--elg-grid-cell-border);
 }
 
-.elg-grid .elg-icon {
+.elg-data-grid .elg-icon {
     font-size: 16px;
     padding: 3px;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.elg-gridcell {
+.elg-data-grid-cell {
     padding: 4px 6px;
     border-bottom: 1px solid var(--elg-grid-cell-border);
     /* border-right: 1px solid var(--elg-grid-cell-border); */
@@ -47,11 +47,11 @@
     word-break: keep-all;
 }
 
-.elg-gridrow-loading .elg-gridcell-data {
+.elg-data-grid-row-loading .elg-data-grid-cell-data {
     position: relative;
 }
 
-.elg-gridrow-loading .elg-gridcell-data::after {
+.elg-data-grid-row-loading .elg-data-grid-cell-data::after {
     content: "";
     position: absolute;
     top: 20%;
@@ -61,31 +61,31 @@
     background-color: var(--elg-grid-cell-border);
 }
 
-.elg-gridrow-footer .elg-gridcell {
+.elg-data-grid-row-footer .elg-data-grid-cell {
      border-top: 1px solid var(--elg-grid-cell-border);
 }
 
-.elg-gridrow-header .elg-gridcell {
+.elg-data-grid-row-header .elg-data-grid-cell {
     border-top: 1px solid var(--elg-grid-cell-border);
 }
 
 
-.elg-gridcell-rowheader {
+.elg-data-grid-cell-rowheader {
     background-color: var(--elg-grid-header-bg);
 }
 
-thead .elg-gridcell,
-tfoot .elg-gridcell {
+thead .elg-data-grid-cell,
+tfoot .elg-data-grid-cell {
     background-color: var(--elg-grid-header-bg);
 }
 
-thead .elg-gridcell,
-.elg-grid-header .elg-gridcell {
+thead .elg-data-grid-cell,
+.elg-data-grid-header .elg-data-grid-cell {
     position: relative;
     cursor: pointer;
 }
 
-thead .elg-gridcell .elg-grid-header-resizer {
+thead .elg-data-grid-cell .elg-data-grid-header-resizer {
     position: absolute;
     width: 4px;
     right: 0;
@@ -96,7 +96,7 @@ thead .elg-gridcell .elg-grid-header-resizer {
     align-items: center;
 }
 
-thead .elg-gridcell .elg-grid-header-resizer::before {
+thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
     content: '';
     display: block;
     width: 2px;
@@ -105,42 +105,42 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
     transition: background-color 0.2s;
 }
 
-.elg-grid.elg-grid-resizing,
-.elg-grid.elg-grid-resizing * {
+.elg-data-grid.elg-data-grid-resizing,
+.elg-data-grid.elg-data-grid-resizing * {
     cursor: ew-resize !important;
 }
 
-.elg-grid.elg-grid-dragging,
-.elg-grid.elg-grid-dragging * {
+.elg-data-grid.elg-data-grid-dragging,
+.elg-data-grid.elg-data-grid-dragging * {
     cursor: pointer !important;
 }
 
-.elg-gridcell.elg-column-dragging {
+.elg-data-grid-cell.elg-column-dragging {
     --elg-grid-cell-text: var(--elg-text-muted);
     --elg-grid-state-color: var(--elg-surface-color);
 }
 
-.elg-gridcell.elg-selected-cell {
+.elg-data-grid-cell.elg-selected-cell {
     --elg-grid-state-color: var(--elg-grid-sel-color);
 
 }
 
-.elg-gridcell.elg-active-cell {
+.elg-data-grid-cell.elg-active-cell {
     --elg-grid-state-color: transparent !important;
 }
 
-.elg-gridcell.elg-selected-row-header {
+.elg-data-grid-cell.elg-selected-row-header {
     font-weight: 600;
     background: var(--elg-primary-bg);
     color: var(--elg-primary-text);
 }
 
-.elg-gridrow-filter .elg-gridcell {
+.elg-data-grid-row-filter .elg-data-grid-cell {
     padding: 2px 4px;
     background-color: var(--elg-grid-cell-bg);
 }
 
-.elg-grid-filter-input {
+.elg-data-grid-filter-input {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
@@ -154,15 +154,15 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
     transition: background-color 0.15s, border-color 0.15s;
 }
 
-.elg-grid-filter-input[type="search"]::-webkit-search-cancel-button {
+.elg-data-grid-filter-input[type="search"]::-webkit-search-cancel-button {
     display: none;
 }
 
-.elg-grid-filter-control .elg-grid-filter-input {
+.elg-data-grid-filter-control .elg-data-grid-filter-input {
     padding-right: 22px;
 }
 
-.elg-grid-filter-clear {
+.elg-data-grid-filter-clear {
     position: absolute;
     top: 50%;
     right: 3px;
@@ -176,39 +176,39 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
     cursor: pointer;
 }
 
-.elg-grid-filter-clear:hover,
-.elg-grid-filter-clear:focus-visible {
+.elg-data-grid-filter-clear:hover,
+.elg-data-grid-filter-clear:focus-visible {
     color: var(--elg-primary-color);
 }
 
-.elg-grid-filter-input:hover {
+.elg-data-grid-filter-input:hover {
     background-color: var(--elg-selection-bg);
 }
 
-.elg-grid-filter-input:focus {
+.elg-data-grid-filter-input:focus {
     outline: none;
     border-bottom-color: var(--elg-primary-color);
 }
 
-.elg-grid-filter-button {
+.elg-data-grid-filter-button {
     width: 100%;
     padding: 3px 5px;
     border: 0;
     background: transparent;
 }
 
-.elg-grid-filter-button:hover .elg-icon {
+.elg-data-grid-filter-button:hover .elg-icon {
     color: var(--elg-primary-color);
 }
 
-.elg-grid-header {
+.elg-data-grid-header {
     display: flex;
     padding: 6px;
     align-items: center;
     overflow-x: hidden;
 }
 
-.elg-grid-header .elg-gridcell {
+.elg-data-grid-header .elg-data-grid-cell {
     display: inline-flex;
     align-items: center;
     border: 1px solid var(--elg-grid-header-border);
@@ -220,23 +220,23 @@ thead .elg-gridcell .elg-grid-header-resizer::before {
     flex: none;
 }
 
-thead .elg-gridcell:hover,
-.elg-grid-header .elg-gridcell:hover {
+thead .elg-data-grid-cell:hover,
+.elg-data-grid-header .elg-data-grid-cell:hover {
     color: var(--elg-primary-color);
 }
 
-.elg-grid-header .elg-gridcell > .elg-icon {
+.elg-data-grid-header .elg-data-grid-cell > .elg-icon {
     padding: 0;
     margin-left: auto;
     font-size: 16px;
     line-height: 1;
 }
 
-.elg-grid-header .elg-gridcell > .elg-icon.ri-close-line {
+.elg-data-grid-header .elg-data-grid-cell > .elg-icon.ri-close-line {
     color: var(--elg-text-color);
 }
 
-.elg-grid-drag-ghost {
+.elg-data-grid-drag-ghost {
     max-width: min(320px, calc(100vw - 24px));
     min-width: 0;
     padding: 1px 6px;
@@ -248,12 +248,12 @@ thead .elg-gridcell:hover,
     text-overflow: ellipsis;
 }
 
-.elg-grid-header-empty {
+.elg-data-grid-header-empty {
     color: var(--elg-text-color);
     opacity: 0.6;
 }
 
-thead .elg-gridrow-header .elg-gridcell-data {
+thead .elg-data-grid-row-header .elg-data-grid-cell-data {
     cursor: pointer;
 }
 

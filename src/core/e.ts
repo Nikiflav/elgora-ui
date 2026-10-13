@@ -2,7 +2,8 @@
 // e() typed HTML factory
 // ======================================================
 
-import { applyUi, Component, ComponentChild } from "./Component"
+import { Component, ComponentChild } from "./Component"
+import { isClassProp, patchClassProps } from "./ClassProps"
 import { UiStyle } from "./UiStyle"
 
 
@@ -258,6 +259,9 @@ export function assignElementProps<T extends HTMLElement>(
 /**
  * Applies the given props to the given element.
  * Uses diff to apply only the changes.
+ * class, className and ui are combined independently of property order. Patching
+ * removes only their previous managed tokens, retaining unrelated DOM classes.
+ * Do not also control the same token through bindClass() or direct classList edits.
  * @param el The element to apply the props to.
  * @param props The props to apply.
  * @param assign If true only the provided props are modified, otherwise the not provided stored props are reset to null/default value.
@@ -270,6 +274,8 @@ export function setElementProps<T extends HTMLElement>(
 
     if (!props) return
 
+    patchClassProps(el, props, assign);
+
     const stored = (el as any)[STORED_PROPS_KEY] as StoredProps | undefined
     const eventMap = (el as any)[EVENT_LISTENERS_KEY] as Map<string, EventListenerEntry> | undefined
         ?? new Map<string, EventListenerEntry>()
@@ -281,6 +287,8 @@ export function setElementProps<T extends HTMLElement>(
     let contentSet = false;
 
     for (const key in props) {
+
+        if (isClassProp(key)) continue;
 
         if (key == "textContent" || key == "innerHTML" || key == "vnodes") {
             contentSet = true;
@@ -310,6 +318,8 @@ export function setElementProps<T extends HTMLElement>(
     if (stored && !assign) {
         for (const key in stored) {
 
+            if (isClassProp(key)) continue;
+
             if (!(key in props)) {
 
                 if (key == "textContent" || key == "innerHTML" || key == "vnodes") {
@@ -328,7 +338,7 @@ export function setElementProps<T extends HTMLElement>(
         }
     }
 
-    (el as any)[STORED_PROPS_KEY] = { ...props }
+    (el as any)[STORED_PROPS_KEY] = assign ? { ...stored, ...props } : { ...props }
 }
 
 function applySingleProp<T extends HTMLElement>(
@@ -395,19 +405,6 @@ function applySingleProp<T extends HTMLElement>(
         return
     }
 
-    if (key === "ui") {
-        applyUi(el, value)
-        return
-    }
-
-    if (
-        key === "class" ||
-        key === "className"
-    ) {
-        el.className = String(value)
-        return
-    }
-
     if (key in el) {
         try {
             (el as any)[key] = value
@@ -446,16 +443,6 @@ function removeProp<T extends HTMLElement>(
         const style = el.style as any
         for (const prop in oldValue)
             style[prop] = ""
-        return
-    }
-
-    if (key === "ui") {
-        el.className = ""
-        return
-    }
-
-    if (key === "class" || key === "className") {
-        el.className = ""
         return
     }
 

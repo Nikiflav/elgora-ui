@@ -122,12 +122,12 @@ describe("DataGrid data contracts", () => {
     await settle();
 
     expect(grid.dom.textContent).toContain("Name contains 'Alpha' or Amount = 100");
-    const dataCells = grid.dom.querySelectorAll<HTMLTableCellElement>(".elg-gridrow-filter .elg-gridcell-data");
+    const dataCells = grid.dom.querySelectorAll<HTMLTableCellElement>(".elg-data-grid-row-filter .elg-data-grid-cell-data");
     expect(dataCells).toHaveLength(2);
     expect(dataCells[0].colSpan).toBe(2);
     expect(dataCells[1].style.display).toBe("none");
     const summaryButton = grid.dom.querySelector<HTMLButtonElement>(
-      '.elg-gridrow-filter button[aria-label^="Edit filter:"]'
+      '.elg-data-grid-row-filter button[aria-label^="Edit filter:"]'
     );
     expect(summaryButton).not.toBeNull();
     expect(summaryButton!.classList.contains("elg-btn")).toBe(false);
@@ -149,7 +149,7 @@ describe("DataGrid data contracts", () => {
     grid.mount(document.body);
     await settle();
 
-    const inputs = grid.dom.querySelectorAll<HTMLInputElement>(".elg-gridrow-filter input");
+    const inputs = grid.dom.querySelectorAll<HTMLInputElement>(".elg-data-grid-row-filter input");
     expect(inputs).toHaveLength(2);
     expect(inputs[0].value).toBe("Alpha");
     expect(inputs[1].value).toBe("100..");
@@ -170,7 +170,7 @@ describe("DataGrid data contracts", () => {
     await settle();
 
     const clearButton = grid.dom.querySelector<HTMLButtonElement>(
-      '.elg-gridrow-filter button[aria-label="Clear filter Name"]'
+      '.elg-data-grid-row-filter button[aria-label="Clear filter Name"]'
     );
     expect(clearButton).not.toBeNull();
     expect(clearButton!.tabIndex).toBe(-1);
@@ -178,7 +178,7 @@ describe("DataGrid data contracts", () => {
     await settle();
 
     expect(grid.getOptions().filter).toEqual(["amount", ">=", 10]);
-    expect(grid.dom.querySelector('.elg-gridrow-filter button[aria-label="Clear filter Name"]')).toBeNull();
+    expect(grid.dom.querySelector('.elg-data-grid-row-filter button[aria-label="Clear filter Name"]')).toBeNull();
   });
 
   it("applies a numeric range entered in the filter row", async () => {
@@ -202,14 +202,14 @@ describe("DataGrid data contracts", () => {
     await settle();
 
     const amountInput = grid.dom.querySelector<HTMLInputElement>(
-      '.elg-gridrow-filter input[aria-label="Filter Amount"]'
+      '.elg-data-grid-row-filter input[aria-label="Filter Amount"]'
     );
     expect(amountInput).not.toBeNull();
     amountInput!.value = "1..400";
     amountInput!.dispatchEvent(new Event("change", { bubbles: true }));
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    const visibleRows = [...grid.dom.querySelectorAll<HTMLTableRowElement>("tbody tr.elg-gridrow-data")]
+    const visibleRows = [...grid.dom.querySelectorAll<HTMLTableRowElement>("tbody tr.elg-data-grid-row-data")]
       .filter(row => row.style.display !== "none")
       .map(row => row.textContent ?? "");
     expect(grid.getOptions().filter).toEqual([

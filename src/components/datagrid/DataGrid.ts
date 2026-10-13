@@ -223,18 +223,18 @@ export class DataGrid<TRow> extends Component {
         super({ ui: "h-100" })
 
         // DOM
-        this.dom.classList.add("elg-grid");
+        this.dom.classList.add("elg-data-grid");
         this.dom.style.position = "relative";
         this.dom.style.boxSizing = "border-box";
 
 
         this._headerPanel = e("div", {
-            class: "elg-grid-header"
+            class: "elg-data-grid-header"
         });
 
         this._tableContainer = e("div",
             {
-                class: "elg-grid-viewport",
+                class: "elg-data-grid-viewport",
                 style: {
                     position: "absolute",
                     top: 0,
@@ -310,7 +310,7 @@ export class DataGrid<TRow> extends Component {
             element: this._tableContainer,
             itemsElement: this._contentTable.tHead!,
             axis: "x",
-            itemSelector: "tr.elg-gridrow-header td.elg-gridcell-data",
+            itemSelector: "tr.elg-data-grid-row-header td.elg-data-grid-cell-data",
             scrollBy: delta => this._scrollEngine.scrollLeft += delta
         })));
 
@@ -319,7 +319,7 @@ export class DataGrid<TRow> extends Component {
             kind: "column",
             element: this._headerPanel,
             axis: "x",
-            itemSelector: ".elg-gridcell",
+            itemSelector: ".elg-data-grid-cell",
             scrollBy: delta => this._headerPanel.scrollLeft += delta
         })));
 
@@ -1787,7 +1787,7 @@ export class DataGrid<TRow> extends Component {
     }
 
     private createCellProps = (col: GridColumn<TRow>): any => ({
-        className: `elg-gridcell elg-gridcell-${col.type}`
+        className: `elg-data-grid-cell elg-data-grid-cell-${col.type}`
     });
 
     private applyRowHeaderCell = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
@@ -1811,7 +1811,7 @@ export class DataGrid<TRow> extends Component {
             const rowIndex = gridRow.visibleIndex;
             await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
 
-            if (el.closest(".elg-gridrow-sticky")) this.scrollToRow(rowIndex);
+            if (el.closest(".elg-data-grid-row-sticky")) this.scrollToRow(rowIndex);
             else this.render(this.renderBody);
         }
     });
@@ -1934,7 +1934,7 @@ export class DataGrid<TRow> extends Component {
                 ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
             }) : null,
             v("em", {
-                class: "elg-grid-header-resizer",
+                class: "elg-data-grid-header-resizer",
                 onmousedown: (e, el) => this.resizeColumn(e, col),
                 ontouchstart: (e, el) => this.resizeColumn(e, col),
                 ondblclick: (e, el) => {
@@ -2028,7 +2028,7 @@ export class DataGrid<TRow> extends Component {
     /** Uses the filter-row funnel as the stable anchor for the full filter editor. */
     private openFilterEditorFromSummary = (fallback: HTMLButtonElement) => {
         const funnel = this._contentTable.tHead?.querySelector<HTMLButtonElement>(
-            ".elg-gridrow-filter .elg-gridcell-rowheader button"
+            ".elg-data-grid-row-filter .elg-data-grid-cell-rowheader button"
         );
         this.openFilterEditor(funnel ?? fallback);
     };
@@ -2045,7 +2045,7 @@ export class DataGrid<TRow> extends Component {
         if (col.type === "rowheader") {
             props.vnodes = [v("button", {
                 key: "filter-editor-button",
-                class: "elg-grid-filter-button",
+                class: "elg-data-grid-filter-button",
                 ui: ["elg", "btn", "text-muted"],
                 type: "button",
                 ariaLabel: "Edit filter",
@@ -2067,7 +2067,7 @@ export class DataGrid<TRow> extends Component {
             const inputValue = filterValues.find(value => value.field === column.name)?.text ?? "";
             const input = v("input", {
                 key: `filter-${column.name}`,
-                class: "elg-grid-filter-input",
+                class: "elg-data-grid-filter-input",
                 ui: ["elg", "w-100"],
                 type: "search",
                 value: inputValue,
@@ -2083,7 +2083,7 @@ export class DataGrid<TRow> extends Component {
             const clearButton = inputValue
                 ? v("button", {
                     key: `clear-filter-${column.name}`,
-                    class: "elg-grid-filter-clear",
+                    class: "elg-data-grid-filter-clear",
                     ui: ["elg", "btn", "text-muted", "p-0"],
                     type: "button",
                     tabIndex: -1,
@@ -2098,7 +2098,7 @@ export class DataGrid<TRow> extends Component {
                 : null;
             props.vnodes = [v("span", {
                 key: `filter-control-${column.name}`,
-                class: "elg-grid-filter-control",
+                class: "elg-data-grid-filter-control",
                 ui: ["elg", "d-block", "position-relative"]
             }, input, clearButton)];
             return;
@@ -2208,7 +2208,7 @@ export class DataGrid<TRow> extends Component {
         e.stopPropagation();
 
         this._cancelActiveResize?.();
-        this.dom.classList.add("elg-grid-resizing");
+        this.dom.classList.add("elg-data-grid-resizing");
 
         const startWidth = col.width;
         const startIsAutoWidth = col.isAutoWidth;
@@ -2234,7 +2234,7 @@ export class DataGrid<TRow> extends Component {
                 // _gridOptions.columns) so getColumn()/getOptions() reflect what's on screen.
                 if (col.dataColumn)
                     col.dataColumn.width = col.width;
-                this.dom.classList.remove("elg-grid-resizing");
+                this.dom.classList.remove("elg-data-grid-resizing");
                 clearResize();
             },
             onCancel: () => {
@@ -2242,7 +2242,7 @@ export class DataGrid<TRow> extends Component {
                 col.isAutoWidth = startIsAutoWidth;
                 this.redistributeColumnWidths();
                 this.render(this.renderColGroup);
-                this.dom.classList.remove("elg-grid-resizing");
+                this.dom.classList.remove("elg-data-grid-resizing");
                 clearResize();
             }
         });
@@ -2253,7 +2253,7 @@ export class DataGrid<TRow> extends Component {
     public override dispose(): void {
         this._cancelActiveResize?.();
         this._cancelActiveResize = undefined;
-        this.dom.classList.remove("elg-grid-resizing", "elg-grid-dragging");
+        this.dom.classList.remove("elg-data-grid-resizing", "elg-data-grid-dragging");
         super.dispose();
     }
 
@@ -2264,7 +2264,7 @@ export class DataGrid<TRow> extends Component {
 
         const sourceIndex = this._gridColumns.filter(c => c.type == "data").indexOf(col);
         this._draggingColIndex = col.visibleIndex;
-        this.dom.classList.add("elg-grid-dragging");
+        this.dom.classList.add("elg-data-grid-dragging");
         headerTd.classList.add("elg-column-dragging");
 
         let dragMoved = false;
@@ -2274,7 +2274,7 @@ export class DataGrid<TRow> extends Component {
                 kind: "column",
                 id: col.dataColumn.name,
                 label: col.dataColumn.caption ?? col.dataColumn.name,
-                ghostClassName: "elg-box elg-grid-drag-ghost",
+                ghostClassName: "elg-box elg-data-grid-drag-ghost",
                 ghostSize: "content",
                 sourceZoneId: "grid-header",
                 sourceIndex
@@ -2284,7 +2284,7 @@ export class DataGrid<TRow> extends Component {
             "x",
             () => {
                 this._draggingColIndex = -1;
-                this.dom.classList.remove("elg-grid-dragging");
+                this.dom.classList.remove("elg-data-grid-dragging");
                 headerTd.classList.remove("elg-column-dragging");
                 if (dragMoved) this.refresh();
             },
@@ -2303,7 +2303,7 @@ export class DataGrid<TRow> extends Component {
         if (!col) return;
 
         this._activeGroupColumn = columnName;
-        this.dom.classList.add("elg-grid-dragging");
+        this.dom.classList.add("elg-data-grid-dragging");
         chipEl.classList.add("elg-column-dragging");
 
         let dragMoved = false;
@@ -2324,7 +2324,7 @@ export class DataGrid<TRow> extends Component {
                 kind: "column",
                 id: columnName,
                 label: col.caption ?? col.name,
-                ghostClassName: "elg-box elg-grid-drag-ghost",
+                ghostClassName: "elg-box elg-data-grid-drag-ghost",
                 ghostSize: "content",
                 sourceZoneId: "group-panel",
                 sourceIndex
@@ -2334,7 +2334,7 @@ export class DataGrid<TRow> extends Component {
             "x",
             () => {
                 this._activeGroupColumn = undefined;
-                this.dom.classList.remove("elg-grid-dragging");
+                this.dom.classList.remove("elg-data-grid-dragging");
                 chipEl.classList.remove("elg-column-dragging");
                 if (dragMoved) this.refresh();
             },
@@ -2483,7 +2483,7 @@ export class DataGrid<TRow> extends Component {
             row.tr?.removeChild(row.tr.cells[ix]);
 
         setElementProps(row.tr, {
-            class: "elg-gridrow elg-gridrow-" + row.gridRow.type
+            class: "elg-data-grid-row elg-data-grid-row-" + row.gridRow.type
         });
     }
 
@@ -2553,7 +2553,7 @@ export class DataGrid<TRow> extends Component {
         for (let i = 0; i < rows.length; i++) {
             const tr = this.getTHeadRow(staticCount + i);
             this.renderGridRow({ gridRow: rows[i], tr, index: rows[i].visibleIndex });
-            tr.classList.add("elg-gridrow-sticky");
+            tr.classList.add("elg-data-grid-row-sticky");
             tr.style.display = "";
         }
 
@@ -2668,12 +2668,12 @@ export class DataGrid<TRow> extends Component {
     private renderHeaderPanel = () => {
 
         if (this._isHierarchicalData) {
-            setElementProps(this._headerPanel, { class: "elg-grid-header", style: { display: "none" }, vnodes: [] });
+            setElementProps(this._headerPanel, { class: "elg-data-grid-header", style: { display: "none" }, vnodes: [] });
             return;
         }
 
         const props: ElementProps<HTMLElement> = {
-            class: "elg-grid-header",
+            class: "elg-data-grid-header",
             vnodes: []
         };
 
@@ -2683,7 +2683,7 @@ export class DataGrid<TRow> extends Component {
 
         if (groupColumns.length === 0) {
             props.vnodes!.push(v("span", {
-                class: "elg-grid-header-empty"
+                class: "elg-data-grid-header-empty"
             }, this.texts.groupPanelEmptyText));
         }
 
@@ -2701,7 +2701,7 @@ export class DataGrid<TRow> extends Component {
 
                 props.vnodes!.push(v("div",
                     {
-                        class: "elg-gridcell" + (this._activeGroupColumn === cn ? " elg-column-dragging" : ""),
+                        class: "elg-data-grid-cell" + (this._activeGroupColumn === cn ? " elg-column-dragging" : ""),
                         onmousedown: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
                         ontouchstart: (e, el) => this.startGroupChipDrag(e, el, cn, sourceIndex),
                         onclick: (e: MouseEvent) => {
