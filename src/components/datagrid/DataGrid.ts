@@ -6,7 +6,8 @@ import { ScrollEngine } from "../scrollbar/scroll-engine";
 import { Scrollbar } from "../scrollbar/scrollbar";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
-import { DataColumn, DataColumnLayoutInfo, DataColumnUtils } from "./DataColumn";
+import { DataViewFieldUtils } from "../../data/DataViewField";
+import type { DataGridColumnLayoutInfo } from "./DataGridColumn";
 import { orderByTokenToString, type GroupInterval, type GroupIntervalDefinition, type OrderByToken } from "../../data/grouping";
 import type { SummaryDefinition, SummaryType, SummaryResult } from "../../data/summary";
 import { DataGridColumn, GridCell } from "./DataGridColumn";
@@ -41,7 +42,7 @@ export interface DataGridLayoutInfo {
     showFilterRow?: boolean;
     showColumnHeaders?: boolean;
     showColumnFooters?: boolean;
-    visibleColumns?: (string | DataColumnLayoutInfo)[],
+    visibleColumns?: (string | DataGridColumnLayoutInfo)[],
     orderBy?: OrderByToken[],
     groupColumns?: string[]
 }
@@ -671,7 +672,7 @@ export class DataGrid<TRow> extends Component {
     };
 
     /** Returns the compact column label, including its configured summary type when present. */
-    private getColumnHeaderText = (column: DataColumn<TRow>): string => {
+    private getColumnHeaderText = (column: DataGridColumn<TRow>): string => {
         const label = column.caption ?? column.name;
         const summary = this._gridOptions.groupSummary?.find(item => item.field === column.name);
         return summary ? `${label} (${summary.summaryType})` : label;
@@ -770,7 +771,7 @@ export class DataGrid<TRow> extends Component {
                     "second": "Second",
                     "firstChar": "First character"
                 };
-                const supportedIntervals = DataColumnUtils.getSupportedGroupIntervals(context.column!);
+                const supportedIntervals = DataViewFieldUtils.getSupportedGroupIntervals(context.column!);
                 const customIntervals = this._gridOptions.groupIntervals ?? [];
                 const advancedIntervals = [
                     ...supportedIntervals.map(value => ({ label: intervalLabels[value] ?? String(value), value })),
@@ -898,7 +899,7 @@ export class DataGrid<TRow> extends Component {
         event: MouseEvent,
         target: DataGridContextMenuContext<TRow>["target"],
         row?: GridRow,
-        column?: DataColumn<TRow>,
+        column?: DataGridColumn<TRow>,
         colIndex?: number
     ) => {
         if (!this._gridOptions.contextMenu) return;
@@ -1027,7 +1028,7 @@ export class DataGrid<TRow> extends Component {
                 const col = this._columnsIndex.get(column);
                 if (!col)
                     return Promise.resolve((row as any)[column]);
-                return DataColumnUtils.getValue(col, row);
+                return DataViewFieldUtils.getValue(col, row);
             }, column => this._columnsIndex.get(column), this._gridOptions.groupIntervals, this._gridOptions.customSummaries);
         }
     }
@@ -1040,15 +1041,15 @@ export class DataGrid<TRow> extends Component {
         return functions;
     };
 
-    /** Merges a column patch onto the existing DataColumn of the same name (preserving its object
+    /** Merges a column patch onto the existing DataGridColumn of the same name (preserving its object
      *  identity, since it's shared with _gridOptions.columns and _gridColumns[i].dataColumn), or adds
      *  it as a new column if no such name exists yet. */
-    private _mergeColumnPatch(patch: Partial<DataColumn<TRow>> & { name: string }) {
+    private _mergeColumnPatch(patch: Partial<DataGridColumn<TRow>> & { name: string }) {
         const existing = this._columnsIndex.get(patch.name);
         if (existing) {
             Object.assign(existing, patch);
         } else {
-            const col = patch as DataColumn<TRow>;
+            const col = patch as DataGridColumn<TRow>;
             this._columnsIndex.set(col.name, col);
             this._gridOptions.columns.push(col);
         }
@@ -1068,7 +1069,7 @@ export class DataGrid<TRow> extends Component {
             this._selection.clear();
         }
 
-        // Reconcile columns by name instead of replacing the array wholesale, so DataColumn object
+        // Reconcile columns by name instead of replacing the array wholesale, so DataGridColumn object
         // identity is preserved for objects already referenced by _gridColumns[i].dataColumn.
         if (options.columns) {
             const keepNames = new Set(options.columns.map(c => c.name));
@@ -1162,7 +1163,7 @@ export class DataGrid<TRow> extends Component {
     }
 
     /** Returns the column definition for the given name, or undefined if no such column exists. */
-    getColumn(name: string): DataColumn<TRow> | undefined {
+    getColumn(name: string): DataGridColumn<TRow> | undefined {
         return this._columnsIndex.get(name);
     }
 
@@ -1172,7 +1173,7 @@ export class DataGrid<TRow> extends Component {
     public clearSelection() { this._selection.clear(); this.refresh(); }
 
     /** Patches an existing column's definition in place and updates the grid's layout accordingly. */
-    setColumnOptions(name: string, patch: Partial<DataColumn<TRow>>) {
+    setColumnOptions(name: string, patch: Partial<DataGridColumn<TRow>>) {
         if (!this._columnsIndex.has(name)) {
             console.warn(`DataGrid.setColumnOptions: no column named "${name}".`);
             return;
@@ -1376,7 +1377,7 @@ export class DataGrid<TRow> extends Component {
          * Returns the currently visible columns
          * @returns Array of visible columns
          */
-    getVisibleColumns(): DataColumn<TRow>[] {
+    getVisibleColumns(): DataGridColumn<TRow>[] {
 
         return this._gridColumns
             .filter(x => x.dataColumn != undefined)
@@ -1980,7 +1981,7 @@ export class DataGrid<TRow> extends Component {
         return [operator, ...children];
     };
 
-    private setColumnFilter = (column: DataColumn<TRow>, rawValue: string) => {
+    private setColumnFilter = (column: DataGridColumn<TRow>, rawValue: string) => {
         const value = rawValue.trim();
         const remaining = this.removeColumnFilter(this._gridOptions.filter, column.name);
         const nextFilter = value

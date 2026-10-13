@@ -8,7 +8,7 @@
       "name": "ArrayDataSource",
       "kind": "class",
       "type": "ArrayDataSource<T>",
-      "description": "DataSource implementation backed by an in-memory array.",
+      "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.",
       "tags": [],
       "topics": [],
       "group": "core",
@@ -20,6 +20,16 @@
           "name": "array",
           "type": "T[]",
           "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ArrayDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "changed",
+          "type": "ObservableEvent<DataSourceChanged<T>>",
+          "description": "Notifications for successful edits, including pending-row edits.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -93,13 +103,13 @@
           "signature": "(row: T) => Promise<number>"
         },
         {
-          "name": "saveChanges",
-          "type": "(changes: ChangeSet) => Promise<SaveChangesResult>",
-          "description": "Applies a ChangeSet directly to the backing array.\n\nArrayDataSource uses the change key to find existing rows. Inserted rows\nkeep the supplied key because there is no server that can assign a new\nidentity; therefore the successful result never needs keyMappings.\n\nThe complete batch is validated before the array is changed, so a bad\nkey does not leave a partially applied in-memory update.",
+          "name": "update",
+          "type": "(row: T, values: Record<string, unknown>) => Promise<MutationResult>",
+          "description": "Applies fields to the actual confirmed or pending row.\nAn equal-value patch emits no notification. The identity cannot be changed.",
           "tags": [
             {
               "name": "example",
-              "text": "await source.saveChanges?.([\n    { type: \"update\", key: 1, data: { amount: 25 } },\n    { type: \"remove\", key: 2 }\n]);"
+              "text": "await source.update(row, { quantity: 3, price: 20 });"
             }
           ],
           "topics": [],
@@ -107,18 +117,132 @@
           "source": "src/data/ArrayDataSource.ts",
           "parameters": [
             {
-              "name": "changes",
-              "type": "ChangeSet",
+              "name": "row",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "values",
+              "type": "Record<string, unknown>",
               "optional": false,
               "description": ""
             }
           ],
           "returns": {
-            "type": "Promise<SaveChangesResult>",
+            "type": "Promise<MutationResult>",
             "description": ""
           },
           "kind": "method",
-          "signature": "(changes: ChangeSet) => Promise<SaveChangesResult>"
+          "signature": "(row: T, values: Record<string, unknown>) => Promise<MutationResult>"
+        },
+        {
+          "name": "delete",
+          "type": "(row: T) => Promise<MutationResult>",
+          "description": "Removes a confirmed row from the supplied array. Pending rows must be cancelled instead.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ArrayDataSource.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<MutationResult>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: T) => Promise<MutationResult>"
+        },
+        {
+          "name": "createNewRow",
+          "type": "() => Promise<NewRowSession<T>>",
+          "description": "Initializes an independent draft, with defaults and a stable identity.\nDrafts are excluded from queries, summaries and hierarchy until insert().\ninsert/cancel are individually idempotent; the opposite terminal transition rejects.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "const session = await source.createNewRow();\nawait source.update(session.row, { product: \"Keyboard\", quantity: 1 });\nconst result = await session.insert();\nif (!result.success) console.error(result.error);"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ArrayDataSource.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<NewRowSession<T>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<NewRowSession<T>>"
+        }
+      ]
+    },
+    {
+      "name": "ArrayDataSourceOptions",
+      "kind": "interface",
+      "type": "ArrayDataSourceOptions<T>",
+      "description": "Identity, defaults and query configuration for an editable in-memory array.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/ArrayDataSourceOptions",
+      "source": "src/data/ArrayDataSource.ts",
+      "members": [
+        {
+          "name": "parentField",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/ArrayDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "idField",
+          "type": "string | undefined",
+          "description": "Identity field for new rows. Default: id. Existing rows are edited by reference.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/ArrayDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "filterFunctions",
+          "type": "FilterFunctionRegistry | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/ArrayDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaults",
+          "type": "Partial<T> | (() => Partial<T> | Promise<Partial<T>>) | undefined",
+          "description": "Initial values for new plain-object rows. A factory runs independently for every session.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/ArrayDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createRowId",
+          "type": "((source: ArrayDataSource<T>) => RowIdentity | Promise<RowIdentity>) | undefined",
+          "description": "Generates a string or finite number identity; defaults to crypto.randomUUID().",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/ArrayDataSource.ts",
+          "kind": "property"
         }
       ]
     },
@@ -1196,10 +1320,10 @@
       "tags": [],
       "topics": [],
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/DataCell",
-      "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\n    /** Column definition for this cell. */\n    column: DataColumn<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
+      "source": "src/data/DataViewField.ts",
+      "definition": "{\n    /** Column definition for this cell. */\n    column: DataViewField<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
     },
     {
       "name": "DataCellStyle",
@@ -1211,7 +1335,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataCellStyle",
-      "source": "src/components/datagrid/DataColumn.ts",
+      "source": "src/components/datagrid/DataGridColumn.ts",
       "definition": "{\n    /** Additional classes for the outer grid cell. */\n    className?: string;\n    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */\n    style?: StyleObject;\n}"
     },
     {
@@ -1257,19 +1381,6 @@
           "kind": "property"
         }
       ]
-    },
-    {
-      "name": "DataColumn",
-      "kind": "type",
-      "type": "any",
-      "description": "Defines one grid/view column: its data access, display, editing and layout behavior.",
-      "tags": [],
-      "topics": [],
-      "group": "types",
-      "namespace": "Components.DataGrid",
-      "path": "/api-reference/DataColumn",
-      "source": "src/components/datagrid/DataColumn.ts",
-      "definition": "{\n    /** Field name; also used as the column's unique identifier. */\n    name: string;\n    /** Display label; falls back to `name` when unset. */\n    caption?: string;\n    /** Column description, shown as a tooltip. */\n    description?: string;\n    /** The fixed width of the column, in pixels. If not specified the column will be auto-sized. */\n    width?: number;\n    /** Opaque, caller-defined data attached to the column (not used internally). */\n    userState?: any;\n    textAlign?: \"start\" | \"center\" | \"end\";\n    /** Semantic value type used by filtering, grouping, sorting, summaries, and formatting. */\n    dataType?: DataType;\n    /** UI editor type used when the value is edited. */\n    editorType?: EditorType;\n    readonly?: boolean;\n    required?: boolean;\n    resizable?: boolean;\n    reorderable?: boolean;\n    /** Relative ordering hint among columns. */\n    logicalOrder?: number;\n    /** True to skip the cell label in DataView. */\n    hideLabel?: boolean,\n    /** Provides visibility by row. Used in DataView. */\n    showInRow?(row: any): boolean;\n    /** Reads this column's raw value from a row; defaults to reading `row[name]`. */\n    getValue?(row: TRow): Promise<any>;\n    /** Reads this column's display text for a row; defaults to stringifying getValue(). */\n    getText?(row: TRow): Promise<string>;\n    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */\n    setValue?(row: TRow, value: any): Promise<any>;\n    /** Parses and writes a display-text edit onto a row. */\n    setText?(row: TRow, text: string): Promise<any>;\n    /** Fetches the allowed-value list for dropdown-style editing/filtering. */\n    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;\n    /** Resolves display text for a given value, without loading the full allowed-value list. */\n    getAllowedValueText?(row?: TRow): Promise<string | undefined>;\n    /** List of data cell actions displayed as popup menu for data cell. */\n    //rowCellActions?: (row: any, component: DataComponent) => Promise<ActionButton[]>;\n    /** Produces context-menu items for cells in this column. */\n    contextMenuItems?: GridContextMenuItems<TRow>;\n    /** Produces context-menu items for this column's header. */\n    headerContextMenuItems?: GridContextMenuItems<TRow>;\n    /** Groups this column into a built-in or server-defined interval. */\n    groupInterval?: GroupInterval;\n    /** Computes a local grouping value. When present, grouping for this column is client-side. */\n    getGroupValue?(row: TRow, value: any): any | Promise<any>;\n}"
     },
     {
       "name": "DataEditContext",
@@ -1542,8 +1653,13 @@
       "name": "DataField",
       "kind": "interface",
       "type": "DataField<TRow>",
-      "description": "Minimal field metadata required for local data operations.\nUI column definitions can implement this structurally without coupling data engines to a grid.",
-      "tags": [],
+      "description": "Describes how to read and process a field from any row type.\nIndependent of UI presentation and of DataSet/DataTable membership.\nDataViewField adds presentation; DataGridColumn adds grid-specific behavior.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const amount: DataField<Order> = {\n    name: \"amount\", dataType: \"number\", getValue: async row => row.amount\n};"
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Data",
@@ -1553,7 +1669,7 @@
         {
           "name": "name",
           "type": "string",
-          "description": "",
+          "description": "Data member name; local operations also use it as the field identifier.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -1563,17 +1679,7 @@
         {
           "name": "dataType",
           "type": "DataType | undefined",
-          "description": "",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/data/DataField.ts",
-          "kind": "property"
-        },
-        {
-          "name": "editorType",
-          "type": "string | undefined",
-          "description": "Legacy editor hint used only when no semantic dataType was provided.",
+          "description": "Semantic value type. Independent of the editor used to display or edit the field.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -1583,7 +1689,7 @@
         {
           "name": "getValue",
           "type": "((row: TRow) => Promise<any>) | undefined",
-          "description": "",
+          "description": "Reads the field value; when omitted, local operations read row[name].",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -1606,7 +1712,7 @@
         {
           "name": "groupInterval",
           "type": "import(\"D:/Dev/github/elgora-ui/src/index\").GroupInterval | undefined",
-          "description": "",
+          "description": "Built-in or source-defined grouping interval.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -1616,7 +1722,7 @@
         {
           "name": "getGroupValue",
           "type": "((row: TRow, value: any) => any | Promise<any>) | undefined",
-          "description": "",
+          "description": "Overrides local grouping for the resolved field value.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -1815,7 +1921,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataFilterRowColumn",
       "source": "src/components/datagrid/DataFilterRow.ts",
-      "definition": "Pick<DataColumn<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+      "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
     },
     {
       "name": "DataFilterRowOperator",
@@ -1938,7 +2044,7 @@
         },
         {
           "name": "getColumn",
-          "type": "(name: string) => DataColumn<TRow> | undefined",
+          "type": "(name: string) => DataGridColumn<TRow> | undefined",
           "description": "Returns the column definition for the given name, or undefined if no such column exists.",
           "tags": [],
           "topics": [],
@@ -1953,11 +2059,11 @@
             }
           ],
           "returns": {
-            "type": "DataColumn<TRow> | undefined",
+            "type": "DataGridColumn<TRow> | undefined",
             "description": ""
           },
           "kind": "method",
-          "signature": "(name: string) => DataColumn<TRow> | undefined"
+          "signature": "(name: string) => DataGridColumn<TRow> | undefined"
         },
         {
           "name": "getSelectionManager",
@@ -2025,7 +2131,7 @@
         },
         {
           "name": "setColumnOptions",
-          "type": "(name: string, patch: Partial<DataColumn<TRow>>) => void",
+          "type": "(name: string, patch: Partial<DataGridColumn<TRow>>) => void",
           "description": "Patches an existing column's definition in place and updates the grid's layout accordingly.",
           "tags": [],
           "topics": [],
@@ -2040,7 +2146,7 @@
             },
             {
               "name": "patch",
-              "type": "Partial<DataColumn<TRow>>",
+              "type": "Partial<DataGridColumn<TRow>>",
               "optional": false,
               "description": ""
             }
@@ -2050,7 +2156,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(name: string, patch: Partial<DataColumn<TRow>>) => void"
+          "signature": "(name: string, patch: Partial<DataGridColumn<TRow>>) => void"
         },
         {
           "name": "autoSizeColumn",
@@ -2146,7 +2252,7 @@
         },
         {
           "name": "getVisibleColumns",
-          "type": "() => DataColumn<TRow>[]",
+          "type": "() => DataGridColumn<TRow>[]",
           "description": "Returns the currently visible columns",
           "tags": [
             {
@@ -2159,11 +2265,11 @@
           "source": "src/components/datagrid/DataGrid.ts",
           "parameters": [],
           "returns": {
-            "type": "DataColumn<TRow>[]",
+            "type": "DataGridColumn<TRow>[]",
             "description": "Array of visible columns"
           },
           "kind": "method",
-          "signature": "() => DataColumn<TRow>[]"
+          "signature": "() => DataGridColumn<TRow>[]"
         },
         {
           "name": "layoutChanged",
@@ -2195,16 +2301,146 @@
     },
     {
       "name": "DataGridColumn",
-      "kind": "type",
-      "type": "any",
-      "description": "DataColumn extended with DataGrid-specific cell presentation callbacks.",
+      "kind": "interface",
+      "type": "DataGridColumn<TRow>",
+      "description": "Presentation and interaction of a field as a column in DataGrid.",
       "tags": [],
       "topics": [],
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridColumn",
       "source": "src/components/datagrid/DataGridColumn.ts",
-      "definition": "DataColumn<TRow> & {\n    /** Provides custom style for the outer grid cell. */\n    customCellStyle?(cell: GridCell<TRow>): DataCellStyle | undefined | null;\n    /** Returns a VNode that replaces the default value/text display inside the grid cell wrapper. */\n    renderCell?(cell: GridCell<TRow>): VNode<any>;\n}"
+      "members": [
+        {
+          "name": "width",
+          "type": "number | undefined",
+          "description": "Column width in pixels. Omit to let the grid measure it.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
+          "name": "textAlign",
+          "type": "\"start\" | \"center\" | \"end\" | undefined",
+          "description": "Alignment of the grid cell content.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
+          "name": "resizable",
+          "type": "boolean | undefined",
+          "description": "Whether the user can resize this column.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
+          "name": "reorderable",
+          "type": "boolean | undefined",
+          "description": "Whether the user can reorder this column.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
+          "name": "logicalOrder",
+          "type": "number | undefined",
+          "description": "Relative ordering hint among grid columns.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
+          "name": "contextMenuItems",
+          "type": "GridContextMenuItems<TRow> | undefined",
+          "description": "Context-menu items for cells in this column.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
+          "name": "headerContextMenuItems",
+          "type": "GridContextMenuItems<TRow> | undefined",
+          "description": "Context-menu items for this column's header.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
+          "name": "customCellStyle",
+          "type": "((cell: GridCell<TRow>) => DataCellStyle | undefined | null) | undefined",
+          "description": "Provides custom style for the outer grid cell.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "parameters": [
+            {
+              "name": "cell",
+              "type": "GridCell<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataCellStyle | undefined | null",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((cell: GridCell<TRow>) => DataCellStyle | undefined | null) | undefined"
+        },
+        {
+          "name": "renderCell",
+          "type": "((cell: GridCell<TRow>) => VNode<any>) | undefined",
+          "description": "Returns a VNode that replaces the default value/text display inside the grid cell wrapper.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "parameters": [
+            {
+              "name": "cell",
+              "type": "GridCell<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "VNode<any>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((cell: GridCell<TRow>) => VNode<any>) | undefined"
+        }
+      ]
+    },
+    {
+      "name": "DataGridColumnLayoutInfo",
+      "kind": "type",
+      "type": "any",
+      "description": "Lightweight per-column override, e.g. for persisted layout/visible-column state.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridColumnLayoutInfo",
+      "source": "src/components/datagrid/DataGridColumn.ts",
+      "definition": "{\n    name: string,\n    width?: number;\n    summaryType?: SummaryType;\n    userState?: any;\n}"
     },
     {
       "name": "DataGridContextMenuContext",
@@ -2250,7 +2486,7 @@
         },
         {
           "name": "column",
-          "type": "DataColumn<TRow> | undefined",
+          "type": "DataGridColumn<TRow> | undefined",
           "description": "",
           "tags": [],
           "topics": [],
@@ -4890,6 +5126,276 @@
       "definition": "\"string\" | \"number\" | \"boolean\" | \"date\" | \"datetime\" | \"object\""
     },
     {
+      "name": "DataViewField",
+      "kind": "interface",
+      "type": "DataViewField<TRow>",
+      "description": "Presentation of a data field in a form, card, list or grid.\nExtends data-access metadata with labels, formatting, editors and lookup options.\nGrid layout and rendering belong to DataGridColumn.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const product: DataViewField<Order> = {\n    name: \"product\", dataType: \"string\", caption: \"Product\", required: true\n};"
+        }
+      ],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewField",
+      "source": "src/data/DataViewField.ts",
+      "members": [
+        {
+          "name": "caption",
+          "type": "string | undefined",
+          "description": "Display label; falls back to `name` when unset.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "description",
+          "type": "string | undefined",
+          "description": "Field description, available to consumers as a tooltip or help text.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "userState",
+          "type": "any",
+          "description": "Opaque, caller-defined presentation metadata (not used internally).",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "editorType",
+          "type": "EditorType | undefined",
+          "description": "UI editor type used when the value is edited.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "readonly",
+          "type": "boolean | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "required",
+          "type": "boolean | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "hideLabel",
+          "type": "boolean | undefined",
+          "description": "Whether a card/form consumer should omit the field label.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "showInRow",
+          "type": "((row: TRow) => boolean) | undefined",
+          "description": "Whether a card/form consumer should display this field for the row.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow) => boolean) | undefined"
+        },
+        {
+          "name": "getText",
+          "type": "((row: TRow) => Promise<string>) | undefined",
+          "description": "Reads this column's display text for a row; defaults to stringifying getValue().",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<string>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow) => Promise<string>) | undefined"
+        },
+        {
+          "name": "setValue",
+          "type": "((row: TRow, value: any) => Promise<any>) | undefined",
+          "description": "Writes this column's raw value onto a row; defaults to setting `row[name]`.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "any",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<any>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow, value: any) => Promise<any>) | undefined"
+        },
+        {
+          "name": "setText",
+          "type": "((row: TRow, text: string) => Promise<any>) | undefined",
+          "description": "Parses and writes a display-text edit onto a row.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<any>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow, text: string) => Promise<any>) | undefined"
+        },
+        {
+          "name": "getAllowedValues",
+          "type": "((row?: TRow, search?: string, top?: number, skip?: number) => Promise<DisplayValue[]>) | undefined",
+          "description": "Fetches the allowed-value list for dropdown-style editing/filtering.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "search",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "top",
+              "type": "number | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "skip",
+              "type": "number | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<DisplayValue[]>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row?: TRow, search?: string, top?: number, skip?: number) => Promise<DisplayValue[]>) | undefined"
+        },
+        {
+          "name": "getAllowedValueText",
+          "type": "((row?: TRow) => Promise<string | undefined>) | undefined",
+          "description": "Resolves display text for a given value, without loading the full allowed-value list.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<string | undefined>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row?: TRow) => Promise<string | undefined>) | undefined"
+        }
+      ]
+    },
+    {
+      "name": "DisplayValue",
+      "kind": "type",
+      "type": "any",
+      "description": "One selectable option for a column's allowed-value list (e.g. a dropdown item).",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DisplayValue",
+      "source": "src/data/DataViewField.ts",
+      "definition": "{\n    value: any,\n    text: string,\n    color?: string;\n    icon?: string;\n    image?: string;\n}"
+    },
+    {
       "name": "e",
       "kind": "function",
       "type": "<K extends keyof HTMLElementTagNameMap>(tag: K, ...args: ElementArgs<HTMLElementTagNameMap[K]>) => HTMLElementTagNameMap[K]",
@@ -4925,6 +5431,19 @@
       }
     },
     {
+      "name": "EditorType",
+      "kind": "type",
+      "type": "any",
+      "description": "Input control used to edit a column's value.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/EditorType",
+      "source": "src/data/DataViewField.ts",
+      "definition": "\"text\" | \"number\" | \"date\" | \"datetime-local\" | \"time\" | \"checkbox\" | \"file\" | \"password\" | \"textarea\" | \"color\""
+    },
+    {
       "name": "ElgoraUI",
       "kind": "variable",
       "type": "{ scheduler: Scheduler; }",
@@ -4935,6 +5454,47 @@
       "namespace": "Core",
       "path": "/api-reference/ElgoraUI",
       "source": "src/core/ElgoraUI.ts"
+    },
+    {
+      "name": "evalFilter",
+      "kind": "function",
+      "type": "(item: Record<string, any>, filter: DataFilter, functions?: FilterFunctionRegistry) => boolean",
+      "description": "Evaluates a filter against one row. Empty filters match every row.\nSupply custom functions to resolve selectors such as { function: \"category\", field: \"code\" }.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "rows.filter(row => evalFilter(row, [\"quantity\", \">=\", 10]));"
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/evalFilter",
+      "source": "src/data/filter.ts",
+      "parameters": [
+        {
+          "name": "item",
+          "type": "Record<string, any>",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "filter",
+          "type": "DataFilter",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "functions",
+          "type": "FilterFunctionRegistry | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      }
     },
     {
       "name": "FilterEditor",
@@ -4967,7 +5527,7 @@
         {
           "name": "setFilter",
           "type": "(filter?: DataFilter) => void",
-          "description": "Replaces the editor state without invoking the apply callback.",
+          "description": "Loads a filter as the applied baseline without invoking the apply callback.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -4990,7 +5550,7 @@
         {
           "name": "apply",
           "type": "() => void",
-          "description": "Applies the current draft filter.",
+          "description": "Applies the current filter, even when unchanged, and resets its visual change indicator.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -5048,7 +5608,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/FilterEditorColumn",
       "source": "src/components/datagrid/FilterEditor.ts",
-      "definition": "Pick<DataColumn<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+      "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
     },
     {
       "name": "FilterEditorOperator",
@@ -5493,6 +6053,76 @@
       "source": "src/data/LocalGroupingDataSource.ts",
       "members": [
         {
+          "name": "createNewRow",
+          "type": "(() => Promise<import(\"D:/Dev/github/elgora-ui/src/index\").NewRowSession<TRow>>) | undefined",
+          "description": "Exposed only when the wrapped source supports new-row sessions.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "update",
+          "type": "((row: TRow, values: Record<string, unknown>) => Promise<import(\"D:/Dev/github/elgora-ui/src/index\").MutationResult>) | undefined",
+          "description": "Exposed only when the wrapped source supports updates.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "delete",
+          "type": "((row: TRow) => Promise<import(\"D:/Dev/github/elgora-ui/src/index\").MutationResult>) | undefined",
+          "description": "Exposed only when the wrapped source supports deletion.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getRowId",
+          "type": "((row: TRow) => import(\"D:/Dev/github/elgora-ui/src/index\").RowIdentity) | undefined",
+          "description": "Delegated row identity and hierarchy capabilities, without inventing unsupported ones.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "hasChildren",
+          "type": "((row: TRow) => Promise<boolean>) | undefined",
+          "description": "Presence marks this source as hierarchical (parent/child) and disables groupColumns; answers per-row expandability.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "changed",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").Observable<import(\"D:/Dev/github/elgora-ui/src/index\").DataSourceChanged<TRow>> | undefined",
+          "description": "The original event, including pending-row notifications; no second event or subscription.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "undoCoordinator",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").UndoCoordinator | undefined",
+          "description": "The source's shared coordinator; the grouping adapter owns no separate history.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
           "name": "loadData",
           "type": "(args: QueryArgs) => Promise<DataResult<TRow>>",
           "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupColumn` is not provided, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
@@ -5514,29 +6144,6 @@
           },
           "kind": "method",
           "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
-        },
-        {
-          "name": "getRowId",
-          "type": "(row: TRow) => any",
-          "description": "Returns a stable identity for a row, used as its render key and, in hierarchical mode, as the parentId for its children.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/data/LocalGroupingDataSource.ts",
-          "parameters": [
-            {
-              "name": "row",
-              "type": "TRow",
-              "optional": false,
-              "description": ""
-            }
-          ],
-          "returns": {
-            "type": "any",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "(row: TRow) => any"
         }
       ]
     },

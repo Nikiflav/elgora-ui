@@ -1,7 +1,7 @@
 import { Utils } from "../../core/Utils"
 import { DataFilter } from "../../data/filter"
 import { VirtualDataSource } from "../virtual-list/VirtualList"
-import type { DataColumn } from "./DataColumn";
+import type { DataGridColumn } from "./DataGridColumn";
 import type { OrderByToken } from "../../data/grouping";
 import { GridResult, GridRow, GridRowsProvider, GridViewportArgs } from "./GridRow"
 

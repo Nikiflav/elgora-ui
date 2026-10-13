@@ -1,5 +1,5 @@
 import type { MenuItem } from "../popup/PopupMenu";
-import type { DataColumn } from "./DataColumn";
+import type { DataGridColumn } from "./DataGridColumn";
 import type { SelectionRange } from "./SelectionManager";
 import type { GridRow } from "./GridRow";
 
@@ -29,7 +29,7 @@ export interface DataGridContextMenuContext<TRow> {
     target: GridContextMenuTarget;
     row?: GridRow;
     rowData?: TRow;
-    column?: DataColumn<TRow>;
+    column?: DataGridColumn<TRow>;
     rowIndex?: number;
     colIndex?: number;
     selectedRanges: SelectionRange[];

@@ -154,7 +154,7 @@ export async function calculateSummaryResults<TRow>(
                 const summaryColumn = getColumn?.(summary.field);
                 const numericColumn = !summaryColumn
                     || getFieldDataType(summaryColumn) === "number"
-                    || (!summaryColumn.dataType && !summaryColumn.editorType && typeof value === "number");
+                    || (!summaryColumn.dataType && typeof value === "number");
                 if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
                     continue;
             }

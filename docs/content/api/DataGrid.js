@@ -72,7 +72,7 @@ export default {
     },
     {
       "name": "getColumn",
-      "type": "(name: string) => DataColumn<TRow> | undefined",
+      "type": "(name: string) => DataGridColumn<TRow> | undefined",
       "description": "Returns the column definition for the given name, or undefined if no such column exists.",
       "tags": [],
       "topics": [],
@@ -87,11 +87,11 @@ export default {
         }
       ],
       "returns": {
-        "type": "DataColumn<TRow> | undefined",
+        "type": "DataGridColumn<TRow> | undefined",
         "description": ""
       },
       "kind": "method",
-      "signature": "(name: string) => DataColumn<TRow> | undefined"
+      "signature": "(name: string) => DataGridColumn<TRow> | undefined"
     },
     {
       "name": "getSelectionManager",
@@ -159,7 +159,7 @@ export default {
     },
     {
       "name": "setColumnOptions",
-      "type": "(name: string, patch: Partial<DataColumn<TRow>>) => void",
+      "type": "(name: string, patch: Partial<DataGridColumn<TRow>>) => void",
       "description": "Patches an existing column's definition in place and updates the grid's layout accordingly.",
       "tags": [],
       "topics": [],
@@ -174,7 +174,7 @@ export default {
         },
         {
           "name": "patch",
-          "type": "Partial<DataColumn<TRow>>",
+          "type": "Partial<DataGridColumn<TRow>>",
           "optional": false,
           "description": ""
         }
@@ -184,7 +184,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(name: string, patch: Partial<DataColumn<TRow>>) => void"
+      "signature": "(name: string, patch: Partial<DataGridColumn<TRow>>) => void"
     },
     {
       "name": "autoSizeColumn",
@@ -280,7 +280,7 @@ export default {
     },
     {
       "name": "getVisibleColumns",
-      "type": "() => DataColumn<TRow>[]",
+      "type": "() => DataGridColumn<TRow>[]",
       "description": "Returns the currently visible columns",
       "tags": [
         {
@@ -293,11 +293,11 @@ export default {
       "source": "src/components/datagrid/DataGrid.ts",
       "parameters": [],
       "returns": {
-        "type": "DataColumn<TRow>[]",
+        "type": "DataGridColumn<TRow>[]",
         "description": "Array of visible columns"
       },
       "kind": "method",
-      "signature": "() => DataColumn<TRow>[]"
+      "signature": "() => DataGridColumn<TRow>[]"
     },
     {
       "name": "layoutChanged",

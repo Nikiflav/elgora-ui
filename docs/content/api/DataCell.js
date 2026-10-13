@@ -6,8 +6,8 @@ export default {
   "tags": [],
   "topics": [],
   "group": "types",
-  "namespace": "Components.DataGrid",
+  "namespace": "Data",
   "path": "/api-reference/DataCell",
-  "source": "src/components/datagrid/DataColumn.ts",
-  "definition": "{\n    /** Column definition for this cell. */\n    column: DataColumn<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
+  "source": "src/data/DataViewField.ts",
+  "definition": "{\n    /** Column definition for this cell. */\n    column: DataViewField<TRow>;\n    /** Original row data. */\n    rowData: TRow;\n    /** Resolved raw cell value. */\n    value: any;\n    /** Resolved display text. */\n    text: string;\n}"
 };

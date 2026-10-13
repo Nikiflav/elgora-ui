@@ -7,8 +7,17 @@
       "group": "core",
       "namespace": "Data",
       "path": "/api-reference/ArrayDataSource",
-      "description": "DataSource implementation backed by an in-memory array.",
+      "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.",
       "module": "./content/api/ArrayDataSource.js"
+    },
+    {
+      "name": "ArrayDataSourceOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/ArrayDataSourceOptions",
+      "description": "Identity, defaults and query configuration for an editable in-memory array.",
+      "module": "./content/api/ArrayDataSourceOptions.js"
     },
     {
       "name": "AsyncObservableEvent",
@@ -113,7 +122,7 @@
       "name": "DataCell",
       "kind": "type",
       "group": "types",
-      "namespace": "Components.DataGrid",
+      "namespace": "Data",
       "path": "/api-reference/DataCell",
       "description": "A single resolved (value, text) pair for one column on one row.",
       "module": "./content/api/DataCell.js"
@@ -137,15 +146,6 @@
       "module": "./content/api/DataChange.js"
     },
     {
-      "name": "DataColumn",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.DataGrid",
-      "path": "/api-reference/DataColumn",
-      "description": "Defines one grid/view column: its data access, display, editing and layout behavior.",
-      "module": "./content/api/DataColumn.js"
-    },
-    {
       "name": "DataEditContext",
       "kind": "class",
       "group": "core",
@@ -160,7 +160,7 @@
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/DataField",
-      "description": "Minimal field metadata required for local data operations.\nUI column definitions can implement this structurally without coupling data engines to a grid.",
+      "description": "Describes how to read and process a field from any row type.\nIndependent of UI presentation and of DataSet/DataTable membership.\nDataViewField adds presentation; DataGridColumn adds grid-specific behavior.",
       "module": "./content/api/DataField.js"
     },
     {
@@ -219,12 +219,21 @@
     },
     {
       "name": "DataGridColumn",
-      "kind": "type",
+      "kind": "interface",
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridColumn",
-      "description": "DataColumn extended with DataGrid-specific cell presentation callbacks.",
+      "description": "Presentation and interaction of a field as a column in DataGrid.",
       "module": "./content/api/DataGridColumn.js"
+    },
+    {
+      "name": "DataGridColumnLayoutInfo",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridColumnLayoutInfo",
+      "description": "Lightweight per-column override, e.g. for persisted layout/visible-column state.",
+      "module": "./content/api/DataGridColumnLayoutInfo.js"
     },
     {
       "name": "DataGridContextMenuContext",
@@ -389,6 +398,24 @@
       "module": "./content/api/DataType.js"
     },
     {
+      "name": "DataViewField",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewField",
+      "description": "Presentation of a data field in a form, card, list or grid.\nExtends data-access metadata with labels, formatting, editors and lookup options.\nGrid layout and rendering belong to DataGridColumn.",
+      "module": "./content/api/DataViewField.js"
+    },
+    {
+      "name": "DisplayValue",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DisplayValue",
+      "description": "One selectable option for a column's allowed-value list (e.g. a dropdown item).",
+      "module": "./content/api/DisplayValue.js"
+    },
+    {
       "name": "e",
       "kind": "function",
       "group": "core",
@@ -398,6 +425,15 @@
       "module": "./content/api/e.js"
     },
     {
+      "name": "EditorType",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/EditorType",
+      "description": "Input control used to edit a column's value.",
+      "module": "./content/api/EditorType.js"
+    },
+    {
       "name": "ElgoraUI",
       "kind": "variable",
       "group": "core",
@@ -405,6 +441,15 @@
       "path": "/api-reference/ElgoraUI",
       "description": "Global UI runtime instance.\r\nUsed to invalidate components and manage scheduling.",
       "module": "./content/api/ElgoraUI.js"
+    },
+    {
+      "name": "evalFilter",
+      "kind": "function",
+      "group": "core",
+      "namespace": "Data",
+      "path": "/api-reference/evalFilter",
+      "description": "Evaluates a filter against one row. Empty filters match every row.\nSupply custom functions to resolve selectors such as { function: \"category\", field: \"code\" }.",
+      "module": "./content/api/evalFilter.js"
     },
     {
       "name": "FilterEditor",

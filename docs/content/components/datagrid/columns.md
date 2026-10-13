@@ -10,7 +10,8 @@ toc: true
 api:
   - DataGrid
   - DataGridOptions
-  - DataColumn
+  - DataViewField
+  - DataGridColumn
 keywords:
   - columns
   - resize
@@ -23,6 +24,13 @@ keywords:
 
 Columns define how a DataGrid reads, displays, and lays out each field. Use
 captions for user-facing labels and keep field names focused on the data model.
+
+Grid definitions use [DataGridColumn](?!=/api-reference/DataGridColumn), which
+extends [DataViewField](?!=/api-reference/DataViewField) and
+[DataField](?!=/api-reference/DataField). Common labels, value access and formatting
+can be shared with other views; width, alignment, resize/reorder, context menus
+and custom cell rendering belong to the grid column.
+See [Fields and presentation](?!=/data/fields) for the three layers.
 
 <live-demo id="datagrid-columns" height="360px"></live-demo>
 
@@ -46,5 +54,6 @@ changes such as `visibleColumns`, `fixedLeftColumns`, and `fixedRightColumns`.
 
 ## API reference
 
-See [`DataColumn`](?!=/api-reference/DataColumn) and
+See [`DataGridColumn`](?!=/api-reference/DataGridColumn),
+[`DataViewField`](?!=/api-reference/DataViewField) and
 [`DataGridOptions`](?!=/api-reference/DataGridOptions).

@@ -1,9 +1,9 @@
 import type { DataFilter } from "../../data/filter";
-import { DataColumnUtils } from "./DataColumn";
-import type { DataColumn } from "./DataColumn";
+import { DataViewFieldUtils } from "../../data/DataViewField";
+import type { DataViewField } from "../../data/DataViewField";
 import type { DataType } from "../../data/DataField";
 
-export type DataFilterRowColumn<TRow = any> = Pick<DataColumn<TRow>, "name" | "caption" | "dataType" | "editorType">;
+export type DataFilterRowColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType" | "editorType">;
 
 /** One text expression displayed by a filter-row column. */
 export interface DataFilterRowValue {
@@ -102,7 +102,7 @@ function parseExpression(text: string, column: DataFilterRowColumn): DataFilter 
 
     const forcedDefault = value.startsWith("\\");
     const expression = forcedDefault ? unescapeValue(value) : value;
-    const type = DataColumnUtils.getDataType(column);
+    const type = DataViewFieldUtils.getDataType(column);
 
     if (!forcedDefault) {
         const range = /^(.*?)\.\.(.*?)$/.exec(expression);
@@ -276,19 +276,19 @@ export class DataFilterRow<TRow = any> {
             const range = list.length === 2
                 && list.some(item => item[1] === ">=")
                 && list.some(item => item[1] === "<=")
-                && (DataColumnUtils.getDataType(column) === "number" || DataColumnUtils.isDateColumn(column));
+                && (DataViewFieldUtils.getDataType(column) === "number" || DataViewFieldUtils.isDateColumn(column));
 
             if (range) {
                 const lower = list.find(item => item[1] === ">=")!;
                 const upper = list.find(item => item[1] === "<=")!;
-                const dataType = DataColumnUtils.getDataType(column);
+                const dataType = DataViewFieldUtils.getDataType(column);
                 result.push({ field, text: `${formatScalar(lower[2], dataType)}..${formatScalar(upper[2], dataType)}` });
                 continue;
             }
             if (list.length !== 1) return false;
 
             const [_, operator, rawValue] = list[0];
-            const dataType = DataColumnUtils.getDataType(column);
+            const dataType = DataViewFieldUtils.getDataType(column);
             if ((operator === ">=" || operator === "<=")
                 && (dataType === "number" || dataType === "date" || dataType === "datetime")) {
                 const formatted = formatScalar(rawValue, dataType);
@@ -324,7 +324,7 @@ export class DataFilterRow<TRow = any> {
             const field = typeof selector === "string" ? selector : (selector as any)?.field;
             const column = this.columns.find(item => item.name === field);
             if (!field || !column) return "";
-            return `${column.caption ?? field} ${readableOperator(filter[1])} ${readableValue(filter[2], DataColumnUtils.getDataType(column))}`;
+            return `${column.caption ?? field} ${readableOperator(filter[1])} ${readableValue(filter[2], DataViewFieldUtils.getDataType(column))}`;
         }
 
         if (Array.isArray(filter) && filter[0] === "!") {

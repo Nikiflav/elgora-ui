@@ -11,6 +11,79 @@ const columns = [
 ];
 
 describe("FilterEditor", () => {
+  const applyButton = (editor: FilterEditor) =>
+    [...editor.dom.querySelectorAll<HTMLButtonElement>("button")].find(button => button.textContent === "Apply Filter")!;
+  const editValue = (editor: FilterEditor, value: string) => {
+    const input = editor.dom.querySelector<HTMLInputElement>("input")!;
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+
+  it("keeps unchanged Apply neutral and clickable, including repeated applications", () => {
+    const onApply = vi.fn();
+    const editor = new FilterEditor({ columns, filter: ["amount", "=", 10], onApply });
+    const button = applyButton(editor);
+    expect(button.classList.contains("elg-neutral")).toBe(true);
+    expect(button.classList.contains("elg-primary")).toBe(false);
+    expect(button.disabled).toBe(false);
+    button.click();
+    button.click();
+    expect(onApply).toHaveBeenCalledTimes(2);
+    expect(onApply).toHaveBeenLastCalledWith(["amount", "=", 10], editor);
+    expect(button.classList.contains("elg-neutral")).toBe(true);
+  });
+
+  it("marks edits primary and becomes neutral when values are restored", () => {
+    const editor = new FilterEditor({ columns, filter: ["amount", "=", 10] });
+    editValue(editor, "20");
+    expect(applyButton(editor).classList.contains("elg-primary")).toBe(true);
+    expect(applyButton(editor).disabled).toBe(false);
+    editValue(editor, "10");
+    expect(applyButton(editor).classList.contains("elg-neutral")).toBe(true);
+    expect(applyButton(editor).classList.contains("elg-primary")).toBe(false);
+  });
+
+  it("compares against the most recently applied filter", () => {
+    const editor = new FilterEditor({ columns, filter: ["region", "contains", "West"] });
+    editValue(editor, "East");
+    applyButton(editor).click();
+    expect(applyButton(editor).classList.contains("elg-neutral")).toBe(true);
+    editValue(editor, "West");
+    expect(applyButton(editor).classList.contains("elg-primary")).toBe(true);
+    editor.cancel();
+    expect(editor.getFilter()).toEqual(["region", "contains", "East"]);
+    expect(applyButton(editor).classList.contains("elg-neutral")).toBe(true);
+  });
+
+  it("loads setFilter as a new baseline without applying and normalizes single-child groups", () => {
+    const onApply = vi.fn();
+    const editor = new FilterEditor({ columns, filter: ["and", ["amount", "=", 10]], onApply });
+    expect(applyButton(editor).classList.contains("elg-neutral")).toBe(true);
+    editValue(editor, "20");
+    editor.setFilter(["region", "contains", "North"]);
+    expect(applyButton(editor).classList.contains("elg-neutral")).toBe(true);
+    expect(onApply).not.toHaveBeenCalled();
+    editValue(editor, "South");
+    editor.cancel();
+    expect(editor.getFilter()).toEqual(["region", "contains", "North"]);
+    expect(applyButton(editor).classList.contains("elg-neutral")).toBe(true);
+  });
+
+  it("marks condition removal dirty and clears both the draft controls and visual indicator", () => {
+    const onApply = vi.fn();
+    const editor = new FilterEditor({
+      columns, filter: ["and", ["region", "=", "West"], ["amount", ">", 0]], onApply
+    });
+    [...editor.dom.querySelectorAll<HTMLButtonElement>("button")].find(button => button.textContent === "×")!.click();
+    expect(applyButton(editor).classList.contains("elg-primary")).toBe(true);
+    editor.clear();
+    expect(editor.getFilter()).toBeUndefined();
+    expect(editor.dom.querySelectorAll("input")).toHaveLength(0);
+    expect(applyButton(editor).classList.contains("elg-neutral")).toBe(true);
+    expect(applyButton(editor).disabled).toBe(false);
+    expect(onApply).toHaveBeenCalledWith(undefined, editor);
+  });
+
   it("loads a structured filter and returns it unchanged after editing", () => {
     const filter = [
       "and",

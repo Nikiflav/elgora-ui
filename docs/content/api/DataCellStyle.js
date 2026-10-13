@@ -8,6 +8,6 @@ export default {
   "group": "types",
   "namespace": "Components.DataGrid",
   "path": "/api-reference/DataCellStyle",
-  "source": "src/components/datagrid/DataColumn.ts",
+  "source": "src/components/datagrid/DataGridColumn.ts",
   "definition": "{\n    /** Additional classes for the outer grid cell. */\n    className?: string;\n    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */\n    style?: StyleObject;\n}"
 };

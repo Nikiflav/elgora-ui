@@ -2,27 +2,28 @@
 export type DataType = "string" | "number" | "boolean" | "date" | "datetime" | "object";
 
 /**
- * Minimal field metadata required for local data operations.
- * UI column definitions can implement this structurally without coupling data engines to a grid.
+ * Describes how to read and process a field from any row type.
+ * Independent of UI presentation and of DataSet/DataTable membership.
+ * DataViewField adds presentation; DataGridColumn adds grid-specific behavior.
+ * @example
+ * const amount: DataField<Order> = {
+ *     name: "amount", dataType: "number", getValue: async row => row.amount
+ * };
  */
 export interface DataField<TRow> {
+    /** Data member name; local operations also use it as the field identifier. */
     name: string;
+    /** Semantic value type. Independent of the editor used to display or edit the field. */
     dataType?: DataType;
-    /** Legacy editor hint used only when no semantic dataType was provided. */
-    editorType?: string;
+    /** Reads the field value; when omitted, local operations read row[name]. */
     getValue?(row: TRow): Promise<any>;
+    /** Built-in or source-defined grouping interval. */
     groupInterval?: import("./grouping").GroupInterval;
+    /** Overrides local grouping for the resolved field value. */
     getGroupValue?(row: TRow, value: any): any | Promise<any>;
 }
 
-/** Returns dataType when supplied; otherwise derives the type from editorType, defaulting to string. */
-export function getFieldDataType(field: Pick<DataField<any>, "dataType" | "editorType">): DataType {
-    if (field.dataType) return field.dataType;
-    switch (field.editorType) {
-        case "number": return "number";
-        case "checkbox": return "boolean";
-        case "date": return "date";
-        case "datetime-local": return "datetime";
-        default: return "string";
-    }
+/** Returns the semantic data type. Unspecified fields default to string, without inspecting UI editors. */
+export function getFieldDataType(field: Pick<DataField<any>, "dataType">): DataType {
+    return field.dataType ?? "string";
 }

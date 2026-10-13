@@ -42,7 +42,7 @@ export default {
     },
     {
       "name": "column",
-      "type": "DataColumn<TRow> | undefined",
+      "type": "DataGridColumn<TRow> | undefined",
       "description": "",
       "tags": [],
       "topics": [],

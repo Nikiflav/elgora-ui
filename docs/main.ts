@@ -229,9 +229,12 @@ const styleLinks = buildSidebarTree(markdownTopics
     .filter(topic => topic.group === "styles")
     .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
 
-    const dataLinks = buildSidebarTree(markdownTopics
-        .filter(topic => topic.group === "data")
-        .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
+    const dataLinks = buildSidebarTree([
+        { id: "datasource", href: "/data/data-source/overview", title: "DataSource" },
+        ...markdownTopics
+            .filter(topic => topic.group === "data")
+            .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title }))
+    ]);
     const coreLinks = buildSidebarTree(markdownTopics
         .filter(topic => topic.group === "core")
         .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));

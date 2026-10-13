@@ -7,9 +7,19 @@ import { calculateSummaryResults, isNumericSummary, standardSummaries,
 
 /** Delegates supported queries to its source and supplies local grouping/summary fallback. */
 export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
-
-
-
+    /** Exposed only when the wrapped source supports new-row sessions. */
+    readonly createNewRow?: DataSource<TRow>["createNewRow"];
+    /** Exposed only when the wrapped source supports updates. */
+    readonly update?: DataSource<TRow>["update"];
+    /** Exposed only when the wrapped source supports deletion. */
+    readonly delete?: DataSource<TRow>["delete"];
+    /** Delegated row identity and hierarchy capabilities, without inventing unsupported ones. */
+    readonly getRowId?: DataSource<TRow>["getRowId"];
+    readonly hasChildren?: DataSource<TRow>["hasChildren"];
+    /** The original event, including pending-row notifications; no second event or subscription. */
+    get changed(): DataSource<TRow>["changed"] { return this.ds.changed; }
+    /** The source's shared coordinator; the grouping adapter owns no separate history. */
+    get undoCoordinator(): DataSource<TRow>["undoCoordinator"] { return this.ds.undoCoordinator; }
     constructor(
         private ds: DataSource<TRow>,
         private getValue: (row: TRow, column: string) => Promise<any>,
@@ -17,7 +27,11 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         private customIntervals?: GroupIntervalDefinition<TRow>[],
         private customSummaries?: SummaryDefinition<TRow, any, any>[]
     ) {
-
+        this.createNewRow = ds.createNewRow?.bind(ds);
+        this.update = ds.update?.bind(ds);
+        this.delete = ds.delete?.bind(ds);
+        this.getRowId = ds.getRowId?.bind(ds);
+        this.hasChildren = ds.hasChildren?.bind(ds);
     }
 
     async loadData(args: QueryArgs): Promise<DataResult<TRow>> {
@@ -97,7 +111,7 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
                             const summaryColumn = this.getColumn?.(g.field);
                             const numericColumn = !summaryColumn
                                 || getFieldDataType(summaryColumn) === "number"
-                                || (!summaryColumn.dataType && !summaryColumn.editorType && typeof value === "number");
+                                || (!summaryColumn.dataType && typeof value === "number");
                             if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
                                 continue;
                         }
@@ -162,10 +176,6 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             );
         }
         return result;
-    }
-
-    getRowId(row: TRow): any {
-        return this.ds.getRowId?.(row);
     }
 
 }

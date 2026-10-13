@@ -1,5 +1,6 @@
 import { DataFilter, filterAnd } from "../../data/filter";
-import { DataColumn, DataColumnUtils } from "./DataColumn";
+import type { DataGridColumn } from "./DataGridColumn";
+import { DataViewFieldUtils } from "../../data/DataViewField";
 import type { OrderByToken } from "../../data/grouping";
 import type { SummaryType, SummaryResult } from "../../data/summary";
 import type { DataSource, GroupItem, QueryArgs } from "../../data/DataSource";
@@ -155,7 +156,7 @@ class Paginator {
                         groupFilter: filterAnd(
                             this._groupFilter,
                             [
-                                DataColumnUtils.getGroupFilterSelector(this._gridState.columns.get(g.groupField) ?? { name: g.groupField }),
+                                DataViewFieldUtils.getGroupFilterSelector(this._gridState.columns.get(g.groupField) ?? { name: g.groupField }),
                                 "=",
                                 g.groupValue
                             ]
@@ -202,7 +203,7 @@ export type DataGridState<TRow> = {
     /** Page size used when querying the DataSource. */
     pageSize: number,
     /** All defined columns, keyed by name. */
-    columns: Map<string, DataColumn<TRow>>,
+    columns: Map<string, DataGridColumn<TRow>>,
     /** Names of the columns currently shown as data columns. */
     visibleColumns: string[],
     /** Ordered column names defining the grouping levels (outermost first). */
@@ -300,7 +301,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         for (let node of nodes) {
             let cells = undefined;
             if (node.type === "data" || node.type === "node") {
-                cells = await DataColumnUtils.getDataCells(visibleColumns, node.data);
+                cells = await DataViewFieldUtils.getDataCells(visibleColumns, node.data);
             } else if (node.type === "group") {
                 let group = <GroupItem>node.data;
                 cells = group.summaryValues ?? {};

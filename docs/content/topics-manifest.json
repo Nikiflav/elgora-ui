@@ -30,6 +30,32 @@
       "module": "./content/topics/framework-overview.js"
     },
     {
+      "id": "datasource-overview",
+      "title": "Overview",
+      "path": "/data/data-source/overview",
+      "group": "data",
+      "parent": "datasource",
+      "order": 1,
+      "description": "Read and optionally edit data through a storage-independent contract.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/datasource-overview.js"
+    },
+    {
+      "id": "datasource-array",
+      "title": "ArrayDataSource",
+      "path": "/data/data-source/array",
+      "group": "data",
+      "parent": "datasource",
+      "order": 2,
+      "description": "Edit a local product list with independent new-row sessions and change notifications.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/datasource-array.js"
+    },
+    {
       "id": "download",
       "title": "Download and installation",
       "path": "/getting-started/download",
@@ -49,6 +75,43 @@
         "cdn"
       ],
       "module": "./content/topics/download.js"
+    },
+    {
+      "id": "datasource-remote",
+      "title": "Custom remote source",
+      "path": "/data/data-source/remote",
+      "group": "data",
+      "parent": "datasource",
+      "order": 3,
+      "description": "Implement a read-only remote catalog with filtering, paging, cancellation and request errors.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/datasource-remote.js"
+    },
+    {
+      "id": "data-filter",
+      "title": "DataFilter",
+      "path": "/data/filter",
+      "group": "data",
+      "order": 4,
+      "description": "Build, edit, evaluate and display structured filters independently of DataGrid.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/data-filter.js"
+    },
+    {
+      "id": "data-fields",
+      "title": "Fields and presentation",
+      "path": "/data/fields",
+      "group": "data",
+      "order": 5,
+      "description": "Separate data access, reusable field presentation and grid-column behavior.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/data-fields.js"
     },
     {
       "id": "components-overview",
@@ -292,7 +355,8 @@
       "api": [
         "DataGrid",
         "DataGridOptions",
-        "DataColumn"
+        "DataViewField",
+        "DataGridColumn"
       ],
       "keywords": [
         "columns",

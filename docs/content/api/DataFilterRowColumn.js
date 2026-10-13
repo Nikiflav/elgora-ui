@@ -9,5 +9,5 @@ export default {
   "namespace": "Components.DataGrid",
   "path": "/api-reference/DataFilterRowColumn",
   "source": "src/components/datagrid/DataFilterRow.ts",
-  "definition": "Pick<DataColumn<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+  "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
 };

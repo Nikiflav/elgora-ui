@@ -1,13 +1,13 @@
 import { Component, ComponentOptions } from "../../core/Component";
 import { e } from "../../core/e";
 import type { UiStyle } from "../../core/UiStyle";
-import { DataColumnUtils } from "./DataColumn";
-import type { DataColumn } from "./DataColumn";
+import { DataViewFieldUtils } from "../../data/DataViewField";
+import type { DataViewField } from "../../data/DataViewField";
 import type { DataType } from "../../data/DataField";
 import type { DataFilter, FilterSelector } from "../../data/filter";
 import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
 
-export type FilterEditorColumn<TRow = any> = Pick<DataColumn<TRow>, "name" | "caption" | "dataType" | "editorType">;
+export type FilterEditorColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType" | "editorType">;
 export type FilterEditorOperator = "=" | "<>" | ">" | ">=" | "<" | "<=" | "contains" | "notcontains" | "startswith" | "endswith";
 
 export interface FilterEditorOptions<TRow = any> extends Omit<ComponentOptions, "children" | "tag"> {
@@ -119,6 +119,20 @@ function defaultOperator(dataType?: DataType): FilterEditorOperator {
     return dataType === "string" || !dataType ? "contains" : "=";
 }
 
+/** Compares normalized filter structure without serializing or copying operand values. */
+function sameFilter(left: DataFilter | undefined, right: DataFilter | undefined): boolean {
+    if (Object.is(left, right)) return true;
+    if (!left || !right || left.length !== right.length) return false;
+    if (isBinaryFilter(left) || isBinaryFilter(right)) {
+        return isBinaryFilter(left) && isBinaryFilter(right)
+            && Object.is(left[0], right[0]) && left[1] === right[1]
+            && Object.is(left[2], right[2]);
+    }
+    return left.every((part, index) => Array.isArray(part)
+        ? Array.isArray(right[index]) && sameFilter(part as DataFilter, right[index] as DataFilter)
+        : Object.is(part, right[index]));
+}
+
 /** A reusable builder for structured DataFilter expressions. */
 export class FilterEditor<TRow = any> extends Component {
     private readonly columns: FilterEditorColumn<TRow>[];
@@ -129,19 +143,23 @@ export class FilterEditor<TRow = any> extends Component {
     private rowsElement: HTMLDivElement;
     private previewElement: HTMLPreElement;
     private readonly menu: PopupMenu;
+    private readonly applyButton: HTMLButtonElement;
 
     constructor(options: FilterEditorOptions<TRow>) {
         super({ tag: "div", ui: options.ui ?? ["elg", "box", "p-3"] });
         this.columns = options.columns;
         this.onApplyCallback = options.onApply;
         this.onCancelCallback = options.onCancel;
-        this.initialFilter = options.filter;
         this.root = fromFilter(options.filter);
+        this.initialFilter = this.getFilter();
         this.menu = new PopupMenu({ density: "compact" });
         this.addCleanup(() => this.menu.dispose());
 
         this.rowsElement = e("div", { ui: ["elg", "min-w-0"] });
         this.previewElement = e("pre", { ui: ["elg", "d-none"] });
+        this.applyButton = e("button", {
+            ui: ["elg", "btn", "neutral"], type: "button", onclick: () => this.apply()
+        }, "Apply Filter");
         this.dom.append(
             this.rowsElement,
             this.previewElement,
@@ -156,7 +174,7 @@ export class FilterEditor<TRow = any> extends Component {
                     e("i", { class: "elg-icon ri-filter-off-line", ui: ["elg"] }),
                     "Clear"
                 ),
-                e("button", { ui: ["elg", "btn", "primary"], type: "button", onclick: () => this.apply() }, "Apply Filter")
+                this.applyButton
             ),
             this.menu.dom
         );
@@ -168,16 +186,18 @@ export class FilterEditor<TRow = any> extends Component {
         return toFilter(this.root);
     }
 
-    /** Replaces the editor state without invoking the apply callback. */
+    /** Loads a filter as the applied baseline without invoking the apply callback. */
     setFilter(filter?: DataFilter): void {
         this.root = fromFilter(filter);
+        this.initialFilter = this.getFilter();
         this.renderEditor();
     }
 
-    /** Applies the current draft filter. */
+    /** Applies the current filter, even when unchanged, and resets its visual change indicator. */
     apply(): void {
         const filter = this.getFilter();
         this.initialFilter = filter;
+        this.updateApplyAppearance();
         this.onApplyCallback?.(filter, this);
     }
 
@@ -191,6 +211,7 @@ export class FilterEditor<TRow = any> extends Component {
     /** Clears the draft and applies an empty filter. */
     clear(): void {
         this.root = { kind: "group", operator: "and", children: [] };
+        this.renderEditor();
         this.apply();
     }
 
@@ -200,7 +221,7 @@ export class FilterEditor<TRow = any> extends Component {
         group.children.push({
             kind: "condition",
             field: column.name,
-            operator: defaultOperator(DataColumnUtils.getDataType(column)),
+            operator: defaultOperator(DataViewFieldUtils.getDataType(column)),
             value: ""
         });
         this.renderEditor();
@@ -221,6 +242,14 @@ export class FilterEditor<TRow = any> extends Component {
         this.rowsElement.replaceChildren();
         this.renderGroup(this.root, this.rowsElement, undefined, 0);
         this.previewElement.textContent = toExpression(this.root) || "(empty)";
+        this.updateApplyAppearance();
+    }
+
+    /** Marks un-applied changes with primary styling; an unchanged filter remains clickable. */
+    private updateApplyAppearance(): void {
+        const changed = !sameFilter(this.getFilter(), this.initialFilter);
+        this.applyButton.classList.toggle("elg-primary", changed);
+        this.applyButton.classList.toggle("elg-neutral", !changed);
     }
 
     private renderGroup(group: GroupNode, host: HTMLElement, parent: GroupNode | undefined, depth: number): void {
@@ -271,7 +300,7 @@ export class FilterEditor<TRow = any> extends Component {
                     action: () => {
                         condition.field = item.name;
                         condition.selector = undefined;
-                        condition.operator = defaultOperator(DataColumnUtils.getDataType(item));
+                        condition.operator = defaultOperator(DataViewFieldUtils.getDataType(item));
                         this.renderEditor();
                     }
                 }))
@@ -289,7 +318,7 @@ export class FilterEditor<TRow = any> extends Component {
             ))
         );
 
-        const dataType = column ? DataColumnUtils.getDataType(column) : "string";
+        const dataType = column ? DataViewFieldUtils.getDataType(column) : "string";
         const valueInput = e("input", {
             ui: ["elg", "field", "d-inline-block", "px-1", "py-0", "min-w-0"],
             type: dataType === "number" ? "number" : "text",
@@ -301,6 +330,7 @@ export class FilterEditor<TRow = any> extends Component {
             condition.value = dataType === "number" && valueInput.value !== ""
                 ? Number(valueInput.value)
                 : valueInput.value;
+            this.updateApplyAppearance();
         });
         row.append(
             valueInput,

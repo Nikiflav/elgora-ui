@@ -2,8 +2,13 @@ export default {
   "name": "DataField",
   "kind": "interface",
   "type": "DataField<TRow>",
-  "description": "Minimal field metadata required for local data operations.\nUI column definitions can implement this structurally without coupling data engines to a grid.",
-  "tags": [],
+  "description": "Describes how to read and process a field from any row type.\nIndependent of UI presentation and of DataSet/DataTable membership.\nDataViewField adds presentation; DataGridColumn adds grid-specific behavior.",
+  "tags": [
+    {
+      "name": "example",
+      "text": "const amount: DataField<Order> = {\n    name: \"amount\", dataType: \"number\", getValue: async row => row.amount\n};"
+    }
+  ],
   "topics": [],
   "group": "types",
   "namespace": "Data",
@@ -13,7 +18,7 @@ export default {
     {
       "name": "name",
       "type": "string",
-      "description": "",
+      "description": "Data member name; local operations also use it as the field identifier.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,17 +28,7 @@ export default {
     {
       "name": "dataType",
       "type": "DataType | undefined",
-      "description": "",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/data/DataField.ts",
-      "kind": "property"
-    },
-    {
-      "name": "editorType",
-      "type": "string | undefined",
-      "description": "Legacy editor hint used only when no semantic dataType was provided.",
+      "description": "Semantic value type. Independent of the editor used to display or edit the field.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -43,7 +38,7 @@ export default {
     {
       "name": "getValue",
       "type": "((row: TRow) => Promise<any>) | undefined",
-      "description": "",
+      "description": "Reads the field value; when omitted, local operations read row[name].",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -66,7 +61,7 @@ export default {
     {
       "name": "groupInterval",
       "type": "import(\"D:/Dev/github/elgora-ui/src/index\").GroupInterval | undefined",
-      "description": "",
+      "description": "Built-in or source-defined grouping interval.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -76,7 +71,7 @@ export default {
     {
       "name": "getGroupValue",
       "type": "((row: TRow, value: any) => any | Promise<any>) | undefined",
-      "description": "",
+      "description": "Overrides local grouping for the resolved field value.",
       "tags": [],
       "topics": [],
       "optional": true,

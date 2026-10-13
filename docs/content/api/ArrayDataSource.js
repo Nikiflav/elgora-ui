@@ -2,7 +2,7 @@ export default {
   "name": "ArrayDataSource",
   "kind": "class",
   "type": "ArrayDataSource<T>",
-  "description": "DataSource implementation backed by an in-memory array.",
+  "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.",
   "tags": [],
   "topics": [],
   "group": "core",
@@ -14,6 +14,16 @@ export default {
       "name": "array",
       "type": "T[]",
       "description": "",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/ArrayDataSource.ts",
+      "kind": "property"
+    },
+    {
+      "name": "changed",
+      "type": "ObservableEvent<DataSourceChanged<T>>",
+      "description": "Notifications for successful edits, including pending-row edits.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -87,13 +97,13 @@ export default {
       "signature": "(row: T) => Promise<number>"
     },
     {
-      "name": "saveChanges",
-      "type": "(changes: ChangeSet) => Promise<SaveChangesResult>",
-      "description": "Applies a ChangeSet directly to the backing array.\n\nArrayDataSource uses the change key to find existing rows. Inserted rows\nkeep the supplied key because there is no server that can assign a new\nidentity; therefore the successful result never needs keyMappings.\n\nThe complete batch is validated before the array is changed, so a bad\nkey does not leave a partially applied in-memory update.",
+      "name": "update",
+      "type": "(row: T, values: Record<string, unknown>) => Promise<MutationResult>",
+      "description": "Applies fields to the actual confirmed or pending row.\nAn equal-value patch emits no notification. The identity cannot be changed.",
       "tags": [
         {
           "name": "example",
-          "text": "await source.saveChanges?.([\n    { type: \"update\", key: 1, data: { amount: 25 } },\n    { type: \"remove\", key: 2 }\n]);"
+          "text": "await source.update(row, { quantity: 3, price: 20 });"
         }
       ],
       "topics": [],
@@ -101,18 +111,68 @@ export default {
       "source": "src/data/ArrayDataSource.ts",
       "parameters": [
         {
-          "name": "changes",
-          "type": "ChangeSet",
+          "name": "row",
+          "type": "T",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "values",
+          "type": "Record<string, unknown>",
           "optional": false,
           "description": ""
         }
       ],
       "returns": {
-        "type": "Promise<SaveChangesResult>",
+        "type": "Promise<MutationResult>",
         "description": ""
       },
       "kind": "method",
-      "signature": "(changes: ChangeSet) => Promise<SaveChangesResult>"
+      "signature": "(row: T, values: Record<string, unknown>) => Promise<MutationResult>"
+    },
+    {
+      "name": "delete",
+      "type": "(row: T) => Promise<MutationResult>",
+      "description": "Removes a confirmed row from the supplied array. Pending rows must be cancelled instead.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/ArrayDataSource.ts",
+      "parameters": [
+        {
+          "name": "row",
+          "type": "T",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<MutationResult>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(row: T) => Promise<MutationResult>"
+    },
+    {
+      "name": "createNewRow",
+      "type": "() => Promise<NewRowSession<T>>",
+      "description": "Initializes an independent draft, with defaults and a stable identity.\nDrafts are excluded from queries, summaries and hierarchy until insert().\ninsert/cancel are individually idempotent; the opposite terminal transition rejects.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const session = await source.createNewRow();\nawait source.update(session.row, { product: \"Keyboard\", quantity: 1 });\nconst result = await session.insert();\nif (!result.success) console.error(result.error);"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/ArrayDataSource.ts",
+      "parameters": [],
+      "returns": {
+        "type": "Promise<NewRowSession<T>>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => Promise<NewRowSession<T>>"
     }
   ]
 };

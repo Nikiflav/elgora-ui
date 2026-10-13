@@ -73,6 +73,6 @@ selection or hover colors are implemented.
 ## API reference
 
 See [`DataGridColumn`](?!=/api-reference/DataGridColumn), [`GridCell`](?!=/api-reference/GridCell),
-[`DataColumn`](?!=/api-reference/DataColumn), [`DataCell`](?!=/api-reference/DataCell),
+[`DataViewField`](?!=/api-reference/DataViewField), [`DataCell`](?!=/api-reference/DataCell),
 and [`DataCellStyle`](?!=/api-reference/DataCellStyle) for the complete
 renderer and style contracts.

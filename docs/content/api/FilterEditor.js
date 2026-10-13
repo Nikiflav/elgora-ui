@@ -29,7 +29,7 @@ export default {
     {
       "name": "setFilter",
       "type": "(filter?: DataFilter) => void",
-      "description": "Replaces the editor state without invoking the apply callback.",
+      "description": "Loads a filter as the applied baseline without invoking the apply callback.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -52,7 +52,7 @@ export default {
     {
       "name": "apply",
       "type": "() => void",
-      "description": "Applies the current draft filter.",
+      "description": "Applies the current filter, even when unchanged, and resets its visual change indicator.",
       "tags": [],
       "topics": [],
       "optional": false,
