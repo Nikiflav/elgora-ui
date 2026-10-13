@@ -14,13 +14,13 @@ export { VirtualList, type VirtualListOptions, type VirtualDataSource as DataLis
 export { Throttle } from './core/Throttle';
 export { BrowserRouter } from './components/browser-router/BrowserRouter';
 export { ScrollEngine } from './components/scrollbar/scroll-engine';
-export { DataGrid, type DataGridOptions, type GridDataSource } from './components/datagrid/DataGrid';
+export { DataGrid, type DataGridOptions, type ColumnWidthMode, type GridDataSource } from './components/datagrid/DataGrid';
 export { type DataCell, type DataViewField, type DisplayValue, type EditorType } from './data/DataViewField';
 export { type DataType, type DataField } from './data/DataField';
 export { type GroupInterval, type GroupIntervalDefinition, type OrderByToken } from './data/grouping';
 export { type SummaryDefinition, type SummaryContext, type SummaryType, type SummaryRequest, type SummaryResult } from './data/summary';
 export { type DataGridColumn, type GridCell, type DataCellStyle, type DataGridColumnLayoutInfo } from './components/datagrid/DataGridColumn';
-export { SelectionManager, type SelectionCell, type SelectionRange, type GridContext, type SelectionEdge, type CellSelectionState } from './components/datagrid/SelectionManager';
+export { SelectionManager, type SelectionMode, type SelectionCell, type SelectionRange, type GridContext, type SelectionEdge, type CellSelectionState } from './components/datagrid/SelectionManager';
 export { type GridContextMenuTarget, type GridStandardContextMenuItem, type DataGridContextMenuContext, type GridContextMenuItems } from './components/datagrid/DataGridContextMenu';
 export { type DataSource, type QueryArgs, type DataResult, type GroupItem, type MutationResult, type NewRowSession, type DataSourceChanged } from './data/DataSource';
 export { ArrayDataSource, type ArrayDataSourceOptions } from './data/ArrayDataSource';
@@ -39,3 +39,7 @@ export { DataFilterRow, type DataFilterRowColumn, type DataFilterRowValue, type 
 export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement, type PopoverCloseMode } from './components/popup/popover';
 export { PopupMenu, type PopupMenuOptions, type PopupMenuShowOptions, type MenuItem } from './components/popup/PopupMenu';
 export { Tooltip, type TooltipContent, type TooltipShowOptions } from './components/popup/Tooltip';
+export { ResizeHandle, type ResizeHandleOptions, type ResizeSize } from './components/resize/ResizeHandle';
+export { LookupEditor, type LookupEditorOptions, type LookupQuery, type LookupResult } from './components/editors/LookupEditor';
+export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
+    type ValueEditorOptions, type TextEditorOptions } from './components/editors/ValueEditor';

@@ -45,6 +45,40 @@ export default {
       "kind": "property"
     },
     {
+      "name": "ensureCellVisible",
+      "type": "(rowIndex: number, colIndex: number) => void",
+      "description": "Scrolls only as far as needed to show a cell, leaving visible rows in place.\r\nColumn indices refer to data columns, excluding the optional row header.\r\nUses current row measurements; this method does not load or select a row.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "grid.ensureCellVisible(12, 0);"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [
+        {
+          "name": "rowIndex",
+          "type": "number",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "colIndex",
+          "type": "number",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(rowIndex: number, colIndex: number) => void"
+    },
+    {
       "name": "setOptions",
       "type": "(options: Partial<DataGridOptions<TRow>>) => void",
       "description": "Sets (patches) the grid's options. Only the provided keys are changed; everything else is\r\nleft as-is. This is the single path for both the constructor's initial options and every\r\nlater change - fires an \"optionChanged\" DOM event on this.dom with the applied patch as detail.",

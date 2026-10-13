@@ -1,4 +1,6 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
+import { e } from "../../../../src/core/e";
+import type { SelectionMode } from "../../../../src/components/datagrid/SelectionManager";
 
 export default function demo(): void {
   const rows = Array.from({ length: 12 }, (_, index) => ({
@@ -18,5 +20,12 @@ export default function demo(): void {
   });
   grid.dom.style.height = "360px";
   grid.refresh();
+  const mode = e("select", { ui: ["elg", "field"], ariaLabel: "Selection mode", onchange: () => {
+    grid.setOptions({ selectionMode: mode.value as SelectionMode });
+  } },
+    e("option", { value: "multiple-cells" }, "Multiple cells"),
+    e("option", { value: "single-row" }, "Single row"),
+    e("option", { value: "multiple-rows" }, "Multiple rows"));
+  document.body.append(e("label", { ui: ["d-flex", "items-center", "gap-2", "mb-2"] }, "Selection mode", mode));
   grid.mount(document.body);
 }

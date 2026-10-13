@@ -1,4 +1,5 @@
-import type { RowIdentity } from "../../data/RowIdentity";
+/** Selection granularity and multiplicity; active coordinates always remain a cell. */
+export type SelectionMode = "single-row" | "multiple-rows" | "multiple-cells";
 
 /** Coordinates and selection metadata for a visible grid cell. */
 export interface SelectionCell {
@@ -45,6 +46,39 @@ export interface CellSelectionState {
 export class SelectionManager {
     private _ranges: SelectionRange[] = [];
     private _activeCell: SelectionCell | null = null;
+    private _mode: SelectionMode;
+
+    /** Creates a manager; cell ranges are the backward-compatible default. */
+    constructor(mode: SelectionMode = "multiple-cells") { this._mode = mode; }
+
+    /** Current selection rules, applied to pointer, keyboard and programmatic edits. */
+    get mode(): SelectionMode { return this._mode; }
+
+    /**
+     * Changes the rules and normalizes existing ranges without moving the active cell.
+     * Switching to single-row retains the active row; switching to multiple-rows
+     * expands each rectangle to whole rows. Cell mode also permits row-header ranges.
+     * @example manager.setMode("single-row");
+     */
+    setMode(mode: SelectionMode): void {
+        if (mode === this._mode) return;
+        this._mode = mode;
+        this.normalizeRanges();
+    }
+
+    /** Enforces selection invariants after every range mutation. */
+    private normalizeRanges(): void {
+        if (this._mode === "multiple-cells" || !this._ranges.length) return;
+        if (this._mode === "single-row") {
+            const cell = { ...(this._activeCell ?? this._ranges[this._ranges.length - 1].focus), wholeRow: true };
+            this._ranges = [{ anchor: cell, focus: { ...cell } }];
+        } else {
+            this._ranges = this._ranges.map(range => ({
+                anchor: { ...range.anchor, wholeRow: true },
+                focus: { ...range.focus, wholeRow: true }
+            }));
+        }
+    }
 
 
 
@@ -60,27 +94,36 @@ export class SelectionManager {
 
         this._ranges = [{ anchor: cell, focus: cell }];
         this._activeCell = cell;
+        this.normalizeRanges();
     }
 
     public selectSingleRow(rowIndex: number): void {
         const cell: SelectionCell = { rowIndex, colIndex: 0, wholeRow: true };
         this._ranges = [{ anchor: cell, focus: { ...cell } }];
         this._activeCell = { ...cell };
+        this.normalizeRanges();
     }
 
     public addRowRange(rowIndex: number): void {
+        if (this._mode === "single-row") { this.selectSingleRow(rowIndex); return; }
         const cell: SelectionCell = { rowIndex, colIndex: 0, wholeRow: true };
         this._ranges.push({ anchor: cell, focus: { ...cell } });
         this._activeCell = { ...cell };
+        this.normalizeRanges();
     }
 
     public extendRowSelection(rowIndex: number): void {
+        if (this._mode === "single-row") {
+            this.selectSingleCell(rowIndex, this._activeCell?.colIndex ?? 0);
+            return;
+        }
         if (!this._ranges.length || !this._ranges[this._ranges.length - 1].anchor.wholeRow) {
             this.selectSingleRow(rowIndex);
             return;
         }
         const focus = { rowIndex, colIndex: 0, wholeRow: true };
         this._ranges[this._ranges.length - 1].focus = focus;
+        this.normalizeRanges();
         // Keep the anchor as the active cell while the pointer extends the range.
         // The active cell represents the cell where the gesture started, not its current edge.
     }
@@ -89,16 +132,19 @@ export class SelectionManager {
      * Appends a new disjoint range (Ctrl / Cmd + Click).
      */
     public addRange(rowIndex: number, colIndex: number): void {
+        if (this._mode === "single-row") { this.selectSingleCell(rowIndex, colIndex); return; }
         const cell: SelectionCell = { rowIndex, colIndex };
 
         this._ranges.push({ anchor: cell, focus: cell });
         this._activeCell = cell;
+        this.normalizeRanges();
     }
 
     /**
      * Extends the focus edge of the current (last added) range (Shift + Click / Drag).
      */
     public extendSelection(rowIndex: number, colIndex: number): void {
+        if (this._mode === "single-row") { this.selectSingleCell(rowIndex, colIndex); return; }
         if (this._ranges.length === 0) {
             this.selectSingleCell(rowIndex, colIndex);
             return;
@@ -109,6 +155,7 @@ export class SelectionManager {
         // Update focus of the latest active range box
         const currentRange = this._ranges[this._ranges.length - 1];
         currentRange.focus = focusCell;
+        this.normalizeRanges();
         // Keep the original anchor active during mouse drag / Shift+Click.
         // Keyboard navigation explicitly changes the active cell when required.
     }
@@ -180,6 +227,7 @@ export class SelectionManager {
      */
     public handleKeyDown(event: KeyboardEvent, ctx: GridContext): boolean {
         if (!this._activeCell || this._ranges.length === 0) return false;
+        if (this._mode !== "multiple-cells") return this.handleRowKeyDown(event, ctx);
 
         const { key, shiftKey } = event;
         const lastRange = this._ranges[this._ranges.length - 1];
@@ -242,6 +290,31 @@ export class SelectionManager {
         }
 
         return false;
+    }
+
+    /** Navigates active coordinates while creating only mode-compatible row ranges. */
+    private handleRowKeyDown(event: KeyboardEvent, ctx: GridContext): boolean {
+        const active = this._activeCell!;
+        if (event.key === "Tab") {
+            this.navigateTabAcrossGrid(event.shiftKey, ctx);
+            return true;
+        }
+        if (event.key === "Enter") {
+            this.navigateEnterAcrossGrid(event.shiftKey, ctx);
+            return true;
+        }
+        if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return false;
+        const vertical = event.key === "ArrowUp" || event.key === "ArrowDown";
+        const direction = event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 1;
+        const last = this._ranges[this._ranges.length - 1];
+        const origin = event.shiftKey && this._mode === "multiple-rows" ? last.focus.rowIndex : active.rowIndex;
+        const row = vertical ? this.findSelectableRow(origin, direction, ctx) : active.rowIndex;
+        const col = vertical ? active.colIndex : Math.max(0, Math.min(ctx.columns.length - 1, active.colIndex + direction));
+        if (event.shiftKey && this._mode === "multiple-rows") {
+            if (vertical) this.extendSelection(row, col);
+            this.setActiveCell(row, col);
+        } else this.selectSingleCell(row, col);
+        return true;
     }
 
     private findSelectableRow(rowIndex: number, direction: 1 | -1, ctx: GridContext): number {
@@ -454,7 +527,7 @@ export class SelectionManager {
      * Returns the single active cell receiving keyboard focus and editing.
      */
     public getActiveCell(): SelectionCell | null {
-        return this._activeCell;
+        return this._activeCell ? { ...this._activeCell } : null;
     }
 
     /**

@@ -567,6 +567,56 @@
       "definition": "DataChange[]"
     },
     {
+      "name": "CheckboxEditor",
+      "kind": "class",
+      "type": "CheckboxEditor",
+      "description": "Checkbox editing a boolean value, confirming immediately after user changes.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/CheckboxEditor",
+      "source": "src/components/editors/ValueEditor.ts",
+      "members": [
+        {
+          "name": "resolveText",
+          "type": "(text: string) => boolean | Promise<boolean>",
+          "description": "Resolves true/false, yes/no and 1/0, ignoring case and surrounding whitespace.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean | Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => boolean | Promise<boolean>"
+        }
+      ]
+    },
+    {
+      "name": "ColumnWidthMode",
+      "kind": "type",
+      "type": "any",
+      "description": "How spare viewport width is distributed; columns are never shrunk below their base width.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/ColumnWidthMode",
+      "source": "src/components/datagrid/DataGrid.ts",
+      "definition": "\"fixed\" | \"stretch-auto\" | \"stretch-all\""
+    },
+    {
       "name": "Component",
       "kind": "class",
       "type": "Component",
@@ -2017,6 +2067,40 @@
           "kind": "property"
         },
         {
+          "name": "ensureCellVisible",
+          "type": "(rowIndex: number, colIndex: number) => void",
+          "description": "Scrolls only as far as needed to show a cell, leaving visible rows in place.\r\nColumn indices refer to data columns, excluding the optional row header.\r\nUses current row measurements; this method does not load or select a row.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "grid.ensureCellVisible(12, 0);"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [
+            {
+              "name": "rowIndex",
+              "type": "number",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "colIndex",
+              "type": "number",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number) => void"
+        },
+        {
           "name": "setOptions",
           "type": "(options: Partial<DataGridOptions<TRow>>) => void",
           "description": "Sets (patches) the grid's options. Only the provided keys are changed; everything else is\r\nleft as-is. This is the single path for both the constructor's initial options and every\r\nlater change - fires an \"optionChanged\" DOM event on this.dom with the applied patch as detail.",
@@ -2540,14 +2624,14 @@
       "name": "DataGridOptions",
       "kind": "type",
       "type": "any",
-      "description": "Construction-time configuration for a DataGrid instance.",
+      "description": "",
       "tags": [],
       "topics": [],
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
       "source": "src/components/datagrid/DataGrid.ts",
-      "definition": "{\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** When column widths sum to less than the viewport, proportionally grow data columns (never the row header) to fill it. Defaults to true. */\r\n    autoFillViewportWidth?: boolean,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
+      "definition": "{\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
     },
     {
       "name": "DataList",
@@ -6148,6 +6232,304 @@
       ]
     },
     {
+      "name": "LookupEditor",
+      "kind": "class",
+      "type": "LookupEditor<TValue, TItem>",
+      "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape or outside dismissal restores the last accepted value and its text.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupEditor",
+      "source": "src/components/editors/LookupEditor.ts",
+      "members": [
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Raw search/display text; typing does not change the typed value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "modified",
+          "type": "boolean",
+          "description": "Includes unconfirmed search text as well as an explicit candidate value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "resolveText",
+          "type": "(text: string) => Promise<TValue>",
+          "description": "Resolves external text only when the complete result contains one match.\nDoes not open the popup, change state, emit events, validate or save.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "const id = await editor.resolveText(\"Northwind\");"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<TValue>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => Promise<TValue>"
+        },
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Opens results lazily, retaining focus in the search input.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Hides results; cancel() also restores the last accepted value and text.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "cancel",
+          "type": "() => boolean",
+          "description": "Restores the accepted value, cancels pending searches and closes results.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
+        },
+        {
+          "name": "commit",
+          "type": "() => Promise<boolean>",
+          "description": "Closes only after successful acceptance; failures remain available for correction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        }
+      ]
+    },
+    {
+      "name": "LookupEditorOptions",
+      "kind": "interface",
+      "type": "LookupEditorOptions<TValue, TItem>",
+      "description": "Lookup configuration; the host remains responsible for accepting a value.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupEditorOptions",
+      "source": "src/components/editors/LookupEditor.ts",
+      "members": [
+        {
+          "name": "columns",
+          "type": "DataGridColumn<TItem>[]",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "loadItems",
+          "type": "(query: LookupQuery) => Promise<LookupResult<TItem>>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getItemValue",
+          "type": "(item: TItem) => TValue",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getItemText",
+          "type": "(item: TItem) => string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getValueText",
+          "type": "(value: TValue) => string | Promise<string>",
+          "description": "Resolves a current value even when its item is not in a loaded page.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "pageSize",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "searchDelay",
+          "type": "number | undefined",
+          "description": "Search debounce in milliseconds; defaults to 150.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "popupWidth",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "popupHeight",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "resizable",
+          "type": "boolean | undefined",
+          "description": "Defaults to true; resized dimensions remain for this editor instance.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "LookupQuery",
+      "kind": "interface",
+      "type": "LookupQuery",
+      "description": "Search plus standard query paging and cancellation fields.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupQuery",
+      "source": "src/components/editors/LookupEditor.ts",
+      "members": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "LookupResult",
+      "kind": "interface",
+      "type": "LookupResult<TItem>",
+      "description": "A page and the accurate count of all matches, not just this page.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupResult",
+      "source": "src/components/editors/LookupEditor.ts",
+      "members": [
+        {
+          "name": "items",
+          "type": "TItem[]",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "totalCount",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "MenuItem",
       "kind": "interface",
       "type": "MenuItem",
@@ -6432,6 +6814,19 @@
           "signature": "() => Promise<void>"
         }
       ]
+    },
+    {
+      "name": "NumberEditor",
+      "kind": "class",
+      "type": "NumberEditor",
+      "description": "Numeric text input; empty input maps to null and malformed numbers are rejected.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/NumberEditor",
+      "source": "src/components/editors/ValueEditor.ts",
+      "members": []
     },
     {
       "name": "Observable",
@@ -7461,6 +7856,142 @@
       "definition": "{\r\n    /** The row html element. Users should add content to this element. */\r\n    rowElement: HTMLElement\r\n\r\n    /** The current width of the virtual list container. */\r\n    readonly viewportWidth: number\r\n    /** The current left scroll position of the virtual list container. May be used to implment horizontal virtual scrolling. */\r\n    readonly scrollLeft: number\r\n    /** The row data */\r\n    readonly data: T\r\n    /** The row visible index. */\r\n    readonly index: number\r\n}"
     },
     {
+      "name": "ResizeHandle",
+      "kind": "class",
+      "type": "ResizeHandle",
+      "description": "Pointer-captured bottom-right resize grip. The target must be positioned\n(relative, absolute or fixed). dispose() removes the grip and gesture listeners.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const grip = new ResizeHandle({ target: popup.dom, minWidth: 240 });"
+        }
+      ],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Resize",
+      "path": "/api-reference/ResizeHandle",
+      "source": "src/components/resize/ResizeHandle.ts",
+      "members": []
+    },
+    {
+      "name": "ResizeHandleOptions",
+      "kind": "interface",
+      "type": "ResizeHandleOptions",
+      "description": "Reusable bottom-right resize behavior for a panel, popover or other element.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Resize",
+      "path": "/api-reference/ResizeHandleOptions",
+      "source": "src/components/resize/ResizeHandle.ts",
+      "members": [
+        {
+          "name": "target",
+          "type": "HTMLElement",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        },
+        {
+          "name": "minWidth",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        },
+        {
+          "name": "minHeight",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        },
+        {
+          "name": "maxWidth",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        },
+        {
+          "name": "maxHeight",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        },
+        {
+          "name": "viewportGap",
+          "type": "number | undefined",
+          "description": "Viewport inset; available space takes precedence over minimum dimensions.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onResize",
+          "type": "((size: ResizeSize) => void) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "ResizeSize",
+      "kind": "interface",
+      "type": "ResizeSize",
+      "description": "Border-box dimensions reported by a resize handle.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Resize",
+      "path": "/api-reference/ResizeSize",
+      "source": "src/components/resize/ResizeHandle.ts",
+      "members": [
+        {
+          "name": "width",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/resize/ResizeHandle.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "RowIdentity",
       "kind": "type",
       "type": "any",
@@ -7854,6 +8385,44 @@
       "path": "/api-reference/SelectionManager",
       "source": "src/components/datagrid/SelectionManager.ts",
       "members": [
+        {
+          "name": "mode",
+          "type": "SelectionMode",
+          "description": "Current selection rules, applied to pointer, keyboard and programmatic edits.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "setMode",
+          "type": "(mode: SelectionMode) => void",
+          "description": "Changes the rules and normalizes existing ranges without moving the active cell.\nSwitching to single-row retains the active row; switching to multiple-rows\nexpands each rectangle to whole rows. Cell mode also permits row-header ranges.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "manager.setMode(\"single-row\");"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "parameters": [
+            {
+              "name": "mode",
+              "type": "SelectionMode",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(mode: SelectionMode) => void"
+        },
         {
           "name": "selectSingleCell",
           "type": "(rowIndex: number, colIndex: number) => void",
@@ -8334,6 +8903,19 @@
       ]
     },
     {
+      "name": "SelectionMode",
+      "kind": "type",
+      "type": "any",
+      "description": "Selection granularity and multiplicity; active coordinates always remain a cell.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SelectionMode",
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "definition": "\"single-row\" | \"multiple-rows\" | \"multiple-cells\""
+    },
+    {
       "name": "SelectionRange",
       "kind": "interface",
       "type": "SelectionRange",
@@ -8730,6 +9312,128 @@
       "definition": "\"count\" | \"sum\" | \"avg\" | \"min\" | \"max\" | \"distinct\" | string"
     },
     {
+      "name": "TextEditor",
+      "kind": "class",
+      "type": "TextEditor<T>",
+      "description": "Text input with a separately retained draft string, including invalid input.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TextEditor",
+      "source": "src/components/editors/ValueEditor.ts",
+      "members": [
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Current raw input, which may not yet be a valid typed value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "modified",
+          "type": "boolean",
+          "description": "Includes differences in unparsed text as well as typed values.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "resolveText",
+          "type": "(text: string) => T | Promise<T>",
+          "description": "Resolves text using resolveText, then parse, or unchanged text for string editors.\nUses the same conversion for interactive confirmation and external paste.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await numberEditor.resolveText(\"12,5\"); // 12.5"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "T | Promise<T>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => T | Promise<T>"
+        },
+        {
+          "name": "selectAll",
+          "type": "() => void",
+          "description": "Selects all text, for example when beginning a grid-cell edit with F2.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "TextEditorOptions",
+      "kind": "interface",
+      "type": "TextEditorOptions<T>",
+      "description": "Text-specific parsing and formatting, in addition to the shared value lifecycle.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TextEditorOptions",
+      "source": "src/components/editors/ValueEditor.ts",
+      "members": [
+        {
+          "name": "parse",
+          "type": "((text: string) => T | Promise<T>) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "format",
+          "type": "((value: T) => string) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "commitOnBlur",
+          "type": "boolean | undefined",
+          "description": "Defaults to true. Enter always confirms; Escape always cancels.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "Throttle",
       "kind": "class",
       "type": "Throttle<T>",
@@ -8779,6 +9483,43 @@
           },
           "kind": "method",
           "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "ToggleEditor",
+      "kind": "class",
+      "type": "ToggleEditor",
+      "description": "Boolean switch using the shared asynchronous confirmation lifecycle.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/ToggleEditor",
+      "source": "src/components/editors/ValueEditor.ts",
+      "members": [
+        {
+          "name": "resolveText",
+          "type": "(text: string) => boolean | Promise<boolean>",
+          "description": "Resolves the same boolean text forms as CheckboxEditor, without toggling it.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean | Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => boolean | Promise<boolean>"
         }
       ]
     },
@@ -9385,6 +10126,293 @@
         "type": "VNode<HTMLElementTagNameMap[K]>",
         "description": ""
       }
+    },
+    {
+      "name": "ValueEditor",
+      "kind": "class",
+      "type": "ValueEditor<T>",
+      "description": "Value-editing lifecycle independent of rows and data sources.\nValues are retained by reference. The host decides whether accepting a value\nupdates a local model or saves it elsewhere.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/ValueEditor",
+      "source": "src/components/editors/ValueEditor.ts",
+      "members": [
+        {
+          "name": "input",
+          "type": "ObservableEvent<void>",
+          "description": "Notifies about user input, before validation or confirmation.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "committed",
+          "type": "ObservableEvent<T>",
+          "description": "Notifies after successful external acceptance.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "cancelled",
+          "type": "ObservableEvent<void>",
+          "description": "Notifies after restoring the last accepted value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "value",
+          "type": "T",
+          "description": "Current typed value. Text editors may additionally contain unparsed text.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "confirmedValue",
+          "type": "T",
+          "description": "Last successfully accepted value, also used by cancel().",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "modified",
+          "type": "boolean",
+          "description": "Whether the current draft differs from the accepted value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "busy",
+          "type": "boolean",
+          "description": "True throughout parsing, validation and the external callback.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "error",
+          "type": "string | undefined",
+          "description": "Current parsing, validation or external-acceptance error.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "resolveText",
+          "type": "(text: string) => T | Promise<T>",
+          "description": "Converts text into a typed value, or throws/rejects when it cannot be resolved.\nDoes not modify draft, error, busy or confirmation state, invoke validation,\nemit events or save. Hosts can use this independently for clipboard paste.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "const value = await editor.resolveText(clipboardText);"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "T | Promise<T>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => T | Promise<T>"
+        },
+        {
+          "name": "setValue",
+          "type": "(value: T) => void",
+          "description": "Loads an externally supplied value as both draft and confirmation baseline.\nDoes not invoke onCommit or input. For example: editor.setValue(order.quantity).",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: T) => void"
+        },
+        {
+          "name": "commit",
+          "type": "() => Promise<boolean>",
+          "description": "Parses, validates and awaits external acceptance. Returns false on failure.\nConcurrent calls share one operation; unchanged values do not invoke onCommit.\nFor example: if (await editor.commit()) closeDialog().",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
+          "name": "cancel",
+          "type": "() => boolean",
+          "description": "Restores the last accepted value. Returns false while confirmation is running.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
+        },
+        {
+          "name": "focus",
+          "type": "() => void",
+          "description": "Moves focus to the native editing control.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "ValueEditorOptions",
+      "kind": "interface",
+      "type": "ValueEditorOptions<T>",
+      "description": "Configuration shared by editors in forms, grids and standalone controls.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/ValueEditorOptions",
+      "source": "src/components/editors/ValueEditor.ts",
+      "members": [
+        {
+          "name": "value",
+          "type": "T",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "label",
+          "type": "string | undefined",
+          "description": "Accessible name for the input or button.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "equals",
+          "type": "((left: T, right: T) => boolean) | undefined",
+          "description": "Compares values without cloning them; defaults to Object.is.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "resolveText",
+          "type": "((text: string) => T | Promise<T>) | undefined",
+          "description": "Converts external text to a value without changing editor state or saving.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "validate",
+          "type": "((value: T) => string | undefined | Promise<string | undefined>) | undefined",
+          "description": "Returns an error message, or undefined when the value is valid.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onCommit",
+          "type": "((value: T, editor: ValueEditor<T>) => void | Promise<void>) | undefined",
+          "description": "Accepts a value externally. Rejection leaves the edit available for retry.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        }
+      ]
     },
     {
       "name": "VariableSizeManager",

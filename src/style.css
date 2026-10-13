@@ -290,6 +290,59 @@ body {
   filter: saturate(0.8) brightness(.95);
 }
 
+.elg-switch {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  flex: none;
+  width: 2.75em;
+  height: 1.5em;
+  padding: 0;
+  border: 1px solid var(--elg-border-strong);
+  border-radius: 999px;
+  background-color: var(--elg-neutral-bg);
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.elg-switch::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0.15em;
+  width: 1.1em;
+  height: 1.1em;
+  border-radius: 50%;
+  background-color: var(--elg-primary-text);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+  transform: translateY(-50%);
+  transition: transform 160ms ease;
+}
+
+.elg-switch[aria-checked="true"] {
+  background-color: var(--elg-primary-bg);
+}
+
+.elg-switch[aria-checked="true"]::after {
+  transform: translate(1.25em, -50%);
+}
+
+.elg-switch:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elg-switch, .elg-switch::after {
+    transition: none;
+  }
+}
+
+/* Invalid controls retain their normal background and focus indication. */
+:where(input, textarea, select, button)[aria-invalid="true"] {
+  border-color: var(--elg-danger-border);
+}
+
 .elg-box {
   border-radius: 6px;
   border: 1px solid var(--elg-border-color);

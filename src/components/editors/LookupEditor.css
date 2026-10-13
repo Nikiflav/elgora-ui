@@ -1,0 +1,4 @@
+.elg-lookup-popup:popover-open {
+    display: flex;
+    flex-direction: column;
+}

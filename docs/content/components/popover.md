@@ -27,6 +27,21 @@ menus, inspectors, and custom context-menu interactions.
 
 ## Anchored popover
 
+The demo also uses [ResizeHandle](?!=/api-reference/ResizeHandle) to resize the panel
+from its bottom-right corner. It captures the pointer, constrains dimensions to
+the viewport and retains inline dimensions when the panel is reopened.
+
+```ts
+const grip = new ResizeHandle({
+    target: popover.dom, minWidth: 200, minHeight: 100,
+    onResize: size => console.log(size.width, size.height)
+});
+popover.addCleanup(grip);
+```
+
+The helper changes border-box dimensions, not panel positioning. Use a positioned
+target with flexible content; dispose the helper with its owner.
+
 Pass an `anchorElement` and a placement to position the panel relative to a
 native element. The panel is a Component, so it can contain text, native
 elements, or other Components.

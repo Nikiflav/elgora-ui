@@ -92,6 +92,24 @@
       "module": "./content/api/ChangeSet.js"
     },
     {
+      "name": "CheckboxEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/CheckboxEditor",
+      "description": "Checkbox editing a boolean value, confirming immediately after user changes.",
+      "module": "./content/api/CheckboxEditor.js"
+    },
+    {
+      "name": "ColumnWidthMode",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/ColumnWidthMode",
+      "description": "How spare viewport width is distributed; columns are never shrunk below their base width.",
+      "module": "./content/api/ColumnWidthMode.js"
+    },
+    {
       "name": "Component",
       "kind": "class",
       "group": "core",
@@ -250,7 +268,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
-      "description": "Construction-time configuration for a DataGrid instance.",
+      "description": "",
       "module": "./content/api/DataGridOptions.js"
     },
     {
@@ -623,6 +641,42 @@
       "module": "./content/api/LocalGroupingDataSource.js"
     },
     {
+      "name": "LookupEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupEditor",
+      "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape or outside dismissal restores the last accepted value and its text.",
+      "module": "./content/api/LookupEditor.js"
+    },
+    {
+      "name": "LookupEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupEditorOptions",
+      "description": "Lookup configuration; the host remains responsible for accepting a value.",
+      "module": "./content/api/LookupEditorOptions.js"
+    },
+    {
+      "name": "LookupQuery",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupQuery",
+      "description": "Search plus standard query paging and cancellation fields.",
+      "module": "./content/api/LookupQuery.js"
+    },
+    {
+      "name": "LookupResult",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/LookupResult",
+      "description": "A page and the accurate count of all matches, not just this page.",
+      "module": "./content/api/LookupResult.js"
+    },
+    {
       "name": "MenuItem",
       "kind": "interface",
       "group": "types",
@@ -657,6 +711,15 @@
       "path": "/api-reference/NewRowSession",
       "description": "A new-row editing session owned by its source.\nThe application retains this handle and explicitly chooses insert() or cancel().\nFor DataTable, pending sessions block saveChanges(), acceptChanges() and rejectChanges().",
       "module": "./content/api/NewRowSession.js"
+    },
+    {
+      "name": "NumberEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/NumberEditor",
+      "description": "Numeric text input; empty input maps to null and malformed numbers are rejected.",
+      "module": "./content/api/NumberEditor.js"
     },
     {
       "name": "Observable",
@@ -794,6 +857,33 @@
       "module": "./content/api/RenderRowArgs.js"
     },
     {
+      "name": "ResizeHandle",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Resize",
+      "path": "/api-reference/ResizeHandle",
+      "description": "Pointer-captured bottom-right resize grip. The target must be positioned\n(relative, absolute or fixed). dispose() removes the grip and gesture listeners.",
+      "module": "./content/api/ResizeHandle.js"
+    },
+    {
+      "name": "ResizeHandleOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Resize",
+      "path": "/api-reference/ResizeHandleOptions",
+      "description": "Reusable bottom-right resize behavior for a panel, popover or other element.",
+      "module": "./content/api/ResizeHandleOptions.js"
+    },
+    {
+      "name": "ResizeSize",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Resize",
+      "path": "/api-reference/ResizeSize",
+      "description": "Border-box dimensions reported by a resize handle.",
+      "module": "./content/api/ResizeSize.js"
+    },
+    {
       "name": "RowIdentity",
       "kind": "type",
       "group": "types",
@@ -855,6 +945,15 @@
       "path": "/api-reference/SelectionManager",
       "description": "Manages keyboard, pointer, and range-based grid selection state.",
       "module": "./content/api/SelectionManager.js"
+    },
+    {
+      "name": "SelectionMode",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/SelectionMode",
+      "description": "Selection granularity and multiplicity; active coordinates always remain a cell.",
+      "module": "./content/api/SelectionMode.js"
     },
     {
       "name": "SelectionRange",
@@ -920,6 +1019,24 @@
       "module": "./content/api/SummaryType.js"
     },
     {
+      "name": "TextEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TextEditor",
+      "description": "Text input with a separately retained draft string, including invalid input.",
+      "module": "./content/api/TextEditor.js"
+    },
+    {
+      "name": "TextEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TextEditorOptions",
+      "description": "Text-specific parsing and formatting, in addition to the shared value lifecycle.",
+      "module": "./content/api/TextEditorOptions.js"
+    },
+    {
       "name": "Throttle",
       "kind": "class",
       "group": "core",
@@ -927,6 +1044,15 @@
       "path": "/api-reference/Throttle",
       "description": "Simple time-based throttle with trailing execution.",
       "module": "./content/api/Throttle.js"
+    },
+    {
+      "name": "ToggleEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/ToggleEditor",
+      "description": "Boolean switch using the shared asynchronous confirmation lifecycle.",
+      "module": "./content/api/ToggleEditor.js"
     },
     {
       "name": "Tooltip",
@@ -1017,6 +1143,24 @@
       "path": "/api-reference/v",
       "description": "Creates a virtual element description for keyed or deferred DOM rendering.",
       "module": "./content/api/v.js"
+    },
+    {
+      "name": "ValueEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/ValueEditor",
+      "description": "Value-editing lifecycle independent of rows and data sources.\nValues are retained by reference. The host decides whether accepting a value\nupdates a local model or saves it elsewhere.",
+      "module": "./content/api/ValueEditor.js"
+    },
+    {
+      "name": "ValueEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/ValueEditorOptions",
+      "description": "Configuration shared by editors in forms, grids and standalone controls.",
+      "module": "./content/api/ValueEditorOptions.js"
     },
     {
       "name": "VariableSizeManager",

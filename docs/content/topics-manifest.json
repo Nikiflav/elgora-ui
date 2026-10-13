@@ -311,6 +311,30 @@
       "module": "./content/topics/tooltip.js"
     },
     {
+      "id": "value-editors",
+      "title": "Value editors",
+      "path": "/components/value-editors",
+      "group": "components",
+      "order": 45,
+      "description": "Independent text, number, checkbox and toggle editors with asynchronous confirmation.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/value-editors.js"
+    },
+    {
+      "id": "lookup-editor",
+      "title": "Lookup editor",
+      "path": "/components/lookup-editor",
+      "group": "components",
+      "order": 46,
+      "description": "Search and pick values using a resizable virtualized multi-column popup.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/lookup-editor.js"
+    },
+    {
       "id": "browser-router",
       "title": "Browser Router",
       "path": "/components/browser-router",

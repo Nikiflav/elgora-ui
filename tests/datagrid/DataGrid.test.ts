@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DataGrid } from "../../src/components/datagrid/DataGrid";
 import type { DataSource, QueryArgs } from "../../src/data/DataSource";
 
@@ -34,6 +34,34 @@ function settle(): Promise<void> {
 }
 
 describe("DataGrid data contracts", () => {
+  it("ensures visibility without moving rows already inside the viewport", () => {
+    const grid = new DataGrid<Row>({ data: rows, columns: [{ name: "name" }] });
+    const internal = grid as any;
+    const engine = internal._scrollEngine;
+    const sizes = internal._sizeManager;
+    const scroll = { scrollTop: 100 };
+    const column = vi.spyOn(grid, "scrollToColumn").mockImplementation(() => {});
+    internal._scrollEngine = scroll;
+    internal._sizeManager = { getOffset: (row: number) => row * 20, getSize: () => 20 };
+    internal._scrollTop = 100;
+    internal._viewportHeight = 200;
+    internal._headerHeight = 30;
+    internal._footerHeight = 20;
+    try {
+      grid.ensureCellVisible(7, 0); // 140..160 is within 100..250.
+      expect(scroll.scrollTop).toBe(100);
+      grid.ensureCellVisible(4, 0); // Reveal the upper edge, without extra movement.
+      expect(scroll.scrollTop).toBe(80);
+      grid.ensureCellVisible(13, 0); // Reveal 260..280 below the usable viewport.
+      expect(scroll.scrollTop).toBe(130);
+      expect(column).toHaveBeenCalledTimes(3);
+    } finally {
+      internal._scrollEngine = engine;
+      internal._sizeManager = sizes;
+      column.mockRestore();
+      grid.dispose();
+    }
+  });
   it("renders rows and a total summary from a plain array", async () => {
     const grid = new DataGrid<Row>({
       data: rows,

@@ -1,0 +1,20 @@
+.elg-resize-handle {
+    position: absolute;
+    right: 1px;
+    bottom: 1px;
+    width: 16px;
+    height: 16px;
+    z-index: 2;
+    cursor: nwse-resize;
+    touch-action: none;
+    user-select: none;
+    background: repeating-linear-gradient(135deg, transparent 0 3px, var(--elg-border-strong) 3px 4px);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+.elg-resize-cursor {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    cursor: nwse-resize;
+    user-select: none;
+}

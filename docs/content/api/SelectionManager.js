@@ -11,6 +11,44 @@ export default {
   "source": "src/components/datagrid/SelectionManager.ts",
   "members": [
     {
+      "name": "mode",
+      "type": "SelectionMode",
+      "description": "Current selection rules, applied to pointer, keyboard and programmatic edits.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "kind": "property"
+    },
+    {
+      "name": "setMode",
+      "type": "(mode: SelectionMode) => void",
+      "description": "Changes the rules and normalizes existing ranges without moving the active cell.\nSwitching to single-row retains the active row; switching to multiple-rows\nexpands each rectangle to whole rows. Cell mode also permits row-header ranges.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "manager.setMode(\"single-row\");"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "parameters": [
+        {
+          "name": "mode",
+          "type": "SelectionMode",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(mode: SelectionMode) => void"
+    },
+    {
       "name": "selectSingleCell",
       "type": "(rowIndex: number, colIndex: number) => void",
       "description": "Sets a single range, clearing all existing ranges.",
