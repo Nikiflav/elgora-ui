@@ -72,7 +72,7 @@ export class MarkdownTopicPage extends Component {
         for (const demo of topic.demos) {
             const placeholder = article.querySelector<HTMLElement>(`[data-live-demo="${CSS.escape(demo.id)}"]`);
             if (placeholder) {
-                const example = demo.mode === "readonly"
+                const example = demo.mode === "readonly" || demo.mode === "preview"
                     ? new ReadonlyExample(demo)
                     : new EditableExample(demo);
                 placeholder.replaceWith(example.dom);

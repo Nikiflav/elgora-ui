@@ -1,9 +1,10 @@
-import { cdiv, e, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor } from "../../../src/index";
+import { cdiv, e, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor, LookupEditor, DateEditor } from "../../../src/index";
 
 export default function demo(): void {
     const root = cdiv({ ui: ["grid", "gap-2", "p-1"] });
     const status = e("div", { ui: ["text-muted", "col-12"], role: "status" }, "Changes are accepted by external callbacks.");
-    const model = { customer: "Northwind Office", quantity: 2, active: true, priority: false };
+    const model = { customer: "Northwind Office", quantity: 2, active: true, priority: false,
+        productId: 1, delivery: "2026-10-14" as string | null };
     const accept = async (field: keyof typeof model, value: unknown) => {
         status.textContent = "Accepting " + field + "…";
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -16,7 +17,20 @@ export default function demo(): void {
         onCommit: value => accept("quantity", value) });
     const active = new CheckboxEditor({ value: model.active, label: "Active", onCommit: value => accept("active", value) });
     const priority = new ToggleEditor({ value: model.priority, label: "Priority", onCommit: value => accept("priority", value) });
-    for (const [label, editor] of [["Customer", customer], ["Quantity", quantity], ["Active", active], ["Priority", priority]] as const) {
+    for (const editor of [customer, quantity]) editor.dom.querySelector("input")!.style.width = "100%";
+    const products = [{ id: 1, name: "Desk lamp" }, { id: 2, name: "Office chair" }, { id: 3, name: "Standing desk" }];
+    const product = new LookupEditor({ value: model.productId, label: "Product", columns: [{ name: "name", caption: "Product" }],
+        loadItems: async ({ search, skip = 0, top = 50 }) => {
+            const matches = products.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
+            return { items: matches.slice(skip, skip + top), totalCount: matches.length };
+        }, getItemValue: item => item.id, getItemText: item => item.name,
+        getValueText: id => products.find(item => item.id === id)?.name ?? "",
+        onCommit: value => accept("productId", value) });
+    const delivery = new DateEditor({ value: model.delivery, label: "Delivery date", dateFormat: "dd.MM.yyyy",
+        today: "2026-10-14", onCommit: value => accept("delivery", value) });
+    for (const [label, editor] of [["Customer · Text", customer], ["Quantity · Number", quantity],
+        ["Product · Lookup", product], ["Delivery date · Date", delivery],
+        ["Active · Checkbox", active], ["Priority · Toggle", priority]] as const) {
         const field = cdiv({ ui: ["col-12", "col-sm-6", "d-flex", "flex-col", "gap-1"] }, e("span", {}, label), editor);
         root.append(field);
     }

@@ -1,6 +1,8 @@
 import { Component, type ComponentOptions } from "../../core/Component";
 import { ObservableEvent } from "../../core/ElgoraUI";
-import { e } from "../../core/e";
+import { assignElementProps, e, setElementProps, v } from "../../core/e";
+import { Tooltip } from "../popup/Tooltip";
+import { createInputErrorAdornment } from "./InputAdornment";
 
 /** Configuration shared by editors in forms, grids and standalone controls. */
 export interface ValueEditorOptions<T> extends Omit<ComponentOptions, "tag" | "children"> {
@@ -17,6 +19,12 @@ export interface ValueEditorOptions<T> extends Omit<ComponentOptions, "tag" | "c
     validate?: (value: T) => string | undefined | Promise<string | undefined>;
     /** Accepts a value externally. Rejection leaves the edit available for retry. */
     onCommit?: (value: T, editor: ValueEditor<T>) => void | Promise<void>;
+}
+
+/** Configuration shared by boolean editors. */
+export interface BooleanEditorOptions extends ValueEditorOptions<boolean> {
+    /** Makes the visible label activate the boolean control. */
+    labelClickable?: boolean;
 }
 
 /**
@@ -36,6 +44,8 @@ export abstract class ValueEditor<T> extends Component {
     protected readonly editorOptions: ValueEditorOptions<T>;
     protected control!: HTMLInputElement | HTMLButtonElement;
     private errorElement: HTMLElement;
+    private errorAdornment?: HTMLElement;
+    private errorTooltipCleanup?: () => void;
     private pending?: Promise<boolean>;
     private working = false;
     private message?: string;
@@ -46,7 +56,7 @@ export abstract class ValueEditor<T> extends Component {
         super({ ...domOptions, tag: "div" });
         this.editorOptions = options;
         this.draft = this.accepted = value;
-        this.errorElement = e("div", { ui: ["text-danger"], role: "alert", hidden: true });
+        this.errorElement = e("div", { class: "elg-editor-error-message", role: "alert", hidden: true });
         this.append(this.errorElement);
         this.addCleanup(this.input);
         this.addCleanup(this.committed);
@@ -74,7 +84,36 @@ export abstract class ValueEditor<T> extends Component {
         this.control = control;
         if (this.editorOptions.label) control.setAttribute("aria-label", this.editorOptions.label);
         this.dom.insertBefore(control, this.errorElement);
+        if (control instanceof HTMLInputElement && control.type !== "checkbox") {
+            this.errorAdornment = createInputErrorAdornment(control);
+        } else {
+            // Boolean controls must remain directly clickable. Their error icon
+            // lives beside the control instead of covering it with an inset slot.
+            this.errorAdornment = e("div", { class: "elg-input-error-adornment", hidden: true });
+            this.dom.insertBefore(this.errorAdornment, control);
+            assignElementProps(this.dom, { ui: ["d-flex", "items-center", "gap-1"] });
+        }
+        this.errorElement.id = `elg-editor-error-${Math.random().toString(36).slice(2)}`;
+        control.setAttribute("aria-describedby", this.errorElement.id);
         this.syncControl();
+    }
+
+    /** Moves the control into a semantic label so clicking its text activates it. */
+    protected makeLabelClickable(label: string): void {
+        const labelElement = e("label", { ui: ["d-flex", "items-center", "gap-1"] });
+        const textElement = e("span", {}, label);
+        this.dom.insertBefore(labelElement, this.control);
+        labelElement.append(this.control, textElement);
+        this.listen(textElement, "click", event => {
+            event.preventDefault();
+            if (!this.canEdit()) return;
+            if (this.control instanceof HTMLInputElement && this.control.type === "checkbox") {
+                this.control.checked = !this.control.checked;
+                this.control.dispatchEvent(new Event("change", { bubbles: true }));
+            } else {
+                this.control.click();
+            }
+        });
     }
 
     /** Updates enabled and validation states while keeping native focus and selection. */
@@ -88,6 +127,26 @@ export abstract class ValueEditor<T> extends Component {
         this.dom.setAttribute("aria-busy", String(this.busy));
         this.errorElement.hidden = !this.message;
         this.errorElement.textContent = this.message ?? "";
+        if (this.control instanceof HTMLInputElement && this.control.type !== "checkbox") {
+            this.control.style.paddingLeft = this.message ? "1.5rem" : "";
+        }
+        if (this.errorAdornment) {
+            this.errorTooltipCleanup?.();
+            this.errorTooltipCleanup = undefined;
+            // Patch only dynamic state so inset positioning is retained for
+            // text controls and inline layout is retained for boolean controls.
+            assignElementProps(this.errorAdornment, {
+                hidden: !this.message,
+                ariaLabel: this.message ? `Validation error: ${this.message}` : undefined,
+                vnodes: this.message ? [v("i", {
+                    class: "ri-error-warning-line",
+                    // Keep the icon transparent; the input supplies the background.
+                    ui: ["text-danger"],
+                    ariaHidden: "true"
+                })] : []
+            });
+            if (this.message) this.errorTooltipCleanup = Tooltip.attach(this.errorAdornment, this.message, { placement: "top", gap: 4 });
+        }
     }
 
     /** Whether the control may accept a user edit right now. */
@@ -253,11 +312,34 @@ export class TextEditor<T = string> extends ValueEditor<T> {
     selectAll(): void { (this.control as HTMLInputElement).select(); }
 }
 
+/** Configuration for the numeric editor's keyboard stepping behavior. */
+export interface NumberEditorOptions extends TextEditorOptions<number | null> {
+    /** Amount added or subtracted by ArrowUp/ArrowDown. Defaults to 1. */
+    step?: number;
+    /** Lower bound used by keyboard stepping. */
+    min?: number;
+    /** Upper bound used by keyboard stepping. */
+    max?: number;
+}
+
 /** Numeric text input; empty input maps to null and malformed numbers are rejected. */
 export class NumberEditor extends TextEditor<number | null> {
+    private readonly numberOptions: Pick<NumberEditorOptions, "step" | "min" | "max" | "format">;
+    private stepping = false;
+
     /** Accepts decimal-dot or decimal-comma input; custom parse/format may override it. */
-    constructor(options: TextEditorOptions<number | null>) {
-        super({ ...options, parse: options.parse ?? (text => {
+    constructor(options: NumberEditorOptions) {
+        const { step = 1, min, max, ...textOptions } = options;
+        if (!Number.isFinite(step) || step <= 0)
+            throw new Error("Failed to create number editor. Step must be a positive finite number.");
+        if (min !== undefined && !Number.isFinite(min))
+            throw new Error("Failed to create number editor. Minimum must be a finite number.");
+        if (max !== undefined && !Number.isFinite(max))
+            throw new Error("Failed to create number editor. Maximum must be a finite number.");
+        if (min !== undefined && max !== undefined && min > max)
+            throw new Error("Failed to create number editor. Minimum must not exceed maximum.");
+
+        super({ ...textOptions, parse: options.parse ?? (text => {
             const normalized = text.trim().replace(",", ".");
             if (!normalized) return null;
             if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(normalized))
@@ -266,7 +348,40 @@ export class NumberEditor extends TextEditor<number | null> {
             if (!Number.isFinite(value)) throw new Error("Failed to confirm number. Enter a finite number.");
             return value;
         }) });
+        this.numberOptions = { step, min, max, format: options.format };
         this.control.setAttribute("inputmode", "decimal");
+        this.listen(this.control, "keydown", event => {
+            const key = event as KeyboardEvent;
+            if (key.isComposing || (key.key !== "ArrowUp" && key.key !== "ArrowDown") || !this.canEdit()) return;
+            key.preventDefault();
+            key.stopPropagation();
+            void this.stepValue(key.key === "ArrowUp" ? 1 : -1);
+        });
+    }
+
+    /** Moves the draft by one configured step without committing it. */
+    private async stepValue(direction: 1 | -1): Promise<void> {
+        if (this.stepping) return;
+        this.stepping = true;
+        try {
+            let current: number | null;
+            try {
+                current = await this.resolveText((this.control as HTMLInputElement).value);
+            } catch {
+                return;
+            }
+
+            let next = (current ?? 0) + direction * this.numberOptions.step!;
+            if (this.numberOptions.min !== undefined) next = Math.max(this.numberOptions.min, next);
+            if (this.numberOptions.max !== undefined) next = Math.min(this.numberOptions.max, next);
+            if (!Number.isFinite(next)) return;
+
+            const input = this.control as HTMLInputElement;
+            input.value = this.numberOptions.format?.(next) ?? String(next);
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        } finally {
+            this.stepping = false;
+        }
     }
 }
 
@@ -277,9 +392,10 @@ export class CheckboxEditor extends ValueEditor<boolean> {
         return this.editorOptions.resolveText ? this.editorOptions.resolveText(text) : resolveBooleanText(text);
     }
     /** Creates a native checkbox with an optional accessible label. */
-    constructor(options: ValueEditorOptions<boolean>) {
+    constructor(options: BooleanEditorOptions) {
         super(options);
         this.installControl(e("input", { type: "checkbox" }));
+        if (options.label && options.labelClickable !== false) this.makeLabelClickable(options.label);
         this.displayValue();
         this.listen(this.control, "change", () => {
             if (!this.canEdit()) return;
@@ -299,12 +415,13 @@ export class ToggleEditor extends ValueEditor<boolean> {
         return this.editorOptions.resolveText ? this.editorOptions.resolveText(text) : resolveBooleanText(text);
     }
     /** Creates a native button with switch semantics; Space/Enter immediately confirm. */
-    constructor(options: ValueEditorOptions<boolean>) {
+    constructor(options: BooleanEditorOptions) {
         super(options);
         this.installControl(e("button", {
             type: "button", role: "switch", class: "elg-switch", ui: ["elg"],
             ariaLabel: options.label ?? "Toggle"
         }));
+        if (options.label && options.labelClickable === true) this.makeLabelClickable(options.label);
         this.displayValue();
         this.listen(this.control, "click", () => {
             if (!this.canEdit()) return;

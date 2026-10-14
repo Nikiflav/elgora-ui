@@ -32,7 +32,7 @@ export default function demo(): void {
         customCellStyle: cell => ({
           className: "elg-text-uppercase",
           style: {
-            "--elg-grid-cell-bg": cell.value === "Ready" ? "#d9f2e3" : "#f7dfdf"
+            "--elg-data-grid-cell-bg": cell.value === "Ready" ? "#d9f2e3" : "#f7dfdf"
           }
         }),
         renderCell: cell => v("strong", { ui: ["fw-600"] }, cell.text)

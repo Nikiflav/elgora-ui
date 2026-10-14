@@ -100,13 +100,13 @@ function extractDemos(body, fileName, directory) {
         const demoBody = extractDemoBody(sourceCode, sourcePath);
         const compiledSource = transpileDemoSource(demoBody, sourcePath);
         const demoModule = "./content/" + path.relative(contentDir, sourcePath).replaceAll(path.sep, "/");
-        demos.push({ id, module: demoModule, source: compiledSource, code: compiledSource, sourceHtml: highlight(compiledSource, "javascript"), ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
+        demos.push({ id, module: demoModule, source: compiledSource, code: compiledSource, sourceHtml: highlight(compiledSource, "javascript"), ...(["readonly", "preview"].includes(mode) ? { mode } : {}), ...(height ? { height } : {}) });
         return `\n\n<div data-live-demo="${id}"></div>\n\n`;
     });
     const demoPattern = /<live-demo\s+id="([^"]+)"(?:\s+mode="([^"]+)")?(?:\s+height="([^"]+)")?\s*><\/live-demo>\s*```js\s*\n([\s\S]*?)```/g;
     const renderedBody = externalBody.replace(demoPattern, (_match, id, mode, height, code) => {
         const sourceCode = code.trim();
-        demos.push({ id, source: sourceCode, code: sourceCode, sourceHtml: highlight(sourceCode, "javascript"), ...(mode === "readonly" ? { mode } : {}), ...(height ? { height } : {}) });
+        demos.push({ id, source: sourceCode, code: sourceCode, sourceHtml: highlight(sourceCode, "javascript"), ...(["readonly", "preview"].includes(mode) ? { mode } : {}), ...(height ? { height } : {}) });
         return `\n\n<div data-live-demo="${id}"></div>\n\n`;
     });
 

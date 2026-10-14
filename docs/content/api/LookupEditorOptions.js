@@ -83,7 +83,7 @@ export default {
     {
       "name": "popupWidth",
       "type": "number | undefined",
-      "description": "",
+      "description": "Explicit popup width in pixels; otherwise matches the input, with a 200px minimum.",
       "tags": [],
       "topics": [],
       "optional": true,

@@ -38,6 +38,15 @@
       "module": "./content/api/AsyncObservableHandler.js"
     },
     {
+      "name": "BooleanEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/BooleanEditorOptions",
+      "description": "Configuration shared by boolean editors.",
+      "module": "./content/api/BooleanEditorOptions.js"
+    },
+    {
       "name": "BrowserRouter",
       "kind": "class",
       "group": "components",
@@ -54,6 +63,24 @@
       "path": "/api-reference/c",
       "description": "Creates a Component backed by the requested HTML tag.\n\nChildren can be supplied either as `props.children` or as positional\narguments after the props object. When both forms are present, positional\nchildren take precedence.",
       "module": "./content/api/c.js"
+    },
+    {
+      "name": "Calendar",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Calendar",
+      "path": "/api-reference/Calendar",
+      "description": "Compact date picker with day, month and year views, using standard UI utilities.\nSelection is independent of keyboard focus. No data source or save operation is involved.",
+      "module": "./content/api/Calendar.js"
+    },
+    {
+      "name": "CalendarOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Calendar",
+      "path": "/api-reference/CalendarOptions",
+      "description": "Standalone date-only calendar options. Dates use strict YYYY-MM-DD strings.",
+      "module": "./content/api/CalendarOptions.js"
     },
     {
       "name": "cbutton",
@@ -236,6 +263,15 @@
       "module": "./content/api/DataGrid.js"
     },
     {
+      "name": "DataGridCellBorders",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridCellBorders",
+      "description": "Cell separator style used by a DataGrid.",
+      "module": "./content/api/DataGridCellBorders.js"
+    },
+    {
       "name": "DataGridColumn",
       "kind": "interface",
       "group": "types",
@@ -261,6 +297,15 @@
       "path": "/api-reference/DataGridContextMenuContext",
       "description": "Context passed to grid, row, and column context-menu customization points.",
       "module": "./content/api/DataGridContextMenuContext.js"
+    },
+    {
+      "name": "DataGridCursor",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridCursor",
+      "description": "Mouse cursor used over the data-grid body.",
+      "module": "./content/api/DataGridCursor.js"
     },
     {
       "name": "DataGridOptions",
@@ -423,6 +468,33 @@
       "path": "/api-reference/DataViewField",
       "description": "Presentation of a data field in a form, card, list or grid.\nExtends data-access metadata with labels, formatting, editors and lookup options.\nGrid layout and rendering belong to DataGridColumn.",
       "module": "./content/api/DataViewField.js"
+    },
+    {
+      "name": "DateEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/DateEditor",
+      "description": "Date-only editor with a keyed Calendar picker. Text and selected calendar days\nuse the shared asynchronous validation/commit lifecycle; the host performs saving.",
+      "module": "./content/api/DateEditor.js"
+    },
+    {
+      "name": "DateEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/DateEditorOptions",
+      "description": "Date-only text editing with an optional calendar popup. Values are YYYY-MM-DD or null.",
+      "module": "./content/api/DateEditorOptions.js"
+    },
+    {
+      "name": "DateFormatter",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/DateFormatter",
+      "description": "Date-only formatting/parsing for ISO YYYY-MM-DD values, without timezone conversion.\nSupports d, dd, M, MM, yyyy and non-alphanumeric separators. Standard format \"d\"\nuses the locale's Gregorian short-date order and separators with Latin digits.\nThis is a documented subset, not full .NET format compatibility.",
+      "module": "./content/api/DateFormatter.js"
     },
     {
       "name": "DisplayValue",
@@ -722,6 +794,15 @@
       "module": "./content/api/NumberEditor.js"
     },
     {
+      "name": "NumberEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/NumberEditorOptions",
+      "description": "Configuration for the numeric editor's keyboard stepping behavior.",
+      "module": "./content/api/NumberEditorOptions.js"
+    },
+    {
       "name": "Observable",
       "kind": "interface",
       "group": "types",
@@ -774,6 +855,15 @@
       "path": "/api-reference/PopoverCloseMode",
       "description": "Controls whether the browser or the caller controls popup dismissal.",
       "module": "./content/api/PopoverCloseMode.js"
+    },
+    {
+      "name": "PopoverEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/PopoverEditorOptions",
+      "description": "Shared behavior for value editors with a picker popover.",
+      "module": "./content/api/PopoverEditorOptions.js"
     },
     {
       "name": "PopoverOptions",
@@ -1161,6 +1251,15 @@
       "path": "/api-reference/ValueEditorOptions",
       "description": "Configuration shared by editors in forms, grids and standalone controls.",
       "module": "./content/api/ValueEditorOptions.js"
+    },
+    {
+      "name": "ValueFormatter",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/ValueFormatter",
+      "description": "Converts values to display text and parses text independently of UI or saving.",
+      "module": "./content/api/ValueFormatter.js"
     },
     {
       "name": "VariableSizeManager",

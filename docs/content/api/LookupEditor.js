@@ -76,19 +76,27 @@ export default {
     },
     {
       "name": "close",
-      "type": "() => void",
+      "type": "(preserveState?: boolean) => void",
       "description": "Hides results; cancel() also restores the last accepted value and text.",
       "tags": [],
       "topics": [],
       "optional": false,
       "source": "src/components/editors/LookupEditor.ts",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "preserveState",
+          "type": "boolean",
+          "optional": true,
+          "defaultValue": "false",
+          "description": ""
+        }
+      ],
       "returns": {
         "type": "void",
         "description": ""
       },
       "kind": "method",
-      "signature": "() => void"
+      "signature": "(preserveState?: boolean) => void"
     },
     {
       "name": "cancel",
@@ -109,7 +117,7 @@ export default {
     {
       "name": "commit",
       "type": "() => Promise<boolean>",
-      "description": "Closes only after successful acceptance; failures remain available for correction.",
+      "description": "Closes the results after confirmation; failures remain on the editor for correction.",
       "tags": [],
       "topics": [],
       "optional": false,

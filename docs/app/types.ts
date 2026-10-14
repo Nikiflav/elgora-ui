@@ -27,7 +27,7 @@ export interface MarkdownDemo {
     source: string;
     sourceHtml?: string;
     code: string;
-    mode?: "readonly";
+    mode?: "readonly" | "preview";
     height?: string;
 }
 

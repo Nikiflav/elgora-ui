@@ -41,7 +41,7 @@ export interface DataGridColumn<TRow> extends DataViewField<TRow> {
 export type DataCellStyle = {
     /** Additional classes for the outer grid cell. */
     className?: string;
-    /** Inline styles, including CSS custom properties such as --elg-grid-cell-bg. */
+    /** Inline styles, including CSS custom properties such as --elg-data-grid-cell-bg. */
     style?: StyleObject;
 };
 

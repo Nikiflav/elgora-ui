@@ -220,6 +220,7 @@ async function bootstrap(): Promise<void> {
 const componentLinks = buildSidebarTree([
         { href: "/components", title: "Component overview" },
         { id: "datagrid", href: "/components/datagrid/overview", title: "DataGrid" },
+        { id: "editors", href: "/components/value-editors", title: "Value editors" },
         ...markdownTopics
             .filter(topic => topic.group === "components" && topic.path !== "/components")
             .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title }))

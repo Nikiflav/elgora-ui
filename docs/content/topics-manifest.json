@@ -312,27 +312,80 @@
     },
     {
       "id": "value-editors",
-      "title": "Value editors",
+      "title": "Overview",
       "path": "/components/value-editors",
       "group": "components",
+      "parent": "editors",
       "order": 45,
-      "description": "Independent text, number, checkbox and toggle editors with asynchronous confirmation.",
+      "description": "Explore value editors and their shared validation and asynchronous acceptance lifecycle.",
       "toc": true,
       "api": [],
       "keywords": [],
       "module": "./content/topics/value-editors.js"
     },
     {
-      "id": "lookup-editor",
-      "title": "Lookup editor",
-      "path": "/components/lookup-editor",
+      "id": "editor-text",
+      "title": "Text",
+      "path": "/components/value-editors/text",
       "group": "components",
+      "parent": "editors",
       "order": 46,
-      "description": "Search and pick values using a resizable virtualized multi-column popup.",
+      "description": "Text input with draft text, validation and custom typed conversion.",
       "toc": true,
       "api": [],
       "keywords": [],
-      "module": "./content/topics/lookup-editor.js"
+      "module": "./content/topics/editor-text.js"
+    },
+    {
+      "id": "calendar",
+      "title": "Calendar",
+      "path": "/components/calendar",
+      "group": "components",
+      "order": 47,
+      "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/calendar.js"
+    },
+    {
+      "id": "editor-number",
+      "title": "Number",
+      "path": "/components/value-editors/number",
+      "group": "components",
+      "parent": "editors",
+      "order": 47,
+      "description": "Nullable numbers with text conversion and asynchronous validation.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/editor-number.js"
+    },
+    {
+      "id": "editor-checkbox",
+      "title": "Checkbox",
+      "path": "/components/value-editors/checkbox",
+      "group": "components",
+      "parent": "editors",
+      "order": 48,
+      "description": "Native checkbox editing with boolean conversion and asynchronous acceptance.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/editor-checkbox.js"
+    },
+    {
+      "id": "editor-toggle",
+      "title": "Toggle",
+      "path": "/components/value-editors/toggle",
+      "group": "components",
+      "parent": "editors",
+      "order": 49,
+      "description": "Compact switch editing for boolean values.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/editor-toggle.js"
     },
     {
       "id": "browser-router",
@@ -352,6 +405,19 @@
         "history api"
       ],
       "module": "./content/topics/browser-router.js"
+    },
+    {
+      "id": "lookup-editor",
+      "title": "Lookup",
+      "path": "/components/lookup-editor",
+      "group": "components",
+      "parent": "editors",
+      "order": 50,
+      "description": "Search and pick values using a resizable virtualized multi-column popup.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/lookup-editor.js"
     },
     {
       "id": "datagrid-overview",
@@ -380,6 +446,19 @@
       "module": "./content/topics/datagrid-overview.js"
     },
     {
+      "id": "date-editor",
+      "title": "Date",
+      "path": "/components/date-editor",
+      "group": "components",
+      "parent": "editors",
+      "order": 51,
+      "description": "Date-only text editing with a calendar popup and asynchronous confirmation.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/date-editor.js"
+    },
+    {
       "id": "datagrid-columns",
       "title": "Columns and layout",
       "path": "/components/datagrid/columns",
@@ -402,6 +481,19 @@
         "layout"
       ],
       "module": "./content/topics/datagrid-columns.js"
+    },
+    {
+      "id": "editor-validation",
+      "title": "Validation",
+      "path": "/components/value-editors/validation",
+      "group": "components",
+      "parent": "editors",
+      "order": 52,
+      "description": "Validation feedback shared by all value editors.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/editor-validation.js"
     },
     {
       "id": "datagrid-sorting",

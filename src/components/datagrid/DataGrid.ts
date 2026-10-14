@@ -58,6 +58,10 @@ type SelectionCell = { rowIndex: number, colIndex: number, wholeRow?: true };
 /** Construction-time configuration for a DataGrid instance. */
 /** How spare viewport width is distributed; columns are never shrunk below their base width. */
 export type ColumnWidthMode = "fixed" | "stretch-auto" | "stretch-all";
+/** Mouse cursor used over the data-grid body. */
+export type DataGridCursor = "default" | "pointer" | "text";
+/** Cell separator style used by a DataGrid. */
+export type DataGridCellBorders = "none" | "rows" | "all";
 
 export type DataGridOptions<TRow> = {
     /** Row data; defaults to an empty array if omitted. */
@@ -124,6 +128,16 @@ export type DataGridOptions<TRow> = {
     showFilterRow?: boolean,
     /** Whether to show the column footer row. Defaults to true. */
     showColumnFooters?: boolean,
+    /** Whether data rows receive the grid hover background. Defaults to false. */
+    showRowHover?: boolean,
+    /** Whether the outer grid border is rendered. Defaults to true. */
+    showBorder?: boolean,
+    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */
+    cellBorders?: DataGridCellBorders,
+    /** Whether the current selection is visually highlighted. Defaults to true. */
+    showSelection?: boolean,
+    /** Cursor used over the grid body. Defaults to the browser default cursor. */
+    cursor?: DataGridCursor,
     /** The default options for each column. Can be specified to provide default column behavior. */
     defaultColumnOptions?: Partial<DataGridColumn<TRow>>
 }
@@ -1118,6 +1132,11 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.showGroupPanel ??= true;
         this._gridOptions.showFilterRow ??= false;
         this._gridOptions.showColumnFooters ??= true;
+        this._gridOptions.showRowHover ??= false;
+        this._gridOptions.showBorder ??= true;
+        this._gridOptions.cellBorders ??= "rows";
+        this._gridOptions.showSelection ??= true;
+        this._gridOptions.cursor ??= "default";
         this._gridOptions.hierarchyRootId ??= null;
         this._gridOptions.stickyGroupRows ??= false;
         this._gridOptions.selectableGroupRows ??= true;
@@ -1128,6 +1147,14 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.sortOnHeaderClick ??= true;
         this._gridOptions.selectionMode ??= "multiple-cells";
         this._selection.setMode(this._gridOptions.selectionMode);
+        this.dom.classList.toggle("elg-data-grid-hover-row", this._gridOptions.showRowHover === true);
+        this.dom.classList.toggle("elg-data-grid-no-border", this._gridOptions.showBorder === false);
+        this.dom.classList.toggle("elg-data-grid-no-cell-borders", this._gridOptions.cellBorders === "none");
+        this.dom.classList.toggle("elg-data-grid-all-cell-borders", this._gridOptions.cellBorders === "all");
+        this.dom.classList.toggle("elg-data-grid-no-selection", this._gridOptions.showSelection === false);
+        this.dom.classList.toggle("elg-data-grid-cursor-default", this._gridOptions.cursor === "default");
+        this.dom.classList.toggle("elg-data-grid-cursor-pointer", this._gridOptions.cursor === "pointer");
+        this.dom.classList.toggle("elg-data-grid-cursor-text", this._gridOptions.cursor === "text");
 
         const firstCall = !this._initialized;
         this.normalizeGroupingSort();
@@ -1170,7 +1197,7 @@ export class DataGrid<TRow> extends Component {
             this._totalSummaryLoaded = false;
         }
         if (reloadsRows || footerBecameVisible) this.reloadRows();
-        if (!changesLayout && !reloadsRows && ("selectionMode" in options || "texts" in options || "stickyGroupRows" in options || "selectableGroupRows" in options || "selectableHierarchyNodes" in options || changesStaticRows)) this.refresh();
+        if (!changesLayout && !reloadsRows && ("selectionMode" in options || "texts" in options || "stickyGroupRows" in options || "selectableGroupRows" in options || "selectableHierarchyNodes" in options || "showRowHover" in options || "showBorder" in options || "cellBorders" in options || "showSelection" in options || "cursor" in options || changesStaticRows)) this.refresh();
     }
 
     /** Returns a shallow copy of the grid's current, fully-resolved options. */
@@ -1840,6 +1867,11 @@ export class DataGrid<TRow> extends Component {
         const valueContent = v("span", {
             ui: ["flex-1", "min-w-0", "overflow-hidden", "text-nowrap", "text-ellipsis"]
         }, cellContent);
+
+        // A flat grid has no expandable/group hierarchy to align with, so the
+        // first data cell should not reserve space for a hidden group icon.
+        if (!this._gridOptions.groupColumns?.length && !this._isHierarchicalData)
+            return valueContent;
 
         if (gridRow.expandable)
             wrapperProps.vnodes = [this.createExpandIcon(gridRow), valueContent];

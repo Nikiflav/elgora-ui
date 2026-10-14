@@ -1,9 +1,10 @@
 ---
 id: lookup-editor
-title: Lookup editor
+title: Lookup
 group: components
+parent: editors
 path: /components/lookup-editor
-order: 46
+order: 50
 description: Search and pick values using a resizable virtualized multi-column popup.
 ---
 
@@ -60,6 +61,14 @@ context menus or summaries. Headers appear when more than one column is configur
 Its columns use `columnWidthMode: "stretch-all"`, filling extra popup width in
 proportion to their base widths while preserving horizontal scroll in narrow popups.
 
+The inset arrow button toggles the popup. Alt+Down opens it without selecting a
+result or changing the value. The button does not add a Tab stop; Tab reaches the
+input directly, and Left/Right retain native caret behavior.
+
+Set `openOnFocus: true` to also show results when the input receives focus, keeping
+focus in the input. This option defaults to `false`, as in DateEditor. Clicking or
+typing in the lookup input still opens results independently of this option.
+
 Up/Down focus a result row while keeping native focus in the input. The grid
 scrolls only when needed to reveal the row, without aligning each row at the top.
 Enter accepts
@@ -68,8 +77,9 @@ also accepts that item. Escape or outside dismissal restores the last accepted
 value and text. IME Enter does not confirm.
 
 Validation and `onCommit` run before acceptance. While awaiting them the editor is
-busy. A failure keeps the candidate and error available for retry; success closes
-the popup. The editor does not write to a data source itself.
+busy. The results popup closes after confirmation even when acceptance fails. The
+editor keeps the candidate and error available through the validation indicator for a later retry.
+The editor does not write to a data source itself.
 
 ## Resolve pasted text
 
@@ -87,8 +97,12 @@ conversion when the application has a dedicated resolver endpoint.
 
 ## Popup size
 
-`popupWidth` and `popupHeight` default to 440×300 CSS pixels. `resizable` defaults
-to true. The reusable [ResizeHandle](?!=/api-reference/ResizeHandle) constrains
+Without `popupWidth`, the popup matches the input's width, with a minimum of
+200 CSS pixels where the viewport permits. Automatic width is measured each time
+the popup opens. An explicit `popupWidth` overrides this behavior; after a manual
+resize, the chosen size is retained on reopening instead of matching the input.
+`popupHeight` defaults to 300 CSS pixels. All widths are constrained to the viewport.
+`resizable` defaults to true. The reusable [ResizeHandle](?!=/api-reference/ResizeHandle) constrains
 the size to the viewport, with minimum dimensions of 200×140 where space permits.
 Size is retained only for the lifetime of this editor, not saved globally.
 

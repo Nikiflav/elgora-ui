@@ -14,7 +14,7 @@ export { VirtualList, type VirtualListOptions, type VirtualDataSource as DataLis
 export { Throttle } from './core/Throttle';
 export { BrowserRouter } from './components/browser-router/BrowserRouter';
 export { ScrollEngine } from './components/scrollbar/scroll-engine';
-export { DataGrid, type DataGridOptions, type ColumnWidthMode, type GridDataSource } from './components/datagrid/DataGrid';
+export { DataGrid, type DataGridOptions, type ColumnWidthMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
 export { type DataCell, type DataViewField, type DisplayValue, type EditorType } from './data/DataViewField';
 export { type DataType, type DataField } from './data/DataField';
 export { type GroupInterval, type GroupIntervalDefinition, type OrderByToken } from './data/grouping';
@@ -40,6 +40,11 @@ export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement,
 export { PopupMenu, type PopupMenuOptions, type PopupMenuShowOptions, type MenuItem } from './components/popup/PopupMenu';
 export { Tooltip, type TooltipContent, type TooltipShowOptions } from './components/popup/Tooltip';
 export { ResizeHandle, type ResizeHandleOptions, type ResizeSize } from './components/resize/ResizeHandle';
+export { Calendar, type CalendarOptions } from './components/calendar/Calendar';
+export { DateEditor, type DateEditorOptions } from './components/editors/DateEditor';
+export { DateFormatter } from './formatting/DateFormatter';
+export type { ValueFormatter } from './formatting/ValueFormatter';
+export type { PopoverEditorOptions } from './components/editors/PopoverEditorOptions';
 export { LookupEditor, type LookupEditorOptions, type LookupQuery, type LookupResult } from './components/editors/LookupEditor';
 export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
-    type ValueEditorOptions, type TextEditorOptions } from './components/editors/ValueEditor';
+    type ValueEditorOptions, type TextEditorOptions, type NumberEditorOptions, type BooleanEditorOptions } from './components/editors/ValueEditor';

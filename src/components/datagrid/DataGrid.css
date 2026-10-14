@@ -1,20 +1,22 @@
 :root {
-    --elg-grid-bg-tint: 12%;
-    --elg-grid-state-color: transparent;
+    --elg-data-grid-bg-tint: 12%;
+    --elg-data-grid-state-color: transparent;
 }
 
 
 .elg-data-grid {
-    --elg-grid-cell-bg: var(--elg-bg-color);
-    --elg-grid-cell-text: var(--elg-text-color);
-    --elg-grid-cell-border: var(--elg-border-color);
-    --elg-grid-header-bg: var(--elg-surface-color);
-    --elg-grid-header-border: var(--elg-border-color);
-    --elg-grid-resizer-color: var(--elg-surface-color-3);
-    --elg-grid-selection-border: var(--elg-selection-border);
-    --elg-grid-selection-width: 1px;
-    --elg-grid-sel-color: var(--elg-grid-selection-border);
-    --elg-grid-sel-width: var(--elg-grid-selection-width);
+    --elg-data-grid-row-height: 36px;
+    --elg-data-grid-group-panel-height: calc(var(--elg-data-grid-row-height) + 12px);
+    --elg-data-grid-cell-bg: var(--elg-bg-color);
+    --elg-data-grid-cell-text: var(--elg-text-color);
+    --elg-data-grid-cell-border: var(--elg-border-color);
+    --elg-data-grid-header-bg: var(--elg-surface-color);
+    --elg-data-grid-header-border: var(--elg-border-color);
+    --elg-data-grid-resizer-color: var(--elg-surface-color-3);
+    --elg-data-grid-selection-border: var(--elg-selection-border);
+    --elg-data-grid-selection-width: 1px;
+    --elg-data-grid-sel-color: var(--elg-data-grid-selection-border);
+    --elg-data-grid-sel-width: var(--elg-data-grid-selection-width);
     overflow: hidden;
     width: 100%;
     height: 100%;
@@ -22,29 +24,77 @@
     flex-direction: column;
     position: relative;
     box-sizing: border-box;
-    border: 1px solid var(--elg-grid-cell-border);
+    border: 1px solid var(--elg-data-grid-cell-border);
+}
+
+.elg-data-grid.elg-data-grid-no-border {
+    border: 0;
+}
+
+.elg-data-grid.elg-data-grid-no-cell-borders .elg-data-grid-cell,
+.elg-data-grid.elg-data-grid-no-cell-borders .elg-data-grid-row-footer .elg-data-grid-cell,
+.elg-data-grid.elg-data-grid-no-cell-borders .elg-data-grid-row-header .elg-data-grid-cell {
+    border-bottom: 0;
+    border-top: 0;
+}
+
+.elg-data-grid.elg-data-grid-all-cell-borders .elg-data-grid-cell {
+    border: 1px solid var(--elg-data-grid-cell-border);
+}
+
+.elg-data-grid.elg-data-grid-no-selection .elg-selected-cell {
+    --elg-data-grid-state-color: transparent;
+    box-shadow: none !important;
+}
+
+.elg-data-grid.elg-data-grid-no-selection .elg-selected-row-header {
+    font-weight: inherit;
+    background: inherit;
+    color: inherit;
+}
+
+.elg-data-grid.elg-data-grid-cursor-default .elg-data-grid-cell-data,
+.elg-data-grid.elg-data-grid-cursor-default .elg-data-grid-cell-rowheader {
+    cursor: default;
+}
+
+.elg-data-grid.elg-data-grid-cursor-pointer .elg-data-grid-cell-data,
+.elg-data-grid.elg-data-grid-cursor-pointer .elg-data-grid-cell-rowheader {
+    cursor: pointer;
+}
+
+.elg-data-grid.elg-data-grid-cursor-text .elg-data-grid-cell-data,
+.elg-data-grid.elg-data-grid-cursor-text .elg-data-grid-cell-rowheader {
+    cursor: text;
 }
 
 .elg-data-grid .elg-icon {
     font-size: 16px;
     padding: 3px;
+    line-height: 1;
     border-radius: 4px;
     cursor: pointer;
 }
 
 .elg-data-grid-cell {
     padding: 4px 6px;
-    border-bottom: 1px solid var(--elg-grid-cell-border);
-    /* border-right: 1px solid var(--elg-grid-cell-border); */
-    background-color: var(--elg-grid-cell-bg);
-    background-color: color-mix(in srgb, var(--elg-grid-state-color) var(--elg-grid-bg-tint), var(--elg-grid-cell-bg));
-    color: var(--elg-grid-cell-text);
+    height: var(--elg-data-grid-row-height);
+    min-height: var(--elg-data-grid-row-height);
+    border-bottom: 1px solid var(--elg-data-grid-cell-border);
+    /* border-right: 1px solid var(--elg-data-grid-cell-border); */
+    background-color: var(--elg-data-grid-cell-bg);
+    background-color: color-mix(in srgb, var(--elg-data-grid-state-color) var(--elg-data-grid-bg-tint), var(--elg-data-grid-cell-bg));
+    color: var(--elg-data-grid-cell-text);
     box-sizing: border-box;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 100px;
     white-space: nowrap;
     word-break: keep-all;
+}
+
+.elg-data-grid.elg-data-grid-hover-row .elg-data-grid-row-data:hover .elg-data-grid-cell {
+    background-color: color-mix(in srgb, var(--elg-primary-bg) 12%, var(--elg-data-grid-cell-bg));
 }
 
 .elg-data-grid-row-loading .elg-data-grid-cell-data {
@@ -58,25 +108,25 @@
     left: 5px;
     right: var(--elg-empty-right, 5px);
     bottom: 20%;
-    background-color: var(--elg-grid-cell-border);
+    background-color: var(--elg-data-grid-cell-border);
 }
 
 .elg-data-grid-row-footer .elg-data-grid-cell {
-     border-top: 1px solid var(--elg-grid-cell-border);
+     border-top: 1px solid var(--elg-data-grid-cell-border);
 }
 
 .elg-data-grid-row-header .elg-data-grid-cell {
-    border-top: 1px solid var(--elg-grid-cell-border);
+    border-top: 1px solid var(--elg-data-grid-cell-border);
 }
 
 
 .elg-data-grid-cell-rowheader {
-    background-color: var(--elg-grid-header-bg);
+    background-color: var(--elg-data-grid-header-bg);
 }
 
 thead .elg-data-grid-cell,
 tfoot .elg-data-grid-cell {
-    background-color: var(--elg-grid-header-bg);
+    background-color: var(--elg-data-grid-header-bg);
 }
 
 thead .elg-data-grid-cell,
@@ -101,7 +151,7 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
     display: block;
     width: 2px;
     height: 1em;
-    background-color: var(--elg-grid-resizer-color);
+    background-color: var(--elg-data-grid-resizer-color);
     transition: background-color 0.2s;
 }
 
@@ -116,17 +166,17 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
 }
 
 .elg-data-grid-cell.elg-column-dragging {
-    --elg-grid-cell-text: var(--elg-text-muted);
-    --elg-grid-state-color: var(--elg-surface-color);
+    --elg-data-grid-cell-text: var(--elg-text-muted);
+    --elg-data-grid-state-color: var(--elg-surface-color);
 }
 
 .elg-data-grid-cell.elg-selected-cell {
-    --elg-grid-state-color: var(--elg-grid-sel-color);
+    --elg-data-grid-state-color: var(--elg-data-grid-sel-color);
 
 }
 
 .elg-data-grid-cell.elg-active-cell {
-    --elg-grid-state-color: transparent !important;
+    --elg-data-grid-state-color: transparent !important;
 }
 
 .elg-data-grid-cell.elg-selected-row-header {
@@ -137,7 +187,7 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
 
 .elg-data-grid-row-filter .elg-data-grid-cell {
     padding: 2px 4px;
-    background-color: var(--elg-grid-cell-bg);
+    background-color: var(--elg-data-grid-cell-bg);
 }
 
 .elg-data-grid-filter-input {
@@ -203,18 +253,20 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
 
 .elg-data-grid-header {
     display: flex;
+    height: var(--elg-data-grid-group-panel-height);
+    min-height: var(--elg-data-grid-group-panel-height);
     padding: 6px;
     align-items: center;
+    box-sizing: border-box;
     overflow-x: hidden;
 }
 
 .elg-data-grid-header .elg-data-grid-cell {
     display: inline-flex;
     align-items: center;
-    border: 1px solid var(--elg-grid-header-border);
+    border: 1px solid var(--elg-data-grid-header-border);
     border-radius: 6px;
     padding: 1px 6px;
-    height: auto;
     background-color: var(--elg-surface-color-2);
     cursor: pointer;
     flex: none;
@@ -240,7 +292,7 @@ thead .elg-data-grid-cell:hover,
     max-width: min(320px, calc(100vw - 24px));
     min-width: 0;
     padding: 1px 6px;
-    border: 1px solid var(--elg-grid-header-border);
+    border: 1px solid var(--elg-data-grid-header-border);
     border-radius: 6px;
     background-color: var(--elg-surface-color-2);
     color: var(--elg-text-color);
@@ -265,65 +317,65 @@ thead .elg-data-grid-row-header .elg-data-grid-cell-data {
 
 /* Single side */
 .elg-selected-cell-t {
-    box-shadow: inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-b {
-    box-shadow: inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-l {
-    box-shadow: inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-r {
-    box-shadow: inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 /* Two adjacent sides (corners) */
 .elg-selected-cell-t.elg-selected-cell-l {
-    box-shadow: inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color), inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color), inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-t.elg-selected-cell-r {
-    box-shadow: inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color), inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-b.elg-selected-cell-l {
-    box-shadow: inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color), inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color), inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-b.elg-selected-cell-r {
-    box-shadow: inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color), inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 /* Two opposite sides (single row / single column) */
 .elg-selected-cell-t.elg-selected-cell-b {
-    box-shadow: inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color), inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color), inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-l.elg-selected-cell-r {
-    box-shadow: inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color), inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 /* Three sides (end cell of a single row / single column) */
 .elg-selected-cell-t.elg-selected-cell-b.elg-selected-cell-l {
-    box-shadow: inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color), inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color), inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color), inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color), inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-t.elg-selected-cell-b.elg-selected-cell-r {
-    box-shadow: inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color), inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color), inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color), inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-l.elg-selected-cell-r.elg-selected-cell-t {
-    box-shadow: inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color), inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color), inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color), inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color);
 }
 
 .elg-selected-cell-l.elg-selected-cell-r.elg-selected-cell-b {
-    box-shadow: inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color), inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color), inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color), inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color);
 }
 
 /* All four sides (single cell) */
 .elg-selected-cell-t.elg-selected-cell-b.elg-selected-cell-l.elg-selected-cell-r {
-    box-shadow: inset 0 var(--elg-grid-sel-width) 0 0 var(--elg-grid-sel-color), inset 0 calc(-1 * var(--elg-grid-sel-width)) 0 0 var(--elg-grid-sel-color), inset var(--elg-grid-sel-width) 0 0 0 var(--elg-grid-sel-color), inset calc(-1 * var(--elg-grid-sel-width)) 0 0 0 var(--elg-grid-sel-color);
+    box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color), inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color), inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color);
 }

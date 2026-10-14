@@ -121,10 +121,36 @@ describe("Value editors", () => {
         expect(editor.value).toBe(12);
         expect(editor.error).toBeTruthy();
         expect(editor.dom.querySelector("input")!.getAttribute("aria-invalid")).toBe("true");
+        const errorAdornment = editor.dom.querySelector(".elg-input-error-adornment") as HTMLElement;
+        expect(errorAdornment.classList.contains("elg-position-absolute")).toBe(true);
+        expect(errorAdornment.style.left).toBe("0.25rem");
+        expect(errorAdornment.querySelector("i")?.classList.contains("elg")).toBe(false);
         expect(save).not.toHaveBeenCalled();
         expect(editor.cancel()).toBe(true);
         expect(editor.text).toBe("12");
         expect(editor.error).toBeUndefined();
+    });
+
+    it("keeps the checkbox clickable when its validation icon is visible", async () => {
+        const editor = new CheckboxEditor({ value: true, validate: value => value ? undefined : "Approval is required." });
+        const checkbox = editor.dom.querySelector<HTMLInputElement>("input[type=checkbox]")!;
+        checkbox.checked = false;
+        checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+        await editor.commit();
+        expect(editor.error).toBe("Approval is required.");
+        expect(checkbox.checked).toBe(false);
+        expect(editor.dom.querySelector(".elg-input-error-adornment")?.previousElementSibling).toBeNull();
+        checkbox.click();
+        expect(checkbox.checked).toBe(true);
+    });
+
+    it("shows validation feedback beside a toggle without covering it", async () => {
+        const editor = new ToggleEditor({ value: true, validate: value => value ? undefined : "Publishing is required." });
+        const toggle = editor.dom.querySelector<HTMLButtonElement>("button")!;
+        toggle.click();
+        await editor.commit();
+        expect(editor.error).toBe("Publishing is required.");
+        expect(editor.dom.querySelector(".elg-input-error-adornment")?.nextElementSibling).toBe(toggle);
     });
 
     it.each([["", null], [".5", .5], ["-2.5e2", -250]])("parses %s as %s", async (text, value) => {
@@ -132,6 +158,33 @@ describe("Value editors", () => {
         type(editor, text as string);
         expect(await editor.commit()).toBe(true);
         expect(editor.value).toBe(value);
+    });
+
+    it("steps the numeric draft with arrows without committing or bubbling", async () => {
+        const save = vi.fn();
+        const editor = new NumberEditor({ value: 10, step: 0.5, onCommit: save });
+        const input = editor.dom.querySelector<HTMLInputElement>("input")!;
+        const up = new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true, cancelable: true });
+        input.dispatchEvent(up);
+        await vi.waitFor(() => expect(input.value).toBe("10.5"));
+        expect(up.defaultPrevented).toBe(true);
+        expect(editor.value).toBe(10);
+        expect(editor.text).toBe("10.5");
+        expect(save).not.toHaveBeenCalled();
+
+        const down = new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true });
+        input.dispatchEvent(down);
+        await vi.waitFor(() => expect(input.value).toBe("10"));
+        expect(down.defaultPrevented).toBe(true);
+    });
+
+    it("clamps arrow stepping to min and max", async () => {
+        const editor = new NumberEditor({ value: 5, step: 2, min: 0, max: 6 });
+        const input = editor.dom.querySelector<HTMLInputElement>("input")!;
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+        await vi.waitFor(() => expect(input.value).toBe("6"));
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+        await vi.waitFor(() => expect(input.value).toBe("6"));
     });
 
     it("shares concurrent confirmation and locks editing until acceptance completes", async () => {
@@ -243,6 +296,20 @@ describe("Value editors", () => {
         expect(save).toHaveBeenCalledWith(true, editor);
         expect(editor.modified).toBe(false);
         editor.dispose();
+    });
+
+    it("toggles a checkbox when its label is clicked", async () => {
+        const editor = new CheckboxEditor({ value: false, label: "Active" });
+        const label = editor.dom.querySelector("label")!;
+        label.querySelector("span")!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await vi.waitFor(() => expect(editor.confirmedValue).toBe(true));
+    });
+
+    it("does not toggle a switch from its label unless explicitly enabled", async () => {
+        const editor = new ToggleEditor({ value: false, label: "Active" });
+        expect(editor.dom.querySelector("label")).toBeNull();
+        const enabled = new ToggleEditor({ value: false, label: "Active", labelClickable: true });
+        expect(enabled.dom.querySelector("label")).not.toBeNull();
     });
 
     it("retains failed switch values and restores checked state on cancel", async () => {

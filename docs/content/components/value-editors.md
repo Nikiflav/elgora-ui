@@ -1,139 +1,93 @@
 ---
 id: value-editors
-title: Value editors
+title: Overview
 group: components
+parent: editors
 path: /components/value-editors
 order: 45
-description: Independent text, number, checkbox and toggle editors with asynchronous confirmation.
+description: Explore value editors and their shared validation and asynchronous acceptance lifecycle.
 ---
 
 # Value editors
 
-Editors work with values, not rows or data sources. Use the same controls in a
-form, dialog or grid. The external `onCommit` callback decides what acceptance
-means: updating a local model, applying a business operation or saving remotely.
+Editors work with values, not rows or data sources. Use them in forms, dialogs
+or grids. The external `onCommit` callback decides whether acceptance updates
+a local model, applies a business operation or saves remotely.
 
 ## Try the editors
 
-Edit the customer or quantity and press Enter or leave the input. Checkbox and
-toggle changes confirm immediately. Each callback below simulates a short
-asynchronous operation. Quantity must be positive; an invalid edit stays visible
-until corrected or cancelled with Escape.
+This small order form demonstrates all six editors without a code editor.
+Change a field to see its accepted value below. Quantity must be positive;
+callbacks simulate asynchronous acceptance. Enter confirms text, Escape restores
+the accepted value, and checkbox/toggle changes confirm immediately.
 
-<live-demo id="value-editors" height="330px"></live-demo>
+<live-demo id="value-editors" mode="preview" height="500px"></live-demo>
 
-## Text and typed values
+## Choose an editor
 
-```ts
-const quantity = new NumberEditor({
-    value: 2,
-    label: "Quantity",
-    validate: value => value === null || value <= 0
-        ? "Quantity must be positive." : undefined,
-    onCommit: async value => { await updateQuantity(value); }
-});
-quantity.mount(container);
-```
+- [Text](?!=/components/value-editors/text): strings and custom text conversion.
+- [Number](?!=/components/value-editors/number): nullable numeric input and validation.
+- [Checkbox](?!=/components/value-editors/checkbox): native boolean control.
+- [Toggle](?!=/components/value-editors/toggle): compact switch control.
+- [Lookup](?!=/components/lookup-editor): search and select an item from a virtualized list.
+- [Date](?!=/components/date-editor): formatted date-only input and Calendar picker.
 
-`TextEditor.text` is the raw input. Typing does not immediately change its typed
-`value`: parsing happens during `commit()`. `confirmedValue` changes only after
-validation and the callback succeed. `modified` includes unparsed text changes.
-`NumberEditor` accepts decimal dot or comma, maps empty text to `null`, and rejects
-malformed or non-finite numbers. Supply `parse` and `format` for custom conversion;
-`TextEditor<T>` requires `parse` or `resolveText` when its initial value is not a string.
+Each sub-topic contains an editable demo, configuration examples, keyboard
+behavior and links to its API reference. [Calendar](?!=/components/calendar)
+remains a standalone component and can be used without DateEditor.
+
+## Shared contract
 
 ```ts
-const reference = new TextEditor({
+const editor = new TextEditor({
     value: "SO-1042",
-    commitOnBlur: false,
-    onCommit: value => { form.reference = value; }
+    label: "Order reference",
+    validate: value => value.trim() ? undefined : "Reference is required.",
+    onCommit: async value => { await updateReference(value); }
 });
-if (await reference.commit()) closeDialog();
+editor.mount(container);
 ```
 
-Enter confirms; Escape restores the last accepted value. Arrow keys remain native
-input operations, and Enter during IME composition does not confirm. Disable blur
-confirmation when the containing form controls when fields are accepted.
+Typing changes a draft; `confirmedValue` changes only after parsing, validation
+and `onCommit` succeed. `modified` includes unparsed text changes.
+`commit()` returns `Promise<boolean>`; a failure retains the draft and exposes
+`error`. Correct it or retry. `cancel()` restores the last accepted value.
+`setValue()` silently loads an external value as a new baseline.
 
-## Editors without text
+`validate` and `onCommit` can be asynchronous. While either runs, `busy` is true
+and the control is unavailable. Concurrent commits share one operation;
+`cancel()` returns false while busy, and `setValue()` throws. An unchanged value
+does not call `onCommit`. Invalid fields have a danger-colored border.
 
-```ts
-const active = new CheckboxEditor({
-    value: true, label: "Active",
-    onCommit: value => { form.active = value; }
-});
-const priority = new ToggleEditor({
-    value: false, label: "Priority",
-    onCommit: async value => { await updatePriority(value); }
-});
-```
+`input`, `committed` and `cancelled` are synchronous notification events.
+Use `onCommit` for work that must be awaited. Values are retained by reference;
+equality defaults to `Object.is`, or supply `equals`. Editors do not undo external
+side effects: callbacks must manage their own recovery or transaction.
 
-These controls produce boolean values directly. They share validation, confirmation,
-error handling and cancellation with text editors; they do not parse text.
-`ToggleEditor` renders a compact switch with a sliding thumb and thematic colors.
-It uses `role="switch"` and `aria-checked`, supports native Space/Enter activation,
-and disables animation when reduced motion is requested. Place a visible label
-outside the track; the `label` option supplies its accessible name.
+## Keyboard and popup behavior
 
-## Asynchronous confirmation and errors
+Text and number editors accept Enter or leaving the field by default; use
+`commitOnBlur: false` when the form controls confirmation. Escape cancels.
+IME Enter does not confirm. Native text-navigation keys remain available.
 
-`commit()` returns `Promise<boolean>`. While parsing, validating or awaiting
-`onCommit`, `busy` is true and the native control is disabled. Concurrent calls
-share the same operation. `cancel()` returns false while busy, and `setValue()`
-throws to prevent an external refresh from overwriting an outstanding edit.
+Popup trigger buttons do not add a Tab stop. Alt+Down opens a picker.
+`openOnFocus` defaults to false. When enabled, DateEditor focuses Calendar;
+LookupEditor retains input focus for searching. Escape returns to text editing
+without reopening Calendar. See each editor's topic for picker navigation.
 
-A validation message or rejected callback makes confirmation return false, keeps
-the draft and exposes `error`. Correct the draft or call `commit()` to retry.
-`cancel()` restores the latest accepted value. An unchanged value does not invoke
-`onCommit`. `setValue()` loads an external value silently as a new baseline.
+## Resolve external text
 
-The `input`, `committed` and `cancelled` observable events report input and lifecycle
-notifications. Use `onCommit` for work that must be awaited; event subscribers are
-synchronous notifications, not part of the save operation.
+Every editor exposes `resolveText(text): T | Promise<T>` for clipboard/import
+conversion without editing, validation, saving or events. Failed conversion
+throws or rejects. The host separately validates and applies the result.
 
-Values are retained by reference, without cloning. Equality defaults to `Object.is`;
-provide `equals` for another comparison. Editors do not roll back external side
-effects: a failing callback must manage its own transaction or recovery.
-
-## Resolving external text
-
-Every editor provides `resolveText(text): T | Promise<T>`. Use it to convert external
-text, such as a pasted grid cell, without editing the control or saving a value.
-It throws or rejects when conversion fails. Resolution does not invoke validation,
-callbacks or events, and does not change the draft, confirmation baseline, error
-or busy state. The host must separately validate and apply the returned value.
-
-```ts
-const amount = await numberEditor.resolveText("12,5"); // 12.5
-const enabled = await checkboxEditor.resolveText("yes"); // true
-// Conversion only: neither editor nor any data source has been updated.
-```
-
-Text editors return unchanged text by default. Number editors use their configured
-numeric parser, including empty text resolving to `null`. Checkbox and toggle
-editors accept `true`/`false`, `yes`/`no` and `1`/`0`, ignoring case and surrounding
-whitespace. They reject empty or unsupported text rather than silently returning false.
-
-Supply the shared `resolveText` option for custom conversion, including asynchronous
-lookup or localized boolean text. For text editors it takes precedence over `parse`,
-and both interactive commit and external text resolution use the same function.
-
-```ts
-const active = new CheckboxEditor({
-    value: false,
-    resolveText: text => {
-        if (text.trim() === "да") return true;
-        if (text.trim() === "не") return false;
-        throw new Error("Failed to resolve boolean text. Use да or не.");
-    }
-});
-```
+Text editors use `resolveText`, then `parse`, then their default conversion.
+Number editors support decimal dot/comma; boolean editors accept true/false,
+yes/no and 1/0. Lookup requires a unique match; Date uses its configured pattern.
 
 ## API reference
 
-For asynchronous value selection, see the [Lookup editor](?!=/components/lookup-editor)
-with a resizable multi-column result grid.
-
-[ValueEditor](?!=/api-reference/ValueEditor), [TextEditor](?!=/api-reference/TextEditor),
-[NumberEditor](?!=/api-reference/NumberEditor), [CheckboxEditor](?!=/api-reference/CheckboxEditor),
-[ToggleEditor](?!=/api-reference/ToggleEditor).
+[ValueEditor](?!=/api-reference/ValueEditor),
+[ValueEditorOptions](?!=/api-reference/ValueEditorOptions),
+[TextEditorOptions](?!=/api-reference/TextEditorOptions),
+[PopoverEditorOptions](?!=/api-reference/PopoverEditorOptions).

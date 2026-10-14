@@ -50,6 +50,174 @@ afterEach(async () => {
 });
 
 describe("LookupEditor", () => {
+    it("opens on focus without moving search focus, and Escape does not reopen results", async () => {
+        const editor = create({ openOnFocus: true });
+        const input = editor.dom.querySelector("input")!;
+        input.focus();
+        expect(input.getAttribute("aria-expanded")).toBe("true");
+        expect(document.activeElement).toBe(input);
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        expect(input.getAttribute("aria-expanded")).toBe("false");
+        expect(document.activeElement).toBe(input);
+    });
+    it("keeps the popup open for input and trigger pointerdown, and closes outside", () => {
+        const editor = create({ openOnFocus: true });
+        const input = editor.dom.querySelector("input")!;
+        const trigger = editor.dom.querySelector("button[aria-label='Open lookup']")!;
+        const outside = document.createElement("button");
+        document.body.append(outside);
+
+        editor.open();
+        input.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        expect(editor.dom.querySelector("[popover]")!.hasAttribute("data-test-open")).toBe(true);
+        trigger.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        expect(editor.dom.querySelector("[popover]")!.hasAttribute("data-test-open")).toBe(true);
+
+        outside.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        expect(editor.dom.querySelector("[popover]")!.hasAttribute("data-test-open")).toBe(false);
+        outside.remove();
+    });
+    it("does not reopen on focus caused by selecting a result", async () => {
+        const editor = create({ openOnFocus: true });
+        const input = editor.dom.querySelector("input")!;
+        input.focus();
+        await vi.waitFor(() => expect(editor.dom.querySelector(".elg-data-grid-row-data")).not.toBeNull());
+        const row = editor.dom.querySelector<HTMLElement>(".elg-data-grid-row-data")!;
+        const cell = row.querySelector<HTMLElement>(".elg-data-grid-cell")!;
+        cell.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true }));
+        cell.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await vi.waitFor(() => expect(input.getAttribute("aria-expanded")).toBe("false"));
+        expect(document.activeElement).toBe(input);
+    });
+    it("does not open on focus by default or when read-only", () => {
+        const editor = create(); editor.dom.querySelector("input")!.focus();
+        expect(editor.dom.querySelector("[popover]")).toBeNull();
+        const readOnly = create({ openOnFocus: true, readOnly: true });
+        readOnly.dom.querySelector("input")!.focus();
+        expect(readOnly.dom.querySelector("[popover]")).toBeNull();
+    });
+    it.each([120, 360])("matches a %ipx input with a 200px minimum and remeasures on reopening", width => {
+        const editor = create({ resizable: false });
+        const input = editor.dom.querySelector("input")!;
+        const rect = vi.spyOn(input, "getBoundingClientRect").mockReturnValue({ width } as DOMRect);
+        editor.open();
+        const popup = editor.dom.querySelector<HTMLElement>("[popover]")!;
+        expect(popup.style.width).toBe(`${Math.max(200, width)}px`);
+        expect(popup.style.boxSizing).toBe("border-box");
+        editor.close();
+        rect.mockReturnValue({ width: 500 } as DOMRect);
+        editor.open();
+        expect(popup.style.width).toBe("500px");
+    });
+    it("lets a narrow viewport take precedence over the automatic minimum", () => {
+        vi.spyOn(window, "innerWidth", "get").mockReturnValue(180);
+        const editor = create();
+        vi.spyOn(editor.dom.querySelector("input")!, "getBoundingClientRect").mockReturnValue({ width: 600 } as DOMRect);
+        editor.open();
+        expect(editor.dom.querySelector<HTMLElement>("[popover]")!.style.width).toBe("172px");
+    });
+    it("uses explicit popupWidth instead of the input width", () => {
+        const editor = create({ popupWidth: 280 });
+        vi.spyOn(editor.dom.querySelector("input")!, "getBoundingClientRect").mockReturnValue({ width: 600 } as DOMRect);
+        editor.open();
+        expect(editor.dom.querySelector<HTMLElement>("[popover]")!.style.width).toBe("280px");
+    });
+    it("removes row separators for a single-column result list", () => {
+        const singleColumn = create();
+        singleColumn.open();
+        const singleGrid = singleColumn.dom.querySelector<HTMLElement>(".elg-data-grid")!;
+        expect(singleGrid.classList.contains("elg-data-grid-no-border")).toBe(true);
+        expect(singleGrid.classList.contains("elg-data-grid-no-cell-borders")).toBe(true);
+        expect(singleGrid.classList.contains("elg-data-grid-no-selection")).toBe(false);
+        expect(singleGrid.classList.contains("elg-data-grid-cursor-default")).toBe(true);
+        expect(singleGrid.classList.contains("elg-data-grid-hover-row")).toBe(true);
+        expect(singleGrid.classList.contains("elg-lookup-grid-single-column")).toBe(true);
+
+        const multiColumn = create({ columns: [{ name: "name" }, { name: "id" }] });
+        multiColumn.open();
+        const multiGrid = multiColumn.dom.querySelector<HTMLElement>(".elg-data-grid")!;
+        expect(multiGrid.classList.contains("elg-data-grid-no-cell-borders")).toBe(false);
+        expect(multiGrid.classList.contains("elg-lookup-grid-single-column")).toBe(false);
+    });
+    it("retains a manually resized automatic popup even when the input changes width", () => {
+        const editor = create();
+        const rect = vi.spyOn(editor.dom.querySelector("input")!, "getBoundingClientRect").mockReturnValue({ width: 360 } as DOMRect);
+        editor.open();
+        const popup = editor.dom.querySelector<HTMLElement>("[popover]")!;
+        vi.spyOn(popup, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 360, height: 300 } as DOMRect);
+        vi.spyOn(document.documentElement, "clientWidth", "get").mockReturnValue(1000);
+        vi.spyOn(document.documentElement, "clientHeight", "get").mockReturnValue(800);
+        const grip = popup.querySelector<HTMLElement>(".elg-resize-handle")!;
+        grip.setPointerCapture = vi.fn();
+        grip.hasPointerCapture = () => false;
+        const pointer = (type: string, x: number) => {
+            const event = new MouseEvent(type, { clientX: x, clientY: 300, button: 0, bubbles: true, cancelable: true });
+            Object.defineProperty(event, "pointerId", { value: 1 });
+            grip.dispatchEvent(event);
+        };
+        pointer("pointerdown", 360); pointer("pointermove", 520); pointer("pointerup", 520);
+        expect(popup.style.width).toBe("520px");
+        editor.close(); rect.mockReturnValue({ width: 700 } as DOMRect); editor.open();
+        expect(popup.style.width).toBe("520px");
+    });
+    it("insets a keyed trigger without a Tab stop and keeps input focus on pointer opening", async () => {
+        const editor = create();
+        const input = editor.dom.querySelector("input")!;
+        const trigger = editor.dom.querySelector<HTMLButtonElement>("button[aria-label='Open lookup']")!;
+        expect(trigger.tabIndex).toBe(-1);
+        expect(input.style.paddingRight).toBe("2rem");
+        expect(input.parentElement!.contains(trigger)).toBe(true);
+        const down = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
+        trigger.dispatchEvent(down);
+        expect(down.defaultPrevented).toBe(true);
+        trigger.click();
+        expect(document.activeElement).toBe(input);
+        expect(input.getAttribute("aria-expanded")).toBe("true");
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        expect(editor.dom.querySelector("button[aria-label='Open lookup']")).toBe(trigger);
+        expect(trigger.parentElement!.classList.contains("elg-position-absolute")).toBe(true);
+        expect(trigger.parentElement!.style.top).toBe("50%");
+        expect(trigger.parentElement!.parentElement).toBe(input.parentElement);
+        trigger.click();
+        expect(input.getAttribute("aria-expanded")).toBe("false");
+    });
+    it("Alt+Down opens without selecting or saving; Left/Right remain native caret keys", async () => {
+        const onCommit = vi.fn();
+        const editor = create({ onCommit });
+        const input = editor.dom.querySelector("input")!;
+        input.focus();
+        const key = new KeyboardEvent("keydown", { key: "ArrowDown", altKey: true, cancelable: true });
+        input.dispatchEvent(key);
+        expect(key.defaultPrevented).toBe(true);
+        expect(input.getAttribute("aria-expanded")).toBe("true");
+        await vi.waitFor(() => expect(editor.dom.querySelector("[role='status']")!.textContent).toBe("3 matches"));
+        const arrow = new KeyboardEvent("keydown", { key: "ArrowLeft", cancelable: true });
+        input.dispatchEvent(arrow);
+        expect(arrow.defaultPrevented).toBe(false);
+        expect(editor.dom.querySelector(".elg-data-grid-selected")).toBeNull();
+        expect(document.activeElement).toBe(input);
+        expect(onCommit).not.toHaveBeenCalled();
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+        expect(input.getAttribute("aria-expanded")).toBe("false");
+    });
+    it("shows the active lookup row when navigating with the arrow keys", async () => {
+        const editor = create({ openOnFocus: true });
+        const input = editor.dom.querySelector("input")!;
+        input.focus();
+        await vi.waitFor(() => expect(editor.dom.querySelector("[role='status']")!.textContent).toBe("3 matches"));
+        await vi.waitFor(() => expect(editor.dom.querySelector(".elg-data-grid-row-data")).not.toBeNull());
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }));
+        await vi.waitFor(() => expect((editor as any).grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 0 }));
+        expect((editor as any).grid.dom.classList.contains("elg-data-grid-no-selection")).toBe(false);
+    });
+    it.each(["readOnly", "disabled"] as const)("disables the inset trigger for %s", key => {
+        const editor = create({ [key]: true });
+        const trigger = editor.dom.querySelector<HTMLButtonElement>("button[aria-label='Open lookup']")!;
+        expect(trigger.disabled).toBe(true);
+        trigger.click();
+        expect(editor.dom.querySelector("[popover]")).toBeNull();
+    });
     it("loads display text independently and resolves external text without editing", async () => {
         const save = vi.fn();
         const editor = create({ onCommit: save });
@@ -88,22 +256,24 @@ describe("LookupEditor", () => {
     });
     it("Enter resolves a unique typed match and awaits external acceptance", async () => {
         const save = vi.fn();
-        const editor = create({ onCommit: save });
+        const editor = create({ onCommit: save, openOnFocus: true });
         const input = type(editor, "Contoso");
         input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
         await vi.waitFor(() => expect(editor.confirmedValue).toBe(2));
         expect(editor.text).toBe("Contoso");
         expect(save).toHaveBeenCalledWith(2, editor);
         expect(input.getAttribute("aria-expanded")).toBe("false");
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(input.getAttribute("aria-expanded")).toBe("false");
     });
-    it("keeps failed confirmation text and popup for correction", async () => {
+    it("keeps failed confirmation text and error while closing the results popup", async () => {
         const editor = create({ onCommit: async () => { throw new Error("Save failed"); } });
         type(editor, "Contoso");
         expect(await editor.commit()).toBe(false);
         expect(editor.error).toBe("Save failed");
         expect(editor.text).toBe("Contoso");
         expect(editor.confirmedValue).toBe(1);
-        expect(editor.dom.querySelector("input")!.getAttribute("aria-expanded")).toBe("true");
+        expect(editor.dom.querySelector("input")!.getAttribute("aria-expanded")).toBe("false");
         editor.cancel();
         await vi.waitFor(() => expect(editor.text).toBe("Northwind"));
     });
@@ -134,7 +304,7 @@ describe("LookupEditor", () => {
         expect(queries.find(query => query.search === "Old")!.abortSignal!.aborted).toBe(true);
     });
     it("retains popup dimensions on reopening and optionally omits the resize grip", async () => {
-        const editor = create({ resizable: false });
+        const editor = create({ resizable: false, popupWidth: 440 });
         editor.open();
         const popup = editor.dom.querySelector<HTMLElement>("[popover]")!;
         expect(popup.querySelector(".elg-resize-handle")).toBeNull();

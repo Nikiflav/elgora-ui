@@ -80,6 +80,17 @@ describe("DataGrid data contracts", () => {
     expect(grid.dom.textContent).toContain("30");
   });
 
+  it("does not reserve group icon space in a flat grid", async () => {
+    const grid = new DataGrid<Row>({ data: rows, columns: [{ name: "name" }] });
+    grid.dom.style.height = "300px";
+    grid.mount(document.body);
+    await settle();
+
+    const firstCell = grid.dom.querySelector<HTMLTableCellElement>("tbody .elg-data-grid-cell-data");
+    expect(firstCell).not.toBeNull();
+    expect(firstCell!.querySelector(".ri-arrow-right-s-line, .ri-arrow-down-s-line")).toBeNull();
+  });
+
   it("requests totalSummary from a remote source and renders its returned value", async () => {
     const requests: QueryArgs[] = [];
     const source: DataSource<Row> = {

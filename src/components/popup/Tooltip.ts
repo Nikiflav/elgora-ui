@@ -28,6 +28,12 @@ export class Tooltip {
     private static showTimer?: number;
     private static hideTimer?: number;
     private static readonly id = "elg-tooltip";
+    private static readonly dismissOnPointerDown = (event: PointerEvent): void => {
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+        if (this.anchor?.contains(target) || this.popover?.dom.contains(target)) return;
+        this.hide();
+    };
 
     /** Shows tooltip content for an anchor, optionally after a delay. */
     static show(options: TooltipShowOptions): void {
@@ -61,15 +67,27 @@ export class Tooltip {
     static attach(anchor: HTMLElement, content: TooltipContent, options: Omit<TooltipShowOptions, "anchor" | "content"> = {}): () => void {
         const show = () => this.show({ ...options, anchor, content });
         const hide = () => this.hide(anchor);
-        anchor.addEventListener("pointerenter", show);
+        const pointerEnter = (event: PointerEvent) => {
+            // Touch and pen do not have a useful hover state. Their pointerup
+            // handler below provides the explicit tap interaction instead.
+            if (event.pointerType === "mouse" || event.pointerType === "") show();
+        };
+        const pointerUp = (event: PointerEvent) => {
+            if (event.pointerType === "mouse" || event.pointerType === "") return;
+            if (this.anchor === anchor && this.isOpen()) hide();
+            else show();
+        };
+        anchor.addEventListener("pointerenter", pointerEnter);
         anchor.addEventListener("focusin", show);
         anchor.addEventListener("pointerleave", hide);
         anchor.addEventListener("focusout", hide);
+        anchor.addEventListener("pointerup", pointerUp);
         return () => {
-            anchor.removeEventListener("pointerenter", show);
+            anchor.removeEventListener("pointerenter", pointerEnter);
             anchor.removeEventListener("focusin", show);
             anchor.removeEventListener("pointerleave", hide);
             anchor.removeEventListener("focusout", hide);
+            anchor.removeEventListener("pointerup", pointerUp);
             hide();
         };
     }
@@ -98,6 +116,7 @@ export class Tooltip {
         }
 
         options.anchor.setAttribute("aria-describedby", this.id);
+        document.addEventListener("pointerdown", this.dismissOnPointerDown, true);
         if (!this.popover.isOpen()) this.popover.show();
     }
 

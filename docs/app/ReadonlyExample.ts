@@ -20,9 +20,12 @@ export class ReadonlyExample extends Component {
         const status = e("div", { ui: ["elg", "text-muted", "fs-80"] }, "Loading preview…");
         const previewPanel = cdiv({ ui: ["elg"] }, preview);
         const sourcePanel = cdiv({ className: "docs-code-preview" });
-        if (demo.sourceHtml) sourcePanel.dom.innerHTML = demo.sourceHtml;
-        else sourcePanel.append(e("pre", { ui: ["elg", "m-0"] }, e("code", {}, demo.source)));
-        const shell = cdiv({ ui: ["elg", "d-flex", "flex-col", "gap-2"] }, previewPanel, sourcePanel, status);
+        if (demo.mode !== "preview") {
+            if (demo.sourceHtml) sourcePanel.dom.innerHTML = demo.sourceHtml;
+            else sourcePanel.append(e("pre", { ui: ["elg", "m-0"] }, e("code", {}, demo.source)));
+        }
+        const shell = cdiv({ ui: ["elg", "d-flex", "flex-col", "gap-2"] },
+            previewPanel, ...(demo.mode === "preview" ? [] : [sourcePanel]), status);
 
         super({ children: shell });
 

@@ -9,7 +9,7 @@ export default function demo(): void {
     const status = e("div", { ui: ["text-muted"], role: "status" }, "Selected customer ID: 1");
     const requests = e("div", { ui: ["text-muted"] });
     const editor = new LookupEditor<number, typeof customers[number]>({
-        value: 1, label: "Customer",
+        value: 1, label: "Customer", openOnFocus: true,
         columns: [{ name: "name", caption: "Customer", width: 240 }, { name: "country", caption: "Country", width: 150 }],
         loadItems: async ({ search, skip = 0, top = 50, abortSignal }) => {
             await new Promise<void>((resolve, reject) => {
