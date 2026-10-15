@@ -94,7 +94,7 @@
 }
 
 .elg-data-grid.elg-data-grid-hover-row .elg-data-grid-row-data:hover .elg-data-grid-cell {
-    background-color: color-mix(in srgb, var(--elg-primary-bg) 12%, var(--elg-data-grid-cell-bg));
+    background-color: var(--elg-hover-bg);
 }
 
 .elg-data-grid-row-loading .elg-data-grid-cell-data {
@@ -213,6 +213,7 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
 }
 
 .elg-data-grid-filter-clear {
+    color: var(--elg-text-muted);
     position: absolute;
     top: 50%;
     right: 3px;
@@ -241,6 +242,7 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
 }
 
 .elg-data-grid-filter-button {
+    color: inherit;
     width: 100%;
     padding: 3px 5px;
     border: 0;

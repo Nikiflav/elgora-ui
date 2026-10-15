@@ -11,6 +11,8 @@
    LIGHT THEME BASE TOKENS
 ========================================================= */
 :root {
+    color-scheme: light;
+    --elg-shadow-color: rgb(0 0 0 / 16%);
     /* core theme hue */
     --elg-theme-h: 250;
 
@@ -140,7 +142,10 @@
     --elg-border-strong-h: var(--elg-theme-h);
     --elg-border-strong-s: 12;
     --elg-border-strong-l: 68;
+}
 
+/* Resolve derived colors at each theme boundary, not only at the document root. */
+:root, [data-theme] {
     /* =============
         HSL
     ============= */
@@ -190,6 +195,7 @@
     --elg-selection-bg: hsl(var(--elg-selection-hsl));
     --elg-selection-text: hsl(var(--elg-selection-text-hsl));
     --elg-selection-border: hsl(var(--elg-selection-border-hsl));
+    --elg-hover-bg: color-mix(in srgb, var(--elg-primary-bg) 12%, var(--elg-bg-color));
 
     /* Semantic role colors */
     --elg-primary-bg: hsl(var(--elg-primary-hsl));
@@ -221,6 +227,8 @@
    DARK THEME OVERRIDES
 ========================================================= */
 [data-theme="dark"] {
+    color-scheme: dark;
+    --elg-shadow-color: rgb(0 0 0 / 40%);
     --elg-bg-s: 10;
     --elg-bg-l: 7;
 
@@ -234,7 +242,6 @@
     --elg-surface-3-l: 20;
 
     --elg-neutral-l: 24;
-    --elg-neutral-text: hsl(250 12% 94%);
 
     --elg-text-s: 12;
     --elg-text-l: 94;
@@ -251,6 +258,16 @@
 
     --elg-border-s: 9;
     --elg-border-l: 23;
+    --elg-border-strong-s: 9;
+    --elg-border-strong-l: 40;
+
+    --elg-neutral-text: var(--elg-text-color);
+
+    /* Foreground accents stay readable without lightening filled buttons. */
+    --elg-primary-color: hsl(var(--elg-primary-h) var(--elg-primary-s) max(var(--elg-primary-l), 75));
+    --elg-accent-color: hsl(var(--elg-accent-h) var(--elg-accent-s) max(var(--elg-accent-l), 72));
+    --elg-success-color: hsl(var(--elg-success-h) var(--elg-success-s) max(var(--elg-success-l), 65));
+    --elg-danger-color: hsl(var(--elg-danger-h) var(--elg-danger-s) max(var(--elg-danger-l), 72));
 
     --elg-selection-h: 220;
     --elg-selection-s: 70;

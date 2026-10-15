@@ -114,7 +114,7 @@ body {
 
 
 .elg-text-primary {
-    color: hsl(var(--elg-primary-hsl))
+    color: var(--elg-primary-color)
 }
 
 .elg-text-muted {
@@ -122,20 +122,20 @@ body {
 }
 
 .elg-text-neutral {
-    color: hsl(var(--elg-neutral-hsl))
+    color: var(--elg-neutral-text)
 }
 
 
 .elg-text-success {
-    color: hsl(var(--elg-success-hsl))
+    color: var(--elg-success-color)
 }
 
 .elg-text-warning {
-    color: hsl(var(--elg-warning-hsl))
+    color: var(--elg-warning-color)
 }
 
 .elg-text-danger {
-    color: hsl(var(--elg-danger-hsl))
+    color: var(--elg-danger-color)
 }
 
 /* =========================================================
@@ -228,6 +228,7 @@ body {
 }
 
 .elg:where(input, textarea, select) {
+  accent-color: var(--elg-primary-color);
   background-color: var(--elg-surface-color);
   border: 1px solid var(--elg-border-color);
 }
@@ -287,6 +288,16 @@ body {
   filter: saturate(0.35) brightness(.95);
 }
 
+.elg:where(input, textarea, select):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.elg-field::placeholder {
+  color: var(--elg-text-muted);
+  opacity: 1;
+}
+
 .elg-btn:active {
   filter: saturate(0.8) brightness(.95);
 }
@@ -300,7 +311,7 @@ body {
 }
 
 .elg-editor-trigger:hover:not(:disabled) {
-  color: hsl(var(--elg-primary-hsl));
+  color: var(--elg-primary-color);
 }
 
 .elg-switch {
@@ -376,11 +387,11 @@ body {
 .elg-box {
   border-radius: 6px;
   border: 1px solid var(--elg-border-color);
-  box-shadow: 0 3px 6px -1px rgb(0, 0, 0, 0.2);
+  box-shadow: 0 3px 6px -1px var(--elg-shadow-color);
 }
 
 .elg-shadow {
-  box-shadow: 0 3px 6px -1px rgb(0, 0, 0, 0.2);
+  box-shadow: 0 3px 6px -1px var(--elg-shadow-color);
 }
 
 .elg-table {

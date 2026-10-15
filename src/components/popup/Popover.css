@@ -1,10 +1,10 @@
-:root {
+:root, [data-theme] {
     --elg-popover-background: var(--elg-bg-color, #ffffff);
     --elg-popover-color: var(--elg-text-color, #1f2937);
     --elg-popover-border: var(--elg-border-color, #d1d5db);
-    --elg-popover-hover: var(--elg-surface-color-2, #f3f4f6);
+    --elg-popover-hover: var(--elg-hover-bg, #f3f4f6);
     --elg-popover-radius: 6px;
-    --elg-popover-shadow: 0 8px 24px rgb(0 0 0 / 16%);
+    --elg-popover-shadow: 0 8px 24px var(--elg-shadow-color, rgb(0 0 0 / 16%));
 }
 
 .elg-popover {

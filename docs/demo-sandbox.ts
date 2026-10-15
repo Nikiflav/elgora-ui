@@ -1,6 +1,12 @@
 /// <reference types="vite/client" />
 
 import * as Elgora from "../src/index";
+import { syncDemoTheme } from "./app/syncDemoTheme";
+
+if (window.parent !== window) {
+    const stopThemeSync = syncDemoTheme(window.parent.document, document);
+    window.addEventListener("pagehide", stopThemeSync, { once: true });
+}
 
 const demoModules = import.meta.glob(["./content/**/*.md.ts", "./content/**/*.md.*.ts"]);
 
