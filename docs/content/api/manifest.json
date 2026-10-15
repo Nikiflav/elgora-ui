@@ -497,6 +497,24 @@
       "module": "./content/api/DateFormatter.js"
     },
     {
+      "name": "DateTimeEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/DateTimeEditor",
+      "description": "Local date-time editor combining Calendar and TimePicker in one popover.",
+      "module": "./content/api/DateTimeEditor.js"
+    },
+    {
+      "name": "DateTimeEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/DateTimeEditorOptions",
+      "description": "",
+      "module": "./content/api/DateTimeEditorOptions.js"
+    },
+    {
       "name": "DisplayValue",
       "kind": "type",
       "group": "types",
@@ -718,7 +736,7 @@
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/LookupEditor",
-      "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape or outside dismissal restores the last accepted value and its text.",
+      "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape restores the last accepted value; closing results retains the current draft.",
       "module": "./content/api/LookupEditor.js"
     },
     {
@@ -857,6 +875,15 @@
       "module": "./content/api/PopoverCloseMode.js"
     },
     {
+      "name": "PopoverEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/PopoverEditor",
+      "description": "Text editor with a lazily created picker. Closing changes visibility only;\nparsing, validation and acceptance remain independent editor operations.\nSubclasses provide picker content, preparation and the initial focus target.",
+      "module": "./content/api/PopoverEditor.js"
+    },
+    {
       "name": "PopoverEditorOptions",
       "kind": "interface",
       "group": "types",
@@ -891,6 +918,15 @@
       "path": "/api-reference/PopoverPoint",
       "description": "A viewport point used to position a popup without an anchor element.",
       "module": "./content/api/PopoverPoint.js"
+    },
+    {
+      "name": "PopoverTextEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/PopoverTextEditorOptions",
+      "description": "Input, inset trigger and picker lifecycle shared by concrete popover editors.",
+      "module": "./content/api/PopoverTextEditorOptions.js"
     },
     {
       "name": "PopupMenu",
@@ -1134,6 +1170,51 @@
       "path": "/api-reference/Throttle",
       "description": "Simple time-based throttle with trailing execution.",
       "module": "./content/api/Throttle.js"
+    },
+    {
+      "name": "TimeEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TimeEditor",
+      "description": "Text time editor with an optional mouse/touch time picker.",
+      "module": "./content/api/TimeEditor.js"
+    },
+    {
+      "name": "TimeEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TimeEditorOptions",
+      "description": "",
+      "module": "./content/api/TimeEditorOptions.js"
+    },
+    {
+      "name": "TimeFormatter",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/TimeFormatter",
+      "description": "Formats and parses strict 24-hour time values without timezone conversion.",
+      "module": "./content/api/TimeFormatter.js"
+    },
+    {
+      "name": "TimePicker",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Time Picker",
+      "path": "/api-reference/TimePicker",
+      "description": "Compact button-based time picker for mouse and touch input.",
+      "module": "./content/api/TimePicker.js"
+    },
+    {
+      "name": "TimePickerOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Time Picker",
+      "path": "/api-reference/TimePickerOptions",
+      "description": "",
+      "module": "./content/api/TimePickerOptions.js"
     },
     {
       "name": "ToggleEditor",

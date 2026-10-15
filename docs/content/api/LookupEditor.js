@@ -2,7 +2,7 @@ export default {
   "name": "LookupEditor",
   "kind": "class",
   "type": "LookupEditor<TValue, TItem>",
-  "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape or outside dismissal restores the last accepted value and its text.",
+  "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape restores the last accepted value; closing results retains the current draft.",
   "tags": [],
   "topics": [],
   "group": "components",
@@ -59,65 +59,9 @@ export default {
       "signature": "(text: string) => Promise<TValue>"
     },
     {
-      "name": "open",
-      "type": "() => void",
-      "description": "Opens results lazily, retaining focus in the search input.",
-      "tags": [],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/LookupEditor.ts",
-      "parameters": [],
-      "returns": {
-        "type": "void",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "() => void"
-    },
-    {
-      "name": "close",
-      "type": "(preserveState?: boolean) => void",
-      "description": "Hides results; cancel() also restores the last accepted value and text.",
-      "tags": [],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/LookupEditor.ts",
-      "parameters": [
-        {
-          "name": "preserveState",
-          "type": "boolean",
-          "optional": true,
-          "defaultValue": "false",
-          "description": ""
-        }
-      ],
-      "returns": {
-        "type": "void",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "(preserveState?: boolean) => void"
-    },
-    {
-      "name": "cancel",
-      "type": "() => boolean",
-      "description": "Restores the accepted value, cancels pending searches and closes results.",
-      "tags": [],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/LookupEditor.ts",
-      "parameters": [],
-      "returns": {
-        "type": "boolean",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "() => boolean"
-    },
-    {
       "name": "commit",
       "type": "() => Promise<boolean>",
-      "description": "Closes the results after confirmation; failures remain on the editor for correction.",
+      "description": "Hides results immediately; asynchronous acceptance reports errors on the editor.",
       "tags": [],
       "topics": [],
       "optional": false,

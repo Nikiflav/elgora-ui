@@ -73,11 +73,11 @@ Up/Down focus a result row while keeping native focus in the input. The grid
 scrolls only when needed to reveal the row, without aligning each row at the top.
 Enter accepts
 that explicit row; without a focused row it resolves typed text. Clicking a result
-also accepts that item. Escape or outside dismissal restores the last accepted
-value and text. IME Enter does not confirm.
+also accepts that item. Escape restores the last accepted value and text.
+Outside dismissal closes the list while retaining the draft. IME Enter does not confirm.
 
 Validation and `onCommit` run before acceptance. While awaiting them the editor is
-busy. The results popup closes after confirmation even when acceptance fails. The
+busy. The results popup closes when confirmation starts, before asynchronous work finishes. The
 editor keeps the candidate and error available through the validation indicator for a later retry.
 The editor does not write to a data source itself.
 

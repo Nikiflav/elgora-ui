@@ -62,8 +62,9 @@ The button does not add a Tab stop: Tab reaches the input directly. Arrow keys i
 remain native caret operations. Opening the picker browses the typed date when
 valid, without saving it; invalid text still permits choosing a replacement.
 Calendar navigation does not change the editor value. Choosing a day or Today
-validates and confirms it, then closes only on success. During asynchronous
-acceptance, the input, trigger and picker are unavailable for another edit.
+updates the input and closes the picker immediately, then starts validation and
+confirmation. During asynchronous acceptance, the input and trigger are unavailable
+for another edit. A failure appears on the editor without reopening the picker.
 
 Escape in month/year choices first returns to days. Escape from the day view
 closes the picker, restores confirmed text and returns focus to the input.

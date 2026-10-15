@@ -1,0 +1,37 @@
+export default {
+  "name": "DateTimeEditor",
+  "kind": "class",
+  "type": "DateTimeEditor",
+  "description": "Local date-time editor combining Calendar and TimePicker in one popover.",
+  "tags": [],
+  "topics": [],
+  "group": "components",
+  "namespace": "Components.Editors",
+  "path": "/api-reference/DateTimeEditor",
+  "source": "src/components/editors/DateTimeEditor.ts",
+  "members": [
+    {
+      "name": "resolveText",
+      "type": "(text: string) => Promise<string | null>",
+      "description": "Resolves and validates a local canonical date-time.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/DateTimeEditor.ts",
+      "parameters": [
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<string | null>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(text: string) => Promise<string | null>"
+    }
+  ]
+};

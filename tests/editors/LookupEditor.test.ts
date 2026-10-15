@@ -331,14 +331,14 @@ describe("LookupEditor", () => {
         expect(editor.dom.querySelector("[role='status']")!.textContent).toBe("Failed to load lookup items.");
         expect(editor.dom.querySelector("input")!.getAttribute("aria-invalid")).toBe("true");
     });
-    it("restores the accepted text on native outside dismissal", async () => {
+    it("retains unconfirmed text on native outside dismissal", async () => {
         const editor = create();
         await vi.waitFor(() => expect(editor.text).toBe("Northwind"));
         type(editor, "Contoso");
         (editor.dom.querySelector("[popover]") as any).hidePopover();
-        expect(editor.text).toBe("Northwind");
+        expect(editor.text).toBe("Contoso");
         expect(editor.confirmedValue).toBe(1);
-        expect(editor.modified).toBe(false);
+        expect(editor.modified).toBe(true);
     });
     it("uses custom text resolution without opening a popup or invoking validation", async () => {
         const validate = vi.fn();

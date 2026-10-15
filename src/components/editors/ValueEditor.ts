@@ -266,7 +266,7 @@ export class TextEditor<T = string> extends ValueEditor<T> {
     constructor(options: TextEditorOptions<T>) {
         const { parse, format, commitOnBlur, ...baseOptions } = options;
         super(baseOptions);
-        if (typeof options.value !== "string" && !options.parse && !options.resolveText)
+        if (typeof options.value !== "string" && !options.parse && !options.resolveText && this.resolveText === TextEditor.prototype.resolveText)
             throw new Error("Failed to create text editor. Provide a parser for non-string values.");
         this.textOptions = options;
         this.installControl(e("input", { type: "text", ui: ["elg", "field"] }));
@@ -274,15 +274,22 @@ export class TextEditor<T = string> extends ValueEditor<T> {
         this.listen(this.control, "input", () => {
             if (!this.canEdit()) return;
             this.draftText = (this.control as HTMLInputElement).value;
-            this.notifyInput();
+            this.onTextInput();
         });
         this.listen(this.control, "blur", () => { if (options.commitOnBlur !== false) void this.commit(); });
         this.listen(this.control, "keydown", event => {
-            const key = event as KeyboardEvent;
-            if (key.isComposing) return;
-            if (key.key === "Enter") { key.preventDefault(); void this.commit(); }
-            if (key.key === "Escape") { key.preventDefault(); this.cancel(); }
+            this.onTextKeyDown(event as KeyboardEvent);
         });
+    }
+
+    /** Handles draft input; picker editors may additionally schedule a search. */
+    protected onTextInput(): void { this.notifyInput(); }
+
+    /** Handles text acceptance keys; subclasses may provide specialized navigation. */
+    protected onTextKeyDown(key: KeyboardEvent): void {
+        if (key.isComposing) return;
+        if (key.key === "Enter") { key.preventDefault(); void this.commit(); }
+        if (key.key === "Escape") { key.preventDefault(); this.cancel(); }
     }
 
     /** Current raw input, which may not yet be a valid typed value. */

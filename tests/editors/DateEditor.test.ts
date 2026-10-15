@@ -246,19 +246,20 @@ describe("DateEditor", () => {
         await frame();
         expect(editor.dom.querySelector("input")!.getAttribute("aria-expanded")).toBe("false");
     });
-    it("locks the picker during asynchronous acceptance and keeps failed edits for retry", async () => {
+    it("closes the picker before asynchronous acceptance and keeps failed edits for retry", async () => {
         let reject!: (error: Error) => void;
         const editor = create({ onCommit: () => new Promise((_, fail) => { reject = fail; }) });
         await editor.open(); await frame();
         editor.dom.querySelector<HTMLButtonElement>("button[data-date='2026-10-20']")!.click();
         await vi.waitFor(() => expect(editor.busy).toBe(true));
         await frame();
-        expect(editor.dom.querySelector("fieldset")!.disabled).toBe(true);
+        expect(editor.dom.querySelector("input")!.disabled).toBe(true);
+        expect(editor.isOpen).toBe(false);
         reject(new Error("Save failed"));
         await vi.waitFor(() => expect(editor.error).toBe("Save failed"));
         expect(editor.confirmedValue).toBe("2026-10-14");
         expect(editor.text).toBe("2026-10-20");
-        expect(editor.dom.querySelector("input")!.getAttribute("aria-expanded")).toBe("true");
+        expect(editor.dom.querySelector("input")!.getAttribute("aria-expanded")).toBe("false");
         editor.cancel();
         expect(editor.text).toBe("2026-10-14");
     });

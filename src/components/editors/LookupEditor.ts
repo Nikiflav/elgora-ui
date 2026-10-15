@@ -1,11 +1,11 @@
-import { ValueEditor, type ValueEditorOptions } from "./ValueEditor";
+import { PopoverEditor } from "./PopoverEditor";
+import { type ValueEditorOptions } from "./ValueEditor";
 import { DataGrid } from "../datagrid/DataGrid";
 import type { DataGridColumn } from "../datagrid/DataGridColumn";
 import type { DataSource, QueryArgs } from "../../data/DataSource";
 import { Popover } from "../popup/popover";
 import { ResizeHandle } from "../resize/ResizeHandle";
-import { e, v, setElementProps } from "../../core/e";
-import { createInputAdornment, inputAdornmentProps } from "./InputAdornment";
+import { e } from "../../core/e";
 import type { PopoverEditorOptions } from "./PopoverEditorOptions";
 import "./LookupEditor.css";
 
@@ -34,17 +34,11 @@ export interface LookupEditorOptions<TValue, TItem> extends ValueEditorOptions<T
 /**
  * Text-search value picker with a resizable, virtualized multi-column popup.
  * Searching does not change value; choosing a row explicitly confirms an item.
- * Escape or outside dismissal restores the last accepted value and its text.
+ * Escape restores the last accepted value; closing results retains the current draft.
  */
-export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
+export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
     private readonly lookup: LookupEditorOptions<TValue, TItem>;
-    private readonly auxiliary: HTMLElement;
-    private popup?: Popover;
-    private removeOutsidePointerDown?: () => void;
-    private suppressFocusOpen = false;
-    private focusOpenSuppressionTimer?: ReturnType<typeof setTimeout>;
     private popupResized = false;
-    private preserveStateOnClose = false;
     private grid?: DataGrid<TItem>;
     private status?: HTMLElement;
     private searchText = "";
@@ -65,70 +59,35 @@ export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
     constructor(options: LookupEditorOptions<TValue, TItem>) {
         const { columns, loadItems, getItemValue, getItemText, getValueText, pageSize,
             searchDelay, popupWidth, popupHeight, resizable, openOnFocus, ...base } = options;
-        super(base);
+        super({ ...base, openOnFocus, triggerIcon: "ri-arrow-down-s-line", triggerLabel: "Open lookup" });
         this.lookup = options;
-        this.installControl(e("input", { type: "text", role: "combobox", ui: ["elg", "field"],
-            ariaExpanded: "false", ariaHasPopup: "dialog", autocomplete: "off" }));
-        this.auxiliary = createInputAdornment(this.control as HTMLInputElement);
-        this.renderTasks.push(this.renderAuxiliary);
-        this.renderAuxiliary();
         this.displayValue();
-        this.listen(this.control, "focus", () => {
-            if (this.suppressFocusOpen) {
-                return;
-            }
-            if (this.lookup.openOnFocus) this.open();
-        });
-        // A real pointer interaction starts a new open request. This also
-        // prevents a delayed focus suppression from affecting the next click.
-        this.listen(this.control, "pointerdown", () => this.clearFocusOpenSuppression());
-        this.listen(this.control, "input", () => {
-            if (!this.canEdit()) return;
-            this.searchText = (this.control as HTMLInputElement).value;
-            this.searching = true;
-            this.chosen = undefined;
-            this.notifyInput();
-            if (this.popup?.isOpen()) this.scheduleSearch();
-            else this.open();
-        });
-        this.listen(this.control, "click", () => {
-            if (this.suppressFocusOpen) return;
-            this.open();
-        });
-        this.listen(this.control, "keydown", event => this.keyDown(event as KeyboardEvent));
         this.addCleanup(() => {
-            this.removeOutsidePointerDown?.();
-            this.removeOutsidePointerDown = undefined;
-            clearTimeout(this.focusOpenSuppressionTimer);
             clearTimeout(this.timer);
             this.labelVersion++;
             this.searchController?.abort();
-            this.popup?.dispose();
         });
     }
 
     /** Raw search/display text; typing does not change the typed value. */
     get text(): string { return this.searchText; }
     /** Includes unconfirmed search text as well as an explicit candidate value. */
-    override get modified(): boolean { return this.searching || super.modified; }
+    override get modified(): boolean { return this.searching || !this.same(this.draft, this.accepted); }
 
-    /** Updates native input state immediately and schedules the keyed inset trigger. */
-    protected override syncControl(): void {
-        super.syncControl();
-        if (this.auxiliary) this.render(this.renderAuxiliary);
+    /** Updates search text while retaining the accepted typed value. */
+    protected override onTextInput(): void {
+        this.searchText = (this.control as HTMLInputElement).value;
+        this.searching = true;
+        this.chosen = undefined;
+        this.notifyInput();
+        if (this.isOpen) this.scheduleSearch(); else void this.open();
     }
 
-    /** Patches the trigger without replacing the input or changing its caret/focus. */
-    private readonly renderAuxiliary = (): void => {
-        if (this.disposed.Value) return;
-        setElementProps(this.auxiliary, { ...inputAdornmentProps, vnodes: [v("button", {
-            key: "lookup-trigger", type: "button", tabIndex: -1,
-            ui: ["elg", "btn", "border-0", "p-0"], class: "elg-editor-trigger",
-            ariaLabel: "Open lookup", ariaExpanded: String(this.popup?.isOpen() ?? false), disabled: !this.canEdit(),
-            onmousedown: event => event.preventDefault(),
-            onclick: () => { if (this.popup?.isOpen()) this.close(); else { this.focus(); this.open(); } }
-        }, v("i", { class: "ri-arrow-down-s-line", ariaHidden: "true" }))] });
-    };
+    /** Lookup navigation owns Enter and arrow keys. */
+    protected override onTextKeyDown(event: KeyboardEvent): void { this.keyDown(event); }
+
+    /** Clicking a closed lookup search field explicitly opens its results. */
+    protected override get openOnInputClick(): boolean { return true; }
 
     /**
      * Resolves external text only when the complete result contains one match.
@@ -162,6 +121,7 @@ export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
 
     /** Displays accepted/loaded values and ignores stale asynchronous label responses. */
     protected displayValue(): void {
+        if (!this.lookup) return;
         const version = ++this.labelVersion;
         this.searching = false;
         this.chosen = undefined;
@@ -180,77 +140,31 @@ export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
         });
     }
 
-    /** Opens results lazily, retaining focus in the search input. */
-    open(): void {
-        if (!this.canEdit()) return;
-        if (!this.popup) this.createPopup();
-        if (this.popup!.isOpen()) return;
+    /** Sizes and loads results after showing, retaining focus in the search input. */
+    protected override focusPopup(): void {
+        this.restoreInputFocus();
         if (this.lookup.popupWidth === undefined && !this.popupResized) {
             const viewportWidth = this.control.ownerDocument.defaultView!.innerWidth;
-            const width = Math.min(Math.max(0, viewportWidth - 8), Math.max(200, this.control.getBoundingClientRect().width));
-            this.popup!.dom.style.width = `${width}px`;
+            this.popup!.dom.style.width = `${Math.min(Math.max(0, viewportWidth - 8), Math.max(200, this.control.getBoundingClientRect().width))}px`;
         }
-        this.popup!.show();
-        this.subscribeOutsidePointerDown();
-        this.control.setAttribute("aria-expanded", "true");
-        this.render(this.renderAuxiliary);
         this.refreshSearch();
     }
 
-    /** Hides results; cancel() also restores the last accepted value and text. */
-    close(preserveState = false): void {
+    /** Stops outstanding searches without discarding the draft or cancelling confirmation. */
+    protected override onPopupClosing(): void {
         clearTimeout(this.timer);
         this.navigationVersion++;
         this.searchController?.abort();
-        this.preserveStateOnClose = preserveState;
-        this.removeOutsidePointerDown?.();
-        this.removeOutsidePointerDown = undefined;
-        this.popup?.hide();
-        this.control.setAttribute("aria-expanded", "false");
-        this.render(this.renderAuxiliary);
     }
 
-    /** Closes the picker only when a pointer starts outside the editor and popup. */
-    private readonly outsidePointerDown = (event: PointerEvent): void => {
-        const target = event.target;
-        if (target instanceof Node && this.dom.contains(target)) return;
-        this.close();
-    };
-
-    /** Subscribes once for the current open session and removes the subscription on close. */
-    private subscribeOutsidePointerDown(): void {
-        if (this.removeOutsidePointerDown) return;
-        const ownerDocument = this.control.ownerDocument;
-        ownerDocument.addEventListener("pointerdown", this.outsidePointerDown, true);
-        this.removeOutsidePointerDown = () => ownerDocument.removeEventListener("pointerdown", this.outsidePointerDown, true);
-    }
-
-    /** Restores the accepted value, cancels pending searches and closes results. */
-    override cancel(): boolean {
-        if (!super.cancel()) return false;
-        clearTimeout(this.timer);
-        this.searchController?.abort();
-        this.closeAfterAction(false);
-        return true;
-    }
-
-    /** Closes the results after confirmation; failures remain on the editor for correction. */
+    /** Hides results immediately; asynchronous acceptance reports errors on the editor. */
     override async commit(): Promise<boolean> {
-        // The results list is no longer needed once confirmation starts. Close it
-        // before awaiting parsing, validation or an asynchronous onCommit callback.
-        if (!this.disposed.Value) this.closeAfterAction(true);
-        const accepted = await super.commit();
-        return accepted;
-    }
-
-    /** Closes the popup after a user action without reopening it on restored focus. */
-    private closeAfterAction(preserveState: boolean): void {
-        if (this.popup?.isOpen()) this.suppressNextFocusOpen();
-        this.close(preserveState);
+        this.close();
+        return super.commit();
     }
 
     /** Builds a read-only picker grid and a reusable resize grip inside the popover. */
-    private createPopup(): void {
+    protected override createPopup(): Popover {
         this.status = e("div", { ui: ["text-muted", "px-2", "py-1"], role: "status" });
         this.grid = new DataGrid<TItem>({ columns: this.lookup.columns, data: [], selectionMode: "single-row",
             showGroupPanel: false, showRowHeader: false, showColumnHeaders: this.lookup.columns.length > 1,
@@ -260,35 +174,22 @@ export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
             pageSize: this.lookup.pageSize ?? 50, columnWidthMode: "stretch-all" });
         this.grid.dom.classList.toggle("elg-lookup-grid-single-column", this.lookup.columns.length === 1);
         Object.assign(this.grid.dom.style, { flex: "1", minHeight: "0", width: "100%" });
-        this.popup = new Popover({ anchorElement: this.control, bindAnchorTarget: false, closeMode: "manual", role: "dialog",
+        const popup = new Popover({ anchorElement: this.control, bindAnchorTarget: false, closeMode: "manual", role: "dialog",
             ariaLabel: `${this.lookup.label ?? "Lookup"} results`,
             children: [this.grid, this.status] });
-        this.control.setAttribute("aria-controls", this.popup.dom.id);
-        Object.assign(this.popup.dom.style, { width: `${this.lookup.popupWidth ?? 200}px`, boxSizing: "border-box",
+        Object.assign(popup.dom.style, { width: `${this.lookup.popupWidth ?? 200}px`, boxSizing: "border-box",
             height: `${this.lookup.popupHeight ?? 300}px`, padding: "4px 4px 16px", overflow: "hidden" });
-        this.popup.dom.classList.add("elg-lookup-popup");
-        this.popup.mount(this.dom);
-        this.popup.addCleanup(this.grid);
-        if (this.lookup.resizable !== false) this.popup.addCleanup(new ResizeHandle({
-            target: this.popup.dom, minWidth: 200, minHeight: 140,
+        popup.dom.classList.add("elg-lookup-popup");
+        popup.addCleanup(this.grid);
+        if (this.lookup.resizable !== false) popup.addCleanup(new ResizeHandle({
+            target: popup.dom, minWidth: 200, minHeight: 140,
             onResize: () => { this.popupResized = true; }
         }));
-        this.listen(this.popup.dom, "toggle", () => {
-            this.render(this.renderAuxiliary);
-            if (!this.popup?.isOpen()) {
-                this.removeOutsidePointerDown?.();
-                this.removeOutsidePointerDown = undefined;
-                this.control.setAttribute("aria-expanded", "false");
-                if (!this.preserveStateOnClose && !this.busy && this.modified) this.cancel();
-                this.preserveStateOnClose = false;
-            }
-        });
         this.listen(this.grid.dom, "click", event => {
             if (!(event.target as Element).closest(".elg-data-grid-row-data")) return;
             const index = this.grid?.getActiveSelectionCell()?.rowIndex;
             const item = index === undefined ? undefined : this.items.get(index);
             if (item !== undefined) void this.choose(item);
-            else this.suppressFocusOpen = false;
         });
         // Grid pointer handling focuses its viewport; restore the search field
         // after the selection handlers without blocking them.
@@ -297,6 +198,7 @@ export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
                 if (!this.disposed.Value && !this.busy) this.focus();
             });
         });
+        return popup;
     }
 
     /** Invalidates old results immediately, then debounces the next search request. */
@@ -363,7 +265,6 @@ export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
     /** Chooses a concrete item, unlike row navigation or text searching. */
     private async choose(item: TItem): Promise<void> {
         if (!this.canEdit()) {
-            this.suppressFocusOpen = false;
             return;
         }
         const value = this.lookup.getItemValue(item);
@@ -375,22 +276,6 @@ export class LookupEditor<TValue, TItem> extends ValueEditor<TValue> {
         (this.control as HTMLInputElement).value = text;
         this.notifyInput();
         await this.commit();
-    }
-
-    /** Suppresses one focus-triggered open caused by closing the picker. */
-    private suppressNextFocusOpen(): void {
-        this.suppressFocusOpen = true;
-        clearTimeout(this.focusOpenSuppressionTimer);
-        this.focusOpenSuppressionTimer = setTimeout(() => {
-            this.clearFocusOpenSuppression();
-        }, 500);
-    }
-
-    /** Clears the temporary guard before a new explicit input interaction. */
-    private clearFocusOpenSuppression(): void {
-        this.suppressFocusOpen = false;
-        clearTimeout(this.focusOpenSuppressionTimer);
-        this.focusOpenSuppressionTimer = undefined;
     }
 
     /** Navigates result pages while keeping native keyboard focus in the input. */

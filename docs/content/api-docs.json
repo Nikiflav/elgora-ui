@@ -5778,70 +5778,6 @@
           },
           "kind": "method",
           "signature": "(value: string | null) => void"
-        },
-        {
-          "name": "open",
-          "type": "() => Promise<void>",
-          "description": "Opens and focuses Calendar. Invalid input still permits choosing a replacement.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/DateEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "Promise<void>",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => Promise<void>"
-        },
-        {
-          "name": "close",
-          "type": "() => void",
-          "description": "Hides Calendar without discarding the input. Escape uses cancel() instead.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/DateEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "void",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => void"
-        },
-        {
-          "name": "cancel",
-          "type": "() => boolean",
-          "description": "Restores the confirmed text/date and closes Calendar, unless commit is still busy.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/DateEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "boolean",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => boolean"
-        },
-        {
-          "name": "commit",
-          "type": "() => Promise<boolean>",
-          "description": "Confirms typed/picked dates and closes only after successful asynchronous acceptance.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/DateEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "Promise<boolean>",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => Promise<boolean>"
         }
       ]
     },
@@ -5991,6 +5927,117 @@
           },
           "kind": "method",
           "signature": "(text: string) => string"
+        }
+      ]
+    },
+    {
+      "name": "DateTimeEditor",
+      "kind": "class",
+      "type": "DateTimeEditor",
+      "description": "Local date-time editor combining Calendar and TimePicker in one popover.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/DateTimeEditor",
+      "source": "src/components/editors/DateTimeEditor.ts",
+      "members": [
+        {
+          "name": "resolveText",
+          "type": "(text: string) => Promise<string | null>",
+          "description": "Resolves and validates a local canonical date-time.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<string | null>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => Promise<string | null>"
+        }
+      ]
+    },
+    {
+      "name": "DateTimeEditorOptions",
+      "kind": "interface",
+      "type": "DateTimeEditorOptions",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/DateTimeEditorOptions",
+      "source": "src/components/editors/DateTimeEditor.ts",
+      "members": [
+        {
+          "name": "dateFormat",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "timeFormat",
+          "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "locale",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "firstDayOfWeek",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "minuteStep",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaultTime",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "kind": "property"
         }
       ]
     },
@@ -6763,7 +6810,7 @@
       "name": "LookupEditor",
       "kind": "class",
       "type": "LookupEditor<TValue, TItem>",
-      "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape or outside dismissal restores the last accepted value and its text.",
+      "description": "Text-search value picker with a resizable, virtualized multi-column popup.\nSearching does not change value; choosing a row explicitly confirms an item.\nEscape restores the last accepted value; closing results retains the current draft.",
       "tags": [],
       "topics": [],
       "group": "components",
@@ -6820,65 +6867,9 @@
           "signature": "(text: string) => Promise<TValue>"
         },
         {
-          "name": "open",
-          "type": "() => void",
-          "description": "Opens results lazily, retaining focus in the search input.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/LookupEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "void",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => void"
-        },
-        {
-          "name": "close",
-          "type": "(preserveState?: boolean) => void",
-          "description": "Hides results; cancel() also restores the last accepted value and text.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/LookupEditor.ts",
-          "parameters": [
-            {
-              "name": "preserveState",
-              "type": "boolean",
-              "optional": true,
-              "defaultValue": "false",
-              "description": ""
-            }
-          ],
-          "returns": {
-            "type": "void",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "(preserveState?: boolean) => void"
-        },
-        {
-          "name": "cancel",
-          "type": "() => boolean",
-          "description": "Restores the accepted value, cancels pending searches and closes results.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/LookupEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "boolean",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => boolean"
-        },
-        {
           "name": "commit",
           "type": "() => Promise<boolean>",
-          "description": "Closes the results after confirmation; failures remain on the editor for correction.",
+          "description": "Hides results immediately; asynchronous acceptance reports errors on the editor.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7893,6 +7884,106 @@
       "definition": "\"auto\" | \"manual\""
     },
     {
+      "name": "PopoverEditor",
+      "kind": "class",
+      "type": "PopoverEditor<T>",
+      "description": "Text editor with a lazily created picker. Closing changes visibility only;\nparsing, validation and acceptance remain independent editor operations.\nSubclasses provide picker content, preparation and the initial focus target.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "class ColorEditor extends PopoverEditor<string> {\n    protected createPopup(): Popover {\n        return new Popover({ anchorElement: this.control, bindAnchorTarget: false,\n            closeMode: \"manual\", children: e(\"button\", {\n                onclick: () => this.acceptPickerText(\"blue\")\n            }, \"Blue\") });\n    }\n}\nconst editor = new ColorEditor({ value: \"red\", triggerIcon: \"ri-palette-line\", triggerLabel: \"Choose color\" });"
+        }
+      ],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/PopoverEditor",
+      "source": "src/components/editors/PopoverEditor.ts",
+      "members": [
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "description": "Whether the picker is currently visible, independent of commit state.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "open",
+          "type": "() => Promise<void>",
+          "description": "Opens explicitly without accepting or saving the draft.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<void>"
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Hides without accepting or discarding text. Invalidates any pending opening request.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "setValue",
+          "type": "(value: T) => void",
+          "description": "Loading a value invalidates a picker opening based on an older draft.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: T) => void"
+        },
+        {
+          "name": "cancel",
+          "type": "() => boolean",
+          "description": "Escape restores accepted text and closes; close() alone never cancels an edit.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
+        }
+      ]
+    },
+    {
       "name": "PopoverEditorOptions",
       "kind": "interface",
       "type": "PopoverEditorOptions",
@@ -7907,7 +7998,7 @@
         {
           "name": "openOnFocus",
           "type": "boolean | undefined",
-          "description": "Opens the picker when the input receives focus. DateEditor focuses Calendar;\nLookupEditor keeps focus in its search input.\nDefaults to false. Explicit button/keyboard opening remains available.",
+          "description": "Opens the picker when the input receives focus. Date editors focus Calendar,\nTimeEditor focuses its time list, and LookupEditor retains search input focus.\nReturning from a picker choice or Escape does not reopen the panel.\nDefaults to false. Explicit button/keyboard opening remains available.",
           "tags": [
             {
               "name": "example",
@@ -8068,6 +8159,40 @@
           "topics": [],
           "optional": false,
           "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "PopoverTextEditorOptions",
+      "kind": "interface",
+      "type": "PopoverTextEditorOptions<T>",
+      "description": "Input, inset trigger and picker lifecycle shared by concrete popover editors.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/PopoverTextEditorOptions",
+      "source": "src/components/editors/PopoverEditor.ts",
+      "members": [
+        {
+          "name": "triggerIcon",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "triggerLabel",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
           "kind": "property"
         }
       ]
@@ -10092,6 +10217,294 @@
           },
           "kind": "method",
           "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "TimeEditor",
+      "kind": "class",
+      "type": "TimeEditor",
+      "description": "Text time editor with an optional mouse/touch time picker.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TimeEditor",
+      "source": "src/components/editors/TimeEditor.ts",
+      "members": [
+        {
+          "name": "resolveText",
+          "type": "(text: string) => Promise<string | null>",
+          "description": "Resolves strict time text asynchronously for a consistent editor API.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/TimeEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<string | null>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => Promise<string | null>"
+        }
+      ]
+    },
+    {
+      "name": "TimeEditorOptions",
+      "kind": "interface",
+      "type": "TimeEditorOptions",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/TimeEditorOptions",
+      "source": "src/components/editors/TimeEditor.ts",
+      "members": [
+        {
+          "name": "timeFormat",
+          "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/TimeEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "minuteStep",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/TimeEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaultTime",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/TimeEditor.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "TimeFormatter",
+      "kind": "class",
+      "type": "TimeFormatter",
+      "description": "Formats and parses strict 24-hour time values without timezone conversion.",
+      "tags": [],
+      "topics": [],
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/TimeFormatter",
+      "source": "src/formatting/TimeFormatter.ts",
+      "members": [
+        {
+          "name": "pattern",
+          "type": "\"HH:mm\" | \"HH:mm:ss\"",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/formatting/TimeFormatter.ts",
+          "kind": "property"
+        },
+        {
+          "name": "format",
+          "type": "(value: string) => string",
+          "description": "Formats a canonical time value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/formatting/TimeFormatter.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: string) => string"
+        },
+        {
+          "name": "parse",
+          "type": "(text: string) => string",
+          "description": "Parses a strict 24-hour time and rejects invalid clock values.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/formatting/TimeFormatter.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => string"
+        }
+      ]
+    },
+    {
+      "name": "TimePicker",
+      "kind": "class",
+      "type": "TimePicker",
+      "description": "Compact button-based time picker for mouse and touch input.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Time Picker",
+      "path": "/api-reference/TimePicker",
+      "source": "src/components/time-picker/TimePicker.ts",
+      "members": [
+        {
+          "name": "value",
+          "type": "string | null",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "setValue",
+          "type": "(value: string | null) => void",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "string | null",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: string | null) => void"
+        },
+        {
+          "name": "focus",
+          "type": "() => void",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "TimePickerOptions",
+      "kind": "interface",
+      "type": "TimePickerOptions",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Time Picker",
+      "path": "/api-reference/TimePickerOptions",
+      "source": "src/components/time-picker/TimePicker.ts",
+      "members": [
+        {
+          "name": "value",
+          "type": "string | null | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "timeFormat",
+          "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "minuteStep",
+          "type": "number | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "defaultTime",
+          "type": "string | undefined",
+          "description": "Time used for initial focus when no value has been selected. Defaults to 10:00.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "maxHeight",
+          "type": "string | undefined",
+          "description": "Maximum height of the scrollable slot list. Defaults to 240px.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onSelect",
+          "type": "((value: string, picker: TimePicker) => void) | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
         }
       ]
     },

@@ -41,10 +41,15 @@ export { PopupMenu, type PopupMenuOptions, type PopupMenuShowOptions, type MenuI
 export { Tooltip, type TooltipContent, type TooltipShowOptions } from './components/popup/Tooltip';
 export { ResizeHandle, type ResizeHandleOptions, type ResizeSize } from './components/resize/ResizeHandle';
 export { Calendar, type CalendarOptions } from './components/calendar/Calendar';
+export { TimePicker, type TimePickerOptions } from './components/time-picker/TimePicker';
 export { DateEditor, type DateEditorOptions } from './components/editors/DateEditor';
+export { TimeEditor, type TimeEditorOptions } from './components/editors/TimeEditor';
+export { DateTimeEditor, type DateTimeEditorOptions } from './components/editors/DateTimeEditor';
 export { DateFormatter } from './formatting/DateFormatter';
+export { TimeFormatter } from './formatting/TimeFormatter';
 export type { ValueFormatter } from './formatting/ValueFormatter';
 export type { PopoverEditorOptions } from './components/editors/PopoverEditorOptions';
+export { PopoverEditor, type PopoverTextEditorOptions } from './components/editors/PopoverEditor';
 export { LookupEditor, type LookupEditorOptions, type LookupQuery, type LookupResult } from './components/editors/LookupEditor';
 export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
     type ValueEditorOptions, type TextEditorOptions, type NumberEditorOptions, type BooleanEditorOptions } from './components/editors/ValueEditor';

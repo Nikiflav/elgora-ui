@@ -483,6 +483,25 @@
       "module": "./content/topics/datagrid-columns.js"
     },
     {
+      "id": "time-editors",
+      "title": "Time editors",
+      "path": "/components/time-editors",
+      "group": "components",
+      "parent": "editors",
+      "order": 52,
+      "description": "Edit local time and date-time values with strict parsing and asynchronous confirmation.",
+      "toc": true,
+      "api": [
+        "TimeEditor",
+        "TimeEditorOptions",
+        "DateTimeEditor",
+        "DateTimeEditorOptions",
+        "TimeFormatter"
+      ],
+      "keywords": [],
+      "module": "./content/topics/time-editors.js"
+    },
+    {
       "id": "editor-validation",
       "title": "Validation",
       "path": "/components/value-editors/validation",
