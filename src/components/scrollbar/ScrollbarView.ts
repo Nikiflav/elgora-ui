@@ -86,7 +86,7 @@ export class ScrollbarView implements Disposable {
             && bounds.right - point.x <= this.distance);
     };
 
-    /** Expands the painted thumb until scrolling has been idle for 600ms. */
+    /** Keeps auto-hidden scrollbars visible until scrolling has been idle for 600ms; thin thumbs stay thin. */
     flash(): void {
         if (this.disposed) return;
         clearTimeout(this.idleTimer);
@@ -96,6 +96,8 @@ export class ScrollbarView implements Disposable {
 
     private syncActivity(): void {
         this.host.classList.toggle("elg-scrolling", this.axis !== undefined || this.touching || this.idleTimer !== undefined);
+        this.horizontal.classList.toggle("elg-scrollbar-dragging", this.axis === "x");
+        this.vertical.classList.toggle("elg-scrollbar-dragging", this.axis === "y");
     }
 
     private horizontalDown = (event: PointerEvent) => this.pointerDown(event, "x");

@@ -9,6 +9,7 @@ import { TopicManifest } from './app/types';
 import { TopicLoader } from './app/TopicLoader';
 import { ApiLoader } from './app/ApiLoader';
 import { ApiTopicPage } from './app/ApiTopicPage';
+import { Scrollbars } from '../src/components/scrollbar/Scrollbars';
 
 function topicPlaceholder(path: string, title: string, description: string): RouterHandler {
     return {
@@ -314,6 +315,7 @@ const styleLinks = buildSidebarTree(markdownTopics
     );
 
     app.mount(document.getElementById('app')!);
+    app.addCleanup(Scrollbars.install(window));
 }
 
 void bootstrap().catch(error => {

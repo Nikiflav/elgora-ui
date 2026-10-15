@@ -42,15 +42,15 @@ See the [`ScrollEngine` API reference](?!=/api-reference/ScrollEngine).
 
 `scrollbarMode` controls the presentation of overflowing axes:
 
-- `"thin"` (default): a 3px thumb remains visible at rest. Moving near its edge,
-  scrolling or dragging expands it to 12px.
+- `"thin"` (default): a 3px thumb remains visible, including during scrolling.
+  Moving near its edge or dragging expands it to 12px.
 - `"auto"`: hidden at rest, full-width near its edge or during scrolling and dragging.
 - `"always"`: full-width whenever the axis has overflow.
 
 The pointer hit area stays 12px wide in all modes. Only the painted thumb becomes
 thinner, so dragging and track clicks keep the same geometry. An axis without
-overflow stays hidden regardless of the selected mode. After scrolling ends, the
-scrollbar returns to its idle appearance after 600ms, unless the pointer is nearby or dragging.
+overflow stays hidden regardless of the selected mode. In auto mode, the
+scrollbar hides 600ms after scrolling ends, unless the pointer is nearby or dragging.
 
 `scrollbarHoverDistance` defaults to `50` CSS pixels. Inside the viewport, the
 vertical scrollbar expands near the right edge and the horizontal scrollbar near

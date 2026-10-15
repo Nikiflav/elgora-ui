@@ -493,7 +493,7 @@ body {
 
 .elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar:hover > .elg-scrollbar-thumb::before,
 .elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar.elg-scrollbar-near > .elg-scrollbar-thumb::before,
-.elg-scroll-container[data-scrollbar-mode="thin"].elg-scrolling > .elg-scrollbar > .elg-scrollbar-thumb::before {
+.elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar.elg-scrollbar-dragging > .elg-scrollbar-thumb::before {
   border-radius: 4px;
   transform: none;
 }
@@ -504,7 +504,7 @@ body {
   }
 }
 
-.elg-scrolling .elg-scrollbar {
+.elg-scrolling > .elg-scrollbar {
   opacity: 1;
 }
 

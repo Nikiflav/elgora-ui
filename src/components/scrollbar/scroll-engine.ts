@@ -401,7 +401,7 @@ export class ScrollEngine implements Disposable {
         }
     };
 
-    /** Touch gestures and inertia keep the shared scrollbar view expanded. */
+    /** Touch gestures and inertia keep auto-hidden scrollbars visible without expanding thin thumbs. */
     private syncScrollActivity(): void {
         this._bars.active = this._isTouching || this._inertiaFrameId !== null;
     }

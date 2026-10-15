@@ -1,5 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ScrollbarView } from "../../src/components/scrollbar/ScrollbarView";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+// jsdom cannot compute pseudo-element styles; test the actual expansion selectors instead.
+const scrollbarCss = readFileSync(resolve("src/style.css"), "utf8");
+const expansionSelectors = scrollbarCss.match(/([^{}]+)\{\s*border-radius: 4px;\s*transform: none;/)![1]
+    .trim().split(",").map(selector => selector.trim().replace(/::before$/, ""));
+function expanded(view: ScrollbarView, axis: "x" | "y" = "y") {
+    const thumb = axis === "x" ? view.horizontalThumb : view.verticalThumb;
+    return expansionSelectors.some(selector => thumb.matches(selector));
+}
 
 const views: ScrollbarView[] = [];
 function create(hoverTarget?: HTMLElement) {
@@ -23,6 +34,51 @@ afterEach(() => {
 });
 
 describe("ScrollbarView mouse proximity", () => {
+    it("keeps thin thumbs narrow during scroll and touch activity but expands during drag", () => {
+        const { host, view } = create(); host.classList.add("elg-scroll-container");
+        host.setPointerCapture = vi.fn(); host.releasePointerCapture = vi.fn();
+        view.flash(); view.active = true;
+        expect(expanded(view)).toBe(false);
+        move(host, 480, 250); expect(expanded(view)).toBe(true);
+        move(host, 300, 250); expect(expanded(view)).toBe(false);
+        view.verticalThumb.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }));
+        expect(view.vertical.classList.contains("elg-scrollbar-dragging")).toBe(true);
+        expect(expanded(view)).toBe(true);
+        window.dispatchEvent(new MouseEvent("pointerup"));
+        expect(expanded(view)).toBe(false);
+        expect(host.classList.contains("elg-scrolling")).toBe(true);
+        view.active = false; vi.advanceTimersByTime(600);
+        expect(host.classList.contains("elg-scrolling")).toBe(false);
+    });
+    it.each(["x", "y"] as const)("expands only the dragged %s axis while preserving independent hover", axis => {
+        const { host, view } = create(); host.classList.add("elg-scroll-container");
+        host.setPointerCapture = vi.fn(); host.releasePointerCapture = vi.fn();
+        const other = axis === "x" ? "y" : "x";
+        const thumb = axis === "x" ? view.horizontalThumb : view.verticalThumb;
+        thumb.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }));
+        view.flash();
+        expect(expanded(view, axis)).toBe(true);
+        expect(expanded(view, other)).toBe(false);
+        move(host, other === "x" ? 300 : 480, other === "x" ? 380 : 250);
+        expect(expanded(view, other)).toBe(true);
+        move(host, 300, 250);
+        expect(expanded(view, axis)).toBe(true);
+        expect(expanded(view, other)).toBe(false);
+        window.dispatchEvent(new MouseEvent("pointercancel"));
+        expect(expanded(view, axis)).toBe(false);
+        thumb.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }));
+        view.dispose();
+        expect(view.horizontal.classList.contains("elg-scrollbar-dragging")).toBe(false);
+        expect(view.vertical.classList.contains("elg-scrollbar-dragging")).toBe(false);
+    });
+    it("still reveals auto scrollbars on scroll and clears activity after the idle delay", () => {
+        const { host, view } = create(); view.mode = "auto";
+        view.flash(); expect(host.classList.contains("elg-scrolling")).toBe(true);
+        vi.advanceTimersByTime(599); expect(host.classList.contains("elg-scrolling")).toBe(true);
+        vi.advanceTimersByTime(1); expect(host.classList.contains("elg-scrolling")).toBe(false);
+        view.active = true; expect(host.classList.contains("elg-scrolling")).toBe(true);
+        view.active = false; expect(host.classList.contains("elg-scrolling")).toBe(false);
+    });
     it("expands axes independently within 50px, including both at the corner", () => {
         const { host, view } = create(); expect(view.hoverDistance).toBe(50);
         move(host, 300, 250); expect(near(view)).toEqual([false, false]);
