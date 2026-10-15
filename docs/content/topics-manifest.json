@@ -711,6 +711,24 @@
       "module": "./content/topics/datagrid-context-menus.js"
     },
     {
+      "id": "scrollbars",
+      "title": "Native scrollbars",
+      "path": "/components/scrollbars",
+      "group": "components",
+      "order": 61,
+      "description": "Add Elgora scrollbars to native scroll containers, a container subtree or an entire document.",
+      "toc": true,
+      "api": [
+        "Scrollbars"
+      ],
+      "keywords": [
+        "native scrollbars",
+        "automatic scrollbars",
+        "overflow"
+      ],
+      "module": "./content/topics/scrollbars.js"
+    },
+    {
       "id": "datagrid-performance",
       "title": "Virtualization and performance",
       "path": "/components/datagrid/performance",

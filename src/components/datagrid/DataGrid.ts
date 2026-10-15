@@ -2,8 +2,7 @@ import { Component } from "../../core/Component";
 import { setElementProps, e, assignElementProps, span, tr, VNode, v, VNodeChild, ElementProps } from "../../core/e";
 import { Utils } from "../../core/Utils";
 import { DataFilter } from "../../data/filter";
-import { ScrollEngine } from "../scrollbar/scroll-engine";
-import { Scrollbar } from "../scrollbar/scrollbar";
+import { ScrollEngine, type ScrollbarMode } from "../scrollbar/scroll-engine";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
 import { DataViewFieldUtils } from "../../data/DataViewField";
@@ -138,6 +137,10 @@ export type DataGridOptions<TRow> = {
     showSelection?: boolean,
     /** Cursor used over the grid body. Defaults to the browser default cursor. */
     cursor?: DataGridCursor,
+    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */
+    scrollbarMode?: ScrollbarMode,
+    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */
+    scrollbarHoverDistance?: number,
     /** The default options for each column. Can be specified to provide default column behavior. */
     defaultColumnOptions?: Partial<DataGridColumn<TRow>>
 }
@@ -1137,6 +1140,10 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.cellBorders ??= "rows";
         this._gridOptions.showSelection ??= true;
         this._gridOptions.cursor ??= "default";
+        this._gridOptions.scrollbarMode ??= "thin";
+        this._scrollEngine.scrollbarMode = this._gridOptions.scrollbarMode;
+        this._gridOptions.scrollbarHoverDistance ??= 50;
+        this._scrollEngine.scrollbarHoverDistance = this._gridOptions.scrollbarHoverDistance;
         this._gridOptions.hierarchyRootId ??= null;
         this._gridOptions.stickyGroupRows ??= false;
         this._gridOptions.selectableGroupRows ??= true;

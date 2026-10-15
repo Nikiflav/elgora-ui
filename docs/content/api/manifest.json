@@ -1037,6 +1037,51 @@
       "module": "./content/api/Scheduler.js"
     },
     {
+      "name": "ScrollbarMode",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Scrollbar",
+      "path": "/api-reference/ScrollbarMode",
+      "description": "Scrollbar presentation when content overflows the viewport.",
+      "module": "./content/api/ScrollbarMode.js"
+    },
+    {
+      "name": "Scrollbars",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Scrollbar",
+      "path": "/api-reference/Scrollbars",
+      "description": "Adds custom scrollbars to native scroll containers or an entire document.\nWheel, touch, keyboard navigation and scrollIntoView remain browser-managed.",
+      "module": "./content/api/Scrollbars.js"
+    },
+    {
+      "name": "ScrollbarsHandle",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Scrollbar",
+      "path": "/api-reference/ScrollbarsHandle",
+      "description": "A native scroll viewport with custom scrollbar presentation.",
+      "module": "./content/api/ScrollbarsHandle.js"
+    },
+    {
+      "name": "ScrollbarsInstallation",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Scrollbar",
+      "path": "/api-reference/ScrollbarsInstallation",
+      "description": "Owns automatically discovered native scroll viewports in a Window or container subtree.",
+      "module": "./content/api/ScrollbarsInstallation.js"
+    },
+    {
+      "name": "ScrollbarsOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Scrollbar",
+      "path": "/api-reference/ScrollbarsOptions",
+      "description": "Presentation shared with ScrollEngine; native browser scrolling remains enabled.",
+      "module": "./content/api/ScrollbarsOptions.js"
+    },
+    {
       "name": "ScrollEngine",
       "kind": "class",
       "group": "components",
@@ -1044,6 +1089,15 @@
       "path": "/api-reference/ScrollEngine",
       "description": "Custom scroll container supporting virtual dimensions and multiple input modes.",
       "module": "./content/api/ScrollEngine.js"
+    },
+    {
+      "name": "ScrollEngineOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Scrollbar",
+      "path": "/api-reference/ScrollEngineOptions",
+      "description": "Presentation options for an existing scroll viewport.",
+      "module": "./content/api/ScrollEngineOptions.js"
     },
     {
       "name": "SelectionCell",

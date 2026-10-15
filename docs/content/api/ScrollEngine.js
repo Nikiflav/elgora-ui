@@ -121,6 +121,46 @@ export default {
       "kind": "property"
     },
     {
+      "name": "scrollbarMode",
+      "type": "ScrollbarMode",
+      "description": "Current scrollbar presentation, independent of overflow and scroll coordinates.\nChanges presentation immediately without rebuilding content or moving the viewport.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "kind": "property"
+    },
+    {
+      "name": "scrollbarHoverDistance",
+      "type": "number",
+      "description": "Mouse proximity threshold in CSS pixels; zero enables direct scrollbar hover only.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "kind": "property"
+    },
+    {
+      "name": "scrollbarHoverDistance",
+      "type": "number",
+      "description": "Mouse proximity threshold in CSS pixels; zero enables direct scrollbar hover only.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "kind": "property"
+    },
+    {
+      "name": "scrollbarMode",
+      "type": "ScrollbarMode",
+      "description": "Current scrollbar presentation, independent of overflow and scroll coordinates.\nChanges presentation immediately without rebuilding content or moving the viewport.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "kind": "property"
+    },
+    {
       "name": "updateDimensions",
       "type": "(scrollWidth: number, scrollHeight: number) => void",
       "description": "Updates the engine with virtual content dimensions. If a dimension exceeds\nthe browser-safe physical limit, the engine calculates an amplification ratio.",

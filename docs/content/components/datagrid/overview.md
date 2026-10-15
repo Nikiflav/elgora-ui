@@ -62,6 +62,11 @@ file-system style hierarchy.
 
 ## Explore DataGrid features
 
+Scrollbars default to `scrollbarMode: "thin"`: a thin thumb stays visible and expands
+within `scrollbarHoverDistance` (default `50px`) of its edge or while scrolling.
+Use `"auto"` to hide them at rest or `"always"` for full
+width. The [Scroll Engine demo](?!=/components/scroll-engine) compares all three modes.
+
 Continue with the focused topics:
 
 - [Columns and layout](?!=/components/datagrid/columns)

@@ -1,5 +1,4 @@
 import { Component } from "../../core/Component"
-import { Scrollbar } from "../scrollbar/scrollbar"
 import { VariableSizeManager } from "./SizeManager"
 
 // --------------------------------------

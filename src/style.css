@@ -440,7 +440,24 @@ body {
 
 }
 
-.elg-scroll-container:hover .elg-scrollbar {
+.elg-scrollbar:hover,
+.elg-scrollbar.elg-scrollbar-near {
+  opacity: 1;
+}
+
+.elg-native-scrollbars {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.elg-native-scrollbars > .elg-scrollbar {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar,
+.elg-scroll-container[data-scrollbar-mode="always"] > .elg-scrollbar {
   opacity: 1;
 }
 
@@ -448,9 +465,44 @@ body {
   position: absolute;
   width: 100%;
   border-radius: 0;
-  background: hsl(var(--elg-text-h) var(--elg-text-s) var(--elg-text-l) / 0.3);
+  background: transparent;
 }
 
+.elg-scrollbar-thumb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: hsl(var(--elg-text-h) var(--elg-text-s) var(--elg-text-l) / 0.3);
+  pointer-events: none;
+  transition: transform 0.15s;
+}
+
+/* Keep the full hit area and scroll geometry while narrowing only the painted thumb. */
+.elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar-y > .elg-scrollbar-thumb::before {
+  border-radius: 0;
+  transform-origin: right center;
+  transform: scaleX(0.25);
+}
+
+.elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar-x > .elg-scrollbar-thumb::before {
+  border-radius: 0;
+  transform-origin: center bottom;
+  transform: scaleY(0.25);
+}
+
+.elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar:hover > .elg-scrollbar-thumb::before,
+.elg-scroll-container[data-scrollbar-mode="thin"] > .elg-scrollbar.elg-scrollbar-near > .elg-scrollbar-thumb::before,
+.elg-scroll-container[data-scrollbar-mode="thin"].elg-scrolling > .elg-scrollbar > .elg-scrollbar-thumb::before {
+  border-radius: 4px;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elg-scrollbar, .elg-scrollbar-thumb::before {
+    transition: none;
+  }
+}
 
 .elg-scrolling .elg-scrollbar {
   opacity: 1;
@@ -462,7 +514,7 @@ body {
 .elg-scrollbar-y {
   top: 0;
   bottom: 0;
-  right: 2px;
+  right: 0;
   width: 12px;
 }
 
@@ -475,7 +527,7 @@ body {
 .elg-scrollbar-x {
   left: 0;
   right: 0;
-  bottom: 2px;
+  bottom: 0;
   height: 12px;
 }
 
@@ -484,9 +536,9 @@ body {
 }
 
 .elg-scrollbar-both .elg-scrollbar-x {
-  right: 14px;
+  right: 12px;
 }
 
 .elg-scrollbar-both .elg-scrollbar-y {
-  bottom: 14px;
+  bottom: 12px;
 }

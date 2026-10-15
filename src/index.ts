@@ -13,7 +13,8 @@ export { type SizeManager, VariableSizeManager, FixedSizeManager } from './compo
 export { VirtualList, type VirtualListOptions, type VirtualDataSource as DataList, type RenderRowArgs } from './components/virtual-list/VirtualList';
 export { Throttle } from './core/Throttle';
 export { BrowserRouter } from './components/browser-router/BrowserRouter';
-export { ScrollEngine } from './components/scrollbar/scroll-engine';
+export { ScrollEngine, type ScrollEngineOptions, type ScrollbarMode } from './components/scrollbar/scroll-engine';
+export { Scrollbars, type ScrollbarsOptions, type ScrollbarsHandle, type ScrollbarsInstallation } from './components/scrollbar/Scrollbars';
 export { DataGrid, type DataGridOptions, type ColumnWidthMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
 export { type DataCell, type DataViewField, type DisplayValue, type EditorType } from './data/DataViewField';
 export { type DataType, type DataField } from './data/DataField';

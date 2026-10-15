@@ -34,6 +34,23 @@ function settle(): Promise<void> {
 }
 
 describe("DataGrid data contracts", () => {
+  it("applies scrollbar mode initially and at runtime without reloading rows", () => {
+    const grid = new DataGrid<Row>({ data: rows, columns: [{ name: "name" }], scrollbarMode: "auto" });
+    try {
+      const viewport = grid.dom.querySelector(".elg-scroll-container")!;
+      expect(viewport.getAttribute("data-scrollbar-mode")).toBe("auto");
+      expect(grid.getOptions().scrollbarHoverDistance).toBe(50);
+      const reload = vi.spyOn(grid, "reloadRows");
+      grid.setOptions({ scrollbarMode: "always", scrollbarHoverDistance: 25 });
+      expect(viewport.getAttribute("data-scrollbar-mode")).toBe("always");
+      expect(grid.getOptions().scrollbarHoverDistance).toBe(25);
+      expect((grid as any)._scrollEngine.scrollbarHoverDistance).toBe(25);
+      expect(reload).not.toHaveBeenCalled();
+      grid.setOptions({ scrollbarMode: undefined });
+      expect(grid.getOptions().scrollbarMode).toBe("thin");
+      expect(viewport.getAttribute("data-scrollbar-mode")).toBe("thin");
+    } finally { grid.dispose(); }
+  });
   it("ensures visibility without moving rows already inside the viewport", () => {
     const grid = new DataGrid<Row>({ data: rows, columns: [{ name: "name" }] });
     const internal = grid as any;

@@ -1,6 +1,15 @@
-import { div } from "../../core/e";
+import { ScrollbarView } from "./ScrollbarView";
+import type { ScrollbarMode } from "./ScrollbarMode";
+export type { ScrollbarMode } from "./ScrollbarMode";
 import type { Disposable } from "../../core/ElgoraUI";
 
+/** Presentation options for an existing scroll viewport. */
+export interface ScrollEngineOptions {
+    /** Thin at rest, hidden until interaction, or always full-width. Defaults to thin. */
+    scrollbarMode?: ScrollbarMode;
+    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */
+    scrollbarHoverDistance?: number;
+}
 
 /** Custom scroll container supporting virtual dimensions and multiple input modes. */
 export class ScrollEngine implements Disposable {
@@ -33,8 +42,7 @@ export class ScrollEngine implements Disposable {
     private _vThumb!: HTMLDivElement;
 
     // Desktop Dragging Tracking Properties
-    private _isDragging: 'horizontal' | 'vertical' | null = null;
-    private _dragStartOffset: number = 0;
+    private _bars!: ScrollbarView;
     private _onScrollCallback?: () => void;
     private _onResizeCallback?: () => void;
 
@@ -50,13 +58,17 @@ export class ScrollEngine implements Disposable {
     private _isTouching: boolean = false;
     private _resizeObserver?: ResizeObserver;
     private _disposed = false;
+    private _scrollbarMode: ScrollbarMode = "thin";
+    private _scrollbarHoverDistance = 50;
 
     /** Creates a scroll engine for an existing viewport element. */
-    constructor(dom: HTMLElement) {
+    constructor(dom: HTMLElement, options: ScrollEngineOptions = {}) {
+        this._scrollbarHoverDistance = ScrollbarView.validateHoverDistance(options.scrollbarHoverDistance ?? 50);
         this.dom = dom;
         this._clientWidth = dom.clientWidth;
         this._clientHeight = dom.clientHeight;
         this.setupContainer();
+        this.scrollbarMode = options.scrollbarMode ?? "thin";
         this.createScrollbars();
         this.bindEvents();
     }
@@ -82,6 +94,23 @@ export class ScrollEngine implements Disposable {
     public get clientWidth(): number { return this._clientWidth; }
     /** Current physical viewport height in CSS pixels. */
     public get clientHeight(): number { return this._clientHeight; }
+
+    /** Current scrollbar presentation, independent of overflow and scroll coordinates. */
+    public get scrollbarMode(): ScrollbarMode { return this._scrollbarMode; }
+    /** Mouse proximity threshold in CSS pixels; zero enables direct scrollbar hover only. */
+    public get scrollbarHoverDistance(): number { return this._scrollbarHoverDistance; }
+    public set scrollbarHoverDistance(value: number) {
+        if (this._disposed) return;
+        this._scrollbarHoverDistance = ScrollbarView.validateHoverDistance(value);
+        if (this._bars) this._bars.hoverDistance = value;
+    }
+    /** Changes presentation immediately without rebuilding content or moving the viewport. */
+    public set scrollbarMode(value: ScrollbarMode) {
+        if (this._disposed) return;
+        this._scrollbarMode = value;
+        this.dom.setAttribute("data-scrollbar-mode", value);
+        if (this._bars) this._bars.mode = value;
+    }
 
     /**
      * Updates the engine with virtual content dimensions. If a dimension exceeds
@@ -143,6 +172,7 @@ export class ScrollEngine implements Disposable {
             this._scrollTop = nextTop;
 
             this.updateThumbPositions();
+            this._bars.flash();
 
             if (this._onScrollCallback) {
                 this._onScrollCallback();
@@ -175,12 +205,6 @@ export class ScrollEngine implements Disposable {
 
         this.dom.removeEventListener('wheel', this.handleWheel);
         this.dom.removeEventListener('keydown', this.handleKeyDown);
-        this._hThumb.removeEventListener('pointerdown', this.handleHorizontalThumbPointerDown);
-        this._vThumb.removeEventListener('pointerdown', this.handleVerticalThumbPointerDown);
-        window.removeEventListener('pointermove', this.handleDrag);
-        window.removeEventListener('pointerup', this.stopDrag);
-        this._hTrack.removeEventListener('pointerdown', this.handleHorizontalTrackPointerDown);
-        this._vTrack.removeEventListener('pointerdown', this.handleVerticalTrackPointerDown);
         this.dom.removeEventListener('touchstart', this.handleTouchStart);
         this.dom.removeEventListener('touchmove', this.handleTouchMove);
         this.dom.removeEventListener('touchend', this.handleTouchEnd);
@@ -194,12 +218,11 @@ export class ScrollEngine implements Disposable {
             this._inertiaFrameId = null;
         }
 
-        this._hTrack.remove();
-        this._vTrack.remove();
+        this._bars.dispose();
+        this.dom.removeAttribute('data-elg-scroll-engine');
         this.dom.classList.remove('elg-scrolling', 'elg-scrollbar-both');
         this._onScrollCallback = undefined;
         this._onResizeCallback = undefined;
-        this._isDragging = null;
         this._isTouching = false;
     }
 
@@ -211,36 +234,25 @@ export class ScrollEngine implements Disposable {
 
     private setupContainer(): void {
         this.dom.classList.add("elg-scroll-container");
+        this.dom.setAttribute("data-elg-scroll-engine", "");
         this.dom.style.position = this.dom.style.position || 'relative';
         this.dom.style.overflow = 'hidden';
         if (!this.dom.hasAttribute('tabindex')) this.dom.setAttribute('tabindex', '0');
     }
 
     private createScrollbars(): void {
-        this._hThumb = div({ class: "elg-scrollbar-thumb" }) as HTMLDivElement;
-        this._vThumb = div({ class: "elg-scrollbar-thumb" }) as HTMLDivElement;
-
-        this._hTrack = div({ class: "elg-scrollbar elg-scrollbar-x" }, this._hThumb) as HTMLDivElement;
-        this._vTrack = div({ class: "elg-scrollbar elg-scrollbar-y" }, this._vThumb) as HTMLDivElement;
-
-        this.dom.appendChild(this._hTrack);
-        this.dom.appendChild(this._vTrack);
+        this._bars = new ScrollbarView(this.dom, this._scrollbarMode, (axis, ratio) => {
+            this.scrollTo(axis === "x" ? ratio * this.getMaxScrollLeft() : this._scrollLeft,
+                axis === "y" ? ratio * this.getMaxScrollTop() : this._scrollTop);
+        }, { hoverDistance: this._scrollbarHoverDistance });
+        this._hTrack = this._bars.horizontal; this._vTrack = this._bars.vertical;
+        this._hThumb = this._bars.horizontalThumb; this._vThumb = this._bars.verticalThumb;
     }
 
     private bindEvents(): void {
         // Desktop input channels
         this.dom.addEventListener('wheel', this.handleWheel, { passive: false });
         this.dom.addEventListener('keydown', this.handleKeyDown);
-
-        // Pointer click + drag channels
-        this._hThumb.addEventListener('pointerdown', this.handleHorizontalThumbPointerDown);
-        this._vThumb.addEventListener('pointerdown', this.handleVerticalThumbPointerDown);
-
-        window.addEventListener('pointermove', this.handleDrag);
-        window.addEventListener('pointerup', this.stopDrag);
-
-        this._hTrack.addEventListener('pointerdown', this.handleHorizontalTrackPointerDown);
-        this._vTrack.addEventListener('pointerdown', this.handleVerticalTrackPointerDown);
 
         // Mobile touch swipe channels
         this.dom.addEventListener('touchstart', this.handleTouchStart, { passive: false });
@@ -258,22 +270,6 @@ export class ScrollEngine implements Disposable {
         });
         this._resizeObserver.observe(this.dom);
     }
-
-    private handleHorizontalThumbPointerDown = (event: PointerEvent): void => {
-        this.startDrag(event, 'horizontal');
-    };
-
-    private handleVerticalThumbPointerDown = (event: PointerEvent): void => {
-        this.startDrag(event, 'vertical');
-    };
-
-    private handleHorizontalTrackPointerDown = (event: PointerEvent): void => {
-        this.handleTrackClick(event, 'horizontal');
-    };
-
-    private handleVerticalTrackPointerDown = (event: PointerEvent): void => {
-        this.handleTrackClick(event, 'vertical');
-    };
 
     private handleWheel = (e: WheelEvent): void => {
         e.preventDefault();
@@ -312,72 +308,6 @@ export class ScrollEngine implements Disposable {
         }
     };
 
-    private startDrag(e: PointerEvent, orientation: 'horizontal' | 'vertical'): void {
-        if (e.button !== 0) return;
-        e.preventDefault(); e.stopPropagation();
-        this._isDragging = orientation;
-        this.dom.setPointerCapture(e.pointerId);
-
-        if (orientation === 'horizontal') {
-            this._dragStartOffset = e.clientX - this._hThumb.getBoundingClientRect().left;
-            this.dom.classList.add('elg-scrolling');
-        } else {
-            this._dragStartOffset = e.clientY - this._vThumb.getBoundingClientRect().top;
-            this.dom.classList.add('elg-scrolling');
-        }
-    }
-
-    private handleDrag = (e: PointerEvent): void => {
-        if (!this._isDragging) return;
-
-        if (this._isDragging === 'horizontal') {
-            const trackRect = this._hTrack.getBoundingClientRect();
-            const relativeX = e.clientX - trackRect.left - this._dragStartOffset;
-            const maxThumbLeft = trackRect.width - this._hThumb.clientWidth;
-
-            const ratio = maxThumbLeft > 0 ? Math.max(0, Math.min(relativeX / maxThumbLeft, 1)) : 0;
-            const virtualLeft = ratio * this.getMaxPhysicalScrollLeft() * this._scaleX;
-            this.scrollTo(virtualLeft, this._scrollTop);
-        } else {
-            const trackRect = this._vTrack.getBoundingClientRect();
-            const relativeY = e.clientY - trackRect.top - this._dragStartOffset;
-            const maxThumbTop = trackRect.height - this._vThumb.clientHeight;
-
-            const ratio = maxThumbTop > 0 ? Math.max(0, Math.min(relativeY / maxThumbTop, 1)) : 0;
-            const virtualTop = ratio * this.getMaxPhysicalScrollTop() * this._scaleY;
-            this.scrollTo(this._scrollLeft, virtualTop);
-        }
-    };
-
-    private stopDrag = (e: PointerEvent): void => {
-        if (!this._isDragging) return;
-        try { this.dom.releasePointerCapture(e.pointerId); } catch { }
-        this.dom.classList.remove('elg-scrolling');
-        this._isDragging = null;
-    };
-
-    private handleTrackClick(e: PointerEvent, orientation: 'horizontal' | 'vertical'): void {
-        if (e.target === this._hThumb || e.target === this._vThumb) return;
-
-        if (orientation === 'horizontal') {
-            const trackRect = this._hTrack.getBoundingClientRect();
-            const clickX = e.clientX - trackRect.left - (this._hThumb.clientWidth / 2);
-            const maxThumbLeft = trackRect.width - this._hThumb.clientWidth;
-
-            const ratio = maxThumbLeft > 0 ? Math.max(0, Math.min(clickX / maxThumbLeft, 1)) : 0;
-            const virtualLeft = ratio * this.getMaxPhysicalScrollLeft() * this._scaleX;
-            this.scrollTo(virtualLeft, this._scrollTop);
-        } else {
-            const trackRect = this._vTrack.getBoundingClientRect();
-            const clickY = e.clientY - trackRect.top - (this._vThumb.clientHeight / 2);
-            const maxThumbTop = trackRect.height - this._vThumb.clientHeight;
-
-            const ratio = maxThumbTop > 0 ? Math.max(0, Math.min(clickY / maxThumbTop, 1)) : 0;
-            const virtualTop = ratio * this.getMaxPhysicalScrollTop() * this._scaleY;
-            this.scrollTo(this._scrollLeft, virtualTop);
-        }
-    }
-
     private handleTouchStart = (e: TouchEvent): void => {
         if (this._inertiaFrameId) {
             cancelAnimationFrame(this._inertiaFrameId);
@@ -391,7 +321,7 @@ export class ScrollEngine implements Disposable {
         this._velocityY = 0;
         this._lastTouchTime = performance.now();
 
-        this.dom.classList.add('elg-scrolling');
+        this.syncScrollActivity();
     };
 
     private handleTouchMove = (e: TouchEvent): void => {
@@ -444,7 +374,7 @@ export class ScrollEngine implements Disposable {
             // Stop dead in tracks, clean up scrollbar container class
             this._velocityX = 0;
             this._velocityY = 0;
-            this.dom.classList.remove('elg-scrolling');
+            this.syncScrollActivity();
         }
     };
 
@@ -467,9 +397,14 @@ export class ScrollEngine implements Disposable {
             this._inertiaFrameId = requestAnimationFrame(this.glideLoop);
         } else {
             this._inertiaFrameId = null;
-            this.dom.classList.remove('elg-scrolling');
+            this.syncScrollActivity();
         }
     };
+
+    /** Touch gestures and inertia keep the shared scrollbar view expanded. */
+    private syncScrollActivity(): void {
+        this._bars.active = this._isTouching || this._inertiaFrameId !== null;
+    }
 
     private updateScrollbarVisibilitiesAndSizes(): void {
         const viewWidth = this._clientWidth;
@@ -499,6 +434,7 @@ export class ScrollEngine implements Disposable {
         this._vThumb.style.height = `${vThumbHeight}px`;
 
         this.updateThumbPositions();
+        this._bars.refreshHover();
     }
 
     private updateThumbPositions(): void {
