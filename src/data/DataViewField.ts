@@ -2,6 +2,30 @@ import { getFieldDataType, type DataField, type DataType } from "./DataField";
 import { getFieldGroupValue, applyGroupInterval, type GroupInterval, type GroupIntervalDefinition } from "./grouping";
 import { Utils } from "../core/Utils";
 import type { FilterSelector } from "./filter";
+import type { ValueEditor } from "../components/editors/ValueEditor";
+import type { LookupEditorOptions, LookupQuery, LookupResult } from "../components/editors/LookupEditor";
+
+/** Original source row and field supplied to value conversion and validation. */
+export interface FieldEditContext<TRow> {
+    row: TRow;
+    field: DataViewField<TRow>;
+    value: any;
+}
+
+/** Context for custom editor creation. Pass onCommit to the editor to retain source-controlled saving. */
+export interface FieldEditorContext<TRow> extends FieldEditContext<TRow> {
+    /** Preloaded cell label, avoiding a second lookup request at the start of editing. */
+    text?: string;
+    onCommit(value: any): Promise<void>;
+}
+
+/** Shared lookup data and presentation. Items need not have a prescribed shape. */
+export interface FieldLookup<TRow, TItem = any> extends Pick<LookupEditorOptions<any, TItem>,
+    "getItemValue" | "getItemText" | "pageSize" | "searchDelay" | "popupWidth" | "popupHeight" | "resizable"> {
+    columns?: import("../components/datagrid/DataGridColumn").DataGridColumn<TItem>[];
+    loadItems(query: LookupQuery, context: FieldEditContext<TRow>): Promise<LookupResult<TItem>>;
+    getValueText(value: any, context: FieldEditContext<TRow>): string | Promise<string>;
+}
 
 /** One selectable option for a column's allowed-value list (e.g. a dropdown item). */
 export type DisplayValue = {
@@ -11,9 +35,6 @@ export type DisplayValue = {
     icon?: string;
     image?: string;
 }
-
-/** Input control used to edit a column's value. */
-export type EditorType = "text" | "number" | "date" | "datetime-local" | "time" | "checkbox" | "file" | "password" | "textarea" | "color";
 
 /** Contract for a component hosting data-bound UI (e.g. a grid) that can be told to reload. */
 export interface DataComponent {
@@ -51,24 +72,24 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     description?: string;
     /** Opaque, caller-defined presentation metadata (not used internally). */
     userState?: any;
-    /** UI editor type used when the value is edited. */
-    editorType?: EditorType;
     readonly?: boolean;
     required?: boolean;
     /** Whether a card/form consumer should omit the field label. */
     hideLabel?: boolean,
     /** Whether a card/form consumer should display this field for the row. */
     showInRow?(row: TRow): boolean;
-    /** Reads this column's display text for a row; defaults to stringifying getValue(). */
+    /** Overrides the cell label; otherwise lookup.getValueText, formatValue or string conversion is used. */
     getText?(row: TRow): Promise<string>;
-    /** Writes this column's raw value onto a row; defaults to setting `row[name]`. */
-    setValue?(row: TRow, value: any): Promise<any>;
-    /** Parses and writes a display-text edit onto a row. */
-    setText?(row: TRow, text: string): Promise<any>;
-    /** Fetches the allowed-value list for dropdown-style editing/filtering. */
-    getAllowedValues?(row?: TRow, search?: string, top?: number, skip?: number): Promise<DisplayValue[]>;
-    /** Resolves display text for a given value, without loading the full allowed-value list. */
-    getAllowedValueText?(row?: TRow): Promise<string | undefined>;
+    /** Converts external text without mutating the row. Overrides the editor's default resolver. */
+    resolveText?(text: string, context: FieldEditContext<TRow>): any | Promise<any>;
+    /** Validates both typed and picked values. Return a message to retain the edit for correction. */
+    validate?(value: any, context: FieldEditContext<TRow>): string | undefined | Promise<string | undefined>;
+    /** Formats a value for editing and, absent getText/lookup, for display. */
+    formatValue?(value: any, context: FieldEditContext<TRow>): string;
+    /** Lookup data, labels and optional multiple result columns. */
+    lookup?: FieldLookup<TRow>;
+    /** Creates a specialized editor. Example: ctx => new ToggleEditor({ value: ctx.value, onCommit: ctx.onCommit }). */
+    createEditor?(context: FieldEditorContext<TRow>): ValueEditor<any>;
 }
 
 export class DataViewFieldUtils {
@@ -112,14 +133,7 @@ export class DataViewFieldUtils {
     }
 
     static hasDropdown<TRow>(col: DataViewField<TRow>) {
-        return col.editorType == "date" || col.editorType == "datetime-local"
-            || !!col.getAllowedValues;
-    }
-
-    static async toggleBooleanValue<TRow>(col: DataViewField<TRow>, row: any) {
-
-        let val = await DataViewFieldUtils.getValue(col, row);
-        await DataViewFieldUtils.setValue(col, row, val ? 0 : 1);
+        return DataViewFieldUtils.isDateColumn(col) || !!col.lookup;
     }
 
     static async getValue<TRow>(col: DataViewField<TRow>, row: TRow): Promise<any> {
@@ -135,7 +149,10 @@ export class DataViewFieldUtils {
         try {
             if (col.getText)
                 return await col.getText(row);
-            return (await DataViewFieldUtils.getValue(col, row))?.toString();
+            const value = await DataViewFieldUtils.getValue(col, row);
+            const context = { row, field: col, value };
+            if (col.lookup) return await col.lookup.getValueText(value, context);
+            return col.formatValue?.(value, context) ?? String(value ?? "");
         }
         catch (ex) {
             console.error(ex);
@@ -161,65 +178,6 @@ export class DataViewFieldUtils {
             cells[col.name] = await DataViewFieldUtils.getDataCell(col, row);
         }
         return cells;
-    }
-
-    static async setText<TRow>(col: DataViewField<TRow>, row: TRow, text: string) {
-
-        if (col.setText) {
-
-            await col.setText(row, text);
-        }
-        else if (text == "" || text == null) {
-
-            await DataViewFieldUtils.setValue(col, row, null);
-        }
-        else if (col.getAllowedValues) {
-
-            let search = text;
-            let values = await col.getAllowedValues(row, search, 10, 0);
-
-            if (values.length == 0)
-                throw new Error("The specified text not found amogst the allowed values.");
-
-            if (values.length > 1) {
-
-                const vt = values.find(v => v.text === text);
-                if (vt)
-                    await DataViewFieldUtils.setValue(col, row, vt.value);
-                else
-                    throw new RangeError("The specified text matches more than one allowed value.");
-            }
-            else
-                await DataViewFieldUtils.setValue(col, row, values[0].value);
-        }
-        else {
-            let value: any = text;
-            switch (col.editorType ?? "text") {
-                case "checkbox":
-                    let lower = text.toLowerCase();
-                    value = lower.startsWith("y") || lower.startsWith("t") || lower.startsWith("д");
-                    break;
-                case "date":
-                case "datetime-local":
-                    let dt = new Date(Date.parse(text));
-                    value = dt.toISOString();
-                    break;
-                case "number":
-                    text = text.replace(/,/, '.');
-                    value = parseFloat(text);
-                    break;
-            }
-            await DataViewFieldUtils.setValue(col, row, value);
-        }
-    }
-
-    static async setValue<TRow>(col: DataViewField<TRow>, row: TRow, value: any) {
-
-        if (col.setValue) {
-            await col.setValue(row, value);
-            return;
-        }
-        Utils.setMember(row as Record<string, any>, col.name, value);
     }
 
     /** Waits until all values and display texts are loaded for the specified columns */

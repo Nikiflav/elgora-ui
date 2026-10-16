@@ -24,7 +24,7 @@ Grouping turns a flat result into an expandable hierarchy. Configure
 `groupColumns` for the initial state, then let users add, remove, and reorder
 groups from the group panel or column context menu.
 
-<live-demo id="datagrid-grouping" height="360px"></live-demo>
+<live-demo id="datagrid-grouping" height="376px"></live-demo>
 
 Dates and numbers can use built-in intervals. Application-specific buckets can
 be registered with `groupIntervals` and resolved by `getGroupValue`.

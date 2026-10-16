@@ -23,7 +23,7 @@ export default function demo(): void {
     }
   }
   const grid = new DataGrid({
-    data: new ArrayDataSource(rows, { parentField: "parentId" }),
+    data: new ArrayDataSource(rows, { parentField: "parentId", createRowId: () => nextId++ }),
     columns: [
       { name: "name", caption: "Name", dataType: "string", width: 350, getText: async row => (row.type === "folder" ? "📁 " : "📄 ") + row.name },
       { name: "type", caption: "Type", dataType: "string" },

@@ -88,10 +88,14 @@ import { DataSet } from "elgora-ui";
 const dataset = new DataSet({
     createRowId: table => table.name + "-" + crypto.randomUUID()
 });
+let lastOrderId = 0;
 const orders = dataset.createTable("orders", [
     { id: 1, quantity: 2, price: 10, total: 20 }
 ], {
     idField: "id",
+    createRowId: table => lastOrderId = table.rows.reduce(
+        (max, row) => Math.max(max, Number(row.key)), lastOrderId
+    ) + 1,
     defaults: () => ({
         quantity: 1,
         price: 0,

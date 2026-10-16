@@ -1,4 +1,5 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
+import { ArrayDataSource } from "../../../../src/data/ArrayDataSource";
 
 export default function demo(): void {
   const rows = Array.from({ length: 100_000 }, (_, index) => ({
@@ -6,8 +7,9 @@ export default function demo(): void {
     name: `Generated record ${index + 1}`,
     score: (index * 17) % 1000
   }));
+  let nextId = rows.reduce((max, row) => Math.max(max, row.id), 0) + 1;
   const grid = new DataGrid({
-    data: rows,
+    data: new ArrayDataSource(rows, { createRowId: () => nextId++ }),
     pageSize: 100,
     columns: [
       { name: "id", caption: "ID", width: 80, textAlign: "end" },

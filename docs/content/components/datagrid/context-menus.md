@@ -25,7 +25,7 @@ DataGrid exposes separate customization points for cells, rows, row headers,
 and column headers. Keep standard actions and add application-specific actions
 where they are relevant.
 
-<live-demo id="datagrid-context-menus" height="360px"></live-demo>
+<live-demo id="datagrid-context-menus" height="376px"></live-demo>
 
 The demo adds a custom row action while retaining the built-in column menu.
 Context callbacks receive the row, column, selected ranges, and originating

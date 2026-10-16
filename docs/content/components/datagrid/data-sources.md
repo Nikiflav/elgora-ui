@@ -25,7 +25,7 @@ The grid consumes a `DataSource` contract rather than depending on a specific
 storage technology. `ArrayDataSource` is useful for local data; an application
 can implement `loadData()` for an API, database, or service layer.
 
-<live-demo id="datagrid-data-sources" height="360px"></live-demo>
+<live-demo id="datagrid-data-sources" height="376px"></live-demo>
 
 The same grid options work with both local and remote sources. Queries carry
 filtering, sorting, grouping, paging, and an `AbortSignal` for cancelled loads.
@@ -40,11 +40,12 @@ Use [DataSet](?!=/data/dataset) when you need transactions, undo or a batch to p
 ```ts
 import { ArrayDataSource } from "elgora-ui";
 
-type Line = { id: string | number; product: string; quantity: number };
+type Line = { id: number; product: string; quantity: number };
 const rows: Line[] = [{ id: 1, product: "Keyboard", quantity: 2 }];
+let nextId = rows.reduce((max, row) => Math.max(max, row.id), 0) + 1;
 const source = new ArrayDataSource(rows, {
     defaults: () => ({ product: "", quantity: 1 }),
-    createRowId: () => crypto.randomUUID()
+    createRowId: () => nextId++
 });
 
 const result = await source.update(rows[0], { quantity: 3 });

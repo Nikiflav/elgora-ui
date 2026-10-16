@@ -1,5 +1,6 @@
 import { v } from "../../../../src/core/e";
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
+import { ArrayDataSource } from "../../../../src/data/ArrayDataSource";
 
 export default function demo(): void {
   const products = ["Laptop", "Monitor", "Keyboard", "Mouse", "Headphones", "Webcam", "Desk Chair", "Desk Lamp"];
@@ -29,8 +30,9 @@ export default function demo(): void {
       orderDate: new Date(2024, 0, 1 + Math.floor(Math.random() * 365)).toISOString().split("T")[0]
     };
   });
+  let nextId = data.reduce((max, row) => Math.max(max, row.id), 0) + 1;
   const grid = new DataGrid({
-    data,
+    data: new ArrayDataSource(data, { createRowId: () => nextId++ }),
     columns: [
       {
         name: "country",

@@ -224,8 +224,40 @@ export class SelectionManager {
     /**
      * Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).
      * Returns true if the key event was handled by selection.
+     * beforeNavigate receives detached snapshots before any live mutation;
+     * return null to cancel, or different coordinates to redirect. Redirects
+     * retain an existing containing range, otherwise select the destination.
+     * @example manager.handleKeyDown(event, context, (current, target) => target.colIndex === 0 ? null : target);
      */
-    public handleKeyDown(event: KeyboardEvent, ctx: GridContext): boolean {
+    public handleKeyDown(event: KeyboardEvent, ctx: GridContext,
+        beforeNavigate?: (current: SelectionCell, target: SelectionCell) => SelectionCell | null): boolean {
+        if (!beforeNavigate) return this.applyKeyDown(event, ctx);
+        // Calculate on a detached selection so cancellation never changes the
+        // live active cell or ranges, even temporarily during event delivery.
+        const draft = new SelectionManager(this._mode);
+        draft._ranges = this.getRanges();
+        draft._activeCell = this._activeCell ? { ...this._activeCell } : null;
+        if (!draft.applyKeyDown(event, ctx)) return false;
+        if (!this._activeCell || !draft._activeCell) return true;
+        const proposed = { ...draft._activeCell };
+        const target = beforeNavigate({ ...this._activeCell }, { ...proposed });
+        if (!target || !Number.isInteger(target.rowIndex) || !Number.isInteger(target.colIndex)
+            || target.rowIndex < 0 || target.rowIndex >= ctx.totalRows
+            || target.colIndex < 0 || target.colIndex >= ctx.columns.length
+            || ctx.isRowSelectable?.(target.rowIndex) === false) return true;
+        if (target.rowIndex !== proposed.rowIndex || target.colIndex !== proposed.colIndex) {
+            if (this.isSelected(target.rowIndex, target.colIndex)) {
+                draft._ranges = this.getRanges();
+                draft.setActiveCell(target.rowIndex, target.colIndex);
+            } else draft.selectSingleCell(target.rowIndex, target.colIndex);
+        }
+        this._ranges = draft._ranges;
+        this._activeCell = draft._activeCell;
+        return true;
+    }
+
+    /** Computes standard keyboard selection changes without invoking host callbacks. */
+    private applyKeyDown(event: KeyboardEvent, ctx: GridContext): boolean {
         if (!this._activeCell || this._ranges.length === 0) return false;
         if (this._mode !== "multiple-cells") return this.handleRowKeyDown(event, ctx);
 

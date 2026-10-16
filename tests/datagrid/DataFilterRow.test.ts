@@ -13,9 +13,9 @@ describe("DataFilterRow", () => {
     expect(row.parse("price", "100")).toEqual(["price", "=", 100]);
   });
 
-  it("prefers dataType over editorType for semantic parsing", () => {
+  it("uses dataType for semantic parsing", () => {
     const column = new DataFilterRow([
-      { name: "price", dataType: "number" as const, editorType: "text" as const }
+      { name: "price", dataType: "number" as const }
     ]);
 
     expect(column.parse("price", "100")).toEqual(["price", "=", 100]);

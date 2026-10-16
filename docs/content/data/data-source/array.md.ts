@@ -1,15 +1,16 @@
 import { ArrayDataSource, cdiv, e, type NewRowSession } from "../../../../src/index";
 
 export default function demo(): void {
-    type Product = { id: string | number; name: string; price: number; stock: number };
+    type Product = { id: number; name: string; price: number; stock: number };
     const products: Product[] = [
         { id: 1, name: "Wireless keyboard", price: 49, stock: 12 },
         { id: 2, name: "USB-C docking station", price: 189, stock: 5 },
         { id: 3, name: "Wireless mouse", price: 23, stock: 18 }
     ];
+    let nextId = products.reduce((max, product) => Math.max(max, product.id), 0) + 1;
     const source = new ArrayDataSource(products, {
         defaults: () => ({ name: "", price: 0, stock: 0 }),
-        createRowId: () => crypto.randomUUID()
+        createRowId: () => nextId++
     });
     const root = cdiv({ ui: ["d-flex", "flex-col", "gap-2"] });
     const body = e("tbody", {});

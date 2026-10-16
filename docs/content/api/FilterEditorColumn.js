@@ -9,5 +9,5 @@ export default {
   "namespace": "Components.DataGrid",
   "path": "/api-reference/FilterEditorColumn",
   "source": "src/components/datagrid/FilterEditor.ts",
-  "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+  "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\">"
 };

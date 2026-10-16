@@ -24,6 +24,9 @@ DataGrid supports cell and range selection. Drag across cells to select a
 rectangle, use the row header for whole-row selection, and use the context menu
 to copy the result.
 
+See [Keyboard navigation](?!=/components/datagrid/keyboard-navigation) for the full
+key reference, editing behavior and customizable navigation destinations.
+
 <live-demo id="datagrid-selection" height="425px"></live-demo>
 
 ## Selection modes

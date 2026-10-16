@@ -164,6 +164,15 @@
       "module": "./content/api/ComponentOptions.js"
     },
     {
+      "name": "createFieldEditor",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createFieldEditor",
+      "description": "Creates a value-only editor for a field; shared by grids, forms and cards.\nThe caller owns its lifetime and supplies the asynchronous persistence callback.",
+      "module": "./content/api/createFieldEditor.js"
+    },
+    {
       "name": "DataCell",
       "kind": "type",
       "group": "types",
@@ -270,6 +279,15 @@
       "path": "/api-reference/DataGridCellBorders",
       "description": "Cell separator style used by a DataGrid.",
       "module": "./content/api/DataGridCellBorders.js"
+    },
+    {
+      "name": "DataGridCellNavigatingEvent",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridCellNavigatingEvent",
+      "description": "Synchronous keyboard-navigation hook. Coordinates refer to visible data columns, excluding row headers.",
+      "module": "./content/api/DataGridCellNavigatingEvent.js"
     },
     {
       "name": "DataGridColumn",
@@ -533,15 +551,6 @@
       "module": "./content/api/e.js"
     },
     {
-      "name": "EditorType",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Data",
-      "path": "/api-reference/EditorType",
-      "description": "Input control used to edit a column's value.",
-      "module": "./content/api/EditorType.js"
-    },
-    {
       "name": "ElgoraUI",
       "kind": "variable",
       "group": "core",
@@ -558,6 +567,33 @@
       "path": "/api-reference/evalFilter",
       "description": "Evaluates a filter against one row. Empty filters match every row.\nSupply custom functions to resolve selectors such as { function: \"category\", field: \"code\" }.",
       "module": "./content/api/evalFilter.js"
+    },
+    {
+      "name": "FieldEditContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FieldEditContext",
+      "description": "Original source row and field supplied to value conversion and validation.",
+      "module": "./content/api/FieldEditContext.js"
+    },
+    {
+      "name": "FieldEditorContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FieldEditorContext",
+      "description": "Context for custom editor creation. Pass onCommit to the editor to retain source-controlled saving.",
+      "module": "./content/api/FieldEditorContext.js"
+    },
+    {
+      "name": "FieldLookup",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FieldLookup",
+      "description": "Shared lookup data and presentation. Items need not have a prescribed shape.",
+      "module": "./content/api/FieldLookup.js"
     },
     {
       "name": "FilterEditor",

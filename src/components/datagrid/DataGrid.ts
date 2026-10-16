@@ -1,4 +1,5 @@
 import { Component } from "../../core/Component";
+import { ObservableEvent } from "../../core/ElgoraUI";
 import { setElementProps, e, assignElementProps, span, tr, VNode, v, VNodeChild, ElementProps } from "../../core/e";
 import { Utils } from "../../core/Utils";
 import { DataFilter } from "../../data/filter";
@@ -12,12 +13,13 @@ import type { SummaryDefinition, SummaryType, SummaryResult } from "../../data/s
 import { DataGridColumn, GridCell } from "./DataGridColumn";
 import { ArrayDataSource } from "../../data/ArrayDataSource";
 import { LocalGroupingDataSource } from "../../data/LocalGroupingDataSource";
-import type { DataSource } from "../../data/DataSource";
+import type { DataSource, NewRowSession } from "../../data/DataSource";
 import type { RowIdentity } from "../../data/RowIdentity";
 import type { FilterFunctionRegistry } from "../../data/filter";
 import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvider";
 import { GridRow, GridRowsProvider } from "./GridRow";
 import { VirtualGridRows } from "./VirtualGridRows";
+import { NewRowGridRowsProvider } from "./NewRowGridRowsProvider";
 import { DataGridTexts, DEFAULT_GRID_TEXTS } from "./DataGridTexts";
 
 import "./DataGrid.css"
@@ -31,6 +33,7 @@ import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
 import { Popover } from "../popup/popover";
 import { FilterEditor } from "./FilterEditor";
 import { DataFilterRow } from "./DataFilterRow";
+import { GridCellEditor, type CellEditNavigationKey } from "./GridCellEditor";
 
 
 /** Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource. */
@@ -48,6 +51,20 @@ export interface DataGridLayoutInfo {
 
 type SelectionCell = { rowIndex: number, colIndex: number, wholeRow?: true };
 
+/** Synchronous keyboard-navigation hook. Coordinates refer to visible data columns, excluding row headers. */
+export interface DataGridCellNavigatingEvent {
+    /** Navigation key; Enter that starts editing does not raise this event. */
+    readonly key: CellEditNavigationKey;
+    /** True for reverse Tab/Enter traversal or extended arrow selection. */
+    readonly shiftKey: boolean;
+    /** Active cell before navigation; changing this snapshot has no effect. */
+    readonly currentCell: { readonly rowIndex: number; readonly colIndex: number };
+    /** Proposed destination. Change its coordinates to redirect navigation. Invalid destinations cancel the move. */
+    targetCell: { rowIndex: number; colIndex: number };
+    /** Set true to retain the active cell and selection. A completed edit is not rolled back. */
+    cancel: boolean;
+}
+
 /* GridRow and QueryEngine */
 
 
@@ -63,6 +80,8 @@ export type DataGridCursor = "default" | "pointer" | "text";
 export type DataGridCellBorders = "none" | "rows" | "all";
 
 export type DataGridOptions<TRow> = {
+    /** Enables existing-cell editing when the source supports update. Defaults to false. */
+    allowEdit?: boolean;
     /** Row data; defaults to an empty array if omitted. */
     data?: GridDataSource<TRow>,
     columns: DataGridColumn<TRow>[],
@@ -207,6 +226,7 @@ export class DataGrid<TRow> extends Component {
     private _contentTable: HTMLTableElement;
     private _headerPanel: HTMLDivElement;
     private _tableContainer: HTMLDivElement;
+    private readonly _newRowPlaceholder: HTMLDivElement;
     private _scrollEngine: ScrollEngine;
     private _sizeManager = new VariableSizeManager(30)
     private _defaultRowSize = 0
@@ -232,11 +252,30 @@ export class DataGrid<TRow> extends Component {
     private _draggingColIndex = -1
     private _activeGroupColumn?: string
     private _selection = new SelectionManager();
+    private _newRowSession?: NewRowSession<TRow>;
+    private _newRowOperation?: Promise<boolean>;
+    private _newRowError?: string;
+    private _cellToReveal?: { rowIndex: number; colIndex: number; rowsVersion: number };
+    /**
+     * Raised before keyboard navigation changes selection, after a cell edit has
+     * successfully saved. Does not fire for pointer/programmatic selection or
+     * failed edits. Handlers run synchronously; cancel prevents movement only.
+     * @example grid.cellNavigating.subscribe(event => { if (event.key === "Enter") event.cancel = true; });
+     */
+    readonly cellNavigating = new ObservableEvent<DataGridCellNavigatingEvent>();
     private _selectionMouseDown = false;
     private _selectionWholeRowDrag = false;
     private _contextMenu: PopupMenu;
     private _filterPopover?: Popover;
     private _filterRow?: DataFilterRow<TRow>;
+    private _cellEditor?: GridCellEditor<TRow>;
+    private _editingCell?: { rowIndex: number; columnName: string };
+    private _openingEdit = false;
+    private _editVersion = 0;
+    private _pendingEditText?: string;
+    private _sourceChanged?: { dispose(): void };
+    private _editNeedsReload = false;
+    private _rowsVersion = 0;
 
     private _dragDrop: DragDropController;
     private _cancelActiveResize?: () => void;
@@ -250,6 +289,9 @@ export class DataGrid<TRow> extends Component {
         this.dom.classList.add("elg-data-grid");
         this.dom.style.position = "relative";
         this.dom.style.boxSizing = "border-box";
+        this._newRowPlaceholder = e("div", { class: "elg-data-grid-new-row-placeholder", hidden: true,
+            ariaHidden: "true" });
+        this.dom.append(this._newRowPlaceholder);
 
 
         this._headerPanel = e("div", {
@@ -374,6 +416,7 @@ export class DataGrid<TRow> extends Component {
 
     private isSelectableGridRow(row: GridRow | undefined): boolean {
         if (!row) return false;
+        if (row.type === "new") return true;
         if (row.type === "data") return true;
         if (row.type === "group") return this._gridOptions.selectableGroupRows !== false;
         if (row.type === "node") return this._gridOptions.selectableHierarchyNodes === true;
@@ -397,7 +440,240 @@ export class DataGrid<TRow> extends Component {
         }
     });
 
+    /**
+     * Opens the active cell, or an explicit visible row/column. Returns false for
+     * read-only fields, synthetic rows and sources without update.
+     * Supplying initialText replaces the displayed text and lets arrows confirm
+     * and navigate; without it, arrows remain available to the editor.
+     * @example await grid.beginEdit(0, "quantity");
+     * @example await grid.beginEdit(0, "quantity", "7");
+     */
+    public async beginEdit(rowIndex?: number, columnName?: string, initialText?: string): Promise<boolean> {
+        if (this.disposed.Value || this._openingEdit || this._newRowOperation || this._cellEditor?.editor.busy || !this._gridOptions.allowEdit || !this._dataSource.update) return false;
+        if (this._cellEditor && !await this.endEdit()) return false;
+        const active = this._selection.getActiveCell();
+        rowIndex ??= active?.rowIndex;
+        const columns = this._gridColumns.filter(col => col.type === "data");
+        const column = columnName ? columns.find(col => col.dataColumn!.name === columnName) : columns[active?.colIndex ?? 0];
+        if (rowIndex === undefined || rowIndex < 0 || !column || column.dataColumn!.readonly) return false;
+        if (this._newRowSession && rowIndex !== this._gridRows.count() - 1 && !await this.leaveNewRowFor(rowIndex)) return false;
+        const field = column.dataColumn!;
+        const version = ++this._editVersion;
+        this._openingEdit = true;
+        this._pendingEditText = initialText;
+        try {
+            await this._gridRows.load(rowIndex, 1);
+            let gridRow = this._gridRows.getAt(rowIndex);
+            if (gridRow.type === "new") {
+                if (!this._newRowSession) {
+                    const session = await this._dataSource.createNewRow!();
+                    if (version !== this._editVersion || this.disposed.Value) {
+                        await session.cancel(); return false;
+                    }
+                    this._newRowSession = session;
+                }
+                const resolved = await this.getNewGridRow(rowIndex);
+                if (version !== this._editVersion || this.disposed.Value) return false;
+                // Update the cached input row in place, without re-querying the
+                // source. Render its defaults before mounting the first editor.
+                Object.assign(gridRow, resolved);
+                this.ensureCellVisible(rowIndex, columns.indexOf(column));
+                this.refresh();
+                await Utils.nextFrame();
+                if (version !== this._editVersion || this.disposed.Value) return false;
+            }
+            if ((gridRow.type !== "data" && gridRow.type !== "node" && gridRow.type !== "new") || !gridRow.data) return false;
+            const row = (gridRow.type === "new" ? gridRow.data : gridRow.data.data ?? gridRow.data) as TRow;
+            const cached = gridRow.cells?.[field.name];
+            const value = cached && typeof cached === "object" && "value" in cached
+                ? cached.value : await DataViewFieldUtils.getValue(field, row);
+            const text = cached && typeof cached.text === "string"
+                ? cached.text : await DataViewFieldUtils.getText(field, row);
+            if (version !== this._editVersion || this.disposed.Value) return false;
+            // Editing changes the active cell, not the block being traversed by
+            // Tab/Enter. Only an edit outside the selection starts a new range.
+            if (this._selection.isSelected(rowIndex, columns.indexOf(column)))
+                this._selection.setActiveCell(rowIndex, columns.indexOf(column));
+            else this._selection.selectSingleCell(rowIndex, columns.indexOf(column));
+            this.ensureCellVisible(rowIndex, columns.indexOf(column));
+            this._editingCell = { rowIndex, columnName: field.name };
+            this._cellEditor = new GridCellEditor(this.dom, { row, field, value, text,
+                onCommit: async candidate => {
+                    const result = await this._dataSource.update!(row, { [field.name]: candidate });
+                    if (!result.success) throw new Error(result.fieldErrors?.[field.name] ?? result.error);
+                    this._editNeedsReload = true;
+                }
+            }, (key, backwards, restoreFocus) => this.closeCellEditor(key, backwards, restoreFocus));
+            this.refresh();
+            await Utils.nextFrame();
+            if (version !== this._editVersion || !this._cellEditor || this.disposed.Value) return false;
+            this.positionCellEditor();
+            this._cellEditor.focus(this._pendingEditText);
+            return true;
+        } catch (error) {
+            if (this._gridRows.getAt(rowIndex).type !== "new") throw error;
+            this._newRowError = Utils.getErrorText(error);
+            this.refresh(); return false;
+        } finally {
+            if (version === this._editVersion) {
+                this._openingEdit = false; this._pendingEditText = undefined;
+                if (!this._cellEditor) {
+                    this._editingCell = undefined;
+                    if (this._editNeedsReload) { this._editNeedsReload = false; this.reloadEditedData(); }
+                }
+            }
+        }
+    }
+
+    /** Confirms the current cell and closes only after parsing, validation and saving succeed. */
+    public endEdit(): Promise<boolean> {
+        return this._cellEditor?.finish() ?? Promise.resolve(!this._openingEdit);
+    }
+
+    /** Discards the unaccepted draft. A running source update cannot be cancelled. */
+    public cancelEdit(): boolean {
+        if (this._cellEditor?.editor.busy) return false;
+        if (this._openingEdit) {
+            this._editVersion++; this._openingEdit = false; this._pendingEditText = undefined;
+        }
+        if (this._cellEditor) { this._cellEditor.editor.cancel(); this.closeCellEditor(); }
+        else if (this._editNeedsReload) { this._editNeedsReload = false; this.reloadEditedData(); }
+        return true;
+    }
+
+    /** True while a cell editor is being created or is active. */
+    public get editing(): boolean { return this._openingEdit || !!this._cellEditor; }
+
+    /** Last new-row creation/insertion/cancellation error; undefined after a successful retry. */
+    public get newRowError(): string | undefined { return this._newRowError; }
+
+    /** True after input-row editing has created a source-owned pending session. */
+    public get hasPendingNewRow(): boolean { return !!this._newRowSession; }
+
+    /** Confirms the active cell, then inserts the pending row. Failure retains its values for correction. */
+    public async endRowEdit(): Promise<boolean> {
+        if (!await this.endEdit()) return false;
+        if (this._newRowOperation) return this._newRowOperation;
+        const session = this._newRowSession;
+        if (!session) return true;
+        return this.runNewRowOperation(async () => {
+            const result = await session.insert();
+            if (!result.success) throw new Error(result.error);
+            this._newRowSession = undefined;
+        });
+    }
+
+    /** Discards the whole pending row, not just the current cell draft. Cannot interrupt an in-flight command. */
+    public async cancelNewRow(): Promise<boolean> {
+        if (this._newRowOperation || !this.cancelEdit()) return false;
+        const session = this._newRowSession;
+        if (!session) return true;
+        return this.runNewRowOperation(async () => {
+            await session.cancel(); this._newRowSession = undefined;
+        });
+    }
+
+    /** Serializes session completion and exposes errors in the input row without dropping the session. */
+    private runNewRowOperation(action: () => Promise<void>): Promise<boolean> {
+        this._newRowOperation = action().then(() => {
+            this._newRowError = undefined; return true;
+        }, error => {
+            this._newRowError = Utils.getErrorText(error); return false;
+        }).finally(() => {
+            this._newRowOperation = undefined;
+            if (!this.disposed.Value) this.reloadEditedData();
+        });
+        return this._newRowOperation;
+    }
+
+    /** Before a pointer or explicit edit leaves the input row, confirm the source session. */
+    private leaveNewRowFor(rowIndex: number): Promise<boolean> {
+        return this._newRowSession && rowIndex !== this._gridRows.count() - 1
+            ? this.endRowEdit() : Promise.resolve(!this._newRowOperation);
+    }
+
+    /** Resolves pending defaults and business-rule values; the untouched placeholder never invokes field callbacks. */
+    private async getNewGridRow(index: number): Promise<GridRow> {
+        const row = this._newRowSession?.row;
+        return { key: "new-row", type: "new", visibleIndex: index, level: 0, data: row,
+            cells: row ? await DataViewFieldUtils.getDataCells(this._gridOptions.columns, row) : {} };
+    }
+
+    /** Disposes the editor before re-querying; source events never destroy an active draft. */
+    private closeCellEditor(key?: CellEditNavigationKey, backwards = false, restoreFocus = true): void {
+        this._cellEditor?.dispose(); this._cellEditor = undefined; this._editingCell = undefined;
+        if (key) {
+            this.navigateSelection(new KeyboardEvent("keydown", { key, shiftKey: backwards }));
+            const active = this._selection.getActiveCell();
+            if (active) this.ensureCellVisible(active.rowIndex, active.colIndex);
+        }
+        if (this._editNeedsReload) { this._editNeedsReload = false; this.reloadEditedData(); }
+        if (restoreFocus) this._tableContainer.focus();
+        else if (this._newRowSession && !this.dom.contains(this.dom.ownerDocument.activeElement)) void this.endRowEdit();
+        this.refresh();
+    }
+
+    /** Invalidates rows and complete-result summaries after a confirmed mutation or replay. */
+    private reloadEditedData(): void {
+        if (this.disposed.Value || !this._initialized) return;
+        this._totalSummaryLoaded = false; this._totalSummary = [];
+        this.reloadRows();
+    }
+
+    /** Reanchors after VNode patches; an offscreen edit is confirmed before its row is recycled. */
+    private positionCellEditor = (): void => {
+        if (!this._cellEditor || !this._editingCell || this.disposed.Value) return;
+        const { rowIndex, columnName } = this._editingCell;
+        const cell = Array.from(this._contentTable.querySelectorAll<HTMLElement>(`tbody [data-elg-edit-row="${rowIndex}"]`))
+            .find(item => item.getAttribute("data-elg-edit-column") === columnName);
+        if (cell && cell.closest("tr")?.style.display !== "none") this._cellEditor.position(cell, this.dom);
+        else if (!this._openingEdit && !this._cellEditor.editor.busy) {
+            void this.endEdit().then(success => {
+                if (!success && this._editingCell) this.ensureCellVisible(rowIndex,
+                    this._gridColumns.filter(col => col.type === "data").findIndex(col => col.dataColumn!.name === columnName));
+            });
+        }
+    };
+
+    /** Positions a non-interactive label over the input row without merging its selectable cells. */
+    private positionNewRowPlaceholder = (): void => {
+        if (this.disposed.Value) return;
+        const rowIndex = this._gridRows.count() - 1;
+        const cell = rowIndex >= 0 && !this._newRowSession && this._gridRows.getAt(rowIndex)?.type === "new"
+            ? this._contentTable.querySelector<HTMLElement>(`tbody [data-elg-edit-row="${rowIndex}"]`) : null;
+        if (!cell || cell.closest("tr")?.style.display === "none") {
+            setElementProps(this._newRowPlaceholder, { class: "elg-data-grid-new-row-placeholder", ariaHidden: "true", hidden: true, vnodes: [] }); return;
+        }
+        const bounds = cell.getBoundingClientRect();
+        const viewport = this._tableContainer.getBoundingClientRect();
+        const host = this.dom.getBoundingClientRect();
+        const header = this._contentTable.tHead?.getBoundingClientRect();
+        const footer = this._contentTable.tFoot?.getBoundingClientRect();
+        const rowHeader = cell.parentElement?.querySelector<HTMLElement>(".elg-data-grid-cell-rowheader")?.getBoundingClientRect();
+        const left = Math.max(bounds.left, viewport.left, rowHeader?.right ?? viewport.left);
+        const right = viewport.right;
+        const top = Math.max(bounds.top, viewport.top, header?.bottom ?? viewport.top);
+        const bottom = Math.min(bounds.bottom, viewport.bottom, footer && footer.height > 0 ? footer.top : viewport.bottom);
+        setElementProps(this._newRowPlaceholder, {
+            class: "elg-data-grid-new-row-placeholder", ariaHidden: "true",
+            hidden: right <= left || bottom <= top,
+            style: { left: `${left - host.left - this.dom.clientLeft}px`, top: `${top - host.top - this.dom.clientTop}px`,
+                width: `${Math.max(0, right - left)}px`, height: `${Math.max(0, bottom - top)}px` },
+            vnodes: [v("span", { key: "new-row-label" }, this._newRowError ?? this.texts.newRowText)]
+        });
+    };
+
     private handleSelectionKeyDown = async (event: KeyboardEvent) => {
+        if (this._newRowOperation) { event.preventDefault(); event.stopPropagation(); return; }
+        if (this._cellEditor?.element.contains(event.target as Node)) return;
+        if (this._openingEdit && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            if (event.key.length === 1) this._pendingEditText = (this._pendingEditText ?? "") + event.key;
+            else if (event.key === "Backspace") this._pendingEditText = (this._pendingEditText ?? "").slice(0, -1);
+            else if (event.key === "Escape") {
+                this.cancelEdit();
+            } else return;
+            event.preventDefault(); event.stopPropagation(); return;
+        }
         // Form controls own their keyboard navigation. In particular, arrow keys
         // in the filter row must move the caret/value instead of moving the grid
         // selection behind the editor.
@@ -421,7 +697,16 @@ export class DataGrid<TRow> extends Component {
         }
 
         const previous = this._selection.getActiveCell();
-        if (this._selection.handleKeyDown(event, this.getSelectionContext())) {
+        if (event.key === "Escape" && this._newRowSession) {
+            event.preventDefault(); event.stopPropagation(); await this.cancelNewRow(); return;
+        }
+        if (!event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey
+            && (event.key === "F2" || (event.key === "Enter" && !event.shiftKey) || event.key.length === 1) && this._gridOptions.allowEdit) {
+            event.preventDefault(); event.stopPropagation();
+            await this.beginEdit(undefined, undefined, event.key.length === 1 ? event.key : undefined);
+            return;
+        }
+        if (this.navigateSelection(event)) {
             event.preventDefault();
             event.stopPropagation();
             this.refresh();
@@ -432,6 +717,43 @@ export class DataGrid<TRow> extends Component {
             }
         }
     };
+
+    /** Offers the computed destination before applying keyboard selection changes. */
+    private navigateSelection(event: KeyboardEvent): boolean {
+        return this._selection.handleKeyDown(event, this.getSelectionContext(), (currentCell, targetCell) => {
+            const args: DataGridCellNavigatingEvent = {
+                key: event.key as CellEditNavigationKey, shiftKey: event.shiftKey,
+                currentCell, targetCell, cancel: false
+            };
+            this.cellNavigating.invoke(args);
+            if (args.cancel || this.disposed.Value) return null;
+            const target = args.targetCell;
+            const context = this.getSelectionContext();
+            if (!Number.isInteger(target.rowIndex) || !Number.isInteger(target.colIndex)
+                || target.rowIndex < 0 || target.rowIndex >= context.totalRows
+                || target.colIndex < 0 || target.colIndex >= context.columns.length) return null;
+            const newIndex = this._gridRows.count() - 1;
+            const exitsAtEnd = currentCell.rowIndex === newIndex && target.rowIndex === newIndex
+                && !event.shiftKey && (event.key === "Enter"
+                    || (event.key === "Tab" && currentCell.colIndex === context.columns.length - 1));
+            if (this._newRowSession && (target.rowIndex !== newIndex || exitsAtEnd)) {
+                void this.endRowEdit().then(async success => {
+                    if (!success || this.disposed.Value) return;
+                    await this._gridRows.load(0, 1);
+                    if (this.disposed.Value) return;
+                    const rowIndex = exitsAtEnd ? this._gridRows.count() - 1 : Math.min(target.rowIndex, this._gridRows.count() - 1);
+                    const colIndex = exitsAtEnd && event.key === "Tab" ? 0 : target.colIndex;
+                    this._selection.selectSingleCell(rowIndex, colIndex);
+                    // The new row count is known, but the scroll engine still
+                    // has the old range until rendering and measurement finish.
+                    this._cellToReveal = { rowIndex, colIndex, rowsVersion: this._rowsVersion };
+                    this.refresh();
+                });
+                return null;
+            }
+            return target;
+        });
+    }
 
     /** Copies the currently selected data cells to the system clipboard. */
     public async copySelection(addHeaders = false): Promise<boolean> {
@@ -993,13 +1315,18 @@ export class DataGrid<TRow> extends Component {
         this.refresh();
     };
 
-    private beginRowSelection = (event: MouseEvent, row: GridRow) => {
+    private beginRowSelection = async (event: MouseEvent, row: GridRow) => {
         if (event.button !== 0 || !this.isSelectableGridRow(row)) return;
         event.preventDefault();
+        if (this._openingEdit || this._newRowOperation) return;
+        const edited = !!this._cellEditor;
+        if (edited && !await this.endEdit()) return;
+        if (!await this.leaveNewRowFor(row.visibleIndex)) return;
         this._tableContainer.focus();
         this._selectionMouseDown = true;
         this._selectionWholeRowDrag = true;
         this._selection.handleRowHeaderClick(row.visibleIndex, event);
+        if (edited) this.endSelectionDrag();
         this.refresh();
     };
 
@@ -1037,6 +1364,7 @@ export class DataGrid<TRow> extends Component {
 
     /** (Re)builds _dataSource/_isHierarchicalData from _gridOptions.data. */
     private _rebuildDataSource() {
+        this._sourceChanged?.dispose();
 
         const data = this._gridOptions.data;
         let ds: DataSource<TRow>;
@@ -1061,6 +1389,12 @@ export class DataGrid<TRow> extends Component {
                 return DataViewFieldUtils.getValue(col, row);
             }, column => this._columnsIndex.get(column), this._gridOptions.groupIntervals, this._gridOptions.customSummaries);
         }
+        this._sourceChanged = this._dataSource.changed?.subscribe(() => {
+            if (this._newRowSession && this._newRowSession.state !== "pending" && !this._newRowOperation)
+                this._newRowSession = undefined;
+            if (this._cellEditor || this._openingEdit) this._editNeedsReload = true;
+            else this.reloadEditedData();
+        });
     }
 
     private getGroupFilterFunctions = (): FilterFunctionRegistry => {
@@ -1091,6 +1425,10 @@ export class DataGrid<TRow> extends Component {
      * later change - fires an "optionChanged" DOM event on this.dom with the applied patch as detail.
      */
     public setOptions = (options: Partial<DataGridOptions<TRow>>) => {
+        if ((this._cellEditor || this._openingEdit || this._newRowSession || this._newRowOperation) && Object.keys(options).some(key =>
+            ["data", "columns", "defaultColumnOptions", "visibleColumns", "filter", "orderBy", "groupColumns", "hierarchyRootId",
+                "pageSize", "groupIntervals", "groupSummary", "totalSummary", "customSummaries", "allowEdit"].includes(key)))
+            throw new Error("Failed to change grid options. Finish or cancel the active cell edit and pending new row first.");
         const previousFooterVisible = this._gridOptions.showColumnFooters !== false;
 
         if (this._initialized && ("data" in options || "groupColumns" in options || "hierarchyRootId" in options
@@ -1136,6 +1474,7 @@ export class DataGrid<TRow> extends Component {
         this._gridOptions.showFilterRow ??= false;
         this._gridOptions.showColumnFooters ??= true;
         this._gridOptions.showRowHover ??= false;
+        this._gridOptions.allowEdit ??= false;
         this._gridOptions.showBorder ??= true;
         this._gridOptions.cellBorders ??= "rows";
         this._gridOptions.showSelection ??= true;
@@ -1224,6 +1563,7 @@ export class DataGrid<TRow> extends Component {
 
     /** Patches an existing column's definition in place and updates the grid's layout accordingly. */
     setColumnOptions(name: string, patch: Partial<DataGridColumn<TRow>>) {
+        if (this.editing || this._newRowSession || this._newRowOperation) throw new Error("Failed to change grid column. Finish or cancel the active cell edit and pending new row first.");
         if (!this._columnsIndex.has(name)) {
             console.warn(`DataGrid.setColumnOptions: no column named "${name}".`);
             return;
@@ -1413,9 +1753,12 @@ export class DataGrid<TRow> extends Component {
     };
 
     private createGridRows() {
-
-        var provider = new DefaultGridRowsProvider<TRow>(this.getState());
+        const version = ++this._rowsVersion;
+        let provider: GridRowsProvider<TRow> = new DefaultGridRowsProvider<TRow>(this.getState());
+        if (this._gridOptions.allowEdit && this._dataSource.update && this._dataSource.createNewRow)
+            provider = new NewRowGridRowsProvider(provider, index => this.getNewGridRow(index));
         return new VirtualGridRows(provider, this._gridOptions.pageSize!, (args, result) => {
+            if (version !== this._rowsVersion || this.disposed.Value) return;
             if (result.totalSummary) {
                 this._totalSummary = result.totalSummary;
                 this._totalSummaryLoaded = true;
@@ -1563,9 +1906,14 @@ export class DataGrid<TRow> extends Component {
         // Phase 3: WRITE (mutate DOM, no reads!)
         this.renderStickyGroupRows(view)
         this.renderView(view)
+        this.render(this.positionCellEditor);
+        this.render(this.positionNewRowPlaceholder);
 
         // Phase 4: MEASURE (deferred to next frame to avoid forced reflow)
-        requestAnimationFrame(() => this.measureAndAdjustScroll(view))
+        const version = this._rowsVersion;
+        requestAnimationFrame(() => {
+            if (!this.disposed.Value && version === this._rowsVersion) this.measureAndAdjustScroll(view);
+        })
 
     }
 
@@ -1763,6 +2111,20 @@ export class DataGrid<TRow> extends Component {
         if (scrollDelta != 0)
             this._scrollEngine.scrollTop += scrollDelta;
 
+        const reveal = this._cellToReveal;
+        if (reveal) {
+            this._cellToReveal = undefined;
+            const active = this._selection.getActiveCell();
+            if (reveal.rowsVersion === this._rowsVersion
+                && active?.rowIndex === reveal.rowIndex && active.colIndex === reveal.colIndex) {
+                // Measured sizes and sticky sections must both be included before
+                // ensureCellVisible asks the engine to clamp the requested offset.
+                this._scrollEngine.updateDimensions(this._scrollEngine.scrollWidth,
+                    this._sizeManager.getOffset(this._gridRows.count()) + this._headerHeight + this._footerHeight);
+                this.ensureCellVisible(reveal.rowIndex, reveal.colIndex);
+            }
+        }
+
     }
 
 
@@ -1829,7 +2191,8 @@ export class DataGrid<TRow> extends Component {
             return String(cell?.text ?? cell?.value ?? cell ?? "");
         }
         else if (col.type == "rowheader") {
-            return String(gridRow.visibleIndex)
+            if (gridRow.type === "new") return "*";
+            return String(gridRow.visibleIndex + 1)
         }
 
         return "";
@@ -1849,16 +2212,20 @@ export class DataGrid<TRow> extends Component {
     };
 
     private createExpandIcon = (gridRow: GridRow) => v("i", {
-        class: "elg-icon " + (gridRow.expanded ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line"),
-        ui: ["elg", "hover", "me-1"],
+        class: "elg-icon elg-data-grid-expand-icon " + (gridRow.expanded ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line"),
+        ui: ["me-1"],
         onclick: async (e, el) => {
+            if (this._openingEdit || !await this.endRowEdit()) return;
+            await this._gridRows.load(gridRow.visibleIndex, 1);
+            const current = this._gridRows.getAt(gridRow.visibleIndex);
+            if (current.key !== gridRow.key) return;
             assignElementProps(el, {
                 class: "elg-spinner-ring",
-                ui: ["elg", "me-1", "text-primary"]
+                ui: ["me-1", "text-primary"]
             });
 
             const rowIndex = gridRow.visibleIndex;
-            await this._gridRows.setExpanded(gridRow, !gridRow.expanded);
+            await this._gridRows.setExpanded(current, !current.expanded);
 
             if (el.closest(".elg-data-grid-row-sticky")) this.scrollToRow(rowIndex);
             else this.render(this.renderBody);
@@ -1926,7 +2293,22 @@ export class DataGrid<TRow> extends Component {
     };
 
     private applyDataCellInteractions = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
-        props.onmousedown = (e: MouseEvent) => this.beginCellSelection(e, gridRow, col.visibleIndex);
+        props["data-elg-edit-row"] = String(gridRow.visibleIndex);
+        props["data-elg-edit-column"] = col.dataColumn!.name;
+        props.onmousedown = async (e: MouseEvent) => {
+            if (this._openingEdit || this._newRowOperation) { e.preventDefault(); return; }
+            const edited = !!this._cellEditor;
+            if (edited) {
+                e.preventDefault();
+                if (!await this.endEdit()) return;
+            }
+            if (this._newRowSession && gridRow.type !== "new") {
+                e.preventDefault(); if (!await this.leaveNewRowFor(gridRow.visibleIndex)) return;
+            }
+            this.beginCellSelection(e, gridRow, col.visibleIndex);
+            if (edited) this.endSelectionDrag();
+        };
+        props.ondblclick = () => { void this.beginEdit(gridRow.visibleIndex, col.dataColumn!.name); };
         props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
         props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
             e, "cell", gridRow, col.dataColumn, col.visibleIndex - this.rowHeaderOffset
@@ -1953,6 +2335,18 @@ export class DataGrid<TRow> extends Component {
     };
 
     private applyDataCell = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
+        if (gridRow.type === "new") {
+            props.title = this._newRowError ?? this.texts.newRowText;
+            if (this._newRowError) props.className += " elg-text-danger";
+            if (this._newRowError) props["aria-invalid"] = "true";
+            if (!this._newRowSession) {
+                if (col.type === "rowheader") this.applyRowHeaderCell(props, gridRow, col);
+                else if (col.dataColumn) {
+                    this.applyDataCellInteractions(props, gridRow, col);
+                }
+                return;
+            }
+        }
         if (col.type == "rowheader") {
             this.applyRowHeaderCell(props, gridRow, col);
             return;
@@ -2004,7 +2398,8 @@ export class DataGrid<TRow> extends Component {
         ];
         props.onmousedown = (e: MouseEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
         props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
-        props.onclick = (e: MouseEvent, td: HTMLTableCellElement) => {
+        props.onclick = async (e: MouseEvent, td: HTMLTableCellElement) => {
+            if (this._openingEdit || !await this.endRowEdit()) return;
             if (this._gridOptions.sortOnHeaderClick !== false && td.dataset["dragMoved"] !== "true")
                 this.toggleColumnSort(col.dataColumn!.name, e.shiftKey);
         };
@@ -2035,7 +2430,8 @@ export class DataGrid<TRow> extends Component {
         return [operator, ...children];
     };
 
-    private setColumnFilter = (column: DataGridColumn<TRow>, rawValue: string) => {
+    private setColumnFilter = async (column: DataGridColumn<TRow>, rawValue: string) => {
+        if (this._openingEdit || !await this.endRowEdit()) return;
         const value = rawValue.trim();
         const remaining = this.removeColumnFilter(this._gridOptions.filter, column.name);
         const nextFilter = value
@@ -2053,7 +2449,8 @@ export class DataGrid<TRow> extends Component {
         this.setOptions({ filter: targetFilter });
     };
 
-    private openFilterEditor = (anchor: HTMLElement) => {
+    private openFilterEditor = async (anchor: HTMLElement) => {
+        if (this._openingEdit || !await this.endRowEdit()) return;
         this._filterPopover?.dispose();
 
         const editor = new FilterEditor<TRow>({
@@ -2227,6 +2624,7 @@ export class DataGrid<TRow> extends Component {
 
             case "group":
             case "data":
+            case "new":
             case "node":
             case "summary":
                 this.applyDataCell(props, gridRow, col);
@@ -2311,6 +2709,18 @@ export class DataGrid<TRow> extends Component {
 
     /** Releases grid-owned interaction controllers and active gestures. */
     public override dispose(): void {
+        this.cellNavigating.dispose();
+        const cellCompletion = this._cellEditor?.editor.busy ? this._cellEditor.finish() : Promise.resolve();
+        this._editVersion++;
+        this._rowsVersion++;
+        this._openingEdit = false; this._pendingEditText = undefined;
+        this._sourceChanged?.dispose(); this._sourceChanged = undefined;
+        this._cellEditor?.dispose(); this._cellEditor = undefined;
+        const session = this._newRowSession;
+        this._newRowSession = undefined;
+        if (session) void Promise.all([this._newRowOperation, cellCompletion]).then(async () => {
+            if (session.state === "pending") await session.cancel();
+        }).catch(error => console.error("Failed to cancel the disposed grid's pending row.", error));
         this._cancelActiveResize?.();
         this._cancelActiveResize = undefined;
         this.dom.classList.remove("elg-data-grid-resizing", "elg-data-grid-dragging");
@@ -2404,7 +2814,8 @@ export class DataGrid<TRow> extends Component {
         );
     }
 
-    private removeGroupColumn(name: string) {
+    private async removeGroupColumn(name: string) {
+        if (this._openingEdit || !await this.endRowEdit()) return;
         const groupColumns = this._gridOptions.groupColumns!;
         const ix = groupColumns.indexOf(name);
         if (ix < 0) return;
@@ -2438,7 +2849,8 @@ export class DataGrid<TRow> extends Component {
      * or adds/reorders _groupColumns when dropped on the group panel. Triggers a real row reload
      * when the grouping actually changed.
      */
-    private handleColumnDrop = (payload: DragPayload, target: DropTarget) => {
+    private handleColumnDrop = async (payload: DragPayload, target: DropTarget) => {
+        if (this._openingEdit || !await this.endRowEdit()) return;
 
         const columnName = payload.id;
         const groupColumns = this._gridOptions.groupColumns!;

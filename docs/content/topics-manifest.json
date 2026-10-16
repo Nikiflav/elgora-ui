@@ -624,6 +624,29 @@
       "module": "./content/topics/datagrid-selection.js"
     },
     {
+      "id": "datagrid-editing",
+      "title": "Cell editing",
+      "path": "/components/datagrid/editing",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 58,
+      "description": "Edit existing cells with value editors, asynchronous sources and DataTable transactions.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataViewField",
+        "FieldLookup",
+        "FieldEditorContext",
+        "createFieldEditor"
+      ],
+      "keywords": [
+        "edit",
+        "validation",
+        "lookup"
+      ],
+      "module": "./content/topics/datagrid-editing.js"
+    },
+    {
       "id": "datagrid-data-sources",
       "title": "Data sources",
       "path": "/components/datagrid/data-sources",
@@ -645,6 +668,27 @@
         "remote data"
       ],
       "module": "./content/topics/datagrid-data-sources.js"
+    },
+    {
+      "id": "datagrid-keyboard-navigation",
+      "title": "Keyboard navigation",
+      "path": "/components/datagrid/keyboard-navigation",
+      "group": "components",
+      "parent": "datagrid",
+      "order": 59,
+      "description": "Navigate selections, edit cells, operate pickers and customize keyboard destinations.",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridCellNavigatingEvent"
+      ],
+      "keywords": [
+        "keyboard",
+        "Enter",
+        "Tab",
+        "cellNavigating"
+      ],
+      "module": "./content/topics/datagrid-keyboard-navigation.js"
     },
     {
       "id": "datagrid-tree",

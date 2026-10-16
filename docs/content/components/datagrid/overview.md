@@ -76,6 +76,7 @@ Continue with the focused topics:
 - [Grouping](?!=/components/datagrid/grouping)
 - [Summaries](?!=/components/datagrid/summaries)
 - [Selection](?!=/components/datagrid/selection)
+- [Cell editing](?!=/components/datagrid/editing)
 - [Data sources](?!=/components/datagrid/data-sources)
 - [Custom cell rendering](?!=/components/datagrid/custom-cell-rendering)
 - [Context menus](?!=/components/datagrid/context-menus)

@@ -6,7 +6,7 @@ import type { SummaryResult } from "../../data/summary";
 import type { DataSource } from "../../data/DataSource";
 
 /** Discriminates how a GridRow should be rendered. */
-export type RowType = 'data' | 'group' | 'node' | 'summary' | 'loading' | 'error' | 'empty' | 'header' | 'filter' | 'footer' | 'detail';
+export type RowType = 'data' | 'new' | 'group' | 'node' | 'summary' | 'loading' | 'error' | 'empty' | 'header' | 'filter' | 'footer' | 'detail';
 
 /** A single flattened, render-ready row produced by a GridRowsProvider. */
 export interface GridRow {

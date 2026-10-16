@@ -6,11 +6,16 @@ export default function demo(): void {
         { id: "SO-1042", customer: "Northwind Office", date: "2026-04-15", total: 379 }
     ]);
     const header = headers.getRow("SO-1042")!;
+    let lastLineId = 0;
     const lines = dataset.createTable("salesOrderLines", [
         { id: 1, orderId: header.key, product: "Wireless keyboard", quantity: 2, price: 49, total: 98 },
         { id: 2, orderId: header.key, product: "USB-C docking station", quantity: 1, price: 189, total: 189 },
         { id: 3, orderId: header.key, product: "Wireless mouse", quantity: 4, price: 23, total: 92 }
-    ], { defaults: () => ({ orderId: header.key, product: "", quantity: 1, price: 0, total: 0 }) });
+    ], {
+        // Include accepted server mappings as well as locally issued identities.
+        createRowId: table => lastLineId = table.rows.reduce((max, row) => Math.max(max, Number(row.key)), lastLineId) + 1,
+        defaults: () => ({ orderId: header.key, product: "", quantity: 1, price: 0, total: 0 })
+    });
     const coordinator = dataset.undoCoordinator;
     const drafts: NewRowSession<DataRow>[] = [];
     const money = (value: unknown) => new Intl.NumberFormat("en-US", {

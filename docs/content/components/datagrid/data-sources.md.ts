@@ -7,8 +7,9 @@ export default function demo(): void {
     name: `Record ${index + 1}`,
     value: Math.round(Math.random() * 1000)
   }));
+  let nextId = rows.reduce((max, row) => Math.max(max, row.id), 0) + 1;
   const grid = new DataGrid({
-    data: new ArrayDataSource(rows),
+    data: new ArrayDataSource(rows, { createRowId: () => nextId++ }),
     pageSize: 25,
     columns: [
       { name: "id", caption: "ID", width: 70, textAlign: "end" },

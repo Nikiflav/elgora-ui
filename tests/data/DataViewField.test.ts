@@ -13,7 +13,7 @@ describe("Field contracts", () => {
         const field: DataField<Row> = {
             name: "amount", dataType: "number", getValue: async item => item.quantity * item.price
         };
-        const view: DataViewField<Row> = { ...field, caption: "Amount", editorType: "text" };
+        const view: DataViewField<Row> = { ...field, caption: "Amount" };
         const column: DataGridColumn<Row> = { ...view, width: 120, textAlign: "end" };
         expect(await DataViewFieldUtils.getValue(column, row)).toBe(30);
         expect(DataViewFieldUtils.getDataType(view)).toBe("number");
@@ -21,8 +21,8 @@ describe("Field contracts", () => {
         expect(field).not.toHaveProperty("caption");
     });
 
-    it("uses dataType, never editorType, for semantic type decisions", () => {
-        const view: DataViewField<Row> = { name: "name", editorType: "number" };
+    it("defaults an unspecified dataType to string", () => {
+        const view: DataViewField<Row> = { name: "name" };
         expect(getFieldDataType(view)).toBe("string");
         expect(DataViewFieldUtils.getDataType(view)).toBe("string");
         expect(getFieldDataType({ dataType: "date" })).toBe("date");
@@ -63,8 +63,8 @@ describe("Field contracts", () => {
         expect(result[0].value).toBe(15);
     });
 
-    it("does not treat a text field as numeric because its UI editor is numeric", async () => {
-        const view: DataViewField<Row> = { name: "price", dataType: "string", editorType: "number" };
+    it("does not treat an explicitly textual field as numeric", async () => {
+        const view: DataViewField<Row> = { name: "price", dataType: "string" };
         const result = await calculateSummaryResults([row], [{ field: "price", summaryType: "sum" }],
             async item => item.price, () => view);
         expect(result).toEqual([]);

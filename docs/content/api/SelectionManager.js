@@ -334,9 +334,14 @@ export default {
     },
     {
       "name": "handleKeyDown",
-      "type": "(event: KeyboardEvent, ctx: GridContext) => boolean",
-      "description": "Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).\r\nReturns true if the key event was handled by selection.",
-      "tags": [],
+      "type": "(event: KeyboardEvent, ctx: GridContext, beforeNavigate?: (current: SelectionCell, target: SelectionCell) => SelectionCell | null) => boolean",
+      "description": "Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).\r\nReturns true if the key event was handled by selection.\r\nbeforeNavigate receives detached snapshots before any live mutation;\nreturn null to cancel, or different coordinates to redirect. Redirects\nretain an existing containing range, otherwise select the destination.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "manager.handleKeyDown(event, context, (current, target) => target.colIndex === 0 ? null : target);"
+        }
+      ],
       "topics": [],
       "optional": false,
       "source": "src/components/datagrid/SelectionManager.ts",
@@ -352,6 +357,12 @@ export default {
           "type": "GridContext",
           "optional": false,
           "description": ""
+        },
+        {
+          "name": "beforeNavigate",
+          "type": "((current: SelectionCell, target: SelectionCell) => SelectionCell | null) | undefined",
+          "optional": true,
+          "description": ""
         }
       ],
       "returns": {
@@ -359,7 +370,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(event: KeyboardEvent, ctx: GridContext) => boolean"
+      "signature": "(event: KeyboardEvent, ctx: GridContext, beforeNavigate?: (current: SelectionCell, target: SelectionCell) => SelectionCell | null) => boolean"
     },
     {
       "name": "isActive",

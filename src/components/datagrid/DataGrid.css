@@ -3,6 +3,62 @@
     --elg-data-grid-state-color: transparent;
 }
 
+.elg-data-grid-new-row-placeholder {
+    position: absolute;
+    z-index: 3;
+    box-sizing: border-box;
+    pointer-events: none;
+    user-select: none;
+    color: color-mix(in srgb, var(--elg-text-muted) 60%, transparent);
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.elg-data-grid-new-row-placeholder[hidden] {
+    display: none;
+}
+
+.elg-data-grid-new-row-placeholder > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.elg-data-grid-editor {
+    position: absolute;
+    z-index: 6;
+    box-sizing: border-box;
+    background: var(--elg-bg-color);
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+}
+
+.elg-data-grid-editor > div,
+.elg-data-grid-editor > div > .elg-input-frame,
+.elg-data-grid-editor > div > input:not([type="checkbox"]),
+.elg-data-grid-editor > div > .elg-input-frame > input:not([type="checkbox"]) {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.elg-data-grid-editor > div > .elg-field,
+.elg-data-grid-editor > div > .elg-input-frame > .elg-field {
+    border: 0;
+    border-radius: 0;
+    padding: var(--elg-data-grid-editor-padding, 4px 6px);
+    text-align: inherit;
+}
+
+.elg-data-grid-editor > div > input:not([type="checkbox"]),
+.elg-data-grid-editor > div > .elg-input-frame > input:not([type="checkbox"]) {
+    display: block;
+}
+
 
 .elg-data-grid {
     --elg-data-grid-row-height: 36px;
@@ -14,6 +70,7 @@
     --elg-data-grid-header-border: var(--elg-border-color);
     --elg-data-grid-resizer-color: var(--elg-surface-color-3);
     --elg-data-grid-selection-border: var(--elg-selection-border);
+    --elg-data-grid-focus-border: color-mix(in srgb, var(--elg-data-grid-selection-border) 35%, var(--elg-data-grid-cell-border));
     --elg-data-grid-selection-width: 1px;
     --elg-data-grid-sel-color: var(--elg-data-grid-selection-border);
     --elg-data-grid-sel-width: var(--elg-data-grid-selection-width);
@@ -25,6 +82,14 @@
     position: relative;
     box-sizing: border-box;
     border: 1px solid var(--elg-data-grid-cell-border);
+}
+
+.elg-data-grid:focus-within {
+    border-color: var(--elg-data-grid-focus-border);
+}
+
+.elg-data-grid-viewport:focus {
+    outline: none;
 }
 
 .elg-data-grid.elg-data-grid-no-border {
@@ -76,6 +141,15 @@
     cursor: pointer;
 }
 
+.elg-data-grid-expand-icon {
+    background-color: transparent;
+    color: inherit;
+}
+
+.elg-data-grid-expand-icon:hover {
+    background-color: var(--elg-neutral-bg);
+}
+
 .elg-data-grid-cell {
     padding: 4px 6px;
     height: var(--elg-data-grid-row-height);
@@ -115,8 +189,8 @@
      border-top: 1px solid var(--elg-data-grid-cell-border);
 }
 
-.elg-data-grid-row-header .elg-data-grid-cell {
-    border-top: 1px solid var(--elg-data-grid-cell-border);
+.elg-data-grid .elg-data-grid-row-header .elg-data-grid-cell {
+    border-top: 0;
 }
 
 
@@ -255,6 +329,7 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
 
 .elg-data-grid-header {
     display: flex;
+    box-shadow: inset 0 -1px 0 var(--elg-data-grid-cell-border);
     height: var(--elg-data-grid-group-panel-height);
     min-height: var(--elg-data-grid-group-panel-height);
     padding: 6px;

@@ -14,6 +14,7 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
     private _pages: Map<number, GridRow[]> = new Map()
     private _totalCount = 0
     private _loadingPages = new Set<number>()
+    private readonly _pageLoads = new Map<number, Promise<void>>();
     private readonly MAX_PAGE_COUNT = 100;
 
 
@@ -112,13 +113,18 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
         return Math.floor(rowIndex / this._pageSize);
     }
 
-    private async loadPage(pageIndex: number) {
+    /** Shares an in-flight load so callers can await rows already being fetched by rendering. */
+    private loadPage(pageIndex: number): Promise<void> {
+        const existing = this._pageLoads.get(pageIndex);
+        if (existing) return existing;
+        const task = this.fetchPage(pageIndex).finally(() => this._pageLoads.delete(pageIndex));
+        this._pageLoads.set(pageIndex, task);
+        return task;
+    }
+
+    private async fetchPage(pageIndex: number) {
 
         if (this._loadingPages.has(pageIndex)) {
-            return;
-        }
-
-        if (this._loadingPages.size > 1) {
             return;
         }
 

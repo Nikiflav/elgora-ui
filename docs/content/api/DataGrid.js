@@ -11,6 +11,159 @@ export default {
   "source": "src/components/datagrid/DataGrid.ts",
   "members": [
     {
+      "name": "cellNavigating",
+      "type": "ObservableEvent<DataGridCellNavigatingEvent>",
+      "description": "Raised before keyboard navigation changes selection, after a cell edit has\r\nsuccessfully saved. Does not fire for pointer/programmatic selection or\r\nfailed edits. Handlers run synchronously; cancel prevents movement only.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "grid.cellNavigating.subscribe(event => { if (event.key === \"Enter\") event.cancel = true; });"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "beginEdit",
+      "type": "(rowIndex?: number, columnName?: string, initialText?: string) => Promise<boolean>",
+      "description": "Opens the active cell, or an explicit visible row/column. Returns false for\r\nread-only fields, synthetic rows and sources without update.\r\nSupplying initialText replaces the displayed text and lets arrows confirm\r\nand navigate; without it, arrows remain available to the editor.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "await grid.beginEdit(0, \"quantity\");"
+        },
+        {
+          "name": "example",
+          "text": "await grid.beginEdit(0, \"quantity\", \"7\");"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [
+        {
+          "name": "rowIndex",
+          "type": "number | undefined",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "columnName",
+          "type": "string | undefined",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "initialText",
+          "type": "string | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<boolean>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(rowIndex?: number, columnName?: string, initialText?: string) => Promise<boolean>"
+    },
+    {
+      "name": "endEdit",
+      "type": "() => Promise<boolean>",
+      "description": "Confirms the current cell and closes only after parsing, validation and saving succeed.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [],
+      "returns": {
+        "type": "Promise<boolean>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => Promise<boolean>"
+    },
+    {
+      "name": "cancelEdit",
+      "type": "() => boolean",
+      "description": "Discards the unaccepted draft. A running source update cannot be cancelled.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => boolean"
+    },
+    {
+      "name": "editing",
+      "type": "boolean",
+      "description": "True while a cell editor is being created or is active.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "newRowError",
+      "type": "string | undefined",
+      "description": "Last new-row creation/insertion/cancellation error; undefined after a successful retry.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "hasPendingNewRow",
+      "type": "boolean",
+      "description": "True after input-row editing has created a source-owned pending session.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "endRowEdit",
+      "type": "() => Promise<boolean>",
+      "description": "Confirms the active cell, then inserts the pending row. Failure retains its values for correction.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [],
+      "returns": {
+        "type": "Promise<boolean>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => Promise<boolean>"
+    },
+    {
+      "name": "cancelNewRow",
+      "type": "() => Promise<boolean>",
+      "description": "Discards the whole pending row, not just the current cell draft. Cannot interrupt an in-flight command.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [],
+      "returns": {
+        "type": "Promise<boolean>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => Promise<boolean>"
+    },
+    {
       "name": "copySelection",
       "type": "(addHeaders?: boolean) => Promise<boolean>",
       "description": "Copies the currently selected data cells to the system clipboard.",

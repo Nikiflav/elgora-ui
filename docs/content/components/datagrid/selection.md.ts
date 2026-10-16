@@ -1,4 +1,5 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
+import { ArrayDataSource } from "../../../../src/data/ArrayDataSource";
 import { e } from "../../../../src/core/e";
 import type { SelectionMode } from "../../../../src/components/datagrid/SelectionManager";
 
@@ -9,8 +10,9 @@ export default function demo(): void {
     owner: ["Mira", "Ivan", "Nora"][index % 3],
     status: index % 3 === 0 ? "Open" : "Done"
   }));
+  let nextId = rows.reduce((max, row) => Math.max(max, row.id), 0) + 1;
   const grid = new DataGrid({
-    data: rows,
+    data: new ArrayDataSource(rows, { createRowId: () => nextId++ }),
     columns: [
       { name: "id", caption: "ID", width: 60, textAlign: "end" },
       { name: "task", caption: "Task", width: 220 },

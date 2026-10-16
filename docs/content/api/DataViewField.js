@@ -46,16 +46,6 @@ export default {
       "kind": "property"
     },
     {
-      "name": "editorType",
-      "type": "EditorType | undefined",
-      "description": "UI editor type used when the value is edited.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/data/DataViewField.ts",
-      "kind": "property"
-    },
-    {
       "name": "readonly",
       "type": "boolean | undefined",
       "description": "",
@@ -111,7 +101,7 @@ export default {
     {
       "name": "getText",
       "type": "((row: TRow) => Promise<string>) | undefined",
-      "description": "Reads this column's display text for a row; defaults to stringifying getValue().",
+      "description": "Overrides the cell label; otherwise lookup.getValueText, formatValue or string conversion is used.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -132,126 +122,124 @@ export default {
       "signature": "((row: TRow) => Promise<string>) | undefined"
     },
     {
-      "name": "setValue",
-      "type": "((row: TRow, value: any) => Promise<any>) | undefined",
-      "description": "Writes this column's raw value onto a row; defaults to setting `row[name]`.",
+      "name": "resolveText",
+      "type": "((text: string, context: FieldEditContext<TRow>) => any | Promise<any>) | undefined",
+      "description": "Converts external text without mutating the row. Overrides the editor's default resolver.",
       "tags": [],
       "topics": [],
       "optional": true,
       "source": "src/data/DataViewField.ts",
       "parameters": [
-        {
-          "name": "row",
-          "type": "TRow",
-          "optional": false,
-          "description": ""
-        },
-        {
-          "name": "value",
-          "type": "any",
-          "optional": false,
-          "description": ""
-        }
-      ],
-      "returns": {
-        "type": "Promise<any>",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "((row: TRow, value: any) => Promise<any>) | undefined"
-    },
-    {
-      "name": "setText",
-      "type": "((row: TRow, text: string) => Promise<any>) | undefined",
-      "description": "Parses and writes a display-text edit onto a row.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/data/DataViewField.ts",
-      "parameters": [
-        {
-          "name": "row",
-          "type": "TRow",
-          "optional": false,
-          "description": ""
-        },
         {
           "name": "text",
           "type": "string",
           "optional": false,
           "description": ""
+        },
+        {
+          "name": "context",
+          "type": "FieldEditContext<TRow>",
+          "optional": false,
+          "description": ""
         }
       ],
       "returns": {
-        "type": "Promise<any>",
+        "type": "any | Promise<any>",
         "description": ""
       },
       "kind": "method",
-      "signature": "((row: TRow, text: string) => Promise<any>) | undefined"
+      "signature": "((text: string, context: FieldEditContext<TRow>) => any | Promise<any>) | undefined"
     },
     {
-      "name": "getAllowedValues",
-      "type": "((row?: TRow, search?: string, top?: number, skip?: number) => Promise<DisplayValue[]>) | undefined",
-      "description": "Fetches the allowed-value list for dropdown-style editing/filtering.",
+      "name": "validate",
+      "type": "((value: any, context: FieldEditContext<TRow>) => string | undefined | Promise<string | undefined>) | undefined",
+      "description": "Validates both typed and picked values. Return a message to retain the edit for correction.",
       "tags": [],
       "topics": [],
       "optional": true,
       "source": "src/data/DataViewField.ts",
       "parameters": [
         {
-          "name": "row",
-          "type": "TRow | undefined",
-          "optional": true,
+          "name": "value",
+          "type": "any",
+          "optional": false,
           "description": ""
         },
         {
-          "name": "search",
-          "type": "string | undefined",
-          "optional": true,
-          "description": ""
-        },
-        {
-          "name": "top",
-          "type": "number | undefined",
-          "optional": true,
-          "description": ""
-        },
-        {
-          "name": "skip",
-          "type": "number | undefined",
-          "optional": true,
+          "name": "context",
+          "type": "FieldEditContext<TRow>",
+          "optional": false,
           "description": ""
         }
       ],
       "returns": {
-        "type": "Promise<DisplayValue[]>",
+        "type": "string | undefined | Promise<string | undefined>",
         "description": ""
       },
       "kind": "method",
-      "signature": "((row?: TRow, search?: string, top?: number, skip?: number) => Promise<DisplayValue[]>) | undefined"
+      "signature": "((value: any, context: FieldEditContext<TRow>) => string | undefined | Promise<string | undefined>) | undefined"
     },
     {
-      "name": "getAllowedValueText",
-      "type": "((row?: TRow) => Promise<string | undefined>) | undefined",
-      "description": "Resolves display text for a given value, without loading the full allowed-value list.",
+      "name": "formatValue",
+      "type": "((value: any, context: FieldEditContext<TRow>) => string) | undefined",
+      "description": "Formats a value for editing and, absent getText/lookup, for display.",
       "tags": [],
       "topics": [],
       "optional": true,
       "source": "src/data/DataViewField.ts",
       "parameters": [
         {
-          "name": "row",
-          "type": "TRow | undefined",
-          "optional": true,
+          "name": "value",
+          "type": "any",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "context",
+          "type": "FieldEditContext<TRow>",
+          "optional": false,
           "description": ""
         }
       ],
       "returns": {
-        "type": "Promise<string | undefined>",
+        "type": "string",
         "description": ""
       },
       "kind": "method",
-      "signature": "((row?: TRow) => Promise<string | undefined>) | undefined"
+      "signature": "((value: any, context: FieldEditContext<TRow>) => string) | undefined"
+    },
+    {
+      "name": "lookup",
+      "type": "FieldLookup<TRow, any> | undefined",
+      "description": "Lookup data, labels and optional multiple result columns.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
+      "name": "createEditor",
+      "type": "((context: FieldEditorContext<TRow>) => ValueEditor<any>) | undefined",
+      "description": "Creates a specialized editor. Example: ctx => new ToggleEditor({ value: ctx.value, onCommit: ctx.onCommit }).",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "parameters": [
+        {
+          "name": "context",
+          "type": "FieldEditorContext<TRow>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "ValueEditor<any>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "((context: FieldEditorContext<TRow>) => ValueEditor<any>) | undefined"
     }
   ]
 };

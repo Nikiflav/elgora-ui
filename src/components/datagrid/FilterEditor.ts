@@ -7,7 +7,7 @@ import type { DataType } from "../../data/DataField";
 import type { DataFilter, FilterSelector } from "../../data/filter";
 import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
 
-export type FilterEditorColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType" | "editorType">;
+export type FilterEditorColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType">;
 export type FilterEditorOperator = "=" | "<>" | ">" | ">=" | "<" | "<=" | "contains" | "notcontains" | "startswith" | "endswith";
 
 export interface FilterEditorOptions<TRow = any> extends Omit<ComponentOptions, "children" | "tag"> {

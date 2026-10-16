@@ -65,12 +65,15 @@ const amountView: DataViewField<OrderLine> = {
 
 API: [DataViewField.caption](?!=/api-reference/DataViewField#caption),
 [getText](?!=/api-reference/DataViewField#getText),
-[editorType](?!=/api-reference/DataViewField#editorType),
-[getAllowedValues](?!=/api-reference/DataViewField#getAllowedValues).
+[lookup](?!=/api-reference/DataViewField#lookup),
+[createEditor](?!=/api-reference/DataViewField#createEditor).
 
-`editorType` chooses the UI editor; `dataType` describes the value. A number can,
-for example, use a text editor without becoming a string field.
-Individual components determine which presentation options they support.
+`dataType` selects the standard editor. `lookup` supplies searchable choices and
+optional result columns; `createEditor` provides a custom editor without changing
+the semantic type. `resolveText`, `validate`, and `formatValue` describe conversion,
+validation, and editable formatting. Hosts pass row-bound callbacks to value-only
+editors and save through their data source, never through field setters.
+See [Cell editing](?!=/components/datagrid/editing) for interactive examples.
 
 ## Grid columns
 

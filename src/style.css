@@ -485,8 +485,15 @@ body {
   inset: 0;
   border-radius: 4px;
   background: hsl(var(--elg-text-h) var(--elg-text-s) var(--elg-text-l) / 0.3);
+  opacity: var(--elg-scrollbar-thumb-opacity, 0.45);
   pointer-events: none;
-  transition: transform 0.15s;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+/* Proximity expands the thumb, but only direct hover or dragging strengthens its paint. */
+.elg-scrollbar:hover > .elg-scrollbar-thumb::before,
+.elg-scrollbar.elg-scrollbar-dragging > .elg-scrollbar-thumb::before {
+  opacity: var(--elg-scrollbar-thumb-active-opacity, 1);
 }
 
 /* Keep the full hit area and scroll geometry while narrowing only the painted thumb. */

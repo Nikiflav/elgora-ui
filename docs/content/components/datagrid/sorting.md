@@ -23,7 +23,7 @@ Sorting can be changed from the column context menu or configured with
 `orderBy`. Use a string for ascending order or a tuple for an explicit
 direction.
 
-<live-demo id="datagrid-sorting" height="360px"></live-demo>
+<live-demo id="datagrid-sorting" height="376px"></live-demo>
 
 The example starts with a two-column sort. Try the following interactions:
 

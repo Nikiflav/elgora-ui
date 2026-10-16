@@ -3,7 +3,7 @@ import { DataViewFieldUtils } from "../../data/DataViewField";
 import type { DataViewField } from "../../data/DataViewField";
 import type { DataType } from "../../data/DataField";
 
-export type DataFilterRowColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType" | "editorType">;
+export type DataFilterRowColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType">;
 
 /** One text expression displayed by a filter-row column. */
 export interface DataFilterRowValue {

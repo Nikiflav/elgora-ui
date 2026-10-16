@@ -1582,6 +1582,35 @@
       "definition": "{\n  tag?: string\r\n  key?: any\r\n  ui?: UiStyle | UiStyle[]\r\n\r\n  children?: ComponentChild\r\n} & ComponentLifecycleProps & DOMProps"
     },
     {
+      "name": "createFieldEditor",
+      "kind": "function",
+      "type": "<TRow>(context: FieldEditorContext<TRow>) => ValueEditor<any>",
+      "description": "Creates a value-only editor for a field; shared by grids, forms and cards.\nThe caller owns its lifetime and supplies the asynchronous persistence callback.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const editor = createFieldEditor({ row, field, value, onCommit: saveValue });"
+        }
+      ],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createFieldEditor",
+      "source": "src/components/editors/createFieldEditor.ts",
+      "parameters": [
+        {
+          "name": "context",
+          "type": "FieldEditorContext<TRow>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "ValueEditor<any>",
+        "description": ""
+      }
+    },
+    {
       "name": "DataCell",
       "kind": "type",
       "type": "any",
@@ -2190,7 +2219,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataFilterRowColumn",
       "source": "src/components/datagrid/DataFilterRow.ts",
-      "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+      "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\">"
     },
     {
       "name": "DataFilterRowOperator",
@@ -2251,6 +2280,159 @@
       "path": "/api-reference/DataGrid",
       "source": "src/components/datagrid/DataGrid.ts",
       "members": [
+        {
+          "name": "cellNavigating",
+          "type": "ObservableEvent<DataGridCellNavigatingEvent>",
+          "description": "Raised before keyboard navigation changes selection, after a cell edit has\r\nsuccessfully saved. Does not fire for pointer/programmatic selection or\r\nfailed edits. Handlers run synchronously; cancel prevents movement only.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "grid.cellNavigating.subscribe(event => { if (event.key === \"Enter\") event.cancel = true; });"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "beginEdit",
+          "type": "(rowIndex?: number, columnName?: string, initialText?: string) => Promise<boolean>",
+          "description": "Opens the active cell, or an explicit visible row/column. Returns false for\r\nread-only fields, synthetic rows and sources without update.\r\nSupplying initialText replaces the displayed text and lets arrows confirm\r\nand navigate; without it, arrows remain available to the editor.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await grid.beginEdit(0, \"quantity\");"
+            },
+            {
+              "name": "example",
+              "text": "await grid.beginEdit(0, \"quantity\", \"7\");"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [
+            {
+              "name": "rowIndex",
+              "type": "number | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "columnName",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            },
+            {
+              "name": "initialText",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(rowIndex?: number, columnName?: string, initialText?: string) => Promise<boolean>"
+        },
+        {
+          "name": "endEdit",
+          "type": "() => Promise<boolean>",
+          "description": "Confirms the current cell and closes only after parsing, validation and saving succeed.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
+          "name": "cancelEdit",
+          "type": "() => boolean",
+          "description": "Discards the unaccepted draft. A running source update cannot be cancelled.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
+        },
+        {
+          "name": "editing",
+          "type": "boolean",
+          "description": "True while a cell editor is being created or is active.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "newRowError",
+          "type": "string | undefined",
+          "description": "Last new-row creation/insertion/cancellation error; undefined after a successful retry.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "hasPendingNewRow",
+          "type": "boolean",
+          "description": "True after input-row editing has created a source-owned pending session.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "endRowEdit",
+          "type": "() => Promise<boolean>",
+          "description": "Confirms the active cell, then inserts the pending row. Failure retains its values for correction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
+          "name": "cancelNewRow",
+          "type": "() => Promise<boolean>",
+          "description": "Discards the whole pending row, not just the current cell draft. Cannot interrupt an in-flight command.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
         {
           "name": "copySelection",
           "type": "(addHeaders?: boolean) => Promise<boolean>",
@@ -2616,6 +2798,70 @@
       "definition": "\"none\" | \"rows\" | \"all\""
     },
     {
+      "name": "DataGridCellNavigatingEvent",
+      "kind": "interface",
+      "type": "DataGridCellNavigatingEvent",
+      "description": "Synchronous keyboard-navigation hook. Coordinates refer to visible data columns, excluding row headers.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/DataGridCellNavigatingEvent",
+      "source": "src/components/datagrid/DataGrid.ts",
+      "members": [
+        {
+          "name": "key",
+          "type": "CellEditNavigationKey",
+          "description": "Navigation key; Enter that starts editing does not raise this event.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "shiftKey",
+          "type": "boolean",
+          "description": "True for reverse Tab/Enter traversal or extended arrow selection.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "currentCell",
+          "type": "{ readonly rowIndex: number; readonly colIndex: number; }",
+          "description": "Active cell before navigation; changing this snapshot has no effect.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "targetCell",
+          "type": "{ rowIndex: number; colIndex: number; }",
+          "description": "Proposed destination. Change its coordinates to redirect navigation. Invalid destinations cancel the move.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "cancel",
+          "type": "boolean",
+          "description": "Set true to retain the active cell and selection. A completed edit is not rolled back.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "DataGridColumn",
       "kind": "interface",
       "type": "DataGridColumn<TRow>",
@@ -2876,7 +3122,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
       "source": "src/components/datagrid/DataGrid.ts",
-      "definition": "{\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
+      "definition": "{\r\n    /** Enables existing-cell editing when the source supports update. Defaults to false. */\r\n    allowEdit?: boolean;\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
     },
     {
       "name": "DataList",
@@ -5502,16 +5748,6 @@
           "kind": "property"
         },
         {
-          "name": "editorType",
-          "type": "EditorType | undefined",
-          "description": "UI editor type used when the value is edited.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/data/DataViewField.ts",
-          "kind": "property"
-        },
-        {
           "name": "readonly",
           "type": "boolean | undefined",
           "description": "",
@@ -5567,7 +5803,7 @@
         {
           "name": "getText",
           "type": "((row: TRow) => Promise<string>) | undefined",
-          "description": "Reads this column's display text for a row; defaults to stringifying getValue().",
+          "description": "Overrides the cell label; otherwise lookup.getValueText, formatValue or string conversion is used.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -5588,126 +5824,124 @@
           "signature": "((row: TRow) => Promise<string>) | undefined"
         },
         {
-          "name": "setValue",
-          "type": "((row: TRow, value: any) => Promise<any>) | undefined",
-          "description": "Writes this column's raw value onto a row; defaults to setting `row[name]`.",
+          "name": "resolveText",
+          "type": "((text: string, context: FieldEditContext<TRow>) => any | Promise<any>) | undefined",
+          "description": "Converts external text without mutating the row. Overrides the editor's default resolver.",
           "tags": [],
           "topics": [],
           "optional": true,
           "source": "src/data/DataViewField.ts",
           "parameters": [
-            {
-              "name": "row",
-              "type": "TRow",
-              "optional": false,
-              "description": ""
-            },
-            {
-              "name": "value",
-              "type": "any",
-              "optional": false,
-              "description": ""
-            }
-          ],
-          "returns": {
-            "type": "Promise<any>",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "((row: TRow, value: any) => Promise<any>) | undefined"
-        },
-        {
-          "name": "setText",
-          "type": "((row: TRow, text: string) => Promise<any>) | undefined",
-          "description": "Parses and writes a display-text edit onto a row.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/data/DataViewField.ts",
-          "parameters": [
-            {
-              "name": "row",
-              "type": "TRow",
-              "optional": false,
-              "description": ""
-            },
             {
               "name": "text",
               "type": "string",
               "optional": false,
               "description": ""
+            },
+            {
+              "name": "context",
+              "type": "FieldEditContext<TRow>",
+              "optional": false,
+              "description": ""
             }
           ],
           "returns": {
-            "type": "Promise<any>",
+            "type": "any | Promise<any>",
             "description": ""
           },
           "kind": "method",
-          "signature": "((row: TRow, text: string) => Promise<any>) | undefined"
+          "signature": "((text: string, context: FieldEditContext<TRow>) => any | Promise<any>) | undefined"
         },
         {
-          "name": "getAllowedValues",
-          "type": "((row?: TRow, search?: string, top?: number, skip?: number) => Promise<DisplayValue[]>) | undefined",
-          "description": "Fetches the allowed-value list for dropdown-style editing/filtering.",
+          "name": "validate",
+          "type": "((value: any, context: FieldEditContext<TRow>) => string | undefined | Promise<string | undefined>) | undefined",
+          "description": "Validates both typed and picked values. Return a message to retain the edit for correction.",
           "tags": [],
           "topics": [],
           "optional": true,
           "source": "src/data/DataViewField.ts",
           "parameters": [
             {
-              "name": "row",
-              "type": "TRow | undefined",
-              "optional": true,
+              "name": "value",
+              "type": "any",
+              "optional": false,
               "description": ""
             },
             {
-              "name": "search",
-              "type": "string | undefined",
-              "optional": true,
-              "description": ""
-            },
-            {
-              "name": "top",
-              "type": "number | undefined",
-              "optional": true,
-              "description": ""
-            },
-            {
-              "name": "skip",
-              "type": "number | undefined",
-              "optional": true,
+              "name": "context",
+              "type": "FieldEditContext<TRow>",
+              "optional": false,
               "description": ""
             }
           ],
           "returns": {
-            "type": "Promise<DisplayValue[]>",
+            "type": "string | undefined | Promise<string | undefined>",
             "description": ""
           },
           "kind": "method",
-          "signature": "((row?: TRow, search?: string, top?: number, skip?: number) => Promise<DisplayValue[]>) | undefined"
+          "signature": "((value: any, context: FieldEditContext<TRow>) => string | undefined | Promise<string | undefined>) | undefined"
         },
         {
-          "name": "getAllowedValueText",
-          "type": "((row?: TRow) => Promise<string | undefined>) | undefined",
-          "description": "Resolves display text for a given value, without loading the full allowed-value list.",
+          "name": "formatValue",
+          "type": "((value: any, context: FieldEditContext<TRow>) => string) | undefined",
+          "description": "Formats a value for editing and, absent getText/lookup, for display.",
           "tags": [],
           "topics": [],
           "optional": true,
           "source": "src/data/DataViewField.ts",
           "parameters": [
             {
-              "name": "row",
-              "type": "TRow | undefined",
-              "optional": true,
+              "name": "value",
+              "type": "any",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "FieldEditContext<TRow>",
+              "optional": false,
               "description": ""
             }
           ],
           "returns": {
-            "type": "Promise<string | undefined>",
+            "type": "string",
             "description": ""
           },
           "kind": "method",
-          "signature": "((row?: TRow) => Promise<string | undefined>) | undefined"
+          "signature": "((value: any, context: FieldEditContext<TRow>) => string) | undefined"
+        },
+        {
+          "name": "lookup",
+          "type": "FieldLookup<TRow, any> | undefined",
+          "description": "Lookup data, labels and optional multiple result columns.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createEditor",
+          "type": "((context: FieldEditorContext<TRow>) => ValueEditor<any>) | undefined",
+          "description": "Creates a specialized editor. Example: ctx => new ToggleEditor({ value: ctx.value, onCommit: ctx.onCommit }).",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "context",
+              "type": "FieldEditorContext<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "ValueEditor<any>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((context: FieldEditorContext<TRow>) => ValueEditor<any>) | undefined"
         }
       ]
     },
@@ -6090,19 +6324,6 @@
       }
     },
     {
-      "name": "EditorType",
-      "kind": "type",
-      "type": "any",
-      "description": "Input control used to edit a column's value.",
-      "tags": [],
-      "topics": [],
-      "group": "types",
-      "namespace": "Data",
-      "path": "/api-reference/EditorType",
-      "source": "src/data/DataViewField.ts",
-      "definition": "\"text\" | \"number\" | \"date\" | \"datetime-local\" | \"time\" | \"checkbox\" | \"file\" | \"password\" | \"textarea\" | \"color\""
-    },
-    {
       "name": "ElgoraUI",
       "kind": "variable",
       "type": "{ scheduler: Scheduler; }",
@@ -6154,6 +6375,179 @@
         "type": "boolean",
         "description": ""
       }
+    },
+    {
+      "name": "FieldEditContext",
+      "kind": "interface",
+      "type": "FieldEditContext<TRow>",
+      "description": "Original source row and field supplied to value conversion and validation.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FieldEditContext",
+      "source": "src/data/DataViewField.ts",
+      "members": [
+        {
+          "name": "row",
+          "type": "TRow",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "field",
+          "type": "DataViewField<TRow>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "FieldEditorContext",
+      "kind": "interface",
+      "type": "FieldEditorContext<TRow>",
+      "description": "Context for custom editor creation. Pass onCommit to the editor to retain source-controlled saving.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FieldEditorContext",
+      "source": "src/data/DataViewField.ts",
+      "members": [
+        {
+          "name": "text",
+          "type": "string | undefined",
+          "description": "Preloaded cell label, avoiding a second lookup request at the start of editing.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onCommit",
+          "type": "(value: any) => Promise<void>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "any",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: any) => Promise<void>"
+        }
+      ]
+    },
+    {
+      "name": "FieldLookup",
+      "kind": "interface",
+      "type": "FieldLookup<TRow, TItem>",
+      "description": "Shared lookup data and presentation. Items need not have a prescribed shape.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/FieldLookup",
+      "source": "src/data/DataViewField.ts",
+      "members": [
+        {
+          "name": "columns",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").DataGridColumn<TItem>[] | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "loadItems",
+          "type": "(query: LookupQuery, context: FieldEditContext<TRow>) => Promise<LookupResult<TItem>>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "query",
+              "type": "LookupQuery",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "FieldEditContext<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<LookupResult<TItem>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(query: LookupQuery, context: FieldEditContext<TRow>) => Promise<LookupResult<TItem>>"
+        },
+        {
+          "name": "getValueText",
+          "type": "(value: any, context: FieldEditContext<TRow>) => string | Promise<string>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "any",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "FieldEditContext<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string | Promise<string>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: any, context: FieldEditContext<TRow>) => string | Promise<string>"
+        }
+      ]
     },
     {
       "name": "FilterEditor",
@@ -6267,7 +6661,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/FilterEditorColumn",
       "source": "src/components/datagrid/FilterEditor.ts",
-      "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\" | \"editorType\">"
+      "definition": "Pick<DataViewField<TRow>, \"name\" | \"caption\" | \"dataType\">"
     },
     {
       "name": "FilterEditorOperator",
@@ -9771,9 +10165,14 @@
         },
         {
           "name": "handleKeyDown",
-          "type": "(event: KeyboardEvent, ctx: GridContext) => boolean",
-          "description": "Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).\r\nReturns true if the key event was handled by selection.",
-          "tags": [],
+          "type": "(event: KeyboardEvent, ctx: GridContext, beforeNavigate?: (current: SelectionCell, target: SelectionCell) => SelectionCell | null) => boolean",
+          "description": "Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).\r\nReturns true if the key event was handled by selection.\r\nbeforeNavigate receives detached snapshots before any live mutation;\nreturn null to cancel, or different coordinates to redirect. Redirects\nretain an existing containing range, otherwise select the destination.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "manager.handleKeyDown(event, context, (current, target) => target.colIndex === 0 ? null : target);"
+            }
+          ],
           "topics": [],
           "optional": false,
           "source": "src/components/datagrid/SelectionManager.ts",
@@ -9789,6 +10188,12 @@
               "type": "GridContext",
               "optional": false,
               "description": ""
+            },
+            {
+              "name": "beforeNavigate",
+              "type": "((current: SelectionCell, target: SelectionCell) => SelectionCell | null) | undefined",
+              "optional": true,
+              "description": ""
             }
           ],
           "returns": {
@@ -9796,7 +10201,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(event: KeyboardEvent, ctx: GridContext) => boolean"
+          "signature": "(event: KeyboardEvent, ctx: GridContext, beforeNavigate?: (current: SelectionCell, target: SelectionCell) => SelectionCell | null) => boolean"
         },
         {
           "name": "isActive",

@@ -43,7 +43,7 @@ status text is also rendered in uppercase. Select one or more cells to see the
 selection border and background tint applied without changing the renderer's
 text.
 
-<live-demo id="datagrid-custom-cell-rendering" height="360px"></live-demo>
+<live-demo id="datagrid-custom-cell-rendering" height="376px"></live-demo>
 
 ```js
 const grid = new DataGrid({

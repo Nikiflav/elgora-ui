@@ -24,7 +24,7 @@ DataGrid virtualizes its body and requests only the rows needed for the
 viewport. This keeps the DOM small even when the logical dataset contains many
 records.
 
-<live-demo id="datagrid-performance" height="360px"></live-demo>
+<live-demo id="datagrid-performance" height="376px"></live-demo>
 
 Use a `DataSource` for paging or remote loading, keep custom renderers focused,
 and avoid recreating expensive objects during every cell render. The grid also

@@ -4,7 +4,10 @@ export default function demo(): void {
     const coordinator = new UndoCoordinator();
     const viewHistory = coordinator.createHistory("view");
     const dataset = new DataSet({ undoCoordinator: coordinator });
-    const table = dataset.createTable("items", [{ id: 1, amount: 20 }]);
+    let lastItemId = 0;
+    const table = dataset.createTable("items", [{ id: 1, amount: 20 }], {
+        createRowId: table => lastItemId = table.rows.reduce((max, row) => Math.max(max, Number(row.key)), lastItemId) + 1
+    });
     const row = table.rows[0];
     let compact = false;
     let working = false;

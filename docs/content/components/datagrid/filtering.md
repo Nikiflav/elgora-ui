@@ -34,7 +34,7 @@ range, `500..` for values greater than or equal to `500`, or `..500` for values
 less than or equal to `500`. Date ranges use the same syntax, for example
 `today..` and `..10.12.26`.
 
-<live-demo id="datagrid-filtering" height="360px"></live-demo>
+<live-demo id="datagrid-filtering" height="376px"></live-demo>
 
 The example starts with an explicit `contains` filter. Application code can
 change it at any time:

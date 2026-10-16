@@ -1,5 +1,6 @@
 import { e } from "../../../../src/core/e";
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
+import { ArrayDataSource } from "../../../../src/data/ArrayDataSource";
 import type { ColumnWidthMode } from "../../../../src/components/datagrid/DataGrid";
 
 export default function demo(): void {
@@ -9,8 +10,9 @@ export default function demo(): void {
     { id: 3, product: "Webcam", quantity: 7, total: 483 },
     { id: 4, product: "Dock", quantity: 3, total: 537 }
   ];
+  let nextId = rows.reduce((max, row) => Math.max(max, row.id), 0) + 1;
   const grid = new DataGrid({
-    data: rows,
+    data: new ArrayDataSource(rows, { createRowId: () => nextId++ }),
     columns: [
       { name: "id", caption: "ID", width: 60, textAlign: "end" },
       { name: "product", caption: "Product" },
