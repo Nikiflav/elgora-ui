@@ -3,10 +3,9 @@ export default {
   "title": "Download and installation",
   "path": "/getting-started/download",
   "group": "getting-started",
-  "order": 2,
+  "order": 1,
   "description": "Choose how to include ElgoraUI in a browser application.",
-  "prev": "/getting-started/framework-overview",
-  "next": "/components",
+  "next": "/getting-started/quick-start",
   "toc": true,
   "api": [],
   "keywords": [

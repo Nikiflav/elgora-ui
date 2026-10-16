@@ -97,3 +97,35 @@ a {
     min-height: 100vh;
   }
 }
+
+/* Documentation shell; component examples continue to use library UI styles. */
+.docs-header { flex: none; min-height: 60px; background: var(--elg-bg-color); }
+.docs-header > a { white-space: nowrap; }
+.docs-header input { min-width: 0; flex: 1; max-width: 420px; margin-left: auto; }
+.docs-nav-toggle { display: none; }
+.docs-home { max-width: 1240px; margin: 0 auto; width: 100%; }
+.docs-home-hero { padding: .75rem 0 1rem; }
+.docs-home .docs-eyebrow { font-size: .75rem; letter-spacing: .13em; font-weight: 600; margin: 0 0 1rem; }
+.docs-home h1 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -.045em; margin-bottom: 1rem; }
+.docs-home-lead { max-width: 58ch; font-size: 1.15rem; color: var(--elg-text-muted); margin-bottom: 1.5rem; }
+.docs-home h2 { font-size: 1.4rem; letter-spacing: -.025em; margin-top: 2.25rem; }
+.docs-home-paths { margin: 1.5rem 0 2rem; }
+.docs-home-paths > a { color: inherit; text-decoration: none; padding: 1rem 0; border-top: 1px solid var(--elg-border-color); }
+.docs-home-paths > a:hover span { text-decoration: underline; }
+.docs-home-paths i { color: var(--elg-primary-color); font-size: 1.4rem; }
+.docs-home-paths h3 { margin: .5rem 0; font-size: 1rem; }
+.docs-home-paths p { color: var(--elg-text-muted); font-size: .9rem; }
+.docs-home-paths span { color: var(--elg-primary-color); font-size: .85rem; }
+.docs-home .shiki { border: 1px solid var(--elg-border-color); border-radius: 6px; }
+
+@media (max-width: 1100px) {
+  .docs-topic-toc { display: none !important; }
+}
+@media (max-width: 900px) {
+  .docs-nav-toggle { display: inline-flex; align-items: center; }
+  .docs-sidebar { display: none !important; }
+  .docs-sidebar[data-open] { display: flex !important; position: fixed; z-index: 2000; top: 60px; bottom: 0; left: 0; height: auto !important; max-width: 85vw; box-shadow: 8px 0 24px var(--elg-shadow-color); }
+  .docs-content { padding: 1rem !important; }
+  .docs-header { padding-inline: 1rem !important; gap: .5rem !important; }
+  .docs-home-hero { padding-top: .5rem; }
+}

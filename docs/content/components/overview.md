@@ -1,7 +1,7 @@
 ---
 id: components-overview
-title: Component overview
-group: components
+title: Components and lifecycle
+group: fundamentals
 path: /components
 order: 10
 description: Learn what an ElgoraUI Component adds to a native HTMLElement.
@@ -14,7 +14,7 @@ keywords:
   - observable
 ---
 
-# Component overview
+# Components and lifecycle
 
 `Component` is ElgoraUI's small, composable abstraction over a native
 `HTMLElement`. It keeps the browser DOM as the actual rendering target, while

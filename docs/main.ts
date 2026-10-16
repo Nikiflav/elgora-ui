@@ -3,30 +3,12 @@ import { c, cbutton, cdiv } from '../src/core/c';
 import { a, div, e, nav } from '../src/core/e';
 import { ObservableValue } from '../src/core/ElgoraUI';
 import { UiStyle } from '../src/core/UiStyle';
-import { overviewRouterHandler } from './overview-demo';
 import { MarkdownTopicPage } from './app/MarkdownTopicPage';
 import { TopicManifest } from './app/types';
 import { TopicLoader } from './app/TopicLoader';
 import { ApiLoader } from './app/ApiLoader';
 import { ApiTopicPage } from './app/ApiTopicPage';
 import { Scrollbars } from '../src/components/scrollbar/Scrollbars';
-
-function topicPlaceholder(path: string, title: string, description: string): RouterHandler {
-    return {
-        path,
-        createPage() {
-            return {
-                title,
-                description,
-                dom: div({ ui: ["elg", "box", "p-4", "d-flex", "flex-col", "gap-2"] },
-                    e("h2", title),
-                    e("p", description),
-                    e("p", { ui: ["elg", "text-muted"] }, "This documentation topic will be expanded with API reference, live examples, and editable code.")
-                )
-            };
-        }
-    };
-}
 
 type SidebarLink = {
     id?: string;
@@ -100,6 +82,18 @@ function createSidebarGroup(title: string, links: SidebarLink[], currentPath: Ob
 }
 
 function createDocsHeader(sidebar: HTMLElement) {
+    const toggleNavigation = e("button", { type: "button", class: "docs-nav-toggle",
+        ui: ["elg", "btn", "neutral"], ariaLabel: "Toggle navigation", ariaExpanded: "false" },
+        e("i", { class: "ri-menu-line", ariaHidden: "true" }));
+    toggleNavigation.setAttribute("aria-controls", "docs-sidebar");
+    const closeNavigation = () => { delete sidebar.dataset.open; toggleNavigation.setAttribute("aria-expanded", "false"); };
+    toggleNavigation.addEventListener("click", () => {
+        const open = !sidebar.dataset.open;
+        if (open) sidebar.dataset.open = "true"; else closeNavigation();
+        toggleNavigation.setAttribute("aria-expanded", String(open));
+    });
+    sidebar.addEventListener("click", event => { if ((event.target as Element).closest("a")) closeNavigation(); });
+    sidebar.addEventListener("keydown", event => { if (event.key === "Escape") { closeNavigation(); toggleNavigation.focus(); } });
     const theme = new ObservableValue(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
     const search = e("input", {
         ui: ["elg"],
@@ -128,10 +122,10 @@ function createDocsHeader(sidebar: HTMLElement) {
         }
     });
 
-    return e("header", { ui: ["elg", "box", "d-flex", "items-center", "gap-3", "px-4", "py-2"] },
+    return e("header", { class: "docs-header", ui: ["elg", "d-flex", "items-center", "gap-3", "px-4", "py-2", "border-bottom"] },
+        toggleNavigation,
         e("a", { href: "?!=/", ui: ["elg", "fw-700", "no-underline"] }, "ELGORA UI"),
         search,
-        e("span", { ui: ["elg", "text-muted"] }, "Docs"),
         themeButton
     );
 }
@@ -151,9 +145,13 @@ async function bootstrap(): Promise<void> {
     const currentPath = new ObservableValue(new URLSearchParams(window.location.search).get("!") || "/");
     const topicLoader = new TopicLoader();
     const apiLoader = new ApiLoader();
+    let activePage: { dispose(): void } | undefined;
+    let pageVersion = 0;
     const markdownRoutes: RouterHandler[] = markdownTopics.map(entry => ({
         path: entry.path,
         createPage() {
+            const version = ++pageVersion;
+            activePage?.dispose(); activePage = undefined;
             const pageRoot = div({ ui: ["elg", "p-4", "text-muted"] }, "Loading documentation topic…");
             return {
                 title: entry.title,
@@ -162,7 +160,10 @@ async function bootstrap(): Promise<void> {
                 async init() {
                     try {
                         const topic = await topicLoader.load(entry);
+                        if (version !== pageVersion) return;
                         const page = new MarkdownTopicPage(topic, apiLoader, apiManifest.entries);
+                        activePage = page;
+                        pageRoot.className = "elg elg-min-w-0 elg-w-100";
                         pageRoot.replaceChildren(page.dom);
                     } catch (error) {
                         pageRoot.className = "elg p-4 text-danger";
@@ -176,6 +177,8 @@ async function bootstrap(): Promise<void> {
     const apiRoutes: RouterHandler[] = apiManifest.entries.map(entry => ({
         path: entry.path,
         createPage() {
+            const version = ++pageVersion;
+            activePage?.dispose(); activePage = undefined;
             const pageRoot = div({ ui: ["elg", "p-4", "text-muted"] }, "Loading API reference…");
             const revealMember = () => {
                 if (!window.location.hash) return;
@@ -192,7 +195,10 @@ async function bootstrap(): Promise<void> {
                 async init() {
                     try {
                         const apiEntry = await apiLoader.load(entry);
+                        if (version !== pageVersion) return;
                         const page = new ApiTopicPage(apiEntry, markdownTopics);
+                        activePage = page;
+                        pageRoot.className = "elg elg-min-w-0 elg-w-100";
                         pageRoot.replaceChildren(page.dom);
                         revealMember();
                     } catch (error) {
@@ -208,8 +214,6 @@ async function bootstrap(): Promise<void> {
     ...markdownRoutes,
     ...apiRoutes,
 
-    // Documentation overview / fallback
-    overviewRouterHandler,
     ];
 
     const router = new BrowserRouter(routes);
@@ -218,13 +222,21 @@ async function bootstrap(): Promise<void> {
         .filter(topic => topic.group === "getting-started")
         .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
 
+    const fundamentalLinks = buildSidebarTree(markdownTopics
+        .filter(topic => topic.group === "fundamentals")
+        .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
+
 const componentLinks = buildSidebarTree([
-        { href: "/components", title: "Component overview" },
         { id: "datagrid", href: "/components/datagrid/overview", title: "DataGrid" },
         { id: "editors", href: "/components/value-editors", title: "Value editors" },
+        { id: "menus", href: "/popover", title: "Menus & popovers" },
+        { id: "scrolling", href: "/components/scrollbars", title: "Scrolling" },
         ...markdownTopics
             .filter(topic => topic.group === "components" && topic.path !== "/components")
-            .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title }))
+            .map(topic => ({ id: topic.id,
+                parent: ["popover", "popup-menu", "tooltip"].includes(topic.id) ? "menus"
+                    : ["scroll-engine", "scrollbars", "virtual-list"].includes(topic.id) ? "scrolling" : topic.parent,
+                href: topic.path, title: topic.title }))
 ]);
 
 const styleLinks = buildSidebarTree(markdownTopics
@@ -240,13 +252,6 @@ const styleLinks = buildSidebarTree(markdownTopics
     const coreLinks = buildSidebarTree(markdownTopics
         .filter(topic => topic.group === "core")
         .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title })));
-
-    const featureLinks = buildSidebarTree([
-        { href: "/getting-started/framework-overview", title: "Framework fundamentals" },
-        ...markdownTopics
-            .filter(topic => topic.group === "features")
-            .map(topic => ({ id: topic.id, parent: topic.parent, href: topic.path, title: topic.title }))
-    ]);
 
     const apiNamespaceLinks: SidebarLink[] = [];
     const namespaceIds = new Map<string, string>();
@@ -282,7 +287,7 @@ const styleLinks = buildSidebarTree(markdownTopics
         href: "?!=/",
         ui: ["elg", "d-flex", "items-center", "w-100", "p-1", "rounded-1", "text-muted", "no-underline", "hover", "focus", "cursor-pointer"],
         onclick: () => currentPath.Value = "/"
-    }, "Overview");
+    }, "Home");
     overviewLink.bindUiStyle("selected", currentPath, value => value === "/");
     window.addEventListener("popstate", () => {
         currentPath.Value = new URLSearchParams(window.location.search).get("!") || "/";
@@ -291,18 +296,19 @@ const styleLinks = buildSidebarTree(markdownTopics
     // Main layout container.
     const sidebar = nav(
         {
+            id: "docs-sidebar", class: "docs-sidebar",
             ui: ["elg", "surface", "flex-none", "h-100", "min-h-0", "overflow-y-auto", "p-3",
                 "border-end", "d-flex", "flex-col", "gap-1"],
             style: { width: "280px", minWidth: "280px" }
         },
     overviewLink,
     createSidebarGroup("Getting started", gettingStartedLinks, currentPath),
-    createSidebarGroup("Styles", styleLinks, currentPath),
+    createSidebarGroup("Fundamentals", fundamentalLinks, currentPath),
+    createSidebarGroup("Styles & layout", styleLinks, currentPath),
             createSidebarGroup("Components", componentLinks, currentPath),
             createSidebarGroup("Data", dataLinks, currentPath),
-            createSidebarGroup("Core", coreLinks, currentPath),
-            createSidebarGroup("Features", featureLinks, currentPath),
-            createSidebarGroup("API Reference", apiLinks, currentPath)
+            createSidebarGroup("Core utilities", coreLinks, currentPath, false),
+            createSidebarGroup("API Reference", apiLinks, currentPath, false)
     );
 
     const app = cdiv(
@@ -310,7 +316,7 @@ const styleLinks = buildSidebarTree(markdownTopics
         createDocsHeader(sidebar),
         cdiv({ ui: ["elg", "d-flex", "grow-1", "min-h-0"] },
             sidebar,
-            div({ ui: ["grow-1", "d-flex", "p-4", "min-w-0" ] }, router)
+            div({ class: "docs-content", ui: ["grow-1", "d-flex", "p-4", "min-w-0" ] }, router)
         )
     );
 

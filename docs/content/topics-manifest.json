@@ -2,13 +2,46 @@
   "schemaVersion": 1,
   "topics": [
     {
+      "id": "docs-home",
+      "title": "Elgora UI documentation",
+      "path": "/",
+      "group": "home",
+      "order": 0,
+      "description": "Browser-native TypeScript components, editable data views and composable application foundations.",
+      "toc": false,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/docs-home.js"
+    },
+    {
+      "id": "download",
+      "title": "Download and installation",
+      "path": "/getting-started/download",
+      "group": "getting-started",
+      "order": 1,
+      "description": "Choose how to include ElgoraUI in a browser application.",
+      "next": "/getting-started/quick-start",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "download",
+        "installation",
+        "npm",
+        "github",
+        "static",
+        "cdn"
+      ],
+      "module": "./content/topics/download.js"
+    },
+    {
       "id": "framework-overview",
       "title": "ElgoraUI fundamentals",
       "path": "/getting-started/framework-overview",
-      "group": "getting-started",
+      "group": "fundamentals",
       "order": 1,
       "description": "Learn the core ElgoraUI concepts, components, reactive state, and UI styles.",
-      "next": "/getting-started/download",
+      "prev": "/getting-started/quick-start",
+      "next": "/components",
       "toc": true,
       "api": [
         "Component",
@@ -56,25 +89,18 @@
       "module": "./content/topics/datasource-array.js"
     },
     {
-      "id": "download",
-      "title": "Download and installation",
-      "path": "/getting-started/download",
+      "id": "quick-start",
+      "title": "Quick start",
+      "path": "/getting-started/quick-start",
       "group": "getting-started",
       "order": 2,
-      "description": "Choose how to include ElgoraUI in a browser application.",
-      "prev": "/getting-started/framework-overview",
-      "next": "/components",
+      "description": "Compose your first component, bind observable state and connect a grid to local data.",
+      "prev": "/getting-started/download",
+      "next": "/getting-started/framework-overview",
       "toc": true,
       "api": [],
-      "keywords": [
-        "download",
-        "installation",
-        "npm",
-        "github",
-        "static",
-        "cdn"
-      ],
-      "module": "./content/topics/download.js"
+      "keywords": [],
+      "module": "./content/topics/quick-start.js"
     },
     {
       "id": "datasource-remote",
@@ -115,9 +141,9 @@
     },
     {
       "id": "components-overview",
-      "title": "Component overview",
+      "title": "Components and lifecycle",
       "path": "/components",
-      "group": "components",
+      "group": "fundamentals",
       "order": 10,
       "description": "Learn what an ElgoraUI Component adds to a native HTMLElement.",
       "toc": true,

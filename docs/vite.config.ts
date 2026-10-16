@@ -67,13 +67,15 @@ function emitDocumentationContent() {
                 });
             }
 
-            const flagsDirectory = path.join(docsDirectory, "assets", "flags");
-            for (const fileName of readdirSync(flagsDirectory).filter(name => name.endsWith(".svg"))) {
-                this.emitFile({
-                    type: "asset",
-                    fileName: "docs/assets/flags/" + fileName,
-                    source: readFileSync(path.join(flagsDirectory, fileName))
-                });
+            for (const assetGroup of ["flags", "products"]) {
+                const assetDirectory = path.join(docsDirectory, "assets", assetGroup);
+                for (const fileName of readdirSync(assetDirectory).filter(name => name.endsWith(".svg"))) {
+                    this.emitFile({
+                        type: "asset",
+                        fileName: `docs/assets/${assetGroup}/` + fileName,
+                        source: readFileSync(path.join(assetDirectory, fileName))
+                    });
+                }
             }
         }
     };

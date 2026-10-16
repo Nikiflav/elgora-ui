@@ -1,11 +1,12 @@
 ---
 id: framework-overview
 title: ElgoraUI fundamentals
-group: getting-started
+group: fundamentals
 path: /getting-started/framework-overview
 order: 1
 description: Learn the core ElgoraUI concepts, components, reactive state, and UI styles.
-next: /getting-started/download
+prev: /getting-started/quick-start
+next: /components
 toc: true
 api:
   - Component

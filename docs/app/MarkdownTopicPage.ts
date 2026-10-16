@@ -11,6 +11,7 @@ import { ApiManifestEntry } from "./types-api";
 export class MarkdownTopicPage extends Component {
     constructor(topic: MarkdownTopic, apiLoader: ApiLoader, apiManifest: ApiManifestEntry[]) {
         const article = e("article", { ui: ["elg", "min-w-0"] });
+        if (topic.id === "docs-home") article.classList.add("docs-home");
         article.innerHTML = topic.html;
         const title = article.querySelector<HTMLHeadingElement>("h1");
         if (title) applyUi(title, ["elg", "mt-0"]);
@@ -58,7 +59,9 @@ export class MarkdownTopicPage extends Component {
             ...tocItems
         );
 
-        const content = cdiv({ ui: ["elg", "d-flex", "gap-4", "min-w-0", "w-100"] }, article, onThisPage);
+        const content = cdiv({ ui: ["elg", "d-flex", "gap-4", "min-w-0", "w-100"] }, article,
+            ...(topic.toc === false ? [] : [onThisPage]));
+        onThisPage.classList.add("docs-topic-toc");
 
         article.style.flex = "1 1 auto";
         article.style.minWidth = "0";
@@ -96,6 +99,6 @@ export class MarkdownTopicPage extends Component {
         const navigation = cdiv({ ui: ["elg", "d-flex", "justify-between", "gap-2", "mt-3", "pt-3", "border-top"] });
         if (topic.prev) navigation.dom.append(e("a", { href: `?!=${topic.prev}`, ui: ["elg", "btn", "neutral", "no-underline"] }, "← Previous topic"));
         if (topic.next) navigation.dom.append(e("a", { href: `?!=${topic.next}`, ui: ["elg", "btn", "neutral", "no-underline"] }, "Next topic →"));
-        this.dom.append(navigation.dom);
+        if (topic.prev || topic.next) this.dom.append(navigation.dom);
     }
 }
