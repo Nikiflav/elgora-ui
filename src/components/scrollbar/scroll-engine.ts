@@ -272,7 +272,8 @@ export class ScrollEngine implements Disposable {
     }
 
     private handleWheel = (e: WheelEvent): void => {
-        e.preventDefault();
+        // A nested scroll viewport may already have consumed this gesture.
+        if (e.defaultPrevented) return;
         let deltaX = e.deltaX;
         let deltaY = e.deltaY;
 
@@ -291,7 +292,13 @@ export class ScrollEngine implements Disposable {
             deltaY *= this._clientHeight;
         }
 
-        this.scrollTo(this._scrollLeft + deltaX, this._scrollTop + deltaY);
+        const left = Math.max(0, Math.min(this._scrollLeft + deltaX, this.getMaxScrollLeft()));
+        const top = Math.max(0, Math.min(this._scrollTop + deltaY, this.getMaxScrollTop()));
+        // Leave native scroll chaining intact when neither axis can move in
+        // the requested direction (including viewports with no overflow).
+        if (left === this._scrollLeft && top === this._scrollTop) return;
+        e.preventDefault();
+        this.scrollTo(left, top);
     };
 
     private handleKeyDown = (e: KeyboardEvent): void => {

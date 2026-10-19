@@ -9,15 +9,25 @@ if (window.parent !== window) {
 }
 
 const demoModules = import.meta.glob(["./content/**/*.md.ts", "./content/**/*.md.*.ts"]);
+function disposeDemoScrollbars(): void {
+    // install() returns the current installation. A demo may have disposed and
+    // recreated it through its own controls, so do not retain an older handle.
+    Elgora.Scrollbars.install(window).dispose();
+}
+
+window.addEventListener("pagehide", disposeDemoScrollbars, { once: true });
 
 function send(message: Record<string, unknown>): void {
     window.parent.postMessage(message, "*");
 }
 
 function clearDemo(): void {
-    try {
-    } catch { /* A new run should still be able to replace a failed demo. */ }
+    // Release owned overlays before removing the old demo's DOM.
+    disposeDemoScrollbars();
     document.body.replaceChildren();
+    // Install before running the example so explicit attachments and local
+    // installations can take ownership or override the sandbox defaults.
+    Elgora.Scrollbars.install(window, { scrollbarMode: "thin" });
 }
 
 window.addEventListener("message", async event => {

@@ -7,9 +7,10 @@ import { EditableExample } from "./EditableExample";
 import { ReadonlyExample } from "./ReadonlyExample";
 import { MarkdownTopic } from "./types";
 import { ApiManifestEntry } from "./types-api";
+import { ScrollSpy } from "../../src/components/scroll-spy/ScrollSpy";
 
 export class MarkdownTopicPage extends Component {
-    constructor(topic: MarkdownTopic, apiLoader: ApiLoader, apiManifest: ApiManifestEntry[]) {
+    constructor(topic: MarkdownTopic, apiLoader: ApiLoader, apiManifest: ApiManifestEntry[], scrollContainer?: HTMLElement) {
         const article = e("article", { ui: ["elg", "min-w-0"] });
         if (topic.id === "docs-home") article.classList.add("docs-home");
         article.innerHTML = topic.html;
@@ -100,5 +101,8 @@ export class MarkdownTopicPage extends Component {
         if (topic.prev) navigation.dom.append(e("a", { href: `?!=${topic.prev}`, ui: ["elg", "btn", "neutral", "no-underline"] }, "← Previous topic"));
         if (topic.next) navigation.dom.append(e("a", { href: `?!=${topic.next}`, ui: ["elg", "btn", "neutral", "no-underline"] }, "Next topic →"));
         if (topic.prev || topic.next) this.dom.append(navigation.dom);
+        if (topic.toc !== false && tocItems.length) {
+            this.addCleanup(new ScrollSpy({ container: article, navigation: onThisPage, scrollContainer }));
+        }
     }
 }

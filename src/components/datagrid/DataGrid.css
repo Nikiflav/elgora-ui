@@ -191,6 +191,8 @@
 
 .elg-data-grid .elg-data-grid-row-header .elg-data-grid-cell {
     border-top: 0;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 

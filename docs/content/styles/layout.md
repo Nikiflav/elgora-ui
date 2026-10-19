@@ -92,7 +92,15 @@ const view = v("div", { ui: ["grid", "gap-2"] },
     v("div", { ui: ["col-12", "col-sm-6"] }, "Customer"),
     v("div", { ui: ["col-12", "col-sm-6"] }, "Date")
 );
+
+// v() describes content; e() creates the host and renders it through vnodes.
+const host = e("div", { vnodes: [view] });
+document.body.append(host);
 ```
+
+`v()` returns a virtual node, not a DOM element. Pass it through the `vnodes`
+property rather than calling `appendChild(view)`. Both native elements and
+rendered virtual nodes receive the same CSS classes.
 
 API: [cdiv](?!=/api-reference/cdiv), [v](?!=/api-reference/v).
 

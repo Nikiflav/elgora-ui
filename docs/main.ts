@@ -152,7 +152,7 @@ async function bootstrap(): Promise<void> {
         createPage() {
             const version = ++pageVersion;
             activePage?.dispose(); activePage = undefined;
-            const pageRoot = div({ ui: ["elg", "p-4", "text-muted"] }, "Loading documentation topic…");
+            const pageRoot = div({ ui: ["elg", "p-3", "text-muted"] }, "Loading documentation topic…");
             return {
                 title: entry.title,
                 description: entry.description || entry.title,
@@ -161,12 +161,12 @@ async function bootstrap(): Promise<void> {
                     try {
                         const topic = await topicLoader.load(entry);
                         if (version !== pageVersion) return;
-                        const page = new MarkdownTopicPage(topic, apiLoader, apiManifest.entries);
+                        const page = new MarkdownTopicPage(topic, apiLoader, apiManifest.entries, router.dom);
                         activePage = page;
-                        pageRoot.className = "elg elg-min-w-0 elg-w-100";
+                        pageRoot.className = "elg elg-p-3 elg-min-w-0 elg-w-100";
                         pageRoot.replaceChildren(page.dom);
                     } catch (error) {
-                        pageRoot.className = "elg p-4 text-danger";
+                        pageRoot.className = "elg elg-p-3 elg-text-danger";
                         pageRoot.textContent = error instanceof Error ? error.message : String(error);
                     }
                 }
@@ -179,7 +179,7 @@ async function bootstrap(): Promise<void> {
         createPage() {
             const version = ++pageVersion;
             activePage?.dispose(); activePage = undefined;
-            const pageRoot = div({ ui: ["elg", "p-4", "text-muted"] }, "Loading API reference…");
+            const pageRoot = div({ ui: ["elg", "p-3", "text-muted"] }, "Loading API reference…");
             const revealMember = () => {
                 if (!window.location.hash) return;
                 try {
@@ -198,11 +198,11 @@ async function bootstrap(): Promise<void> {
                         if (version !== pageVersion) return;
                         const page = new ApiTopicPage(apiEntry, markdownTopics);
                         activePage = page;
-                        pageRoot.className = "elg elg-min-w-0 elg-w-100";
+                        pageRoot.className = "elg elg-p-3 elg-min-w-0 elg-w-100";
                         pageRoot.replaceChildren(page.dom);
                         revealMember();
                     } catch (error) {
-                        pageRoot.className = "elg p-4 text-danger";
+                        pageRoot.className = "elg elg-p-3 elg-text-danger";
                         pageRoot.textContent = error instanceof Error ? error.message : String(error);
                     }
                 }
@@ -235,7 +235,7 @@ const componentLinks = buildSidebarTree([
             .filter(topic => topic.group === "components" && topic.path !== "/components")
             .map(topic => ({ id: topic.id,
                 parent: ["popover", "popup-menu", "tooltip"].includes(topic.id) ? "menus"
-                    : ["scroll-engine", "scrollbars", "virtual-list"].includes(topic.id) ? "scrolling" : topic.parent,
+                    : ["scroll-engine", "scrollbars", "virtual-list", "scroll-spy"].includes(topic.id) ? "scrolling" : topic.parent,
                 href: topic.path, title: topic.title }))
 ]);
 
@@ -316,7 +316,7 @@ const styleLinks = buildSidebarTree(markdownTopics
         createDocsHeader(sidebar),
         cdiv({ ui: ["elg", "d-flex", "grow-1", "min-h-0"] },
             sidebar,
-            div({ class: "docs-content", ui: ["grow-1", "d-flex", "p-4", "min-w-0" ] }, router)
+            div({ class: "docs-content", ui: ["grow-1", "d-flex", "min-w-0" ] }, router)
         )
     );
 

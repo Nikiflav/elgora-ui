@@ -38,6 +38,7 @@ export default function demo(): void {
         name: "country",
         caption: "Country",
         dataType: "string",
+        width: 180,
         renderCell: cell => v(
           "span",
           { ui: ["d-flex", "items-center", "min-w-0", "w-100"] },
@@ -61,7 +62,6 @@ export default function demo(): void {
       { name: "totalAmount", caption: "Total amount", dataType: "number" },
       { name: "orderDate", caption: "Order date", dataType: "date" }
     ],
-    groupColumns: ["country"],
     groupSummary: [
       { field: "quantity", summaryType: "sum" },
       { field: "totalAmount", summaryType: "sum" }

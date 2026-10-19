@@ -14,6 +14,81 @@ beforeEach(() => {
     vi.useFakeTimers();
     vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });
 });
+
+function wheel(engine: ScrollEngine, options: WheelEventInit): WheelEvent {
+    const event = new WheelEvent("wheel", { bubbles: true, cancelable: true, ...options });
+    engine.dom.dispatchEvent(event);
+    return event;
+}
+
+describe("ScrollEngine wheel chaining", () => {
+    it.each([
+        [200, 100, 0, 0, 0, 30], // No overflow.
+        [1000, 100, 0, 0, 0, 30], // Only the other axis overflows.
+        [200, 800, 0, 0, 0, -30], // Top edge, moving up.
+        [200, 800, 0, 700, 0, 30], // Bottom edge, moving down.
+        [1000, 100, 0, 0, -30, 0], // Left edge, moving left.
+        [1000, 100, 800, 0, 30, 0], // Right edge, moving right.
+        [1000, 800, 0, 0, 0, 0] // Empty gesture.
+    ])("leaves an unmovable gesture uncancelled (%s, %s, %s, %s, %s, %s)", (width, height, left, top, deltaX, deltaY) => {
+        const engine = create(); engine.updateDimensions(width, height); engine.scrollTo(left, top);
+        const parent = vi.fn();
+        document.body.addEventListener("wheel", parent, { once: true });
+        const event = wheel(engine, { deltaX, deltaY });
+        expect(event.defaultPrevented).toBe(false);
+        expect(parent).toHaveBeenCalledWith(event);
+        expect([engine.scrollLeft, engine.scrollTop]).toEqual([left, top]);
+    });
+    it("consumes scrolling inside the viewport and allows reversal at either edge", () => {
+        const engine = create(); engine.updateDimensions(200, 800);
+        expect(wheel(engine, { deltaY: 30 }).defaultPrevented).toBe(true);
+        expect(engine.scrollTop).toBe(30);
+        engine.scrollTo(0, 700);
+        expect(wheel(engine, { deltaY: -30 }).defaultPrevented).toBe(true);
+        expect(engine.scrollTop).toBe(670);
+    });
+    it("clamps the gesture reaching an edge and releases the following gesture", () => {
+        const engine = create(); engine.updateDimensions(200, 800); engine.scrollTo(0, 690);
+        expect(wheel(engine, { deltaY: 50 }).defaultPrevented).toBe(true);
+        expect(engine.scrollTop).toBe(700);
+        expect(wheel(engine, { deltaY: 50 }).defaultPrevented).toBe(false);
+    });
+    it("consumes a diagonal gesture if either axis can still move", () => {
+        const engine = create(); engine.updateDimensions(1000, 800); engine.scrollTo(0, 700);
+        expect(wheel(engine, { deltaX: 20, deltaY: 30 }).defaultPrevented).toBe(true);
+        expect([engine.scrollLeft, engine.scrollTop]).toEqual([20, 700]);
+    });
+    it("routes Shift+wheel horizontally, releasing it at the horizontal edge", () => {
+        const engine = create(); engine.updateDimensions(1000, 800);
+        expect(wheel(engine, { deltaY: 30, shiftKey: true }).defaultPrevented).toBe(true);
+        expect([engine.scrollLeft, engine.scrollTop]).toEqual([30, 0]);
+        engine.scrollTo(800, 0);
+        expect(wheel(engine, { deltaY: 30, shiftKey: true }).defaultPrevented).toBe(false);
+        expect(wheel(engine, { deltaX: -20, deltaY: 0, shiftKey: true }).defaultPrevented).toBe(true);
+        expect(engine.scrollLeft).toBe(780);
+    });
+    it.each([[1, 32], [2, 200]])("preserves delta mode %s normalization", (deltaMode, expected) => {
+        const engine = create(); engine.updateDimensions(1000, 800);
+        expect(wheel(engine, { deltaY: 2, deltaMode }).defaultPrevented).toBe(true);
+        expect(engine.scrollTop).toBe(expected);
+    });
+    it("lets a parent engine handle only gestures not consumed by the child", () => {
+        const parent = create(); parent.updateDimensions(200, 800);
+        const child = create(); child.updateDimensions(200, 800); parent.dom.append(child.dom);
+        expect(wheel(child, { deltaY: 30 }).defaultPrevented).toBe(true);
+        expect([child.scrollTop, parent.scrollTop]).toEqual([30, 0]);
+        child.scrollTo(0, 700);
+        expect(wheel(child, { deltaY: 30 }).defaultPrevented).toBe(true);
+        expect([child.scrollTop, parent.scrollTop]).toEqual([700, 30]);
+    });
+    it("does not scroll when a descendant has already prevented the event", () => {
+        const engine = create(); engine.updateDimensions(200, 800);
+        const child = document.createElement("div"); engine.dom.append(child);
+        child.addEventListener("wheel", event => event.preventDefault());
+        child.dispatchEvent(new WheelEvent("wheel", { deltaY: 30, bubbles: true, cancelable: true }));
+        expect(engine.scrollTop).toBe(0);
+    });
+});
 afterEach(() => {
     engines.splice(0).forEach(engine => engine.dispose());
     document.body.replaceChildren(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks();

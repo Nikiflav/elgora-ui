@@ -28,15 +28,16 @@ keywords:
 It supports configurable columns, grouped rows, summaries, selection, context
 menus, and data sources that can load or query rows on demand.
 
-## Grouped data
+## Tabular data
 
-The demo below uses an `ArrayDataSource` with 100,000 generated orders. Three
-columns are grouped and numeric summaries are calculated for each group.
+The demo below uses an `ArrayDataSource` with 100,000 generated orders. It starts
+without grouping or sorting. Click a column header to sort, or drag a column
+into the group panel to group the rows. Numeric summaries are configured for
+groups when grouping is applied.
 
 <live-demo id="datagrid-overview" height="420px"></live-demo>
 
-The component is configured with a data source, columns, grouping, and group
-summaries:
+The minimal configuration specifies a data source and columns:
 
 ```js
 const grid = new DataGrid({
@@ -45,9 +46,7 @@ const grid = new DataGrid({
     { name: "customer", dataType: "string" },
     { name: "quantity", dataType: "number" },
     { name: "totalAmount", dataType: "number" }
-  ],
-  groupColumns: ["customer"],
-  groupSummary: [{ field: "totalAmount", summaryType: "sum" }]
+  ]
 });
 
 grid.refresh();

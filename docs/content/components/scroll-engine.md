@@ -36,6 +36,13 @@ application code needs to change the position.
 The same engine also handles wheel, keyboard, pointer, and touch input. Use
 `onScroll()` to update dependent UI and `onResize()` to recalculate layout.
 
+Wheel gestures are consumed only when the viewport can move in the requested
+direction. At a scroll boundary, or when that axis has no overflow, the event
+remains uncancelled so a surrounding scroll container can handle it. Shift +
+wheel scrolls horizontally. A gesture that reaches a boundary is clamped there;
+the next gesture in the same direction is passed through. This also applies to
+DataGrid, which uses ScrollEngine internally.
+
 See the [`ScrollEngine` API reference](?!=/api-reference/ScrollEngine).
 
 ## Scrollbar appearance

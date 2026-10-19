@@ -799,6 +799,21 @@
       "module": "./content/topics/scrollbars.js"
     },
     {
+      "id": "scroll-spy",
+      "title": "ScrollSpy",
+      "path": "/components/scroll-spy",
+      "group": "components",
+      "order": 62,
+      "description": "Track the active section in existing in-page navigation.",
+      "toc": true,
+      "api": [
+        "ScrollSpy",
+        "ScrollSpyOptions"
+      ],
+      "keywords": [],
+      "module": "./content/topics/scroll-spy.js"
+    },
+    {
       "id": "datagrid-performance",
       "title": "Virtualization and performance",
       "path": "/components/datagrid/performance",

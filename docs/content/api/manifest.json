@@ -1136,6 +1136,24 @@
       "module": "./content/api/ScrollEngineOptions.js"
     },
     {
+      "name": "ScrollSpy",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Scroll Spy",
+      "path": "/api-reference/ScrollSpy",
+      "description": "Nonvisual, frame-batched scroll tracking for existing HTML navigation.\nDoes not intercept clicks or change the URL. Call refresh() after replacing\nheadings or links, and dispose() when the owning view is removed.",
+      "module": "./content/api/ScrollSpy.js"
+    },
+    {
+      "name": "ScrollSpyOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Scroll Spy",
+      "path": "/api-reference/ScrollSpyOptions",
+      "description": "Connects existing in-page navigation links to sections in a scrollable document.",
+      "module": "./content/api/ScrollSpyOptions.js"
+    },
+    {
       "name": "SelectionCell",
       "kind": "interface",
       "group": "types",
