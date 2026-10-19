@@ -2,15 +2,17 @@ import { DataFilter, filterAnd } from "../../data/filter";
 import type { DataGridColumn } from "./DataGridColumn";
 import { DataViewFieldUtils } from "../../data/DataViewField";
 import type { OrderByToken } from "../../data/grouping";
+import { encodeGroupKeySegment, getGroupFilter, normalizeGroupValue } from "../../data/grouping";
 import type { SummaryType, SummaryResult } from "../../data/summary";
 import type { DataSource, GroupItem, QueryArgs } from "../../data/DataSource";
 import { GridViewportArgs, GridResult, GridRow, GridRowsProvider } from "./GridRow";
+import { throwIfRowQueryAborted, waitForRowQuery } from "./RowQuery";
 
 // ========================================================
 // 1. OPTIMIZED GRID NODE INTERFACE
 // ========================================================
 interface GridNode {
-    type: "root" | "group" | "data" | "node" | "placeholder";
+    type: "root" | "group" | "data" | "node";
     key: string;
     level: number;
     localIndex: number;
@@ -38,7 +40,8 @@ class Paginator {
     private _pages: Map<number, GridNode[]> = new Map();
     private _pageSize: number;
     private _totalCount = -1;
-    private _loadingPages = new Set<number>();
+    private _loadingPages = new Map<number, Promise<{ page: GridNode[], totalSummary?: SummaryResult[] }>>();
+    private readonly _signal: AbortSignal;
     private _groupFilter?: DataFilter;
     private _parentId?: any;
     private _isHierarchy: boolean;
@@ -48,9 +51,11 @@ class Paginator {
         state: DataGridState<any>,
         groupIndex?: number,
         groupFilter?: DataFilter,
-        parentId?: any
+        parentId?: any,
+        signal: AbortSignal
     }) {
         this._node = args.node;
+        this._signal = args.signal;
         this._gridState = args.state;
         this._groupIndex = args.groupIndex ?? -1;
         this._groupFilter = args.groupFilter;
@@ -69,59 +74,42 @@ class Paginator {
         return this._totalCount < 0 ? 1 : this._totalCount;
     }
 
-    private async loadPage(pageIndex: number): Promise<{ page: GridNode[], totalSummary?: SummaryResult[] }> {
-        if (this._loadingPages.has(pageIndex)) return { page: [] };
-        this._loadingPages.add(pageIndex);
+    private loadPage(pageIndex: number): Promise<{ page: GridNode[], totalSummary?: SummaryResult[] }> {
+        const existing = this._loadingPages.get(pageIndex);
+        if (existing) return existing;
+        const task = waitForRowQuery(this.fetchPage(pageIndex), this._signal).finally(() => {
+            if (this._loadingPages.get(pageIndex) === task) this._loadingPages.delete(pageIndex);
+        });
+        this._loadingPages.set(pageIndex, task);
+        return task;
+    }
 
-        try {
-            const requireTotalCount = this._totalCount < 0;
-            const pageOffset = this._pageSize * pageIndex;
-            const filter = filterAnd(this._groupFilter, this._gridState.baseFilter);
+    private async fetchPage(pageIndex: number): Promise<{ page: GridNode[], totalSummary?: SummaryResult[] }> {
+        throwIfRowQueryAborted(this._signal);
+        const requireTotalCount = this._totalCount < 0;
+        const pageOffset = this._pageSize * pageIndex;
+        const filter = filterAnd(this._groupFilter, this._gridState.baseFilter);
 
-            const groupColumn = this.groupColumn;
-            const result = await this._gridState.dataSource.loadData({
-                skip: pageIndex * this._pageSize,
-                top: this._pageSize,
-                filter: filter,
-                orderby: this._gridState.orderBy,
-                groupColumn,
-                groupInterval: groupColumn ? this._gridState.columns.get(groupColumn)?.groupInterval : undefined,
-                groupSummary: this._gridState.groupSummary,
-                totalSummary: this._node.type === "root" ? this._gridState.totalSummary : undefined,
-                parentId: this._isHierarchy ? this._parentId : undefined,
-                requireTotalCount: requireTotalCount
-            });
+        const groupColumn = this.groupColumn;
+        const result = await waitForRowQuery(this._gridState.dataSource.loadData({
+            skip: pageIndex * this._pageSize,
+            top: this._pageSize,
+            filter: filter,
+            orderby: this._gridState.orderBy,
+            groupColumn,
+            groupInterval: groupColumn ? this._gridState.columns.get(groupColumn)?.groupInterval : undefined,
+            groupSummary: this._gridState.groupSummary,
+            totalSummary: this._node.type === "root" ? this._gridState.totalSummary : undefined,
+            parentId: this._isHierarchy ? this._parentId : undefined,
+            requireTotalCount: requireTotalCount,
+            abortSignal: this._signal
+        }), this._signal);
 
-            let page: GridNode[];
-            if (this._isHierarchy && result.dataItems) {
-                page = await Promise.all(result.dataItems.map(async (x, ix) => {
-                    const node: GridNode = {
-                        type: "node",
-                        level: this._node.level + 1,
-                        parent: this._node,
-                        localIndex: ix + pageOffset,
-                        visibleIndex: -1,
-                        key: JSON.stringify(this._gridState.dataSource.getRowId?.(x) ?? x),
-                        data: x,
-                        expanded: false,
-                        childrenCount: 0,
-                        totalExpandedChildren: 0,
-                        expandedChildren: []
-                    };
-                    node.canExpand = await this._gridState.dataSource.hasChildren!(x);
-                    if (node.canExpand) {
-                        const parentId = this._gridState.dataSource.getRowId?.(x);
-                        node.createPaginator = () => new Paginator({
-                            node,
-                            state: this._gridState,
-                            parentId
-                        });
-                    }
-                    return node;
-                }));
-            } else if (result.dataItems) {
-                page = result.dataItems.map((x, ix) => ({
-                    type: "data",
+        let page: GridNode[];
+        if (this._isHierarchy && result.dataItems) {
+            page = await Promise.all(result.dataItems.map(async (x, ix) => {
+                const node: GridNode = {
+                    type: "node",
                     level: this._node.level + 1,
                     parent: this._node,
                     localIndex: ix + pageOffset,
@@ -132,53 +120,76 @@ class Paginator {
                     childrenCount: 0,
                     totalExpandedChildren: 0,
                     expandedChildren: []
-                }));
-            } else if (result.groups) {
-                page = result.groups.map((g, ix) => {
-                    const node: GridNode = {
-                        type: "group",
-                        level: this._node.level + 1,
-                        text: `${g.groupValue} (${g.count})`,
-                        parent: this._node,
-                        localIndex: ix + pageOffset,
-                        visibleIndex: -1,
-                        key: g.groupField + ":" + g.groupValue,
-                        data: g,
-                        childrenCount: g.count,
-                        expanded: false,
-                        totalExpandedChildren: 0,
-                        expandedChildren: []
-                    };
+                };
+                node.canExpand = await this._gridState.dataSource.hasChildren!(x);
+                if (node.canExpand) {
+                    const parentId = this._gridState.dataSource.getRowId?.(x);
                     node.createPaginator = () => new Paginator({
+                        node,
+                        state: this._gridState,
+                        parentId,
+                        signal: this._signal
+                    });
+                }
+                return node;
+            }));
+        } else if (result.dataItems) {
+            page = result.dataItems.map((x, ix) => ({
+                type: "data",
+                level: this._node.level + 1,
+                parent: this._node,
+                localIndex: ix + pageOffset,
+                visibleIndex: -1,
+                key: JSON.stringify(this._gridState.dataSource.getRowId?.(x) ?? x),
+                data: x,
+                expanded: false,
+                childrenCount: 0,
+                totalExpandedChildren: 0,
+                expandedChildren: []
+            }));
+        } else if (result.groups) {
+            page = result.groups.map((g, ix) => {
+                const groupValue = normalizeGroupValue(g.groupValue);
+                const node: GridNode = {
+                    type: "group",
+                    level: this._node.level + 1,
+                    text: `${groupValue === null ? "(No value)" : groupValue === "" ? "(Empty text)" : groupValue} (${g.count})`,
+                    parent: this._node,
+                    localIndex: ix + pageOffset,
+                    visibleIndex: -1,
+                    // Empty text: $/Bulgaria/. Missing: $/Bulgaria/~. Literal ~: %7E.
+                    key: this._node.key + "/" + encodeGroupKeySegment(groupValue),
+                    data: { ...g, groupValue },
+                    childrenCount: g.count,
+                    expanded: false,
+                    totalExpandedChildren: 0,
+                    expandedChildren: []
+                };
+                node.createPaginator = () => new Paginator({
                     node,
                     state: this._gridState,
                     groupIndex: this._groupIndex + 1,
-                        groupFilter: filterAnd(
-                            this._groupFilter,
-                            [
-                                DataViewFieldUtils.getGroupFilterSelector(this._gridState.columns.get(g.groupField) ?? { name: g.groupField }),
-                                "=",
-                                g.groupValue
-                            ]
-                        )
-                    });
-                    return node;
+                    signal: this._signal,
+                    groupFilter: filterAnd(
+                        this._groupFilter,
+                        getGroupFilter(this._gridState.columns.get(g.groupField) ?? { name: g.groupField }, groupValue)
+                    )
                 });
-            } else {
-                page = [];
-            }
-
-            this._pages.set(pageIndex, page);
-            if (requireTotalCount && result.totalCount !== undefined) {
-                this._totalCount = result.totalCount;
-            }
-            if (this._node.type === "root" && result.totalSummary)
-                return { page, totalSummary: result.totalSummary };
-
-            return { page };
-        } finally {
-            this._loadingPages.delete(pageIndex);
+                return node;
+            });
+        } else {
+            page = [];
         }
+
+        throwIfRowQueryAborted(this._signal);
+        this._pages.set(pageIndex, page);
+        if (requireTotalCount && result.totalCount !== undefined) {
+            this._totalCount = result.totalCount;
+        }
+        if (this._node.type === "root" && result.totalSummary)
+            return { page, totalSummary: result.totalSummary };
+
+        return { page };
     }
 
     async getAsync(index: number): Promise<GridNode> {
@@ -226,6 +237,13 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     private _state: DataGridState<TRow>;
     private _rootNode?: GridNode;
     private _expandedNodes: GridNode[] = []; // Chronological flat list sorted strictly by visibleIndex
+    private _controller = new AbortController();
+    private _rootReady = false;
+    private _rootSummary?: SummaryResult[];
+    private _initializing?: Promise<SummaryResult[] | undefined>;
+    private _revision = 0;
+    private _disposed = false;
+    private _expansions = new WeakMap<GridNode, Promise<void>>();
 
     constructor(state: DataGridState<TRow>) {
         this._state = state;
@@ -238,50 +256,100 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     public getState(): DataGridState<TRow> { return this._state; }
 
     public setState(state: DataGridState<TRow>) {
+        this._controller.abort();
+        this._controller = new AbortController();
+        if (this._disposed) this._controller.abort();
+        this._revision++;
+        this._rootReady = false;
+        this._rootSummary = undefined;
+        this._initializing = undefined;
         this._state = state;
         this._rootNode = undefined;
         this._expandedNodes = [];
     }
 
-    async load(args: GridViewportArgs): Promise<GridResult> {
-        let totalSummary: SummaryResult[] | undefined;
-        if (!this._rootNode) {
-            this._rootNode = {
-                type: 'root',
-                level: -1,
-                localIndex: 0,
-                visibleIndex: 0,
-                key: '$',
-                expanded: true,
-                childrenCount: 0,
-                totalExpandedChildren: 0,
-                expandedChildren: []
-            };
-            this._rootNode.children = this._state.dataSource.hasChildren
-                ? new Paginator({
-                    node: this._rootNode,
-                    state: this._state,
-                    parentId: this._state.hierarchyRootId ?? null
-                })
-                : new Paginator({
-                    node: this._rootNode,
-                    state: this._state,
-                    groupIndex: 0
-                });
+    /** Aborts all pages, including queries started by a pending expansion. */
+    dispose(): void {
+        this._disposed = true;
+        this._controller.abort();
+        this._rootNode = undefined;
+        this._expandedNodes = [];
+        this._initializing = undefined;
+        this._rootSummary = undefined;
+    }
 
-            const initial = await this._rootNode.children.getAsyncWithResult(0);
-            totalSummary = initial.totalSummary;
-            this._rootNode.childrenCount = this._rootNode.children.count;
-            this._rootNode.totalExpandedChildren = this._rootNode.childrenCount;
-            this.refreshGlobalExpandedNodes();
-        }
+    private initializeRoot(): Promise<SummaryResult[] | undefined> {
+        throwIfRowQueryAborted(this._controller.signal);
+        if (this._rootReady) return Promise.resolve(this._rootSummary);
+        if (this._initializing) return this._initializing;
+        const signal = this._controller.signal;
+        const task = this.loadRoot(signal).finally(() => {
+            if (this._initializing === task) this._initializing = undefined;
+        });
+        this._initializing = task;
+        return task;
+    }
+
+    private async loadRoot(signal: AbortSignal): Promise<SummaryResult[] | undefined> {
+        this._rootNode = {
+            type: 'root',
+            level: -1,
+            localIndex: 0,
+            visibleIndex: 0,
+            key: '$',
+            expanded: true,
+            childrenCount: 0,
+            totalExpandedChildren: 0,
+            expandedChildren: []
+        };
+        this._rootNode.children = this._state.dataSource.hasChildren
+            ? new Paginator({
+                node: this._rootNode,
+                state: this._state,
+                signal,
+                parentId: this._state.hierarchyRootId ?? null
+            })
+            : new Paginator({
+                node: this._rootNode,
+                state: this._state,
+                signal,
+                groupIndex: 0
+            });
+
+        const initial = await this._rootNode.children.getAsyncWithResult(0);
+        throwIfRowQueryAborted(signal);
+        this._rootNode.childrenCount = this._rootNode.children.count;
+        this._rootNode.totalExpandedChildren = this._rootNode.childrenCount;
+        this.refreshGlobalExpandedNodes();
+        this._rootReady = true;
+        this._rootSummary = initial.totalSummary;
+        return initial.totalSummary;
+    }
+
+    load(args: GridViewportArgs): Promise<GridResult> {
+        if (args.signal?.aborted) return Promise.reject(new DOMException("Failed to load grid rows. The query was cancelled.", "AbortError"));
+        return waitForRowQuery(waitForRowQuery(this.loadCurrent(args), this._controller.signal), args.signal);
+    }
+
+    private async loadCurrent(args: GridViewportArgs): Promise<GridResult> {
+        const signal = this._controller.signal;
+        const revision = this._revision;
+        const check = () => {
+            throwIfRowQueryAborted(signal);
+            throwIfRowQueryAborted(args.signal);
+            if (revision !== this._revision) throw new DOMException("Failed to load grid rows. The row structure changed.", "AbortError");
+        };
+        const totalSummary = await this.initializeRoot();
+        check();
+        const root = this._rootNode!;
 
         const nodes: GridNode[] = [];
 
-        if (args.top > 0 && args.skip < this._rootNode.totalExpandedChildren) {
+        if (args.top > 0 && args.skip < root.totalExpandedChildren) {
 
             // Use skip+1 because our first _rootNode is not visible.
             let currentNode = await this.getNodeAt(args.skip + 1);
+            check();
 
             while (currentNode) {
                 nodes.push(currentNode);
@@ -290,6 +358,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
                     break;
 
                 currentNode = await this.getNext(currentNode, 1);
+                check();
             }
         }
 
@@ -302,10 +371,11 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
             let cells = undefined;
             if (node.type === "data" || node.type === "node") {
                 cells = await DataViewFieldUtils.getDataCells(visibleColumns, node.data);
+                check();
             } else if (node.type === "group") {
                 let group = <GroupItem>node.data;
-                cells = group.summaryValues ?? {};
-                cells[group.groupField] = `${group.groupValue} (${group.count})`;
+                cells = { ...group.summaryValues };
+                cells[group.groupField] = node.text;
                 let parent = node.parent;
                 while (parent?.type == "group" && parent.data?.groupField) {
                     cells[parent.data.groupField] = parent.data.groupValue;
@@ -330,7 +400,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         }
 
         return {
-            totalCount: this._rootNode.totalExpandedChildren,
+            totalCount: root.totalExpandedChildren,
             rows: gridRows,
             totalSummary
         };
@@ -356,7 +426,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         this._rootNode.visibleIndex = 0;
         const flattenedList: GridNode[] = [this._rootNode];
 
-        const collectAndIndex = (parent: GridNode, currentOffset: number): number => {
+        const collectAndIndex = (parent: GridNode, currentOffset: number): void => {
             let structuralRunningOffset = currentOffset;
 
             for (const child of parent.expandedChildren) {
@@ -368,33 +438,10 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
                     structuralRunningOffset += child.totalExpandedChildren;
                 }
             }
-            return structuralRunningOffset;
         };
 
         collectAndIndex(this._rootNode, 1);
         this._expandedNodes = flattenedList;
-    }
-
-    /**
-     * O(log K) binary lookup to check if a specific local index tier is expanded
-     */
-    private findExpandedChildBinary(parent: GridNode, localIndex: number): GridNode | undefined {
-        let low = 0;
-        let high = parent.expandedChildren.length - 1;
-
-        while (low <= high) {
-            const mid = (low + high) >>> 1;
-            const midNode = parent.expandedChildren[mid];
-
-            if (midNode.localIndex === localIndex) {
-                return midNode;
-            } else if (midNode.localIndex < localIndex) {
-                low = mid + 1;
-            } else {
-                high = mid - 1;
-            }
-        }
-        return undefined;
     }
 
     /**
@@ -417,18 +464,34 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         return low;
     }
 
-    async setNodeExpanded(node: GridNode, expanded: boolean) {
+    setNodeExpanded(node: GridNode, expanded: boolean): Promise<void> {
+        const signal = this._controller.signal;
+        const previous = this._expansions.get(node) ?? Promise.resolve();
+        const task = previous.catch(() => {}).then(() => this.changeNodeExpanded(node, expanded, signal));
+        this._expansions.set(node, task);
+        return task.finally(() => {
+            if (this._expansions.get(node) === task) this._expansions.delete(node);
+        });
+    }
+
+    private async changeNodeExpanded(node: GridNode, expanded: boolean, signal: AbortSignal) {
+        throwIfRowQueryAborted(signal);
+        let root = node;
+        while (root.parent) root = root.parent;
+        if (root !== this._rootNode) throw new DOMException("Failed to expand grid row. The row belongs to an obsolete query.", "AbortError");
         if (node.expanded === expanded) return;
 
         if (expanded) {
-            node.expanded = true;
             if (!node.children && node.createPaginator) {
                 node.children = node.createPaginator();
             }
             if (node.children) {
                 await node.children.getAsync(0);
+                throwIfRowQueryAborted(signal);
                 node.childrenCount = node.children.count;
             }
+            // Publish only after child loading succeeds; failures remain retryable.
+            node.expanded = true;
             node.totalExpandedChildren = node.childrenCount;
             for (const child of node.expandedChildren) {
                 node.totalExpandedChildren += child.totalExpandedChildren;
@@ -452,15 +515,16 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         // Upward pass: Recalculate weights up the tree hierarchy from this pivot node
         let current: GridNode | undefined = node.parent;
         while (current) {
-            let total = current.childrenCount;
+            let total = current.expanded ? current.childrenCount : 0;
             for (const child of current.expandedChildren) {
-                total += child.totalExpandedChildren;
+                if (current.expanded) total += child.totalExpandedChildren;
             }
             current.totalExpandedChildren = total;
             current = current.parent;
         }
 
         // Downward pass: Clean linear rebuild of global tracking array
+        this._revision++;
         this.refreshGlobalExpandedNodes();
     }
 

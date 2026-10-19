@@ -2,7 +2,7 @@ export default {
   "name": "SummaryDefinition",
   "kind": "interface",
   "type": "SummaryDefinition<TRow, TState, TResult>",
-  "description": "Defines a locally calculated summary identified by its serializable name.",
+  "description": "Defines a locally calculated summary identified by its serializable name.\nMethods may return synchronously or asynchronously. Update only the accumulator,\nnot source rows: local queries may share a field read among several summaries.",
   "tags": [],
   "topics": [],
   "group": "types",

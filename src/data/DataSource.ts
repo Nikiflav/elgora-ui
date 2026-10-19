@@ -29,12 +29,26 @@ export interface QueryArgs {
     parentId?: any;
     /** Whether the caller needs an accurate total row/group count back. */
     requireTotalCount?: boolean;
+    /**
+     * Cancellation signal for this query. The grid aborts its owned queries when
+     * the row view is replaced or disposed.
+     * Remote implementations should pass it to fetch() or equivalent transport.
+     * Shared page requests may outlive an individual viewport waiter.
+     */
     abortSignal?: AbortSignal;
 }
 
 /** A single group bucket produced when a QueryArgs.groupColumn is set. */
 export type GroupItem = {
     groupField: string;
+    /**
+     * Group value, without dataType-based conversion. null/undefined share null;
+     * empty text ("") is a separate group and must not be merged with null.
+     * other values retain their type. Sources supply one consistent value type per
+     * grouped field. Intervals return bucket values (e.g. month -> 2), not the
+     * original date. Remote sources return null for missing values and calculate
+     * counts/summaries per distinct group before paging.
+     */
     groupValue: any;
     count: number;
     /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */

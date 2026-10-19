@@ -126,7 +126,8 @@ describe("DataGrid new-row sessions", () => {
     });
     it("renders a lazy placeholder and creates a real defaulted row before validation", async () => {
         const { grid, rows, factory } = await create();
-        expect(grid.dom.textContent).toContain("New row"); expect(factory).not.toHaveBeenCalled();
+        await vi.waitFor(() => expect(grid.dom.textContent).toContain("New row"));
+        expect(factory).not.toHaveBeenCalled();
         expect(await grid.beginEdit(0, "name")).toBe(true);
         expect(factory).toHaveBeenCalledTimes(1); expect(grid.hasPendingNewRow).toBe(true);
         expect(grid.dom.querySelector<HTMLInputElement>(".elg-data-grid-editor input")!.value).toBe("Default");

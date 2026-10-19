@@ -2,7 +2,7 @@ export default {
   "name": "LocalGroupingDataSource",
   "kind": "class",
   "type": "LocalGroupingDataSource<TRow>",
-  "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.",
+  "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.\nComplete local group/summary results are cached for ArrayDataSource and DataTable,\nfollowing its revision. Each adapter retains up to eight query results; field\nmetadata and callback identities participate in the keys. Changes to captured\nexternal data require source.invalidateCache(). Remote results are not cached.",
   "tags": [],
   "topics": [],
   "group": "core",

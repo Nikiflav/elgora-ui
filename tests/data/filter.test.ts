@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evalFilter, type DataFilter, type FilterFunctionRegistry } from "../../src/data/filter";
+import { evalFilter, prepareFilter, type DataFilter, type FilterFunctionRegistry } from "../../src/data/filter";
 
 type Row = {
   name: string;
@@ -19,8 +19,11 @@ const row: Row = {
   created: new Date(2026, 9, 5, 14, 30, 45)
 };
 
-const matches = (filter: DataFilter, item: Record<string, any> = row, functions?: FilterFunctionRegistry) =>
-  evalFilter(item, filter, functions);
+const matches = (filter: DataFilter, item: Record<string, any> = row, functions?: FilterFunctionRegistry) => {
+  const result = evalFilter(item, filter, functions);
+  expect(prepareFilter(filter, functions)(item)).toBe(result);
+  return result;
+};
 
 describe("evalFilter", () => {
   it("accepts empty filters", () => {
@@ -142,5 +145,39 @@ describe("evalFilter", () => {
     expect(() => evalFilter(row, [["amount", "between", 1]] as any))
       .toThrow("Error in implicit");
     expect(() => evalFilter(row, ["not-a-group", "value"] as any)).toThrow("Malformed Filter");
+  });
+
+  it("prepares function lookup once and retains lazy error branches", () => {
+    let lookups = 0;
+    const functions = { get double() { lookups++; return (value: number) => value * 2; } };
+    const predicate = prepareFilter([{ function: "double", field: "amount" }, "=", 84], functions);
+    expect(lookups).toBe(1);
+    expect(predicate(row)).toBe(true);
+    expect(predicate({ amount: 2 })).toBe(false);
+    expect(lookups).toBe(1);
+    const lazy = prepareFilter(["or", ["active", "=", true], ["amount", "between", 1]] as any);
+    expect(lazy(row)).toBe(true);
+    expect(() => lazy({ active: false })).toThrow('Error in "or" group');
+  });
+
+  it("retains interpreter diagnostics for reached invalid branches", () => {
+    for (const filter of ["amount", ["amount", "between", 1], ["!", [], []],
+      ["and", ["amount", "between", 1]], [["amount", "between", 1]],
+      [{ function: "unknown", field: "amount" }, "=", 1]] as any[]) {
+      let message = "";
+      try { evalFilter(row, filter); } catch (error: any) { message = error.message; }
+      expect(() => prepareFilter(filter)(row)).toThrow(message);
+    }
+  });
+
+  it("keeps compiled null/missing comparisons distinct from empty strings", () => {
+    for (const value of [null, undefined, "", 0, false, "0"]) {
+      for (const target of [null, undefined, "", 0, false, "0"]) {
+        for (const operator of ["=", "<>", ">", ">=", "<", "<="] as const) {
+          matches(["value", operator, target], { value });
+        }
+      }
+    }
+    expect(prepareFilter(["value", "=", null])(null as any)).toBe(true);
   });
 });

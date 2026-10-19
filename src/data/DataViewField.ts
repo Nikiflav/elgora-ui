@@ -1,7 +1,6 @@
 import { getFieldDataType, type DataField, type DataType } from "./DataField";
-import { getFieldGroupValue, applyGroupInterval, type GroupInterval, type GroupIntervalDefinition } from "./grouping";
+import type { GroupInterval } from "./grouping";
 import { Utils } from "../core/Utils";
-import type { FilterSelector } from "./filter";
 import type { ValueEditor } from "../components/editors/ValueEditor";
 import type { LookupEditorOptions, LookupQuery, LookupResult } from "../components/editors/LookupEditor";
 
@@ -104,14 +103,6 @@ export class DataViewFieldUtils {
         return dataType === "date" || dataType === "datetime";
     }
 
-    static getGroupFilterSelector<TRow>(col: DataViewField<TRow>): FilterSelector {
-        if (!col.groupInterval) return col.name;
-        return {
-            function: col.groupInterval,
-            field: col.name
-        };
-    }
-
     static getSupportedGroupIntervals<TRow>(col: DataViewField<TRow>): GroupInterval[] {
         if (DataViewFieldUtils.isDateColumn(col)) {
             return [
@@ -121,15 +112,6 @@ export class DataViewFieldUtils {
         }
         if (DataViewFieldUtils.getDataType(col) === "string") return ["firstChar"];
         return [];
-    }
-
-    /** Resolves the value used for a local group, including custom and built-in intervals. */
-    static async getGroupValue<TRow>(col: DataViewField<TRow>, row: TRow, customIntervals?: GroupIntervalDefinition<TRow>[]): Promise<any> {
-        return getFieldGroupValue(col, row, customIntervals);
-    }
-
-    static applyGroupInterval(value: any, interval?: GroupInterval): any {
-        return applyGroupInterval(value, interval);
     }
 
     static hasDropdown<TRow>(col: DataViewField<TRow>) {

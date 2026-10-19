@@ -7,7 +7,7 @@
       "group": "core",
       "namespace": "Data",
       "path": "/api-reference/ArrayDataSource",
-      "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.",
+      "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.\nFiltered/sorted rows and totals are cached (up to eight entries per cache).\nConfirmed-row mutations invalidate automatically; direct array/object edits and\nchanges to external callback dependencies require invalidateCache().",
       "module": "./content/api/ArrayDataSource.js"
     },
     {
@@ -223,7 +223,7 @@
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/DataFilter",
-      "description": "A serializable filter condition, negation or group. Nested arrays combine conditions with AND.",
+      "description": "A serializable filter condition, negation or group. Nested arrays combine conditions with AND.\nEquality with null matches null or missing (undefined) values, never empty text.\nInequality with null is the inverse. Other equality comparisons are type-strict.\nSQL adapters should translate = null / <> null to IS NULL / IS NOT NULL.",
       "module": "./content/api/DataFilter.js"
     },
     {
@@ -763,7 +763,7 @@
       "group": "core",
       "namespace": "Data",
       "path": "/api-reference/LocalGroupingDataSource",
-      "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.",
+      "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.\nComplete local group/summary results are cached for ArrayDataSource and DataTable,\nfollowing its revision. Each adapter retains up to eight query results; field\nmetadata and callback identities participate in the keys. Changes to captured\nexternal data require source.invalidateCache(). Remote results are not cached.",
       "module": "./content/api/LocalGroupingDataSource.js"
     },
     {
@@ -1222,7 +1222,7 @@
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/SummaryDefinition",
-      "description": "Defines a locally calculated summary identified by its serializable name.",
+      "description": "Defines a locally calculated summary identified by its serializable name.\nMethods may return synchronously or asynchronously. Update only the accumulator,\nnot source rows: local queries may share a field read among several summaries.",
       "module": "./content/api/SummaryDefinition.js"
     },
     {

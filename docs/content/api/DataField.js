@@ -6,7 +6,7 @@ export default {
   "tags": [
     {
       "name": "example",
-      "text": "const amount: DataField<Order> = {\n    name: \"amount\", dataType: \"number\", getValue: async row => row.amount\n};"
+      "text": "const amount: DataField<Order> = {\n    name: \"amount\", dataType: \"number\", getValue: row => row.amount\n};"
     }
   ],
   "topics": [],
@@ -37,8 +37,8 @@ export default {
     },
     {
       "name": "getValue",
-      "type": "((row: TRow) => Promise<any>) | undefined",
-      "description": "Reads the field value; when omitted, local operations read row[name].",
+      "type": "((row: TRow) => any | Promise<any>) | undefined",
+      "description": "Reads a value synchronously or asynchronously. Omit to read the row member.\nAccessors must not mutate data: local queries may reuse a field value for\nseveral summaries while processing the same row.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -52,11 +52,11 @@ export default {
         }
       ],
       "returns": {
-        "type": "Promise<any>",
+        "type": "any | Promise<any>",
         "description": ""
       },
       "kind": "method",
-      "signature": "((row: TRow) => Promise<any>) | undefined"
+      "signature": "((row: TRow) => any | Promise<any>) | undefined"
     },
     {
       "name": "groupInterval",

@@ -2,7 +2,7 @@ export default {
   "name": "ArrayDataSource",
   "kind": "class",
   "type": "ArrayDataSource<T>",
-  "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.",
+  "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.\nFiltered/sorted rows and totals are cached (up to eight entries per cache).\nConfirmed-row mutations invalidate automatically; direct array/object edits and\nchanges to external callback dependencies require invalidateCache().",
   "tags": [],
   "topics": [],
   "group": "core",
@@ -29,6 +29,37 @@ export default {
       "optional": false,
       "source": "src/data/ArrayDataSource.ts",
       "kind": "property"
+    },
+    {
+      "name": "revision",
+      "type": "number",
+      "description": "Query-data version. Successful confirmed-row mutations and invalidateCache() increment it.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/ArrayDataSource.ts",
+      "kind": "property"
+    },
+    {
+      "name": "invalidateCache",
+      "type": "() => void",
+      "description": "Clears local query caches and notifies consumers with kind \"reset\".\nCall after changing the public array/rows directly, or external values used\nby field accessors, filter functions or custom summaries. Grid refresh alone\ndoes not invalidate cached queries. Pending-row changes do not affect queries.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "products[0].price = 42;\nsource.invalidateCache();"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/ArrayDataSource.ts",
+      "parameters": [],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => void"
     },
     {
       "name": "getRowId",

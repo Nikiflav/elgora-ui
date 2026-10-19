@@ -439,6 +439,56 @@ They never choose insert/cancel for the application. A nonempty import of refres
 data also clears the dataset history to prevent stale replay. A table-level accept,
 reject or import clears the whole dataset scope because entries may span tables.
 
+## Queries and local caches
+
+DataTable queries read DataRow values directly. Filtering, sorting and summaries
+do not convert rows into plain objects or replace their references. Pending and
+deleted rows are excluded from pages, counts and summaries.
+
+```ts
+const lines = dataset.getTable("salesOrderLines")!;
+const page = await lines.loadData({
+    filter: ["quantity", ">", 0],
+    orderby: [["quantity", "desc"]],
+    skip: 0, top: 20, requireTotalCount: true,
+    totalSummary: [{ field: "quantity", summaryType: "sum" }]
+});
+// Totals cover all matching rows, before paging.
+console.log(page.totalSummary, page.dataItems?.[0]?.getValue("quantity"));
+```
+
+API: [DataTable.loadData()](?!=/api-reference/DataTable#loadData),
+[QueryArgs](?!=/api-reference/QueryArgs),
+[DataRow.getValue()](?!=/api-reference/DataRow#getValue).
+
+Complete filtered/sorted row lists and totals are cached in bounded local caches
+(up to eight entries each). The grid's LocalGroupingDataSource also caches complete
+group results against the table's
+[revision](?!=/api-reference/DataTable#revision), so paging does not regroup the table.
+Sorting reads each sort field once per row before comparing keys. Row objects and
+field values are not cloned; returned pages have independent array containers.
+
+Confirmed-row updates, insertion and deletion invalidate queries **at the point
+the working data changes**, before rowChanged business handlers run. A query inside
+a transaction therefore sees the current working values, including derived edits
+already applied. Queries do not provide an isolated snapshot across asynchronous
+mutations. UI `changed` notifications remain deferred until successful commit.
+
+Rollback, undo/redo, import, acceptance/rejection and server ID mapping also
+invalidate automatically. Revision numbers advance on invalidation; undo does not
+restore an earlier revision number. Pending-only edits and equal-value updates do
+not invalidate confirmed-row queries. Failed/cancelled async calculations, or
+calculations completed after the revision changed, are not cached.
+
+Use [DataTable.invalidateCache()](?!=/api-reference/DataTable#invalidateCache)
+while the dataset is idle after changing external dependencies captured by custom
+accessors/summaries, or after an in-place object modification. It increments the
+revision and emits `{ kind: "reset" }`, but does not record an edit or undo operation.
+In-place object changes are still not tracked for persistence or rollback; normally
+replace a field through `setValue()` instead. Refreshing a grid alone does not
+invalidate table caches. Dependencies captured from another table are not detected
+automatically; stored calculated fields should be updated through business rules.
+
 ## API reference
 
 See the [DataSet API Reference](?!=/api-reference/DataSet) for the complete contract.

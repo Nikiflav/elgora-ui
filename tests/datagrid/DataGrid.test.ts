@@ -34,6 +34,47 @@ function settle(): Promise<void> {
 }
 
 describe("DataGrid data contracts", () => {
+  it("aborts old source queries on a filter change and cancels replacement queries on disposal", async () => {
+    const requests: QueryArgs[] = [];
+    const source: DataSource<Row> = { loadData: args => {
+      requests.push(args);
+      return new Promise(() => {});
+    } };
+    const grid = new DataGrid({ data: source, columns: [{ name: "name" }] });
+    try {
+      await vi.waitFor(() => expect(requests).toHaveLength(1));
+      const first = requests[0].abortSignal!;
+      expect(first.aborted).toBe(false);
+      grid.setOptions({ filter: ["name", "=", "Beta"] });
+      await vi.waitFor(() => expect(requests).toHaveLength(2));
+      expect(first.aborted).toBe(true);
+      expect(requests[1].abortSignal).not.toBe(first);
+      grid.dispose();
+      expect(requests[1].abortSignal?.aborted).toBe(true);
+    } finally { grid.dispose(); }
+  });
+
+  it("restores the expand control after child loading fails and permits retry", async () => {
+    let fail = true;
+    const source: DataSource<Row> = { loadData: async args => {
+      if (args.groupColumn) return { args, totalCount: 1, groups: [{ groupField: "name", groupValue: "A", count: 1 }] };
+      if (fail) throw new Error("Offline");
+      return { args, totalCount: 1, dataItems: [rows[0]] };
+    } };
+    const report = vi.spyOn(console, "error").mockImplementation(() => {});
+    const grid = new DataGrid({ data: source, columns: [{ name: "name" }], groupColumns: ["name"] });
+    grid.mount(document.body);
+    try {
+      await vi.waitFor(() => expect(grid.dom.querySelector(".elg-data-grid-expand-icon")).not.toBeNull());
+      grid.dom.querySelector(".elg-data-grid-expand-icon")!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await vi.waitFor(() => expect(report).toHaveBeenCalledWith("Failed to change grid row expansion.", expect.any(Error)));
+      await vi.waitFor(() => expect(grid.dom.querySelector(".elg-data-grid-expand-icon.ri-arrow-right-s-line")).not.toBeNull());
+      fail = false;
+      grid.dom.querySelector(".elg-data-grid-expand-icon")!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await vi.waitFor(() => expect(grid.dom.querySelector(".elg-data-grid-expand-icon.ri-arrow-down-s-line")).not.toBeNull());
+    } finally { grid.dispose(); report.mockRestore(); }
+  });
+
   it("applies scrollbar mode initially and at runtime without reloading rows", () => {
     const grid = new DataGrid<Row>({ data: rows, columns: [{ name: "name" }], scrollbarMode: "auto" });
     try {

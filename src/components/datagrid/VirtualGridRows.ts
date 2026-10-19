@@ -1,9 +1,6 @@
-import { Utils } from "../../core/Utils"
-import { DataFilter } from "../../data/filter"
 import { VirtualDataSource } from "../virtual-list/VirtualList"
-import type { DataGridColumn } from "./DataGridColumn";
-import type { OrderByToken } from "../../data/grouping";
 import { GridResult, GridRow, GridRowsProvider, GridViewportArgs } from "./GridRow"
+import { throwIfRowQueryAborted, waitForRowQuery } from "./RowQuery";
 
 
 export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
@@ -13,9 +10,11 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
     private _pageSize: number
     private _pages: Map<number, GridRow[]> = new Map()
     private _totalCount = 0
-    private _loadingPages = new Set<number>()
     private readonly _pageLoads = new Map<number, Promise<void>>();
-    private readonly MAX_PAGE_COUNT = 100;
+    private _controller = new AbortController();
+    private readonly _lifetime = new AbortController();
+    private _change?: Promise<void>;
+    private _disposed = false;
 
 
     constructor(source: GridRowsProvider<T>, pageSize = 100, onLoad?: (args: GridViewportArgs, result: GridResult) => void) {
@@ -32,7 +31,8 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
     }
 
     async load(start: number, count: number): Promise<GridRow[]> {
-
+        const signal = this._controller.signal;
+        if (signal.aborted) return [];
         const rows: GridRow[] = [];
 
         for (let index = start; index < start + count; index++) {
@@ -54,6 +54,8 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
                 page = this._pages.get(pageIndex);
             }
 
+            if (signal.aborted) return [];
+
             if (page) {
 
                 const gr = page[index % this._pageSize];
@@ -68,6 +70,7 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
     }
 
     getAt(index: number): GridRow {
+        if (this._disposed) return { type: "loading", visibleIndex: index, level: 0 };
 
         // Get the row from the cache
 
@@ -103,10 +106,39 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
 
 
     async setExpanded(row: GridRow, expanded: boolean) {
-        this._pages.clear();
-        await this._source.setExpanded(row, expanded);
-        // Wait for the page to be loaded
+        const lifetime = this._change ?? Promise.resolve();
+        const operation = lifetime.catch(() => {}).then(async () => {
+            if (this._disposed) throw new DOMException("Failed to expand grid row. The view was disposed.", "AbortError");
+            await waitForRowQuery(this._source.setExpanded(row, expanded), this._lifetime.signal);
+        });
+        this._change = operation;
+        this.invalidate();
+        try {
+            await operation;
+        } finally {
+            if (this._change === operation) this._change = undefined;
+            this.invalidate();
+        }
         await this.load(row.visibleIndex, 1);
+    }
+
+    /** Rejects obsolete viewport work before it can repopulate the cache. */
+    private invalidate(): void {
+        this._controller.abort();
+        this._controller = new AbortController();
+        if (this._disposed) this._controller.abort();
+        this._pages.clear();
+        this._pageLoads.clear();
+    }
+
+    /** Cancels viewport and provider-owned queries when the grid is replaced or disposed. */
+    dispose(): void {
+        if (this._disposed) return;
+        this._disposed = true;
+        this._lifetime.abort();
+        this.invalidate();
+        this._source.dispose?.();
+        this._onLoad = undefined;
     }
 
     private getPageIndex(rowIndex: number) {
@@ -117,37 +149,33 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
     private loadPage(pageIndex: number): Promise<void> {
         const existing = this._pageLoads.get(pageIndex);
         if (existing) return existing;
-        const task = this.fetchPage(pageIndex).finally(() => this._pageLoads.delete(pageIndex));
+        const task = this.fetchPage(pageIndex, this._controller.signal).finally(() => {
+            if (this._pageLoads.get(pageIndex) === task) this._pageLoads.delete(pageIndex);
+        });
         this._pageLoads.set(pageIndex, task);
         return task;
     }
 
-    private async fetchPage(pageIndex: number) {
+    private async fetchPage(pageIndex: number, signal: AbortSignal) {
+        throwIfRowQueryAborted(signal);
+        // Do not read a partially changed structure while an expansion is pending.
+        if (this._change) await waitForRowQuery(this._change.catch(() => {}), signal);
+        throwIfRowQueryAborted(signal);
 
-        if (this._loadingPages.has(pageIndex)) {
-            return;
-        }
+        const skip = pageIndex * this._pageSize;
+        const viewPortArgs: GridViewportArgs = {
+            skip,
+            top: this._pageSize,
+            signal
+        };
 
-        this._loadingPages.add(pageIndex);
-        try {
+        const result = await waitForRowQuery(this._source.load(viewPortArgs), signal);
+        throwIfRowQueryAborted(signal);
 
-            const skip = pageIndex * this._pageSize;
-            const viewPortArgs: GridViewportArgs = {
-                skip,
-                top: this._pageSize
-            };
+        this._totalCount = result.totalCount ?? 0;
 
-            const result = await this._source.load(viewPortArgs);
-
-            this._totalCount = result.totalCount ?? 0;
-
-            this._pages.set(pageIndex, result.rows);
-            this._onLoad?.(viewPortArgs, result);
-        }
-        finally {
-            this._loadingPages.delete(pageIndex);
-        }
-
+        this._pages.set(pageIndex, result.rows);
+        this._onLoad?.(viewPortArgs, result);
     }
 
 

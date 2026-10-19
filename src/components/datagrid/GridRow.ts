@@ -58,4 +58,6 @@ export interface GridViewportArgs {
 export interface GridRowsProvider<TRow> {
     load: (args: GridViewportArgs) => Promise<GridResult>;
     setExpanded: (row: GridRow, expanded: boolean) => Promise<void>;
+    /** Cancels owned queries and releases cached row state when the view is replaced. */
+    dispose?(): void;
 }

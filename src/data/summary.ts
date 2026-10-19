@@ -1,4 +1,5 @@
 import { getFieldDataType, type DataField } from "./DataField";
+import { isPromiseLike, runSequential } from "./localProcessing";
 
 /**
  * Aggregation kind applied to a group column's summary value.
@@ -19,7 +20,11 @@ export interface SummaryContext<TRow> {
     value?: any;
 }
 
-/** Defines a locally calculated summary identified by its serializable name. */
+/**
+ * Defines a locally calculated summary identified by its serializable name.
+ * Methods may return synchronously or asynchronously. Update only the accumulator,
+ * not source rows: local queries may share a field read among several summaries.
+ */
 export interface SummaryDefinition<TRow, TState = any, TResult = any> {
     /** Name used in `SummaryType` requests. */
     name: string;
@@ -36,8 +41,13 @@ export interface SummaryDefinition<TRow, TState = any, TResult = any> {
 }
 
 /** @internal Working state for one requested summary. Shared by local data engines. */
-export type SummaryAccumulator = {
+type SummaryAccumulator = {
+    request: SummaryRequest;
     definition: SummaryDefinition<any, any, any>;
+    numeric: boolean;
+    numericAllowed: boolean;
+    fieldIndex: number;
+    started: boolean;
     state: any;
 };
 
@@ -125,55 +135,101 @@ export const standardSummaries: Record<string, SummaryDefinition<any, any, any>>
     }
 };
 
+/** @internal Incremental lifecycle shared by total and group summaries. One instance per bucket. */
+export class SummaryCalculator<TRow> {
+    private readonly states: SummaryAccumulator[] = [];
+
+    constructor(
+        summaries: SummaryRequest[],
+        private readonly getValue: (row: TRow, field: string) => any | Promise<any>,
+        getColumn?: (field: string) => DataField<TRow> | undefined,
+        customSummaries?: SummaryDefinition<TRow, any, any>[],
+        private readonly groupValue?: any
+    ) {
+        const fields = new Map<string, { index: number; numericAllowed: boolean }>();
+        for (const request of summaries) {
+            const definition = standardSummaries[request.summaryType]
+                ?? customSummaries?.find(summary => summary.name === request.summaryType);
+            if (!definition) continue;
+            let field = fields.get(request.field);
+            if (!field) {
+                const column = getColumn?.(request.field);
+                field = { index: fields.size,
+                    numericAllowed: !column || !column.dataType || getFieldDataType(column) === "number" };
+                fields.set(request.field, field);
+            }
+            // One state per request, even when several requests use the same field.
+            this.states.push({ request, definition, numeric: isNumericSummary(request.summaryType),
+                numericAllowed: field.numericAllowed, fieldIndex: field.index, started: false, state: undefined });
+        }
+    }
+
+    /** Adds one row in source order. Values are resolved through the caller's field accessor. */
+    accumulate(row: TRow, values?: Map<string, any>): void | Promise<void> {
+        const resolved: any[] = [];
+        return runSequential(this.states, state => {
+            const field = state.request.field;
+            // Optional cache belongs to exactly one row, shared by total/group calculators.
+            // Cache promises too, and distinguish a cached undefined from a missing entry.
+            let value: any;
+            if (state.fieldIndex in resolved) value = resolved[state.fieldIndex];
+            else {
+                value = values?.has(field) ? values.get(field) : this.getValue(row, field);
+                // Assimilate a custom thenable once, not once for every summary.
+                if (isPromiseLike(value)) value = Promise.resolve(value);
+                values?.set(field, value);
+                resolved[state.fieldIndex] = value;
+            }
+            const consume = (value: any) => {
+                const context = { field, groupValue: this.groupValue, row, value };
+                const accumulate = () => {
+                    if (state.numeric && (!state.numericAllowed || typeof value !== "number" || !Number.isFinite(value))) return;
+                    const next = state.definition.accumulate(state.state, value, row, context);
+                    const apply = (next: any) => { if (next !== undefined) state.state = next; };
+                    if (isPromiseLike(next)) return Promise.resolve(next).then(apply);
+                    apply(next);
+                };
+                if (!state.started) {
+                    const initial = state.definition.start(context);
+                    const start = (initial: any) => { state.state = initial; state.started = true; };
+                    if (isPromiseLike(initial)) return Promise.resolve(initial).then(start).then(accumulate);
+                    start(initial);
+                }
+                return accumulate();
+            };
+            return isPromiseLike(value) ? Promise.resolve(value).then(consume) : consume(value);
+        });
+    }
+
+    /** Finishes started summaries; empty buckets and undefined results produce no entries. */
+    async finalize(): Promise<SummaryResult[]> {
+        const result: SummaryResult[] = [];
+        for (const state of this.states) {
+            if (!state.started) continue;
+            const summary = state.request;
+            const value = await state.definition.finalize(state.state, {
+                field: summary.field,
+                groupValue: this.groupValue
+            });
+            if (value !== undefined)
+                result.push({ field: summary.field, summaryType: summary.summaryType, value });
+        }
+        return result;
+    }
+}
+
 /** @internal Evaluates requested summaries over the complete supplied result, before paging. */
 export async function calculateSummaryResults<TRow>(
     rows: TRow[],
     summaries: SummaryRequest[],
-    getValue: (row: TRow, field: string) => Promise<any>,
+    getValue: (row: TRow, field: string) => any | Promise<any>,
     getColumn?: (field: string) => DataField<TRow> | undefined,
     customSummaries?: SummaryDefinition<TRow, any, any>[]
 ): Promise<SummaryResult[]> {
-    const states = new Map<number, SummaryAccumulator>();
-
+    const calculator = new SummaryCalculator(summaries, getValue, getColumn, customSummaries);
     for (const row of rows) {
-        for (const [index, summary] of summaries.entries()) {
-            const value = await getValue(row, summary.field);
-            let state = states.get(index);
-            if (!state) {
-                const definition = standardSummaries[summary.summaryType]
-                    ?? customSummaries?.find(x => x.name === summary.summaryType);
-                if (!definition) continue;
-                state = {
-                    definition,
-                    state: await definition.start({ field: summary.field, groupValue: undefined, row, value })
-                };
-                states.set(index, state);
-            }
-
-            if (isNumericSummary(summary.summaryType)) {
-                const summaryColumn = getColumn?.(summary.field);
-                const numericColumn = !summaryColumn
-                    || getFieldDataType(summaryColumn) === "number"
-                    || (!summaryColumn.dataType && typeof value === "number");
-                if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
-                    continue;
-            }
-
-            const context = { field: summary.field, groupValue: undefined, row, value };
-            const nextState = await state.definition.accumulate(state.state, value, row, context);
-            if (nextState !== undefined) state.state = nextState;
-        }
+        const pending = calculator.accumulate(row);
+        if (isPromiseLike(pending)) await pending;
     }
-
-    const result: SummaryResult[] = [];
-    for (const [index, state] of states) {
-        const summary = summaries[index];
-        const value = await state.definition.finalize(state.state, {
-            field: summary.field,
-            groupValue: undefined
-        });
-        if (value !== undefined)
-            result.push({ field: summary.field, summaryType: summary.summaryType, value });
-    }
-    return result;
+    return calculator.finalize();
 }

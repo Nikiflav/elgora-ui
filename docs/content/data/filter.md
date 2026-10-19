@@ -60,8 +60,12 @@ const wireless: DataFilter = ["name", "contains", "wireless"];
 | startswith, endswith | Text prefix / suffix |
 
 In local evaluation, text operations are case-insensitive and treat null/undefined
-as empty text. Equality uses strict JavaScript equality; objects and Date instances
-are compared by reference. Ordered comparisons use JavaScript comparison semantics.
+as empty text. Equality with `null` matches null or missing (`undefined`) values,
+but not empty text (`""`); `<> null` matches values that are not missing.
+Remote SQL adapters translate these conditions to `IS NULL` / `IS NOT NULL`.
+Use `null`, not `undefined`, in serialized filter conditions.
+Other equality comparisons use strict JavaScript equality; objects and Date
+instances are compared by reference. Ordered comparisons use JavaScript comparison semantics.
 Supply values of the correct type rather than relying on coercion.
 
 API: [evalFilter](?!=/api-reference/evalFilter).

@@ -123,7 +123,7 @@ export default {
     {
       "name": "abortSignal",
       "type": "AbortSignal | undefined",
-      "description": "",
+      "description": "Cancellation signal for this query. The grid aborts its owned queries when\nthe row view is replaced or disposed.\nRemote implementations should pass it to fetch() or equivalent transport.\nShared page requests may outlive an individual viewport waiter.",
       "tags": [],
       "topics": [],
       "optional": true,

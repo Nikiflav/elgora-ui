@@ -1,12 +1,22 @@
 import type { DataSource, QueryArgs, DataResult, GroupItem } from "./DataSource";
-import { ArrayDataSource } from "./ArrayDataSource";
-import { getFieldGroupValue, type GroupIntervalDefinition } from "./grouping";
-import { getFieldDataType, type DataField } from "./DataField";
-import { calculateSummaryResults, isNumericSummary, standardSummaries,
-    type SummaryAccumulator, type SummaryDefinition } from "./summary";
+import { getLocalQueryEngine } from "./LocalQueryEngine";
+import { createGroupValueGetter, normalizeGroupValue, type GroupIntervalDefinition } from "./grouping";
+import type { DataField } from "./DataField";
+import { calculateSummaryResults, SummaryCalculator, type SummaryDefinition } from "./summary";
+import { isPromiseLike } from "./localProcessing";
+import { LocalQueryCache, LocalQueryKeys } from "./LocalQueryCache";
 
-/** Delegates supported queries to its source and supplies local grouping/summary fallback. */
+/**
+ * Delegates supported queries to its source and supplies local grouping/summary fallback.
+ * Complete local group/summary results are cached for ArrayDataSource and DataTable,
+ * following its revision. Each adapter retains up to eight query results; field
+ * metadata and callback identities participate in the keys. Changes to captured
+ * external data require source.invalidateCache(). Remote results are not cached.
+ */
 export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
+    private readonly queryKeys = new LocalQueryKeys();
+    private readonly queryCache = new LocalQueryCache<DataResult<TRow>>();
+    private sourceRevision = -1;
     /** Exposed only when the wrapped source supports new-row sessions. */
     readonly createNewRow?: DataSource<TRow>["createNewRow"];
     /** Exposed only when the wrapped source supports updates. */
@@ -22,7 +32,7 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
     get undoCoordinator(): DataSource<TRow>["undoCoordinator"] { return this.ds.undoCoordinator; }
     constructor(
         private ds: DataSource<TRow>,
-        private getValue: (row: TRow, column: string) => Promise<any>,
+        private getValue: (row: TRow, column: string) => any | Promise<any>,
         private getColumn?: (column: string) => DataField<TRow> | undefined,
         private customIntervals?: GroupIntervalDefinition<TRow>[],
         private customSummaries?: SummaryDefinition<TRow, any, any>[]
@@ -35,10 +45,55 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
     }
 
     async loadData(args: QueryArgs): Promise<DataResult<TRow>> {
+        // Remote sources retain their own cache policy. Built-in local sources
+        // explicitly provide the revision-controlled engine capability.
+        const engine = getLocalQueryEngine(this.ds);
+        if (!engine || (!args.groupColumn && !args.totalSummary?.length))
+            return this.loadUncached(args);
+        const revision = engine.revision;
+        if (this.sourceRevision !== revision) {
+            this.queryCache.clear();
+            this.sourceRevision = revision;
+        }
+        // Definitions can be patched in place by the grid. Capture the relevant
+        // metadata/callback identities, rather than the column object's identity.
+        const names = new Set([args.groupColumn, ...args.groupSummary?.map(summary => summary.field) ?? [],
+            ...args.totalSummary?.map(summary => summary.field) ?? []]);
+        const fields = [...names].filter((name): name is string => name !== undefined).map(name => {
+            const field = this.getColumn?.(name);
+            return [name, field?.name, field?.dataType, field?.groupInterval,
+                this.queryKeys.value(field?.getValue), this.queryKeys.value(field?.getGroupValue)];
+        });
+        const configuration = [fields, this.customIntervals?.map(interval =>
+            [interval.name, this.queryKeys.value(interval.getGroupValue)]), this.customSummaries?.map(summary =>
+            [summary.name, summary.dependsOnOrder, this.queryKeys.value(summary.start),
+                this.queryKeys.value(summary.accumulate), this.queryKeys.value(summary.finalize)])];
+        const key = this.queryKeys.query(args, configuration);
+        let result = this.queryCache.get(key);
+        if (!result) {
+            result = await this.loadUncached({ ...args, skip: undefined, top: undefined, requireTotalCount: true });
+            // A mutation/manual reset while an async accessor ran must not publish
+            // an obsolete calculation into the current cache. Failed work never gets here.
+            if (revision === engine.revision && !args.abortSignal?.aborted) this.queryCache.set(key, result);
+        }
+        const skip = args.skip ?? 0;
+        const page = <T>(items: T[]) => items.slice(skip, skip + (args.top ?? items.length));
+        return { ...result, args,
+            totalCount: args.groupColumn || args.requireTotalCount ? result.totalCount : undefined,
+            dataItems: result.dataItems ? page(result.dataItems) : undefined,
+            groups: result.groups ? page(result.groups).map(group => ({ ...group,
+                ...(group.summaryValues ? { summaryValues: { ...group.summaryValues } } : {}) })) : undefined,
+            totalSummary: result.totalSummary?.map(summary => ({ ...summary })) };
+    }
+
+    private async loadUncached(args: QueryArgs): Promise<DataResult<TRow>> {
         if (args.groupColumn) {
 
             const column = this.getColumn?.(args.groupColumn);
-            const serverResult = await this.ds.loadData(args);
+            // Plain arrays need the adapter's field metadata/custom summaries;
+            // do not first calculate raw-property summaries that will be discarded.
+            const serverResult = await this.ds.loadData(getLocalQueryEngine(this.ds)
+                ? { ...args, totalSummary: undefined } : args);
             if (serverResult?.groups) return serverResult;
 
             // Load all items in memory and then group them.
@@ -47,6 +102,7 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             delete flatArgs.groupSummary;
             delete flatArgs.skip;
             delete flatArgs.top;
+            delete flatArgs.totalSummary;
 
             const select = new Set<string>();
             select.add(args.groupColumn!);
@@ -63,22 +119,22 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             // A flat response may be only the requested page; reload without paging so
             // client-side fallback grouping sees the complete filtered set.
             const flatResult = await this.ds.loadData(flatArgs);
-            const totalSummary = args.totalSummary?.length
-                ? await calculateSummaryResults(
-                    flatResult.dataItems ?? [],
-                    args.totalSummary,
-                    this.getValue,
-                    this.getColumn,
-                    this.customSummaries
-                )
+            const totalCalculator = args.totalSummary?.length
+                ? new SummaryCalculator(args.totalSummary, this.getValue, this.getColumn, this.customSummaries)
                 : undefined;
 
             const map = new Map<any, GroupItem>();
-            const summaryStates = new Map<any, Map<string, SummaryAccumulator>>();
+            const groupCalculators = new Map<any, SummaryCalculator<TRow>>();
+            const getGroupValue = column ? createGroupValueGetter(column, this.customIntervals, getLocalQueryEngine(this.ds)?.getValue)
+                : (row: TRow) => this.getValue(row, args.groupColumn!);
+            // Reuse only within a row. Never cache across queries or data changes.
+            const values = totalCalculator && args.groupSummary?.length ? new Map<string, any>() : undefined;
             for (let r of flatResult.dataItems ?? []) {
-                const groupValue = column
-                    ? await getFieldGroupValue(column, r, this.customIntervals)
-                    : (await this.getValue(r, args.groupColumn!)) ?? '';
+                values?.clear();
+                const totalPending = totalCalculator?.accumulate(r, values);
+                if (isPromiseLike(totalPending)) await totalPending;
+                const rawGroupValue = getGroupValue(r);
+                const groupValue = normalizeGroupValue(isPromiseLike(rawGroupValue) ? await rawGroupValue : rawGroupValue);
                 let group = map.get(groupValue);
                 if (!group) {
                     group = {
@@ -87,64 +143,35 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
                         count: 0
                     };
                     map.set(groupValue, group);
-                    summaryStates.set(groupValue, new Map());
                 }
                 group.count++;
-                if (args.groupSummary) {
-                    group.summaryValues = group.summaryValues || {};
-                    const states = summaryStates.get(groupValue)!;
-                    for (let g of args.groupSummary) {
-                        const value = await this.getValue(r, g.field);
-                        let state = states.get(g.field);
-                        if (!state) {
-                            const definition = standardSummaries[g.summaryType]
-                                ?? this.customSummaries?.find(x => x.name === g.summaryType);
-                            if (!definition) continue;
-                            state = {
-                                definition,
-                                state: await definition.start({ field: g.field, groupValue, row: r, value })
-                            };
-                            states.set(g.field, state);
-                        }
-
-                        if (isNumericSummary(g.summaryType)) {
-                            const summaryColumn = this.getColumn?.(g.field);
-                            const numericColumn = !summaryColumn
-                                || getFieldDataType(summaryColumn) === "number"
-                                || (!summaryColumn.dataType && typeof value === "number");
-                            if (!numericColumn || typeof value !== "number" || !Number.isFinite(value))
-                                continue;
-                        }
-
-                        const context = { field: g.field, groupValue, row: r, value };
-                        const nextState = await state.definition.accumulate(state.state, value, r, context);
-                        if (nextState !== undefined) state.state = nextState;
+                if (args.groupSummary?.length) {
+                    let calculator = groupCalculators.get(groupValue);
+                    if (!calculator) {
+                        calculator = new SummaryCalculator(args.groupSummary, this.getValue,
+                            this.getColumn, this.customSummaries, groupValue);
+                        groupCalculators.set(groupValue, calculator);
                     }
+                    const pending = calculator.accumulate(r, values);
+                    if (isPromiseLike(pending)) await pending;
                 }
             }
 
-            if (args.groupSummary) {
-                for (const [groupValue, states] of summaryStates) {
-                    const group = map.get(groupValue)!;
-                    for (const summary of args.groupSummary) {
-                        const state = states.get(summary.field);
-                        if (!state) continue;
-
-                        const value = await state.definition.finalize(
-                            state.state,
-                            { field: summary.field, groupValue }
-                        );
-                        if (value !== undefined)
-                            group.summaryValues![summary.field] = value;
-                    }
-                }
+            for (const [groupValue, calculator] of groupCalculators) {
+                // GroupItem's public shape holds one displayed summary per field.
+                map.get(groupValue)!.summaryValues = Object.fromEntries(
+                    (await calculator.finalize()).map(summary => [summary.field, summary.value]));
             }
+            const totalSummary = await totalCalculator?.finalize();
             let groups = Array.from(map.values());
             const token = args.orderby?.find(x => (typeof x === "string" ? x : x[0]) === args.groupColumn);
             const desc = Array.isArray(token) && token[1] === "desc";
             groups.sort((a, b) => {
                 if (a.groupValue === b.groupValue) return 0;
-                const result = a.groupValue < b.groupValue ? -1 : 1;
+                // Missing values precede empty text, then ordinary values. Never
+                // compare null/"" numerically: both would otherwise equal 0.
+                const result = a.groupValue === null ? -1 : b.groupValue === null ? 1
+                    : a.groupValue === "" ? -1 : b.groupValue === "" ? 1 : a.groupValue < b.groupValue ? -1 : 1;
                 return desc ? -result : result;
             });
             if (args.skip || args.top) {
@@ -159,23 +186,28 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
             };
         }
 
-        const result = await this.ds.loadData(args);
-        if (args.totalSummary?.length && this.ds instanceof ArrayDataSource) {
+        if (args.totalSummary?.length && getLocalQueryEngine(this.ds)) {
+            // Query/filter/sort once, calculate with the adapter's field access,
+            // then apply paging. Remote sources retain full ownership of totals.
             const allResult = await this.ds.loadData({
                 ...args,
                 skip: undefined,
                 top: undefined,
                 totalSummary: undefined
             });
-            result.totalSummary = await calculateSummaryResults(
-                allResult.dataItems ?? [],
+            const rows = allResult.dataItems ?? [];
+            const totalSummary = await calculateSummaryResults(
+                rows,
                 args.totalSummary,
                 this.getValue,
                 this.getColumn,
                 this.customSummaries
             );
+            const skip = args.skip ?? 0;
+            return { ...allResult, args, totalSummary,
+                dataItems: rows.slice(skip, skip + (args.top ?? rows.length)) };
         }
-        return result;
+        return this.ds.loadData(args);
     }
 
 }

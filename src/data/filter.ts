@@ -1,3 +1,5 @@
+import { applyGroupInterval } from "./grouping";
+
 type BinaryOperator = "=" | "<>" | ">" | ">=" | "<" | "<=" | "startswith" | "endswith" | "contains" | "notcontains";
 type GroupOperator = "and" | "or";
 
@@ -28,52 +30,29 @@ type GroupFilter =
 
 /**
  * A serializable filter condition, negation or group. Nested arrays combine conditions with AND.
+ * Equality with null matches null or missing (undefined) values, never empty text.
+ * Inequality with null is the inverse. Other equality comparisons are type-strict.
+ * SQL adapters should translate = null / <> null to IS NULL / IS NOT NULL.
  * @example
  * const filter: DataFilter = ["and", ["quantity", ">=", 1], ["quantity", "<=", 100]];
  */
 export type DataFilter = BinaryFilter | UnaryFilter | GroupFilter;
 
+// Grouping and transformed filters share the same interval rules, including empties.
 const DEFAULT_FILTER_FUNCTIONS: FilterFunctionRegistry = {
-    firstChar: value => String(value ?? "").charAt(0),
-    year: value => toDate(value)?.getFullYear(),
-    yearQuarter: value => {
-        const date = toDate(value);
-        return date ? `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}` : value;
-    },
-    quarter: value => {
-        const date = toDate(value);
-        return date ? Math.floor(date.getMonth() / 3) + 1 : value;
-    },
-    month: value => toDate(value)?.getMonth()! + 1,
-    yearMonth: value => {
-        const date = toDate(value);
-        return date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}` : value;
-    },
-    week: value => {
-        const date = toDate(value);
-        if (!date) return value;
-        const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const day = utc.getUTCDay() || 7;
-        utc.setUTCDate(utc.getUTCDate() + 4 - day);
-        const isoYear = utc.getUTCFullYear();
-        const yearStart = new Date(Date.UTC(isoYear, 0, 1));
-        const isoWeek = Math.ceil((((utc.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-        return `${isoYear}-W${String(isoWeek).padStart(2, "0")}`;
-    },
-    day: value => toDate(value)?.getDate(),
-    dayOfWeek: value => {
-        const date = toDate(value);
-        return date ? (date.getDay() || 7) : value;
-    },
-    hour: value => toDate(value)?.getHours(),
-    minute: value => toDate(value)?.getMinutes(),
-    second: value => toDate(value)?.getSeconds()
+    firstChar: value => applyGroupInterval(value, "firstChar"),
+    year: value => applyGroupInterval(value, "year"),
+    yearQuarter: value => applyGroupInterval(value, "yearQuarter"),
+    quarter: value => applyGroupInterval(value, "quarter"),
+    month: value => applyGroupInterval(value, "month"),
+    yearMonth: value => applyGroupInterval(value, "yearMonth"),
+    week: value => applyGroupInterval(value, "week"),
+    day: value => applyGroupInterval(value, "day"),
+    dayOfWeek: value => applyGroupInterval(value, "dayOfWeek"),
+    hour: value => applyGroupInterval(value, "hour"),
+    minute: value => applyGroupInterval(value, "minute"),
+    second: value => applyGroupInterval(value, "second")
 };
-
-function toDate(value: any): Date | undefined {
-    const date = value instanceof Date ? value : new Date(value);
-    return Number.isNaN(date.getTime()) ? undefined : date;
-}
 
 function getFieldValue(item: Record<string, any>, field: string): any {
     return field.split(".").reduce((value, part) => value == null ? undefined : value[part], item);
@@ -156,8 +135,8 @@ function compare(actual: any, op: string, target: any): boolean {
     const safeTarget = target ?? "";
 
     switch (op) {
-        case "=": return actual === target;
-        case "<>": return actual !== target;
+        case "=": return target == null ? actual == null : actual === target;
+        case "<>": return target == null ? actual != null : actual !== target;
         case ">": return actual > target;
         case ">=": return actual >= target;
         case "<": return actual < target;
@@ -172,6 +151,81 @@ function compare(actual: any, op: string, target: any): boolean {
             return !String(safeActual).toLowerCase().includes(String(safeTarget).toLowerCase());
         default: return false;
     }
+}
+
+/**
+ * @internal Prepares one query predicate without generated code or a persistent cache.
+ * Paths, function lookup and text needles are resolved once, outside the row loop.
+ * Invalid branches stay lazy so AND/OR retain evalFilter's short-circuit behavior.
+ */
+export function prepareFilter(filter: DataFilter, functions?: FilterFunctionRegistry,
+    readMember?: (row: any, field: string) => any): (item: Record<string, any>) => boolean {
+    const registry = functions ? { ...DEFAULT_FILTER_FUNCTIONS, ...functions } : DEFAULT_FILTER_FUNCTIONS;
+    const accessor = (selector: FilterSelector) => {
+        const field = typeof selector === "string" ? selector : selector.field;
+        if (typeof field !== "string") return undefined;
+        const path = field.split(".");
+        const read = path.length === 1 ? (row: any) => readMember ? readMember(row, field) : row == null ? undefined : row[field] : (row: any) => {
+            let value = readMember ? readMember(row, path[0]) : row == null ? undefined : row[path[0]];
+            for (let index = 1; index < path.length; index++) value = value == null ? undefined : value[path[index]];
+            return value;
+        };
+        if (typeof selector === "string") return read;
+        const fn = registry[selector.function];
+        if (!fn) return undefined;
+        const args = selector.args ?? [];
+        return (row: any) => fn(read(row), args, row);
+    };
+    const compile = (filter: DataFilter): ((row: Record<string, any>) => boolean) => {
+        if (filter == null || (Array.isArray(filter) && filter.length === 0)) return () => true;
+        if (Array.isArray(filter)) {
+            const [first, op, target] = filter as any[];
+            if (first === "!" && filter.length === 2) {
+                const predicate = compile(op);
+                return row => !predicate(row);
+            }
+            if (first === "and" || first === "or" || (Array.isArray(first) && filter.length !== 3)) {
+                const explicit = first === "and" || first === "or";
+                const predicates = (explicit ? filter.slice(1) : filter).map(part => compile(part as DataFilter));
+                const or = first === "or";
+                return row => {
+                    for (let index = 0; index < predicates.length; index++) {
+                        let matches: boolean;
+                        try { matches = predicates[index](row); }
+                        catch (error: any) {
+                            const group = explicit ? `"${first}" group at index ${index + 1}` : `implicit "and" group at index ${index}`;
+                            throw new Error(`Failed to evaluate filter. Error in ${group}: ${error.message}`);
+                        }
+                        if (matches === or) return or;
+                    }
+                    return !or;
+                };
+            }
+            if (filter.length === 3 && (typeof first === "string" || (first && typeof first === "object"))) {
+                const read = accessor(first);
+                if (read) {
+                    // The query's needle is constant; lowercase it once, not for every row.
+                    if (["contains", "notcontains", "startswith", "endswith"].includes(op)) {
+                        const needle = String(target ?? "").toLowerCase();
+                        return row => {
+                            const text = String(read(row) ?? "").toLowerCase();
+                            switch (op) {
+                                case "contains": return text.includes(needle);
+                                case "notcontains": return !text.includes(needle);
+                                case "startswith": return text.startsWith(needle);
+                                default: return text.endsWith(needle);
+                            }
+                        };
+                    }
+                    if (["=", "<>", ">", ">=", "<", "<="].includes(op))
+                        return row => compare(read(row), op, target);
+                }
+            }
+        }
+        // Reuse the interpreter's diagnostics, only if this branch is reached.
+        return row => evalFilter(row, filter, registry);
+    };
+    return compile(filter);
 }
 
 /** Combines provided filters in AND group filter */

@@ -7,7 +7,7 @@ export type DataType = "string" | "number" | "boolean" | "date" | "datetime" | "
  * DataViewField adds presentation; DataGridColumn adds grid-specific behavior.
  * @example
  * const amount: DataField<Order> = {
- *     name: "amount", dataType: "number", getValue: async row => row.amount
+ *     name: "amount", dataType: "number", getValue: row => row.amount
  * };
  */
 export interface DataField<TRow> {
@@ -15,8 +15,12 @@ export interface DataField<TRow> {
     name: string;
     /** Semantic value type. Independent of the editor used to display or edit the field. */
     dataType?: DataType;
-    /** Reads the field value; when omitted, local operations read row[name]. */
-    getValue?(row: TRow): Promise<any>;
+    /**
+     * Reads a value synchronously or asynchronously. Omit to read the row member.
+     * Accessors must not mutate data: local queries may reuse a field value for
+     * several summaries while processing the same row.
+     */
+    getValue?(row: TRow): any | Promise<any>;
     /** Built-in or source-defined grouping interval. */
     groupInterval?: import("./grouping").GroupInterval;
     /** Overrides local grouping for the resolved field value. */

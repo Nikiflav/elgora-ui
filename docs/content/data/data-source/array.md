@@ -78,18 +78,86 @@ object with the same ID. Pending rows can be updated but must be cancelled rathe
 than deleted. Repeated successful insert/cancel calls are harmless; switching from
 an inserted session to cancel, or from a cancelled session to insert, rejects.
 
+## Local query processing
+
+`loadData()` filters and sorts before paging; total summaries use the complete
+filtered result, not just the returned page. Sorting never reorders the supplied
+array, and returned pages have their own array container while retaining row references.
+The grid provides local grouping through
+[LocalGroupingDataSource](?!=/api-reference/LocalGroupingDataSource).
+
+For calculated fields, prefer a synchronous accessor when the value is already
+available locally:
+
+```ts
+import type { DataField } from "elgora-ui";
+
+type OrderLine = { quantity: number; price: number };
+const amount: DataField<OrderLine> = {
+    name: "amount", dataType: "number",
+    getValue: row => row.quantity * row.price
+};
+```
+
+Async accessors and custom summary callbacks are also supported and awaited in
+order. Accessors and summary callbacks must not change source data. A local query
+may read a field once per row and reuse that value for several summaries,
+including group and total summaries. Completed query results can be reused until
+the source is invalidated, as described below.
+
+See [DataField](?!=/api-reference/DataField) and
+[SummaryDefinition](?!=/api-reference/SummaryDefinition).
+
+## Query cache and invalidation
+
+ArrayDataSource caches complete filtered/sorted row lists and total summaries.
+Changing `skip`, `top` or `requireTotalCount` reuses the complete result instead
+of processing the array again. Each local cache retains at most eight queries,
+evicting the least recently used entry. Returned page arrays and summary records
+are separate containers; row objects and object-valued results retain their references.
+
+Successful updates to confirmed rows, `newRowSession.insert()` and `delete()`
+increment [revision](?!=/api-reference/ArrayDataSource#revision) and invalidate the
+caches before emitting `changed`. Failed operations and equal-value updates do
+not invalidate. Pending-row creation, edits and cancellation do not invalidate
+normal queries because pending rows are excluded from them.
+
+Direct changes to the public array or its objects are **not tracked**. Explicitly
+invalidate after those changes:
+
+```ts
+products[0].price = 42;
+products.push({ id: nextId++, name: "Monitor", price: 199, stock: 4 });
+source.invalidateCache();
+```
+
+[invalidateCache()](?!=/api-reference/ArrayDataSource#invalidateCache) increments
+the revision, clears local query results and emits `{ kind: "reset" }`. Connected
+grids can then reload. Refreshing a grid alone does not invalidate the source.
+Also call this method when changing external data captured by an accessor,
+filter function or custom summary, or replacing a configured filter function.
+
+LocalGroupingDataSource uses the ArrayDataSource revision to cache complete group
+results, counts and summaries independently for each adapter. It detects changes
+to relevant field metadata and callback identities; captured external values still
+require source invalidation. Paging through groups does not regroup the rows.
+The adapter also supports [DataTable's local revision and caches](?!=/data/dataset#queries-and-local-caches),
+but does not cache remote sources.
+Failed/cancelled calculations and calculations completed after a revision change
+are not stored in the query-result cache.
+
 ## Observe changes
 
 ```ts
 const subscription = source.changed.subscribe(event => {
-    if (event.kind === "insert" || event.kind === "delete") reloadProductList();
+    if (event.kind === "insert" || event.kind === "delete" || event.kind === "reset") reloadProductList();
     if (event.kind === "update") updateProductDisplay(event.row, event.fields);
 });
 // When the consumer is destroyed:
 subscription.dispose();
 ```
 
-The event kinds are `create`, `update`, `insert`, `delete` and `cancel`.
+The event kinds are `create`, `update`, `insert`, `delete`, `cancel` and `reset`.
 Only update supplies changed field names. Equal-value updates emit no event.
 `create` means a draft was initialized; `insert` means it joined the array.
 

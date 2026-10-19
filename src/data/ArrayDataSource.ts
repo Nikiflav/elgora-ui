@@ -1,8 +1,8 @@
-import { evalFilter, type FilterFunctionRegistry } from "./filter";
+import type { FilterFunctionRegistry } from "./filter";
 import type { RowIdentity } from "./RowIdentity";
 import type { DataSource, QueryArgs, DataResult, MutationResult, NewRowSession, DataSourceChanged } from "./DataSource";
-import { calculateSummaryResults } from "./summary";
 import { ObservableEvent } from "../core/ElgoraUI";
+import { LocalQueryEngine, localQueryEngine } from "./LocalQueryEngine";
 
 /** Identity, defaults and query configuration for an editable in-memory array. */
 export interface ArrayDataSourceOptions<T> {
@@ -20,6 +20,9 @@ export interface ArrayDataSourceOptions<T> {
  * Reads and edits the supplied array directly, preserving existing row references.
  * New rows are plain objects and remain outside the array until their session is inserted.
  * Each command emits changed after success. No undo history or server persistence is provided.
+ * Filtered/sorted rows and totals are cached (up to eight entries per cache).
+ * Confirmed-row mutations invalidate automatically; direct array/object edits and
+ * changes to external callback dependencies require invalidateCache().
  */
 export class ArrayDataSource<T> implements DataSource<T> {
     readonly array: Array<T>;
@@ -27,9 +30,30 @@ export class ArrayDataSource<T> implements DataSource<T> {
     readonly changed = new ObservableEvent<DataSourceChanged<T>>();
     private readonly pendingRows = new Map<T, RowIdentity>();
     private readonly reservedKeys = new Set<RowIdentity>();
-    private _parentField?: string;
-    private _filterFunctions?: FilterFunctionRegistry;
     private readonly _idField: string;
+    /** @internal Shared local query capability. */
+    private readonly [localQueryEngine]: LocalQueryEngine<T>;
+
+    /** Query-data version. Successful confirmed-row mutations and invalidateCache() increment it. */
+    get revision(): number { return this[localQueryEngine].revision; }
+
+    /**
+     * Clears local query caches and notifies consumers with kind "reset".
+     * Call after changing the public array/rows directly, or external values used
+     * by field accessors, filter functions or custom summaries. Grid refresh alone
+     * does not invalidate cached queries. Pending-row changes do not affect queries.
+     * @example
+     * products[0].price = 42;
+     * source.invalidateCache();
+     */
+    invalidateCache(): void {
+        this.clearQueryCaches();
+        this.changed.invoke({ kind: "reset" });
+    }
+
+    private clearQueryCaches(): void {
+        this[localQueryEngine].invalidate();
+    }
 
     /** Only assigned when `options.parentField` is given, so plain flat arrays don't get flagged as hierarchical. */
     getRowId?: (row: T) => any;
@@ -37,11 +61,12 @@ export class ArrayDataSource<T> implements DataSource<T> {
 
     constructor(array: Array<T>, private readonly options: ArrayDataSourceOptions<T> = {}) {
         this.array = array;
-        this._filterFunctions = options?.filterFunctions;
+        this[localQueryEngine] = new LocalQueryEngine(() => this.array, undefined,
+            { parentField: options.parentField, filterFunctions: () => options.filterFunctions });
 
         const idField = this._idField = options?.idField ?? "id";
         if (options?.parentField) {
-            const parentField = this._parentField = options.parentField;
+            const parentField = options.parentField;
             this.getRowId = (row: T) => (row as any)[idField];
             this.hasChildren = async (row: T) => {
                 const id = this.getRowId!(row);
@@ -50,45 +75,8 @@ export class ArrayDataSource<T> implements DataSource<T> {
         }
     }
 
-    async loadData(args: QueryArgs): Promise<DataResult<T>> {
-        // 1. Filter and sort.
-        let workingSet = this._parentField && args.parentId !== undefined
-            ? this.array.filter(item => (item as any)[this._parentField!] === args.parentId)
-            : [...this.array];
-        if (args.filter) workingSet = workingSet.filter(item => evalFilter(<any>item, args.filter!, this._filterFunctions));
-        if (args.orderby) {
-            workingSet.sort((a, b) => {
-                for (const token of args.orderby!) {
-                    const aVal = (a as any)[token[0]];
-                    const bVal = (b as any)[token[0]];
-                    const desc = token[1] === "desc";
-                    if (aVal < bVal) return desc ? 1 : -1;
-                    if (aVal > bVal) return desc ? -1 : 1;
-                }
-                return 0;
-            });
-        }
-
-        const result: DataResult<T> = {
-            args: args
-        };
-        if (args.requireTotalCount) {
-            result.totalCount = workingSet.length;
-        }
-
-        if (args.totalSummary?.length) {
-            result.totalSummary = await calculateSummaryResults(
-                workingSet,
-                args.totalSummary,
-                async (row, field) => (row as any)[field]
-            );
-        }
-
-        const skip = args.skip ?? 0;
-        const top = args.top ?? workingSet.length;
-        result.dataItems = workingSet.slice(skip, skip + top);
-
-        return result;
+    loadData(args: QueryArgs): Promise<DataResult<T>> {
+        return this[localQueryEngine].loadData(args);
     }
 
     async indexOfRow(row: T): Promise<number> {
@@ -112,6 +100,7 @@ export class ArrayDataSource<T> implements DataSource<T> {
         const fields = Object.keys(values).filter(field => !Object.is(record[field], values[field]));
         if (!fields.length) return { success: true };
         Object.assign(record, Object.fromEntries(fields.map(field => [field, values[field]])));
+        if (!this.pendingRows.has(row)) this.clearQueryCaches();
         this.changed.invoke({ kind: "update", row, fields });
         return { success: true };
     }
@@ -124,6 +113,7 @@ export class ArrayDataSource<T> implements DataSource<T> {
         if (index < 0)
             return { success: false, error: "Failed to delete row. Row does not belong to this source." };
         this.array.splice(index, 1);
+        this.clearQueryCaches();
         this.changed.invoke({ kind: "delete", row });
         return { success: true };
     }
@@ -179,6 +169,7 @@ export class ArrayDataSource<T> implements DataSource<T> {
                 state = "inserted";
                 this.pendingRows.delete(row);
                 this.reservedKeys.delete(key);
+                this.clearQueryCaches();
                 this.changed.invoke({ kind: "insert", row });
                 return { success: true };
             },

@@ -16,6 +16,37 @@ export default {
   "source": "src/data/dataset/DataTable.ts",
   "members": [
     {
+      "name": "revision",
+      "type": "number",
+      "description": "Query-data version; invalidated immediately when confirmed working data changes, even inside a transaction.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/dataset/DataTable.ts",
+      "kind": "property"
+    },
+    {
+      "name": "invalidateCache",
+      "type": "() => void",
+      "description": "Invalidates local query/group results and emits kind \"reset\" while the dataset is idle.\nUse after in-place object changes or changes to external query dependencies.\nThis does not track an edit, record undo, or make an in-place change persistable.\nOrdinary table edits, import, rollback and history replay invalidate automatically.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "externalRates.usd = 1.1;\ntable.invalidateCache();"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/dataset/DataTable.ts",
+      "parameters": [],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => void"
+    },
+    {
       "name": "idField",
       "type": "string",
       "description": "Field containing each row's unique identity; defaults to id.",

@@ -4,7 +4,7 @@ import {
     type DataSource, type DataSourceChanged, type DataResult,
     type QueryArgs, type MutationResult, type NewRowSession
 } from "../DataSource";
-import { ArrayDataSource } from "../ArrayDataSource";
+import { LocalQueryEngine, localQueryEngine } from "../LocalQueryEngine";
 import type { RowIdentity } from "../RowIdentity";
 import type { ChangeSet, KeyMapping } from "../ChangeSet";
 import type { DataSet, NewRowIdFactory } from "./DataSet";
@@ -60,6 +60,31 @@ export class DataTable implements DataSource<DataRow> {
     private defaults: DataTableOptions["defaults"];
     private equals: NonNullable<DataTableOptions["equals"]>;
     private createRowId?: NewRowIdFactory;
+    /** @internal Shared local query capability; row values are read without toObject(). */
+    private readonly [localQueryEngine] = new LocalQueryEngine<DataRow>(() => this.queryRows(), (row, field) => row.getValue(field));
+
+    /** Query-data version; invalidated immediately when confirmed working data changes, even inside a transaction. */
+    get revision(): number { return this[localQueryEngine].revision; }
+
+    /**
+     * Invalidates local query/group results and emits kind "reset" while the dataset is idle.
+     * Use after in-place object changes or changes to external query dependencies.
+     * This does not track an edit, record undo, or make an in-place change persistable.
+     * Ordinary table edits, import, rollback and history replay invalidate automatically.
+     * @example
+     * externalRates.usd = 1.1;
+     * table.invalidateCache();
+     */
+    invalidateCache(): void {
+        this.dataSet.ensureEditable("invalidate query cache");
+        this[localQueryEngine].invalidate();
+        this.changed.invoke({ kind: "reset" });
+    }
+
+    /** Iterates only query-visible rows; never creates value containers for them. */
+    private *queryRows(): IterableIterator<DataRow> {
+        for (const row of this._rows.values()) if (row.state !== "deleted") yield row;
+    }
     /** Field containing each row's unique identity; defaults to id. */
     readonly idField: string;
 
@@ -160,6 +185,7 @@ export class DataTable implements DataSource<DataRow> {
             return row;
         });
         if (incoming.length) {
+            this[localQueryEngine].invalidate();
             this.dataSet._clearHistory();
             this.changed.invoke({ kind: "reset" });
         }
@@ -222,6 +248,7 @@ export class DataTable implements DataSource<DataRow> {
             this._pendingRows.delete(row.key);
             this._rows.set(row.key, row);
             session.state = "inserted";
+            this[localQueryEngine].invalidate();
             await this.business(this.rowChanged, tx, scope, "insert", row, [], oldValues, row.toObject());
             tx._notify(this, { kind: "insert", row });
             return { success: true };
@@ -261,6 +288,7 @@ export class DataTable implements DataSource<DataRow> {
             await this.business(this.rowChanging, tx, scope, "update", row, fields, oldValues, newValues);
             this.capture(tx, row);
             row._applyValues(newValues);
+            if (this._rows.get(row.key) === row) this[localQueryEngine].invalidate();
             tx._notify(this, { kind: "update", row, fields });
             await this.business(this.rowChanged, tx, scope, "update", row, fields, oldValues, newValues);
             return { success: true };
@@ -279,6 +307,7 @@ export class DataTable implements DataSource<DataRow> {
             this.capture(tx, row);
             if (row.state === "added") this._rows.delete(row.key);
             else row._markDeleted();
+            this[localQueryEngine].invalidate();
             await this.business(this.rowChanged, tx, scope, "delete", row, [], oldValues, {});
             tx._notify(this, { kind: "delete", row });
             return { success: true };
@@ -299,6 +328,7 @@ export class DataTable implements DataSource<DataRow> {
         const index = [...(confirmed ? this._rows : this._pendingRows).keys()].indexOf(row.key);
         const session = this.sessions.get(row), state = session?.state;
         return () => {
+            const wasConfirmed = this._rows.get(row.key) === row;
             this._rows.delete(row.key);
             this._pendingRows.delete(row.key);
             row._restore(snapshot);
@@ -310,19 +340,14 @@ export class DataTable implements DataSource<DataRow> {
                 map.clear();
                 for (const [key, entry] of entries) map.set(key, entry);
             }
+            if (confirmed || wasConfirmed) this[localQueryEngine].invalidate();
         };
     }
 
     /** Loads confirmed, non-deleted rows. Pending rows never participate in pages, counts or summaries. */
     async loadData(args: QueryArgs): Promise<DataResult<DataRow>> {
         if (args.groupColumn) return { args }; // Return no grouped payload so LocalGroupingDataSource can group a flat query.
-        const lookup = new Map<Record<string, unknown>, DataRow>();
-        for (const row of this._rows.values())
-            if (row.state !== "deleted") lookup.set(row.toObject(), row);
-        const query = { ...args, orderby: args.orderby?.map(token => typeof token === "string"
-            ? [token, "asc"] as [string, "asc"] : token) };
-        const result = await new ArrayDataSource([...lookup.keys()]).loadData(query);
-        return { ...result, args, dataItems: result.dataItems?.map(values => lookup.get(values)!) };
+        return this[localQueryEngine].loadData(args);
     }
 
     /**
@@ -378,6 +403,7 @@ export class DataTable implements DataSource<DataRow> {
             if (row.state === "added") this._rows.delete(row.key);
             else row._rejectChanges();
         }
+        this[localQueryEngine].invalidate();
         this.dataSet._clearHistory();
         this.changed.invoke({ kind: "reset" });
     }
@@ -398,6 +424,7 @@ export class DataTable implements DataSource<DataRow> {
             if (row.state === "deleted") this._rows.delete(row.key);
             else row._acceptChanges();
         }
+        this[localQueryEngine].invalidate();
     }
 
     /** @internal Validates the entire mapping without changing rows or indexes, including key swaps. */
@@ -421,9 +448,11 @@ export class DataTable implements DataSource<DataRow> {
 
     /** @internal Applies a prevalidated mapping and rebuilds the index, preserving all row objects. */
     _applyKeyMappings(mappings: Map<DataRow, RowIdentity>): void {
+        if (!mappings.size) return;
         const rows = this.rows;
         for (const [row, key] of mappings) row._changeId(key);
         this._rows = new Map(rows.map(row => [row.key, row]));
+        this[localQueryEngine].invalidate();
     }
 
     /** @internal Uses the table's configured equality consistently for edits and persistence differences. */

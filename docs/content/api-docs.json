@@ -8,7 +8,7 @@
       "name": "ArrayDataSource",
       "kind": "class",
       "type": "ArrayDataSource<T>",
-      "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.",
+      "description": "Reads and edits the supplied array directly, preserving existing row references.\nNew rows are plain objects and remain outside the array until their session is inserted.\nEach command emits changed after success. No undo history or server persistence is provided.\nFiltered/sorted rows and totals are cached (up to eight entries per cache).\nConfirmed-row mutations invalidate automatically; direct array/object edits and\nchanges to external callback dependencies require invalidateCache().",
       "tags": [],
       "topics": [],
       "group": "core",
@@ -35,6 +35,37 @@
           "optional": false,
           "source": "src/data/ArrayDataSource.ts",
           "kind": "property"
+        },
+        {
+          "name": "revision",
+          "type": "number",
+          "description": "Query-data version. Successful confirmed-row mutations and invalidateCache() increment it.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ArrayDataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "invalidateCache",
+          "type": "() => void",
+          "description": "Clears local query caches and notifies consumers with kind \"reset\".\nCall after changing the public array/rows directly, or external values used\nby field accessors, filter functions or custom summaries. Grid refresh alone\ndoes not invalidate cached queries. Pending-row changes do not affect queries.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "products[0].price = 42;\nsource.invalidateCache();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/ArrayDataSource.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
         },
         {
           "name": "getRowId",
@@ -1955,7 +1986,7 @@
       "tags": [
         {
           "name": "example",
-          "text": "const amount: DataField<Order> = {\n    name: \"amount\", dataType: \"number\", getValue: async row => row.amount\n};"
+          "text": "const amount: DataField<Order> = {\n    name: \"amount\", dataType: \"number\", getValue: row => row.amount\n};"
         }
       ],
       "topics": [],
@@ -1986,8 +2017,8 @@
         },
         {
           "name": "getValue",
-          "type": "((row: TRow) => Promise<any>) | undefined",
-          "description": "Reads the field value; when omitted, local operations read row[name].",
+          "type": "((row: TRow) => any | Promise<any>) | undefined",
+          "description": "Reads a value synchronously or asynchronously. Omit to read the row member.\nAccessors must not mutate data: local queries may reuse a field value for\nseveral summaries while processing the same row.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -2001,11 +2032,11 @@
             }
           ],
           "returns": {
-            "type": "Promise<any>",
+            "type": "any | Promise<any>",
             "description": ""
           },
           "kind": "method",
-          "signature": "((row: TRow) => Promise<any>) | undefined"
+          "signature": "((row: TRow) => any | Promise<any>) | undefined"
         },
         {
           "name": "groupInterval",
@@ -2052,7 +2083,7 @@
       "name": "DataFilter",
       "kind": "type",
       "type": "any",
-      "description": "A serializable filter condition, negation or group. Nested arrays combine conditions with AND.",
+      "description": "A serializable filter condition, negation or group. Nested arrays combine conditions with AND.\nEquality with null matches null or missing (undefined) values, never empty text.\nInequality with null is the inverse. Other equality comparisons are type-strict.\nSQL adapters should translate = null / <> null to IS NULL / IS NOT NULL.",
       "tags": [
         {
           "name": "example",
@@ -4485,6 +4516,37 @@
       "path": "/api-reference/DataTable",
       "source": "src/data/dataset/DataTable.ts",
       "members": [
+        {
+          "name": "revision",
+          "type": "number",
+          "description": "Query-data version; invalidated immediately when confirmed working data changes, even inside a transaction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "kind": "property"
+        },
+        {
+          "name": "invalidateCache",
+          "type": "() => void",
+          "description": "Invalidates local query/group results and emits kind \"reset\" while the dataset is idle.\nUse after in-place object changes or changes to external query dependencies.\nThis does not track an edit, record undo, or make an in-place change persistable.\nOrdinary table edits, import, rollback and history replay invalidate automatically.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "externalRates.usd = 1.1;\ntable.invalidateCache();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
         {
           "name": "idField",
           "type": "string",
@@ -7057,7 +7119,7 @@
       "namespace": "Data",
       "path": "/api-reference/GroupItem",
       "source": "src/data/DataSource.ts",
-      "definition": "{\n    groupField: string;\n    groupValue: any;\n    count: number;\n    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */\n    summaryValues?: Record<string, any>;\n}"
+      "definition": "{\n    groupField: string;\n    /**\n     * Group value, without dataType-based conversion. null/undefined share null;\n     * empty text (\"\") is a separate group and must not be merged with null.\n     * other values retain their type. Sources supply one consistent value type per\n     * grouped field. Intervals return bucket values (e.g. month -> 2), not the\n     * original date. Remote sources return null for missing values and calculate\n     * counts/summaries per distinct group before paging.\n     */\n    groupValue: any;\n    count: number;\n    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */\n    summaryValues?: Record<string, any>;\n}"
     },
     {
       "name": "KeyMapping",
@@ -7097,7 +7159,7 @@
       "name": "LocalGroupingDataSource",
       "kind": "class",
       "type": "LocalGroupingDataSource<TRow>",
-      "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.",
+      "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.\nComplete local group/summary results are cached for ArrayDataSource and DataTable,\nfollowing its revision. Each adapter retains up to eight query results; field\nmetadata and callback identities participate in the keys. Changes to captured\nexternal data require source.invalidateCache(). Remote results are not cached.",
       "tags": [],
       "topics": [],
       "group": "core",
@@ -8948,7 +9010,7 @@
         {
           "name": "abortSignal",
           "type": "AbortSignal | undefined",
-          "description": "",
+          "description": "Cancellation signal for this query. The grid aborts its owned queries when\nthe row view is replaced or disposed.\nRemote implementations should pass it to fetch() or equivalent transport.\nShared page requests may outlive an individual viewport waiter.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -10721,7 +10783,7 @@
       "name": "SummaryDefinition",
       "kind": "interface",
       "type": "SummaryDefinition<TRow, TState, TResult>",
-      "description": "Defines a locally calculated summary identified by its serializable name.",
+      "description": "Defines a locally calculated summary identified by its serializable name.\nMethods may return synchronously or asynchronously. Update only the accumulator,\nnot source rows: local queries may share a field read among several summaries.",
       "tags": [],
       "topics": [],
       "group": "types",

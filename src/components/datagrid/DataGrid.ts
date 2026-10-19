@@ -1385,8 +1385,8 @@ export class DataGrid<TRow> extends Component {
             this._dataSource = new LocalGroupingDataSource(ds, (row, column) => {
                 const col = this._columnsIndex.get(column);
                 if (!col)
-                    return Promise.resolve((row as any)[column]);
-                return DataViewFieldUtils.getValue(col, row);
+                    return (row as any)[column];
+                return col.getValue ? col.getValue(row) : Utils.getMember(row as any, col.name);
             }, column => this._columnsIndex.get(column), this._gridOptions.groupIntervals, this._gridOptions.customSummaries);
         }
         this._sourceChanged = this._dataSource.changed?.subscribe(() => {
@@ -1754,6 +1754,7 @@ export class DataGrid<TRow> extends Component {
 
     private createGridRows() {
         const version = ++this._rowsVersion;
+        this._gridRows?.dispose();
         let provider: GridRowsProvider<TRow> = new DefaultGridRowsProvider<TRow>(this.getState());
         if (this._gridOptions.allowEdit && this._dataSource.update && this._dataSource.createNewRow)
             provider = new NewRowGridRowsProvider(provider, index => this.getNewGridRow(index));
@@ -2224,11 +2225,16 @@ export class DataGrid<TRow> extends Component {
                 ui: ["me-1", "text-primary"]
             });
 
+            const rows = this._gridRows;
             const rowIndex = gridRow.visibleIndex;
-            await this._gridRows.setExpanded(current, !current.expanded);
-
-            if (el.closest(".elg-data-grid-row-sticky")) this.scrollToRow(rowIndex);
-            else this.render(this.renderBody);
+            try {
+                await rows.setExpanded(current, !current.expanded);
+                if (rows === this._gridRows && !this.disposed.Value && el.closest(".elg-data-grid-row-sticky")) this.scrollToRow(rowIndex);
+            } catch (error) {
+                if ((error as { name?: string })?.name !== "AbortError") console.error("Failed to change grid row expansion.", error);
+            } finally {
+                if (rows === this._gridRows && !this.disposed.Value) this.render(this.renderBody);
+            }
         }
     });
 
@@ -2713,6 +2719,7 @@ export class DataGrid<TRow> extends Component {
         const cellCompletion = this._cellEditor?.editor.busy ? this._cellEditor.finish() : Promise.resolve();
         this._editVersion++;
         this._rowsVersion++;
+        this._gridRows?.dispose();
         this._openingEdit = false; this._pendingEditText = undefined;
         this._sourceChanged?.dispose(); this._sourceChanged = undefined;
         this._cellEditor?.dispose(); this._cellEditor = undefined;
