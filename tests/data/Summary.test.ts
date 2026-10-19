@@ -139,7 +139,7 @@ describe("Local summary ownership", () => {
         const array = new ArrayDataSource(rows);
         const source = new LocalGroupingDataSource(array, read, name => ({ name }));
         const summaries = ["sum", "avg"].map(summaryType => ({ field: "quantity", summaryType }));
-        const args = { groupColumn: "region", totalSummary: summaries, groupSummary: summaries };
+        const args = { groupBy: [{ field: "region" }], totalSummary: summaries, groupSummary: summaries };
         const first = await source.loadData(args);
         expect(read).toHaveBeenCalledTimes(3);
         expect(first.totalSummary?.map(summary => summary.value)).toEqual([6, 2]);
@@ -183,7 +183,7 @@ describe("Local summary ownership", () => {
     it("shares lifecycle rules for group and total summaries over the full set before group paging", async () => {
         const source = new LocalGroupingDataSource(new ArrayDataSource(rows), access,
             name => name === "amount" ? amount : { name });
-        const result = await source.loadData({ groupColumn: "region", skip: 1, top: 1, totalSummary,
+        const result = await source.loadData({ groupBy: [{ field: "region" }], skip: 1, top: 1, totalSummary,
             groupSummary: [{ field: "amount", summaryType: "sum" }, { field: "amount", summaryType: "avg" }] });
         expect(result.totalCount).toBe(2);
         expect(result.totalSummary?.[0].value).toBe(55);
@@ -200,7 +200,7 @@ describe("Local summary ownership", () => {
             finalize: async state => state.join(",") };
         const source = new LocalGroupingDataSource(new ArrayDataSource(rows), access, undefined, undefined, [custom]);
         const summaries = [{ field: "quantity", summaryType: "list" }];
-        const result = await source.loadData({ groupColumn: "region", orderby: [["quantity", "desc"]],
+        const result = await source.loadData({ groupBy: [{ field: "region" }], orderby: [["quantity", "desc"]],
             groupSummary: summaries, totalSummary: summaries });
         expect(starts).toEqual([undefined, "West", "East"]);
         expect(result.totalSummary?.[0].value).toBe("3,2,1");
@@ -212,7 +212,7 @@ describe("Local summary ownership", () => {
             totalSummary: [{ field: "amount", summaryType: "sum", value: 900 }] }));
         const getValue = vi.fn(access);
         const source: DataSource<Row> = new LocalGroupingDataSource({ loadData }, getValue);
-        const args = { groupColumn: "region", totalSummary };
+        const args = { groupBy: [{ field: "region" }], totalSummary };
         const result = await source.loadData(args);
         expect(loadData).toHaveBeenCalledExactlyOnceWith(args);
         expect(result).toBe(await loadData.mock.results[0].value);
@@ -233,7 +233,7 @@ describe("Local summary ownership", () => {
     it("does not ask fallback flat queries to calculate discarded totals", async () => {
         const loadData = vi.fn(async (args: QueryArgs) => ({ args, dataItems: rows }));
         const source = new LocalGroupingDataSource({ loadData }, access);
-        const result = await source.loadData({ groupColumn: "region", totalSummary });
+        const result = await source.loadData({ groupBy: [{ field: "region" }], totalSummary });
         expect(loadData).toHaveBeenCalledTimes(2);
         expect(loadData.mock.calls[0][0].totalSummary).toEqual(totalSummary);
         expect(loadData.mock.calls[1][0].totalSummary).toBeUndefined();

@@ -67,7 +67,7 @@ export function orderByTokenToString(tok: OrderByToken) {
     return tok.join(" ");
 }
 
-/** Resolves custom, column-defined or standard grouping using value-access metadata only. */
+/** Resolves a named custom or standard interval using value-access metadata only. */
 export async function getFieldGroupValue<TRow>(field: DataField<TRow>, row: TRow,
     customIntervals?: GroupIntervalDefinition<TRow>[]): Promise<any> {
     return createGroupValueGetter(field, customIntervals)(row);
@@ -80,7 +80,7 @@ export function createGroupValueGetter<TRow>(field: DataField<TRow>,
     const customInterval = customIntervals?.find(x => x.name === field.groupInterval);
     const resolve = (row: TRow, value: any) => {
         const grouped = customInterval ? customInterval.getGroupValue(row, value)
-            : field.getGroupValue ? field.getGroupValue(row, value) : applyGroupInterval(value, field.groupInterval);
+            : applyGroupInterval(value, field.groupInterval);
         return isPromiseLike(grouped) ? Promise.resolve(grouped).then(normalizeGroupValue) : normalizeGroupValue(grouped);
     };
     return row => {

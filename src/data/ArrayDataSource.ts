@@ -76,6 +76,7 @@ export class ArrayDataSource<T> implements DataSource<T> {
     }
 
     loadData(args: QueryArgs): Promise<DataResult<T>> {
+        if (args.groupBy?.length) return Promise.resolve({ args }); // Grouping belongs to the local adapter.
         return this[localQueryEngine].loadData(args);
     }
 

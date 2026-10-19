@@ -125,7 +125,7 @@ describe("DataSource totalSummary contract", () => {
     );
 
     const result = await source.loadData({
-      groupColumn: "region",
+      groupBy: [{ field: "region" }],
       groupSummary: [{ field: "amount", summaryType: "sum" }],
       totalSummary: [{ field: "amount", summaryType: "sum" }]
     });

@@ -12,7 +12,7 @@ function state(loadData: DataSource<any>["loadData"], overrides: Partial<DataGri
     return { dataSource: { loadData }, pageSize: 2, columns: new Map(), visibleColumns: [], groupColumns: ["country"], ...overrides };
 }
 function groups(args: QueryArgs, values: unknown[] = ["A", "B"]): DataResult<any> {
-    return { args, totalCount: values.length, groups: values.map(groupValue => ({ groupField: args.groupColumn!, groupValue, count: 2 })) };
+    return { args, totalCount: values.length, groups: values.map(groupValue => ({ groupField: args.groupBy![0].field, groupValue, count: 2 })) };
 }
 const abort = { name: "AbortError" };
 
@@ -46,7 +46,7 @@ describe("DefaultGridRowsProvider async safety", () => {
     it("keeps a failed expansion collapsed, then permits a successful retry", async () => {
         let fail = true;
         const load = vi.fn(async (args: QueryArgs) => {
-            if (args.groupColumn) return groups(args);
+            if (args.groupBy?.[0]?.field) return groups(args);
             if (fail) throw new Error("Offline");
             return { args, totalCount: 2, dataItems: [{ id: 1 }, { id: 2 }] };
         });
@@ -63,7 +63,7 @@ describe("DefaultGridRowsProvider async safety", () => {
     });
     it("shares concurrent expansion and does not publish an expanded row before its children arrive", async () => {
         const request = deferred<DataResult<any>>();
-        const load = vi.fn(async (args: QueryArgs) => args.groupColumn ? groups(args) : request.promise);
+        const load = vi.fn(async (args: QueryArgs) => args.groupBy?.[0]?.field ? groups(args) : request.promise);
         const provider = new DefaultGridRowsProvider(state(load));
         const row = (await provider.load({ skip: 0, top: 2 })).rows[0];
         const first = provider.setExpanded(row, true);
@@ -78,7 +78,7 @@ describe("DefaultGridRowsProvider async safety", () => {
     });
     it("applies a collapse requested while expansion is in flight without retaining duplicate anchors", async () => {
         const request = deferred<DataResult<any>>();
-        const load = vi.fn(async (args: QueryArgs) => args.groupColumn ? groups(args) : request.promise);
+        const load = vi.fn(async (args: QueryArgs) => args.groupBy?.[0]?.field ? groups(args) : request.promise);
         const provider = new DefaultGridRowsProvider(state(load));
         const row = (await provider.load({ skip: 0, top: 2 })).rows[0];
         const expand = provider.setExpanded(row, true);
@@ -122,7 +122,7 @@ describe("DefaultGridRowsProvider async safety", () => {
     });
     it("aborts pending expansion on dispose without changing its row", async () => {
         const request = deferred<DataResult<any>>();
-        const load = vi.fn(async (args: QueryArgs) => args.groupColumn ? groups(args) : request.promise);
+        const load = vi.fn(async (args: QueryArgs) => args.groupBy?.[0]?.field ? groups(args) : request.promise);
         const provider = new DefaultGridRowsProvider(state(load));
         const row = (await provider.load({ skip: 0, top: 2 })).rows[0];
         const expansion = provider.setExpanded(row, true);
@@ -142,7 +142,7 @@ describe("DefaultGridRowsProvider async safety", () => {
         expect(provider.visibleCount).toBe(2); provider.dispose();
     });
     it("uses full-path keys for identical subgroup values under different parents", async () => {
-        const load = vi.fn(async (args: QueryArgs) => groups(args, args.groupColumn === "country" ? ["A", "B"] : ["Shared"]));
+        const load = vi.fn(async (args: QueryArgs) => groups(args, args.groupBy?.[0]?.field === "country" ? ["A", "B"] : ["Shared"]));
         const provider = new DefaultGridRowsProvider(state(load, { groupColumns: ["country", "city"] }));
         const parents = (await provider.load({ skip: 0, top: 2 })).rows;
         expect(parents[0].key).not.toBe(parents[1].key);
@@ -157,7 +157,7 @@ describe("DefaultGridRowsProvider async safety", () => {
     });
     it("keeps group keys distinct with separators and quotes, and stable across collapse/reopen", async () => {
         const values = ['A/["city","string","B"]', 'A/"B'];
-        const load = vi.fn(async (args: QueryArgs) => groups(args, args.groupColumn === "country" ? values : ['Shared/"value"']));
+        const load = vi.fn(async (args: QueryArgs) => groups(args, args.groupBy?.[0]?.field === "country" ? values : ['Shared/"value"']));
         const provider = new DefaultGridRowsProvider(state(load, { groupColumns: ["country", "city"] }));
         const parents = (await provider.load({ skip: 0, top: 2 })).rows;
         await provider.setExpanded(parents[0], true); await provider.setExpanded(parents[1], true);
@@ -184,7 +184,7 @@ describe("DefaultGridRowsProvider async safety", () => {
 
     it("rejects a viewport computed against a structure changed during cell resolution", async () => {
         const value = deferred<string>();
-        const load = vi.fn(async (args: QueryArgs) => args.groupColumn ? groups(args) : { args, totalCount: 1, dataItems: [{ id: 1 }] });
+        const load = vi.fn(async (args: QueryArgs) => args.groupBy?.[0]?.field ? groups(args) : { args, totalCount: 1, dataItems: [{ id: 1 }] });
         const getValue = vi.fn(() => value.promise);
         const provider = new DefaultGridRowsProvider(state(load, {
             columns: new Map([["name", { name: "name", getValue }]]), visibleColumns: ["name"]
@@ -200,7 +200,7 @@ describe("DefaultGridRowsProvider async safety", () => {
     });
     it("keeps hidden descendants out of the visible count when their expansion completes after ancestor collapse", async () => {
         const request = deferred<DataResult<any>>();
-        const load = vi.fn(async (args: QueryArgs) => args.groupColumn ? groups(args, ["One"]) : request.promise);
+        const load = vi.fn(async (args: QueryArgs) => args.groupBy?.[0]?.field ? groups(args, ["One"]) : request.promise);
         const provider = new DefaultGridRowsProvider(state(load, { groupColumns: ["country", "city"] }));
         const parent = (await provider.load({ skip: 0, top: 1 })).rows[0];
         await provider.setExpanded(parent, true);

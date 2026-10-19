@@ -52,7 +52,8 @@ class Paginator {
         groupIndex?: number,
         groupFilter?: DataFilter,
         parentId?: any,
-        signal: AbortSignal
+        signal: AbortSignal,
+        groups?: GroupItem[]
     }) {
         this._node = args.node;
         this._signal = args.signal;
@@ -62,9 +63,16 @@ class Paginator {
         this._parentId = args.parentId;
         this._isHierarchy = !!this._gridState.dataSource.hasChildren;
         this._pageSize = args.state.pageSize;
+        if (args.groups) {
+            this._totalCount = args.groups.length;
+            const nodes = this.createGroupNodes(args.groups, 0);
+            this._pages.set(0, []);
+            for (let index = 0; index < nodes.length; index += this._pageSize)
+                this._pages.set(index / this._pageSize, nodes.slice(index, index + this._pageSize));
+        }
     }
 
-    get groupColumn() {
+    get groupField() {
         return this._gridState.groupColumns && this._groupIndex > -1 && this._groupIndex < this._gridState.groupColumns.length
             ? this._gridState.groupColumns![this._groupIndex]
             : undefined;
@@ -90,14 +98,13 @@ class Paginator {
         const pageOffset = this._pageSize * pageIndex;
         const filter = filterAnd(this._groupFilter, this._gridState.baseFilter);
 
-        const groupColumn = this.groupColumn;
+        const groupField = this.groupField;
         const result = await waitForRowQuery(this._gridState.dataSource.loadData({
             skip: pageIndex * this._pageSize,
             top: this._pageSize,
             filter: filter,
             orderby: this._gridState.orderBy,
-            groupColumn,
-            groupInterval: groupColumn ? this._gridState.columns.get(groupColumn)?.groupInterval : undefined,
+            groupBy: groupField ? [{ field: groupField, interval: this._gridState.columns.get(groupField)?.groupInterval }] : undefined,
             groupSummary: this._gridState.groupSummary,
             totalSummary: this._node.type === "root" ? this._gridState.totalSummary : undefined,
             parentId: this._isHierarchy ? this._parentId : undefined,
@@ -148,35 +155,7 @@ class Paginator {
                 expandedChildren: []
             }));
         } else if (result.groups) {
-            page = result.groups.map((g, ix) => {
-                const groupValue = normalizeGroupValue(g.groupValue);
-                const node: GridNode = {
-                    type: "group",
-                    level: this._node.level + 1,
-                    text: `${groupValue === null ? "(No value)" : groupValue === "" ? "(Empty text)" : groupValue} (${g.count})`,
-                    parent: this._node,
-                    localIndex: ix + pageOffset,
-                    visibleIndex: -1,
-                    // Empty text: $/Bulgaria/. Missing: $/Bulgaria/~. Literal ~: %7E.
-                    key: this._node.key + "/" + encodeGroupKeySegment(groupValue),
-                    data: { ...g, groupValue },
-                    childrenCount: g.count,
-                    expanded: false,
-                    totalExpandedChildren: 0,
-                    expandedChildren: []
-                };
-                node.createPaginator = () => new Paginator({
-                    node,
-                    state: this._gridState,
-                    groupIndex: this._groupIndex + 1,
-                    signal: this._signal,
-                    groupFilter: filterAnd(
-                        this._groupFilter,
-                        getGroupFilter(this._gridState.columns.get(g.groupField) ?? { name: g.groupField }, groupValue)
-                    )
-                });
-                return node;
-            });
+            page = this.createGroupNodes(result.groups, pageOffset);
         } else {
             page = [];
         }
@@ -190,6 +169,46 @@ class Paginator {
             return { page, totalSummary: result.totalSummary };
 
         return { page };
+    }
+
+    /** Uses the same node/paginator path for ordinary pages and complete nested group results. */
+    private createGroupNodes(groups: GroupItem[], pageOffset: number): GridNode[] {
+        return groups.map((g, ix) => {
+                const groupValue = normalizeGroupValue(g.groupValue);
+                const node: GridNode = {
+                    type: "group",
+                    level: this._node.level + 1,
+                    text: `${groupValue === null ? "(No value)" : groupValue === "" ? "(Empty text)" : groupValue} (${g.count})`,
+                    parent: this._node,
+                    localIndex: ix + pageOffset,
+                    visibleIndex: -1,
+                    // Empty text: $/Bulgaria/. Missing: $/Bulgaria/~. Literal ~: %7E.
+                    key: this._node.key + "/" + encodeGroupKeySegment(groupValue),
+                    data: { ...g, groupValue },
+                    childrenCount: g.groups?.length ?? g.count,
+                    expanded: false,
+                    totalExpandedChildren: 0,
+                    expandedChildren: []
+                };
+                node.createPaginator = () => new Paginator({
+                    node,
+                    state: this._gridState,
+                    groupIndex: this._groupIndex + 1,
+                    signal: this._signal,
+                    groups: g.groups,
+                    groupFilter: filterAnd(
+                        this._groupFilter,
+                        getGroupFilter(this._gridState.columns.get(g.groupField) ?? { name: g.groupField }, groupValue)
+                    )
+                });
+                if (g.groups) node.children = node.createPaginator();
+                return node;
+            });
+    }
+
+    /** All materialized children, including collapsed ones, in local order. No fetching. */
+    knownNodes(): GridNode[] {
+        return [...this._pages.values()].flat().sort((a, b) => a.localIndex - b.localIndex);
     }
 
     async getAsync(index: number): Promise<GridNode> {
@@ -243,7 +262,9 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     private _initializing?: Promise<SummaryResult[] | undefined>;
     private _revision = 0;
     private _disposed = false;
+    private _batch?: Promise<void>;
     private _expansions = new WeakMap<GridNode, Promise<void>>();
+    private readonly _activeChanges = new Set<Promise<void>>();
 
     constructor(state: DataGridState<TRow>) {
         this._state = state;
@@ -266,6 +287,9 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         this._state = state;
         this._rootNode = undefined;
         this._expandedNodes = [];
+        this._batch = undefined;
+        this._expansions = new WeakMap();
+        this._activeChanges.clear();
     }
 
     /** Aborts all pages, including queries started by a pending expansion. */
@@ -467,10 +491,96 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     setNodeExpanded(node: GridNode, expanded: boolean): Promise<void> {
         const signal = this._controller.signal;
         const previous = this._expansions.get(node) ?? Promise.resolve();
-        const task = previous.catch(() => {}).then(() => this.changeNodeExpanded(node, expanded, signal));
+        const task = Promise.all([previous.catch(() => {}), this._batch?.catch(() => {})]).then(() =>
+            this.changeNodeExpanded(node, expanded, signal));
         this._expansions.set(node, task);
+        this._activeChanges.add(task);
         return task.finally(() => {
+            this._activeChanges.delete(task);
             if (this._expansions.get(node) === task) this._expansions.delete(node);
+        });
+    }
+
+    /** Batch barriers retain concurrent per-node loading while making batch publication atomic. */
+    private queueChange(change: (signal: AbortSignal) => void | Promise<void>): Promise<void> {
+        const signal = this._controller.signal;
+        const active = [...this._activeChanges];
+        const task = (this._batch ?? Promise.resolve()).catch(() => {}).then(async () => {
+            await Promise.allSettled(active);
+            throwIfRowQueryAborted(signal);
+            return change(signal);
+        });
+        this._batch = task;
+        return task.finally(() => {
+            if (this._batch === task) this._batch = undefined;
+        });
+    }
+
+    /** Loads only group metadata through loadData, then publishes one complete structural change. */
+    async setGroupsExpanded(expanded: boolean, groupIndex?: number, includeParents = false): Promise<void> {
+        const fields = this._state.groupColumns ?? [];
+        if (groupIndex !== undefined && (!Number.isInteger(groupIndex) || groupIndex < 0 || groupIndex >= fields.length))
+            throw new Error("Failed to change group expansion. groupIndex must identify a configured grouping level.");
+        if (!fields.length || this._state.dataSource.hasChildren) return;
+        return this.queueChange(async signal => {
+            if (expanded) await this.initializeRoot();
+            throwIfRowQueryAborted(signal);
+            if (!this._rootNode || !this._rootReady) return;
+            const previous = new Map<string, boolean>();
+            const remember = (node: GridNode) => {
+                if (node.type === "group") previous.set(node.key, node.expanded);
+                for (const child of node.children?.knownNodes() ?? []) if (child.type === "group") remember(child);
+            };
+            remember(this._rootNode);
+            let root = this._rootNode;
+            let summary = this._rootSummary;
+            if (expanded) {
+                const groupBy = fields.map(field => ({ field, interval: this._state.columns.get(field)?.groupInterval }));
+                const result = await waitForRowQuery(this._state.dataSource.loadData({
+                    groupBy, filter: this._state.baseFilter, orderby: this._state.orderBy,
+                    groupSummary: this._state.groupSummary, totalSummary: this._state.totalSummary,
+                    requireTotalCount: true, abortSignal: signal
+                }), signal);
+                throwIfRowQueryAborted(signal);
+                if (!Array.isArray(result.groups) || result.totalCount !== result.groups.length)
+                    throw new Error("Failed to expand groups. loadData must return all requested outer groups and an accurate totalCount.");
+                const validate = (groups: GroupItem[], level: number) => {
+                    for (const group of groups) {
+                        if (group.groupField !== fields[level] || !Number.isInteger(group.count) || group.count < 0)
+                            throw new Error("Failed to expand groups. Invalid grouped metadata returned by loadData.");
+                        if (level + 1 < fields.length) {
+                            if (!group.groups || group.groups.reduce((count, child) => count + child.count, 0) !== group.count)
+                                throw new Error("Failed to expand groups. loadData must return complete nested groups for every groupBy level.");
+                            validate(group.groups, level + 1);
+                        }
+                    }
+                };
+                validate(result.groups, 0);
+                // Prepare a detached tree: failure/cancellation never changes the visible view.
+                root = { type: "root", key: "$", level: -1, localIndex: 0, visibleIndex: 0,
+                    expanded: true, childrenCount: result.groups.length, totalExpandedChildren: 0, expandedChildren: [] };
+                root.children = new Paginator({ node: root, state: this._state, groupIndex: 0, signal, groups: result.groups });
+                summary = result.totalSummary ?? summary;
+            }
+            const apply = (node: GridNode) => {
+                if (node.type === "group") {
+                    node.expanded = groupIndex === undefined || node.level === groupIndex
+                        || (expanded && includeParents && node.level < groupIndex)
+                        ? expanded : previous.get(node.key) ?? false;
+                    if (node.expanded && !node.children) node.children = node.createPaginator?.();
+                }
+                const children = node.children?.knownNodes().filter(child => child.type === "group") ?? [];
+                for (const child of children) apply(child);
+                node.expandedChildren = children.filter(child => child.expanded);
+                node.totalExpandedChildren = node.expanded
+                    ? node.childrenCount + node.expandedChildren.reduce((count, child) => count + child.totalExpandedChildren, 0) : 0;
+            };
+            apply(root);
+            throwIfRowQueryAborted(signal);
+            this._rootNode = root;
+            this._rootSummary = summary;
+            this._revision++;
+            this.refreshGlobalExpandedNodes();
         });
     }
 

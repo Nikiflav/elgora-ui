@@ -61,19 +61,9 @@ export default {
       "kind": "property"
     },
     {
-      "name": "groupColumn",
-      "type": "string | undefined",
-      "description": "Column to bucket rows by; when set, the result carries `groups` instead of `dataItems`.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/data/DataSource.ts",
-      "kind": "property"
-    },
-    {
-      "name": "groupInterval",
-      "type": "GroupInterval | undefined",
-      "description": "Interval requested for groupColumn; arbitrary strings may be server-defined.",
+      "name": "groupBy",
+      "type": "GroupByField[] | undefined",
+      "description": "Requested grouping levels. A nonempty list returns groups, not dataItems.\nMultiple levels return complete nested groups; skip/top page only the outermost\ngroups. Leaf data rows are never included. Omit or use [] for a flat query.",
       "tags": [],
       "topics": [],
       "optional": true,

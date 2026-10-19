@@ -58,7 +58,7 @@ export default function demo(): void {
 
     const source: DataSource<Product> = {
         async loadData(args: QueryArgs): Promise<DataResult<Product>> {
-            if (args.groupColumn) return { args }; // No grouping support in this endpoint.
+            if (args.groupBy?.length) return { args }; // No grouping support in this endpoint.
             const response = await requestProducts(args, fail.checked);
             return { args, dataItems: response.items,
                 totalCount: args.requireTotalCount ? response.totalCount : undefined };

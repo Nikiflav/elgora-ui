@@ -408,7 +408,7 @@ describe("DataSet foundation", () => {
         expect(result.dataItems).toEqual([table.rows[1]]);
         expect(result.totalSummary?.[0].value).toBe(5);
         const grouped = await new LocalGroupingDataSource(table, async (row, field) => row.getValue(field))
-            .loadData({ groupColumn: "region" });
+            .loadData({ groupBy: [{ field: "region" }] });
         expect(grouped.groups?.map(g => g.groupValue)).toEqual(["East", "West"]);
     });
 });

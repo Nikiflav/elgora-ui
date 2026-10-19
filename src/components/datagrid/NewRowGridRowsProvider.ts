@@ -19,6 +19,10 @@ export class NewRowGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     /** Expansion remains owned by the original query provider. */
     setExpanded(row: GridRow, expanded: boolean) { return this.source.setExpanded(row, expanded); }
 
+    setGroupsExpanded(expanded: boolean, groupIndex?: number, includeParents?: boolean): Promise<void> {
+        return this.source.setGroupsExpanded?.(expanded, groupIndex, includeParents) ?? Promise.resolve();
+    }
+
     /** Releases the wrapped query provider; the pending editing session belongs to the grid. */
     dispose(): void { this.source.dispose?.(); }
 }

@@ -1101,8 +1101,8 @@ export class DataGrid<TRow> extends Component {
                     action: this.autoSizeAllColumns
                 });
             }
-            if (hasStandard("groupColumn" as GridStandardContextMenuItem)) {
-                addDivider();
+            const groupingItems: MenuItem[] = [];
+            if (hasStandard("groupColumn") && !this._isHierarchicalData) {
                 const intervalLabels: Record<string, string> = {
                     "year": "Year",
                     "yearQuarter": "Year-quarter",
@@ -1125,19 +1125,17 @@ export class DataGrid<TRow> extends Component {
                         .filter(interval => !supportedIntervals.includes(interval.name))
                         .map(interval => ({ label: interval.text, value: interval.name as GroupInterval }))
                 ];
-                items.push({
+                groupingItems.push({
                     icon: "ri-timeline-view",
                     text: `${isGrouped ? "Ungroup" : "Group by"} ${context.column.caption ?? context.column.name}`,
-                    disabled: this._isHierarchicalData,
                     action: () => isGrouped
                         ? this.toggleColumnGrouping(columnName)
                         : this.setColumnGroupInterval(columnName, undefined)
                 });
                 if (advancedIntervals.length) {
-                    items.push({
+                    groupingItems.push({
                         icon: "ri-settings-3-line",
-                        text: "Grouping options",
-                        disabled: this._isHierarchicalData,
+                        text: "Interval",
                         subItems: async () => {
                             const currentInterval = context.column!.groupInterval;
                             const intervals: Array<{ label: string, value?: GroupInterval }> = [
@@ -1155,6 +1153,32 @@ export class DataGrid<TRow> extends Component {
                         }
                     });
                 }
+            }
+            if (isGrouped && !this._isHierarchicalData) {
+                if (groupingItems.length && (hasStandard("expandGroupsToLevel") || hasStandard("collapseGroupsAtLevel")))
+                    groupingItems.push({ isDivider: true });
+                if (hasStandard("expandGroupsToLevel")) {
+                    groupingItems.push({
+                        icon: "ri-arrow-down-s-line",
+                        text: "Expand to this level",
+                        action: () => this.changeColumnGroupExpansion(columnName, true)
+                    });
+                }
+                if (hasStandard("collapseGroupsAtLevel")) {
+                    groupingItems.push({
+                        icon: "ri-arrow-up-s-line",
+                        text: "Collapse this level",
+                        action: () => this.changeColumnGroupExpansion(columnName, false)
+                    });
+                }
+            }
+            if (groupingItems.length) {
+                addDivider();
+                items.push({
+                    icon: "ri-timeline-view",
+                    text: "Grouping",
+                    subItems: async () => groupingItems
+                });
             }
             addDivider();
             items.push({
@@ -1766,6 +1790,37 @@ export class DataGrid<TRow> extends Component {
             }
             this.refresh();
         })
+    }
+
+    /**
+     * Expands every group, or one zero-based grouping level. Other levels retain
+     * their state; expanding a hidden child does not open its parent. Loads nested
+     * group metadata through loadData(groupBy), not all data rows. Tree mode is unchanged.
+     * Failed loading leaves the previous expansion state intact.
+     */
+    async expandAllGroups(groupIndex?: number): Promise<void> {
+        await this.changeAllGroups(true, groupIndex);
+    }
+
+    /** Collapses all groups or one grouping level, without loading additional group metadata. */
+    async collapseAllGroups(groupIndex?: number): Promise<void> {
+        await this.changeAllGroups(false, groupIndex);
+    }
+
+    /** Resolve the level at activation time: a menu can outlive grouping changes. */
+    private async changeColumnGroupExpansion(columnName: string, expanded: boolean): Promise<void> {
+        const groupIndex = this._gridOptions.groupColumns?.indexOf(columnName) ?? -1;
+        if (groupIndex < 0 || this._isHierarchicalData) return;
+        await this.changeAllGroups(expanded, groupIndex, expanded);
+    }
+
+    private async changeAllGroups(expanded: boolean, groupIndex?: number, includeParents?: boolean): Promise<void> {
+        if (this._openingEdit || !await this.endRowEdit())
+            throw new Error("Failed to change group expansion. Finish or correct the active edit first.");
+        if (this.disposed.Value) throw new DOMException("Failed to change group expansion. The grid was disposed.", "AbortError");
+        const rows = this._gridRows;
+        await rows.setGroupsExpanded(expanded, groupIndex, includeParents);
+        if (rows === this._gridRows && !this.disposed.Value) this.refresh();
     }
     /**
          * Returns the currently visible columns

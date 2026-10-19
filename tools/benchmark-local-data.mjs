@@ -52,9 +52,9 @@ await measure("sorted page of 50 (cached)", () => local.loadData({ orderby: [["a
 await measure("three total summaries (sync, cold)", () => local.loadData({ top: 50, totalSummary: summaries }), reset);
 await measure("three total summaries (sync, cached)", () => local.loadData({ top: 50, totalSummary: summaries }));
 await measure("three total summaries (async, cold)", () => asyncLocal.loadData({ top: 50, totalSummary: summaries }), reset);
-await measure("100 groups with three summaries (sync, cold)", () => local.loadData({ groupColumn: "region", groupSummary: summaries, top: 50 }), reset);
-await measure("same grouped query second page (cached)", () => local.loadData({ groupColumn: "region", groupSummary: summaries, skip: 50, top: 50 }));
-await measure("100 groups with three summaries (async, cold)", () => asyncLocal.loadData({ groupColumn: "region", groupSummary: summaries, top: 50 }), reset);
+await measure("100 groups with three summaries (sync, cold)", () => local.loadData({ groupBy: [{ field: "region" }], groupSummary: summaries, top: 50 }), reset);
+await measure("same grouped query second page (cached)", () => local.loadData({ groupBy: [{ field: "region" }], groupSummary: summaries, skip: 50, top: 50 }));
+await measure("100 groups with three summaries (async, cold)", () => asyncLocal.loadData({ groupBy: [{ field: "region" }], groupSummary: summaries, top: 50 }), reset);
 await measure("prepared filter with function registry (cold)", () => array.loadData({
     filter: ["and", ["amount", ">", 1000], ["region", "contains", "R1"]], top: 50
 }), reset);
@@ -66,5 +66,5 @@ await measure("DataTable sorted page (cold)", () => table.loadData({ orderby: [[
 await measure("DataTable sorted page (cached)", () => table.loadData({ orderby: [["amount", "desc"]], skip: 50, top: 50 }));
 await measure("DataTable three totals (cold)", () => table.loadData({ totalSummary: summaries, top: 50 }), resetTable);
 await measure("DataTable three totals (cached)", () => table.loadData({ totalSummary: summaries, top: 50 }));
-await measure("DataTable grouped summaries (cold)", () => tableSource.loadData({ groupColumn: "region", groupSummary: summaries, top: 50 }), resetTable);
-await measure("DataTable grouped next page (cached)", () => tableSource.loadData({ groupColumn: "region", groupSummary: summaries, skip: 50, top: 50 }));
+await measure("DataTable grouped summaries (cold)", () => tableSource.loadData({ groupBy: [{ field: "region" }], groupSummary: summaries, top: 50 }), resetTable);
+await measure("DataTable grouped next page (cached)", () => tableSource.loadData({ groupBy: [{ field: "region" }], groupSummary: summaries, skip: 50, top: 50 }));

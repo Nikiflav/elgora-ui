@@ -142,7 +142,7 @@ describe("Revision-aware grouped/summary cache", () => {
 
     it("reuses all grouped pages/counts/summaries and protects returned containers", async () => {
         const { source, read } = create();
-        const args: QueryArgs = { groupColumn: "region", groupSummary: summaries, totalSummary: summaries };
+        const args: QueryArgs = { groupBy: [{ field: "region" }], groupSummary: summaries, totalSummary: summaries };
         const first = await source.loadData({ ...args, top: 1 });
         const reads = read.mock.calls.length;
         first.groups![0].count = 100;
@@ -159,7 +159,7 @@ describe("Revision-aware grouped/summary cache", () => {
 
     it("observes the source revision after update and manual invalidation", async () => {
         const { source, array, rows, read } = create();
-        const args: QueryArgs = { groupColumn: "region", groupSummary: summaries };
+        const args: QueryArgs = { groupBy: [{ field: "region" }], groupSummary: summaries };
         await source.loadData(args);
         await array.update(rows[0], { region: "A", amount: 10 });
         expect((await source.loadData(args)).groups?.map(group => group.summaryValues?.amount)).toEqual([12, 3]);
@@ -231,8 +231,8 @@ describe("Revision-aware grouped/summary cache", () => {
     it("does not cache remote grouped responses", async () => {
         const loadData = vi.fn(async (args: QueryArgs) => ({ args, groups: [], totalCount: 0 }));
         const source = new LocalGroupingDataSource({ loadData }, () => 0);
-        await source.loadData({ groupColumn: "region" });
-        await source.loadData({ groupColumn: "region" });
+        await source.loadData({ groupBy: [{ field: "region" }] });
+        await source.loadData({ groupBy: [{ field: "region" }] });
         expect(loadData).toHaveBeenCalledTimes(2);
     });
 });

@@ -57,7 +57,7 @@ describe("DataGrid data contracts", () => {
   it("restores the expand control after child loading fails and permits retry", async () => {
     let fail = true;
     const source: DataSource<Row> = { loadData: async args => {
-      if (args.groupColumn) return { args, totalCount: 1, groups: [{ groupField: "name", groupValue: "A", count: 1 }] };
+      if (args.groupBy?.[0]?.field) return { args, totalCount: 1, groups: [{ groupField: "name", groupValue: "A", count: 1 }] };
       if (fail) throw new Error("Offline");
       return { args, totalCount: 1, dataItems: [rows[0]] };
     } };

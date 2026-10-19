@@ -7,6 +7,19 @@ import { LocalGroupingDataSource } from "../../src/data/LocalGroupingDataSource"
 import { DefaultGridRowsProvider } from "../../src/components/datagrid/DefaultGridRowsProvider";
 
 describe("Canonical group values and escaped keys", () => {
+    it("groups through named intervals and invalidates cached results when their evaluator changes", async () => {
+        const intervals = [{ name: "size", text: "Size", getGroupValue: (_row: { amount: number }, value: number) => value >= 20 ? "Large" : "Small" }];
+        const source = new LocalGroupingDataSource(new ArrayDataSource([{ amount: 10 }, { amount: 30 }]),
+            row => row.amount, () => ({ name: "amount", dataType: "number" }), intervals);
+        const args = { groupBy: [{ field: "amount", interval: "size" }] };
+        expect((await source.loadData(args)).groups?.map(group => [group.groupValue, group.count]))
+            .toEqual([["Large", 1], ["Small", 1]]);
+        intervals[0].getGroupValue = () => "All";
+        expect((await source.loadData(args)).groups?.map(group => [group.groupValue, group.count]))
+            .toEqual([["All", 2]]);
+        expect((await source.loadData({ groupBy: [{ field: "amount" }] })).groups?.map(group => group.groupValue))
+            .toEqual([10, 30]);
+    });
     it("prepares synchronous grouping and still awaits asynchronous values and intervals", async () => {
         const sync = createGroupValueGetter({ name: "code", groupInterval: "firstChar" });
         expect(sync({ code: "West" })).toBe("W");
@@ -99,13 +112,13 @@ describe("Canonical group values and escaped keys", () => {
         const field = { name: "date", dataType: "date" as const, groupInterval: "month" };
         const source = new LocalGroupingDataSource(new ArrayDataSource([{ date: "2026-10-19" }, { date: "2026-02-19" }]),
             async row => row.date, () => field);
-        expect((await source.loadData({ groupColumn: "date" })).groups?.map(group => group.groupValue)).toEqual([2, 10]);
+        expect((await source.loadData({ groupBy: [{ field: "date", interval: "month" }] })).groups?.map(group => group.groupValue)).toEqual([2, 10]);
     });
     it.each([undefined, []])("groups without summary state when summaries are %s", async groupSummary => {
         const source = new LocalGroupingDataSource(new ArrayDataSource([
             { code: "B" }, { code: "A" }, { code: "B" }
         ]), async row => row.code);
-        const result = await source.loadData({ groupColumn: "code", groupSummary });
+        const result = await source.loadData({ groupBy: [{ field: "code" }], groupSummary });
         expect(result.groups).toEqual([
             { groupField: "code", groupValue: "A", count: 1 },
             { groupField: "code", groupValue: "B", count: 2 }
@@ -115,13 +128,13 @@ describe("Canonical group values and escaped keys", () => {
         const data = [null, undefined, "", 1, 1, 1, 0, 2].map((code, id) => ({ id, code, amount: 10 }));
         const field = { name: "code", dataType: "number" as const };
         const source = new LocalGroupingDataSource(new ArrayDataSource(data), async (row, name) => (row as any)[name], name => name === "code" ? field : undefined);
-        const buckets = await source.loadData({ groupColumn: "code", groupSummary: [{ field: "amount", summaryType: "sum" }] });
+        const buckets = await source.loadData({ groupBy: [{ field: "code" }], groupSummary: [{ field: "amount", summaryType: "sum" }] });
         expect(buckets.groups?.map(group => group.groupValue)).toEqual([null, "", 0, 1, 2]);
         expect(buckets.groups?.find(group => group.groupValue === null)?.count).toBe(2);
         expect(buckets.groups?.find(group => group.groupValue === null)?.summaryValues?.amount).toBe(20);
         expect(buckets.groups?.find(group => group.groupValue === "")?.count).toBe(1);
         expect(buckets.groups?.find(group => group.groupValue === "")?.summaryValues?.amount).toBe(10);
-        const descending = await source.loadData({ groupColumn: "code", orderby: [["code", "desc"]], skip: 3, top: 2 });
+        const descending = await source.loadData({ groupBy: [{ field: "code" }], orderby: [["code", "desc"]], skip: 3, top: 2 });
         expect(descending.groups?.map(group => group.groupValue)).toEqual(["", null]);
         expect(buckets.groups?.find(group => group.groupValue === 1)?.summaryValues?.amount).toBe(30);
         const provider = new DefaultGridRowsProvider({ dataSource: source, pageSize: 20, columns: new Map([["code", field]]), visibleColumns: [], groupColumns: ["code"] });

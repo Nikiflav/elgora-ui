@@ -43,7 +43,7 @@ export default {
     {
       "name": "groups",
       "type": "GroupItem[] | undefined",
-      "description": "Used exclusively when args.groupColumn is set.",
+      "description": "Used exclusively for a nonempty args.groupBy. totalCount counts outermost groups before paging.",
       "tags": [],
       "topics": [],
       "optional": true,

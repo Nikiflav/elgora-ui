@@ -48,7 +48,7 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         // Remote sources retain their own cache policy. Built-in local sources
         // explicitly provide the revision-controlled engine capability.
         const engine = getLocalQueryEngine(this.ds);
-        if (!engine || (!args.groupColumn && !args.totalSummary?.length))
+        if (!engine || (!args.groupBy?.length && !args.totalSummary?.length))
             return this.loadUncached(args);
         const revision = engine.revision;
         if (this.sourceRevision !== revision) {
@@ -57,12 +57,12 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         }
         // Definitions can be patched in place by the grid. Capture the relevant
         // metadata/callback identities, rather than the column object's identity.
-        const names = new Set([args.groupColumn, ...args.groupSummary?.map(summary => summary.field) ?? [],
+        const names = new Set([...args.groupBy?.map(group => group.field) ?? [], ...args.groupSummary?.map(summary => summary.field) ?? [],
             ...args.totalSummary?.map(summary => summary.field) ?? []]);
         const fields = [...names].filter((name): name is string => name !== undefined).map(name => {
             const field = this.getColumn?.(name);
             return [name, field?.name, field?.dataType, field?.groupInterval,
-                this.queryKeys.value(field?.getValue), this.queryKeys.value(field?.getGroupValue)];
+                this.queryKeys.value(field?.getValue)];
         });
         const configuration = [fields, this.customIntervals?.map(interval =>
             [interval.name, this.queryKeys.value(interval.getGroupValue)]), this.customSummaries?.map(summary =>
@@ -79,17 +79,14 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         const skip = args.skip ?? 0;
         const page = <T>(items: T[]) => items.slice(skip, skip + (args.top ?? items.length));
         return { ...result, args,
-            totalCount: args.groupColumn || args.requireTotalCount ? result.totalCount : undefined,
+            totalCount: args.groupBy?.length || args.requireTotalCount ? result.totalCount : undefined,
             dataItems: result.dataItems ? page(result.dataItems) : undefined,
-            groups: result.groups ? page(result.groups).map(group => ({ ...group,
-                ...(group.summaryValues ? { summaryValues: { ...group.summaryValues } } : {}) })) : undefined,
+            groups: result.groups ? page(result.groups).map(copyGroup) : undefined,
             totalSummary: result.totalSummary?.map(summary => ({ ...summary })) };
     }
 
     private async loadUncached(args: QueryArgs): Promise<DataResult<TRow>> {
-        if (args.groupColumn) {
-
-            const column = this.getColumn?.(args.groupColumn);
+        if (args.groupBy?.length) {
             // Plain arrays need the adapter's field metadata/custom summaries;
             // do not first calculate raw-property summaries that will be discarded.
             const serverResult = await this.ds.loadData(getLocalQueryEngine(this.ds)
@@ -98,14 +95,14 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
 
             // Load all items in memory and then group them.
             const flatArgs: QueryArgs = { ...args };
-            delete flatArgs.groupColumn;
+            delete flatArgs.groupBy;
             delete flatArgs.groupSummary;
             delete flatArgs.skip;
             delete flatArgs.top;
             delete flatArgs.totalSummary;
 
             const select = new Set<string>();
-            select.add(args.groupColumn!);
+            for (const group of args.groupBy) select.add(group.field);
             if (args.groupSummary)
                 for (let g of args.groupSummary)
                     select.add(g.field);
@@ -123,60 +120,61 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
                 ? new SummaryCalculator(args.totalSummary, this.getValue, this.getColumn, this.customSummaries)
                 : undefined;
 
-            const map = new Map<any, GroupItem>();
-            const groupCalculators = new Map<any, SummaryCalculator<TRow>>();
-            const getGroupValue = column ? createGroupValueGetter(column, this.customIntervals, getLocalQueryEngine(this.ds)?.getValue)
-                : (row: TRow) => this.getValue(row, args.groupColumn!);
+            type Bucket = { group: GroupItem; children: Map<any, Bucket>; calculator?: SummaryCalculator<TRow> };
+            const map = new Map<any, Bucket>();
+            const levels = args.groupBy.map(descriptor => {
+                const column = this.getColumn?.(descriptor.field);
+                // The serializable query owns interval selection, for local and remote alike.
+                const field = { ...column, name: descriptor.field, groupInterval: descriptor.interval };
+                const getValue = createGroupValueGetter(field, this.customIntervals,
+                    column ? getLocalQueryEngine(this.ds)?.getValue ?? this.getValue : this.getValue);
+                const token = args.orderby?.find(token => (typeof token === "string" ? token : token[0]) === descriptor.field);
+                return { descriptor, getValue, desc: Array.isArray(token) && token[1] === "desc" };
+            });
             // Reuse only within a row. Never cache across queries or data changes.
-            const values = totalCalculator && args.groupSummary?.length ? new Map<string, any>() : undefined;
+            const values = args.groupSummary?.length ? new Map<string, any>() : undefined;
             for (let r of flatResult.dataItems ?? []) {
                 values?.clear();
                 const totalPending = totalCalculator?.accumulate(r, values);
                 if (isPromiseLike(totalPending)) await totalPending;
-                const rawGroupValue = getGroupValue(r);
-                const groupValue = normalizeGroupValue(isPromiseLike(rawGroupValue) ? await rawGroupValue : rawGroupValue);
-                let group = map.get(groupValue);
-                if (!group) {
-                    group = {
-                        groupField: args.groupColumn!,
-                        groupValue: groupValue,
-                        count: 0
-                    };
-                    map.set(groupValue, group);
-                }
-                group.count++;
-                if (args.groupSummary?.length) {
-                    let calculator = groupCalculators.get(groupValue);
-                    if (!calculator) {
-                        calculator = new SummaryCalculator(args.groupSummary, this.getValue,
-                            this.getColumn, this.customSummaries, groupValue);
-                        groupCalculators.set(groupValue, calculator);
+                let siblings = map;
+                for (const level of levels) {
+                    const raw = level.getValue(r);
+                    const groupValue = normalizeGroupValue(isPromiseLike(raw) ? await raw : raw);
+                    let bucket = siblings.get(groupValue);
+                    if (!bucket) {
+                        bucket = { group: { groupField: level.descriptor.field, groupValue, count: 0 }, children: new Map() };
+                        if (args.groupSummary?.length) bucket.calculator = new SummaryCalculator(args.groupSummary,
+                            this.getValue, this.getColumn, this.customSummaries, groupValue);
+                        siblings.set(groupValue, bucket);
                     }
-                    const pending = calculator.accumulate(r, values);
+                    bucket.group.count++;
+                    const pending = bucket.calculator?.accumulate(r, values);
                     if (isPromiseLike(pending)) await pending;
+                    siblings = bucket.children;
                 }
             }
 
-            for (const [groupValue, calculator] of groupCalculators) {
-                // GroupItem's public shape holds one displayed summary per field.
-                map.get(groupValue)!.summaryValues = Object.fromEntries(
-                    (await calculator.finalize()).map(summary => [summary.field, summary.value]));
-            }
+            const finish = async (siblings: Map<any, Bucket>, index: number): Promise<GroupItem[]> => {
+                const groups: GroupItem[] = [];
+                for (const { group, children, calculator } of siblings.values()) {
+                    if (calculator) group.summaryValues = Object.fromEntries(
+                        (await calculator.finalize()).map(summary => [summary.field, summary.value]));
+                    if (index + 1 < levels.length) group.groups = await finish(children, index + 1);
+                    groups.push(group);
+                }
+                groups.sort((a, b) => {
+                    if (a.groupValue === b.groupValue) return 0;
+                    const result = a.groupValue === null ? -1 : b.groupValue === null ? 1
+                        : a.groupValue === "" ? -1 : b.groupValue === "" ? 1 : a.groupValue < b.groupValue ? -1 : 1;
+                    return levels[index].desc ? -result : result;
+                });
+                return groups;
+            };
+            const allGroups = await finish(map, 0);
             const totalSummary = await totalCalculator?.finalize();
-            let groups = Array.from(map.values());
-            const token = args.orderby?.find(x => (typeof x === "string" ? x : x[0]) === args.groupColumn);
-            const desc = Array.isArray(token) && token[1] === "desc";
-            groups.sort((a, b) => {
-                if (a.groupValue === b.groupValue) return 0;
-                // Missing values precede empty text, then ordinary values. Never
-                // compare null/"" numerically: both would otherwise equal 0.
-                const result = a.groupValue === null ? -1 : b.groupValue === null ? 1
-                    : a.groupValue === "" ? -1 : b.groupValue === "" ? 1 : a.groupValue < b.groupValue ? -1 : 1;
-                return desc ? -result : result;
-            });
-            if (args.skip || args.top) {
-                groups = groups.slice(args.skip ?? 0, (args.skip ?? 0) + (args.top ?? groups.length));
-            }
+            const skip = args.skip ?? 0;
+            const groups = allGroups.slice(skip, skip + (args.top ?? allGroups.length));
 
             return {
                 args: args,
@@ -210,4 +208,11 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         return this.ds.loadData(args);
     }
 
+}
+
+/** Copies metadata containers, not application values or callback results. */
+function copyGroup(group: GroupItem): GroupItem {
+    return { ...group,
+        ...(group.summaryValues ? { summaryValues: { ...group.summaryValues } } : {}),
+        ...(group.groups ? { groups: group.groups.map(copyGroup) } : {}) };
 }

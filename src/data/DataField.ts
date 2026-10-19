@@ -23,8 +23,6 @@ export interface DataField<TRow> {
     getValue?(row: TRow): any | Promise<any>;
     /** Built-in or source-defined grouping interval. */
     groupInterval?: import("./grouping").GroupInterval;
-    /** Overrides local grouping for the resolved field value. */
-    getGroupValue?(row: TRow, value: any): any | Promise<any>;
 }
 
 /** Returns the semantic data type. Unspecified fields default to string, without inspecting UI editors. */

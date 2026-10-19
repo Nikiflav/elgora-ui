@@ -346,7 +346,7 @@ export class DataTable implements DataSource<DataRow> {
 
     /** Loads confirmed, non-deleted rows. Pending rows never participate in pages, counts or summaries. */
     async loadData(args: QueryArgs): Promise<DataResult<DataRow>> {
-        if (args.groupColumn) return { args }; // Return no grouped payload so LocalGroupingDataSource can group a flat query.
+        if (args.groupBy?.length) return { args }; // Return no grouped payload so LocalGroupingDataSource can group a flat query.
         return this[localQueryEngine].loadData(args);
     }
 

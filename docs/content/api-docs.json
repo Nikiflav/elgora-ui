@@ -90,7 +90,7 @@
         {
           "name": "loadData",
           "type": "(args: QueryArgs) => Promise<DataResult<T>>",
-          "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupColumn` is not provided, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
+          "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupBy` is omitted or empty, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\nMore than one groupBy descriptor requests a nested tree. Every non-leaf\ngroup must include its complete groups array for the next descriptor;\ncount remains the number of data rows in that bucket. No leaf data rows\nare returned. skip/top affect only the outer group array, and totalCount\ncounts outer groups. With no top, all outer groups must be returned.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2047,35 +2047,6 @@
           "optional": true,
           "source": "src/data/DataField.ts",
           "kind": "property"
-        },
-        {
-          "name": "getGroupValue",
-          "type": "((row: TRow, value: any) => any | Promise<any>) | undefined",
-          "description": "Overrides local grouping for the resolved field value.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/data/DataField.ts",
-          "parameters": [
-            {
-              "name": "row",
-              "type": "TRow",
-              "optional": false,
-              "description": ""
-            },
-            {
-              "name": "value",
-              "type": "any",
-              "optional": false,
-              "description": ""
-            }
-          ],
-          "returns": {
-            "type": "any | Promise<any>",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "((row: TRow, value: any) => any | Promise<any>) | undefined"
         }
       ]
     },
@@ -2767,6 +2738,52 @@
           "signature": "(colIndex: number) => void"
         },
         {
+          "name": "expandAllGroups",
+          "type": "(groupIndex?: number) => Promise<void>",
+          "description": "Expands every group, or one zero-based grouping level. Other levels retain\r\ntheir state; expanding a hidden child does not open its parent. Loads nested\r\ngroup metadata through loadData(groupBy), not all data rows. Tree mode is unchanged.\r\nFailed loading leaves the previous expansion state intact.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [
+            {
+              "name": "groupIndex",
+              "type": "number | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(groupIndex?: number) => Promise<void>"
+        },
+        {
+          "name": "collapseAllGroups",
+          "type": "(groupIndex?: number) => Promise<void>",
+          "description": "Collapses all groups or one grouping level, without loading additional group metadata.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [
+            {
+              "name": "groupIndex",
+              "type": "number | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(groupIndex?: number) => Promise<void>"
+        },
+        {
           "name": "getVisibleColumns",
           "type": "() => DataGridColumn<TRow>[]",
           "description": "Returns the currently visible columns",
@@ -3253,7 +3270,7 @@
         {
           "name": "groups",
           "type": "GroupItem[] | undefined",
-          "description": "Used exclusively when args.groupColumn is set.",
+          "description": "Used exclusively for a nonempty args.groupBy. totalCount counts outermost groups before paging.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -4290,7 +4307,7 @@
         {
           "name": "loadData",
           "type": "(args: QueryArgs) => Promise<DataResult<TRow>>",
-          "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupColumn` is not provided, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
+          "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupBy` is omitted or empty, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\nMore than one groupBy descriptor requests a nested tree. Every non-leaf\ngroup must include its complete groups array for the next descriptor;\ncount remains the number of data rows in that bucket. No leaf data rows\nare returned. skip/top affect only the outer group array, and totalCount\ncounts outer groups. With no top, all outer groups must be returned.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
           "tags": [
             {
               "name": "param",
@@ -7080,7 +7097,41 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/GridStandardContextMenuItem",
       "source": "src/components/datagrid/DataGridContextMenu.ts",
-      "definition": "| \"copy\"\n    | \"copyWithHeaders\"\n    | \"selectRow\"\n    | \"clearSelection\"\n    | \"sortAscending\"\n    | \"sortDescending\"\n    | \"clearSort\"\n    | \"pinColumn\"\n    | \"autosizeColumn\"\n    | \"autosizeAllColumns\"\n    | \"groupColumn\""
+      "definition": "| \"copy\"\n    | \"copyWithHeaders\"\n    | \"selectRow\"\n    | \"clearSelection\"\n    | \"sortAscending\"\n    | \"sortDescending\"\n    | \"clearSort\"\n    | \"pinColumn\"\n    | \"autosizeColumn\"\n    | \"autosizeAllColumns\"\n    | \"groupColumn\"\n    /** Opens this grouping level and all its parent levels. Only available on grouped headers/chips. */\n    | \"expandGroupsToLevel\"\n    /** Closes this grouping level while retaining parent and descendant expansion states. */\n    | \"collapseGroupsAtLevel\""
+    },
+    {
+      "name": "GroupByField",
+      "kind": "interface",
+      "type": "GroupByField",
+      "description": "One grouping level in a loadData query, from outermost to innermost.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/GroupByField",
+      "source": "src/data/DataSource.ts",
+      "members": [
+        {
+          "name": "field",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        },
+        {
+          "name": "interval",
+          "type": "GroupInterval | undefined",
+          "description": "Named grouping interval; omit to group raw values.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "kind": "property"
+        }
+      ]
     },
     {
       "name": "GroupInterval",
@@ -7112,14 +7163,14 @@
       "name": "GroupItem",
       "kind": "type",
       "type": "any",
-      "description": "A single group bucket produced when a QueryArgs.groupColumn is set.",
+      "description": "A group bucket produced by QueryArgs.groupBy; count is the number of matching data rows.",
       "tags": [],
       "topics": [],
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/GroupItem",
       "source": "src/data/DataSource.ts",
-      "definition": "{\n    groupField: string;\n    /**\n     * Group value, without dataType-based conversion. null/undefined share null;\n     * empty text (\"\") is a separate group and must not be merged with null.\n     * other values retain their type. Sources supply one consistent value type per\n     * grouped field. Intervals return bucket values (e.g. month -> 2), not the\n     * original date. Remote sources return null for missing values and calculate\n     * counts/summaries per distinct group before paging.\n     */\n    groupValue: any;\n    count: number;\n    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */\n    summaryValues?: Record<string, any>;\n}"
+      "definition": "{\n    groupField: string;\n    /**\n     * Group value, without dataType-based conversion. null/undefined share null;\n     * empty text (\"\") is a separate group and must not be merged with null.\n     * other values retain their type. Sources supply one consistent value type per\n     * grouped field. Intervals return bucket values (e.g. month -> 2), not the\n     * original date. Remote sources return null for missing values and calculate\n     * counts/summaries per distinct group before paging.\n     */\n    groupValue: any;\n    count: number;\n    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */\n    summaryValues?: Record<string, any>;\n    /** Complete children for the next requested groupBy level; omitted at the last level. */\n    groups?: GroupItem[];\n}"
     },
     {
       "name": "KeyMapping",
@@ -7240,7 +7291,7 @@
         {
           "name": "loadData",
           "type": "(args: QueryArgs) => Promise<DataResult<TRow>>",
-          "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupColumn` is not provided, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
+          "description": "Loads a page of rows or grouped records.\n\nWhen `args.groupBy` is omitted or empty, the datasource should return\n`dataItems` containing the requested page of rows. When grouping is\nrequested and the datasource supports it, it should return `groups`,\nwhere each group contains its key, row count, and any requested\n`groupSummary` values. A supported grouped query may legitimately\nreturn `groups: []` when no rows match the query; callers must not\ninterpret that as a request to perform grouping locally.\nMore than one groupBy descriptor requests a nested tree. Every non-leaf\ngroup must include its complete groups array for the next descriptor;\ncount remains the number of data rows in that bucket. No leaf data rows\nare returned. skip/top affect only the outer group array, and totalCount\ncounts outer groups. With no top, all outer groups must be returned.\n\nFor a grouped request that the datasource does not handle, it should\nreturn a result with both `dataItems` and `groups` undefined.\n`LocalGroupingDataSource` uses that response as the signal to issue a\nsecond flat request, then performs grouping and supported summaries\nlocally. The server should not return a partial flat page for the\ngrouped request because the local datasource will make that flat\nrequest itself.\n\n`skip` and `top` apply to the returned rows or groups. `totalCount`,\nwhen requested, must describe the complete result before pagination.\nWhen `args.totalSummary` is present, the datasource must return a\nmatching `totalSummary` for the complete filtered result, before\npagination and grouping. The request is optional so remote sources can\navoid an expensive aggregate query when the grid does not need the\nfooter values; when it is absent, `totalSummary` should be omitted.\nImplementations should preserve `args` in the returned `DataResult` so\nconsumers can associate a response with the query that produced it.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8948,19 +8999,9 @@
           "kind": "property"
         },
         {
-          "name": "groupColumn",
-          "type": "string | undefined",
-          "description": "Column to bucket rows by; when set, the result carries `groups` instead of `dataItems`.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/data/DataSource.ts",
-          "kind": "property"
-        },
-        {
-          "name": "groupInterval",
-          "type": "GroupInterval | undefined",
-          "description": "Interval requested for groupColumn; arbitrary strings may be server-defined.",
+          "name": "groupBy",
+          "type": "GroupByField[] | undefined",
+          "description": "Requested grouping levels. A nonempty list returns groups, not dataItems.\nMultiple levels return complete nested groups; skip/top page only the outermost\ngroups. Leaf data rows are never included. Omit or use [] for a flat query.",
           "tags": [],
           "topics": [],
           "optional": true,

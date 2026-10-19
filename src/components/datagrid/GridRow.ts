@@ -58,6 +58,8 @@ export interface GridViewportArgs {
 export interface GridRowsProvider<TRow> {
     load: (args: GridViewportArgs) => Promise<GridResult>;
     setExpanded: (row: GridRow, expanded: boolean) => Promise<void>;
+    /** Optional batch group expansion. includeParents also opens levels above groupIndex when expanding. */
+    setGroupsExpanded?(expanded: boolean, groupIndex?: number, includeParents?: boolean): Promise<void>;
     /** Cancels owned queries and releases cached row state when the view is replaced. */
     dispose?(): void;
 }

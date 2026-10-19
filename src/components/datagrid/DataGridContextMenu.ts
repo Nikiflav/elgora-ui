@@ -22,7 +22,11 @@ export type GridStandardContextMenuItem =
     | "pinColumn"
     | "autosizeColumn"
     | "autosizeAllColumns"
-    | "groupColumn";
+    | "groupColumn"
+    /** Opens this grouping level and all its parent levels. Only available on grouped headers/chips. */
+    | "expandGroupsToLevel"
+    /** Closes this grouping level while retaining parent and descendant expansion states. */
+    | "collapseGroupsAtLevel";
 
 /** Context passed to grid, row, and column context-menu customization points. */
 export interface DataGridContextMenuContext<TRow> {

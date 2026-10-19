@@ -212,7 +212,7 @@ describe("LocalGroupingDataSource editing delegation", () => {
         expect(await source.hasChildren!(original.array[0])).toBe(false);
         await session.insert();
         expect(await source.hasChildren!(original.array[0])).toBe(true);
-        const grouped = await source.loadData({ groupColumn: "region", groupSummary: [{ field: "amount", summaryType: "sum" }] });
+        const grouped = await source.loadData({ groupBy: [{ field: "region" }], groupSummary: [{ field: "amount", summaryType: "sum" }] });
         expect(grouped.groups!.find(group => group.groupValue === "West")!.summaryValues!.amount).toBe(30);
         await source.delete!(session.row);
         expect(event.mock.calls.map(call => call[0].kind)).toEqual(["update", "create", "update", "insert", "delete"]);

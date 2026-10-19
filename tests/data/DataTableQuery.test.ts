@@ -14,7 +14,7 @@ function setup() {
     ]);
     const source = new LocalGroupingDataSource(table, (row, name) => row.getValue(name), name => ({ name }));
     const sum = async () => (await table.loadData({ totalSummary: totals })).totalSummary?.[0]?.value;
-    const groups = async () => (await source.loadData({ groupColumn: "region", groupSummary: totals })).groups;
+    const groups = async () => (await source.loadData({ groupBy: [{ field: "region" }], groupSummary: totals })).groups;
     return { dataset, table, source, sum, groups, first: table.getRow(1)!, second: table.getRow(2)! };
 }
 
@@ -63,7 +63,7 @@ describe("Direct DataRow query engine", () => {
     it("caches group pages using table revisions and the DataRow member accessor", async () => {
         const { source } = setup();
         const reads = vi.spyOn(DataRow.prototype, "getValue");
-        const args: QueryArgs = { groupColumn: "region", groupSummary: totals, totalSummary: totals, top: 1 };
+        const args: QueryArgs = { groupBy: [{ field: "region" }], groupSummary: totals, totalSummary: totals, top: 1 };
         const first = await source.loadData(args);
         expect(first.groups?.[0]).toEqual({ groupField: "region", groupValue: "A", count: 1, summaryValues: { amount: 20 } });
         const count = reads.mock.calls.length;
@@ -196,11 +196,11 @@ describe("Transaction-aware query invalidation", () => {
         const temporaryKey = session.row.key;
         const query: QueryArgs = { filter: ["id", "=", temporaryKey] };
         expect((await table.loadData(query)).dataItems).toEqual([session.row]);
-        await source.loadData({ groupColumn: "id" });
+        await source.loadData({ groupBy: [{ field: "id" }] });
         await dataset.saveChanges(async () => ({ success: true, keyMappings: { items: [{ temporaryKey, key: 30 }] } }));
         expect((await table.loadData(query)).dataItems).toEqual([]);
         expect((await table.loadData({ filter: ["id", "=", 30] })).dataItems).toEqual([session.row]);
-        expect((await source.loadData({ groupColumn: "id" })).groups?.map(group => group.groupValue)).toEqual([1, 2, 30]);
+        expect((await source.loadData({ groupBy: [{ field: "id" }] })).groups?.map(group => group.groupValue)).toEqual([1, 2, 30]);
     });
 
     it("does not cache an async adapter result computed across a table mutation", async () => {

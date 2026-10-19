@@ -67,35 +67,6 @@ export default {
       "optional": true,
       "source": "src/data/DataField.ts",
       "kind": "property"
-    },
-    {
-      "name": "getGroupValue",
-      "type": "((row: TRow, value: any) => any | Promise<any>) | undefined",
-      "description": "Overrides local grouping for the resolved field value.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/data/DataField.ts",
-      "parameters": [
-        {
-          "name": "row",
-          "type": "TRow",
-          "optional": false,
-          "description": ""
-        },
-        {
-          "name": "value",
-          "type": "any",
-          "optional": false,
-          "description": ""
-        }
-      ],
-      "returns": {
-        "type": "any | Promise<any>",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "((row: TRow, value: any) => any | Promise<any>) | undefined"
     }
   ]
 };

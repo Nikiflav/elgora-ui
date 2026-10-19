@@ -5,6 +5,13 @@ import type { RowIdentity } from "./RowIdentity";
 import type { Observable } from "../core/ElgoraUI";
 import type { UndoCoordinator } from "../core/UndoCoordinator";
 
+/** One grouping level in a loadData query, from outermost to innermost. */
+export interface GroupByField {
+    field: string;
+    /** Named grouping interval; omit to group raw values. */
+    interval?: GroupInterval;
+}
+
 /** A single page/query request made against a DataSource. */
 export interface QueryArgs {
     filter?: DataFilter;
@@ -13,10 +20,12 @@ export interface QueryArgs {
     select?: string[];
     skip?: number;
     top?: number;
-    /** Column to bucket rows by; when set, the result carries `groups` instead of `dataItems`. */
-    groupColumn?: string;
-    /** Interval requested for groupColumn; arbitrary strings may be server-defined. */
-    groupInterval?: GroupInterval;
+    /**
+     * Requested grouping levels. A nonempty list returns groups, not dataItems.
+     * Multiple levels return complete nested groups; skip/top page only the outermost
+     * groups. Leaf data rows are never included. Omit or use [] for a flat query.
+     */
+    groupBy?: GroupByField[];
     /** Aggregations to compute per group, per field. */
     groupSummary?: { field: string, summaryType: SummaryType }[];
     /**
@@ -38,7 +47,7 @@ export interface QueryArgs {
     abortSignal?: AbortSignal;
 }
 
-/** A single group bucket produced when a QueryArgs.groupColumn is set. */
+/** A group bucket produced by QueryArgs.groupBy; count is the number of matching data rows. */
 export type GroupItem = {
     groupField: string;
     /**
@@ -53,6 +62,8 @@ export type GroupItem = {
     count: number;
     /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */
     summaryValues?: Record<string, any>;
+    /** Complete children for the next requested groupBy level; omitted at the last level. */
+    groups?: GroupItem[];
 };
 
 /** The response to a QueryArgs request: either flat data rows or, when grouping, group buckets. */
@@ -60,7 +71,7 @@ export interface DataResult<TRow> {
     totalCount?: number;
     args: QueryArgs;
     dataItems?: TRow[];
-    /** Used exclusively when args.groupColumn is set. */
+    /** Used exclusively for a nonempty args.groupBy. totalCount counts outermost groups before paging. */
     groups?: GroupItem[];
     /**
      * Aggregations for the complete filtered result, before paging and
@@ -125,13 +136,18 @@ export interface DataSource<TRow> {
     /**
      * Loads a page of rows or grouped records.
      *
-     * When `args.groupColumn` is not provided, the datasource should return
+     * When `args.groupBy` is omitted or empty, the datasource should return
      * `dataItems` containing the requested page of rows. When grouping is
      * requested and the datasource supports it, it should return `groups`,
      * where each group contains its key, row count, and any requested
      * `groupSummary` values. A supported grouped query may legitimately
      * return `groups: []` when no rows match the query; callers must not
      * interpret that as a request to perform grouping locally.
+     * More than one groupBy descriptor requests a nested tree. Every non-leaf
+     * group must include its complete groups array for the next descriptor;
+     * count remains the number of data rows in that bucket. No leaf data rows
+     * are returned. skip/top affect only the outer group array, and totalCount
+     * counts outer groups. With no top, all outer groups must be returned.
      *
      * For a grouped request that the datasource does not handle, it should
      * return a result with both `dataItems` and `groups` undefined.

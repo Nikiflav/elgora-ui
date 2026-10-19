@@ -106,10 +106,20 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
 
 
     async setExpanded(row: GridRow, expanded: boolean) {
+        await this.changeStructure(() => this._source.setExpanded(row, expanded));
+        await this.load(row.visibleIndex, 1);
+    }
+
+    async setGroupsExpanded(expanded: boolean, groupIndex?: number, includeParents?: boolean): Promise<void> {
+        await this.changeStructure(() => this._source.setGroupsExpanded?.(expanded, groupIndex, includeParents) ?? Promise.resolve());
+        await this.load(0, 1);
+    }
+
+    private async changeStructure(change: () => Promise<void>): Promise<void> {
         const lifetime = this._change ?? Promise.resolve();
         const operation = lifetime.catch(() => {}).then(async () => {
             if (this._disposed) throw new DOMException("Failed to expand grid row. The view was disposed.", "AbortError");
-            await waitForRowQuery(this._source.setExpanded(row, expanded), this._lifetime.signal);
+            await waitForRowQuery(change(), this._lifetime.signal);
         });
         this._change = operation;
         this.invalidate();
@@ -119,7 +129,6 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
             if (this._change === operation) this._change = undefined;
             this.invalidate();
         }
-        await this.load(row.visibleIndex, 1);
     }
 
     /** Rejects obsolete viewport work before it can repopulate the cache. */

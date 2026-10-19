@@ -466,6 +466,52 @@ export default {
       "signature": "(colIndex: number) => void"
     },
     {
+      "name": "expandAllGroups",
+      "type": "(groupIndex?: number) => Promise<void>",
+      "description": "Expands every group, or one zero-based grouping level. Other levels retain\r\ntheir state; expanding a hidden child does not open its parent. Loads nested\r\ngroup metadata through loadData(groupBy), not all data rows. Tree mode is unchanged.\r\nFailed loading leaves the previous expansion state intact.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [
+        {
+          "name": "groupIndex",
+          "type": "number | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<void>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(groupIndex?: number) => Promise<void>"
+    },
+    {
+      "name": "collapseAllGroups",
+      "type": "(groupIndex?: number) => Promise<void>",
+      "description": "Collapses all groups or one grouping level, without loading additional group metadata.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [
+        {
+          "name": "groupIndex",
+          "type": "number | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<void>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(groupIndex?: number) => Promise<void>"
+    },
+    {
       "name": "getVisibleColumns",
       "type": "() => DataGridColumn<TRow>[]",
       "description": "Returns the currently visible columns",

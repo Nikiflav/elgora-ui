@@ -1,4 +1,5 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
+import { e } from "../../../../src/core/e";
 
 export default function demo(): void {
   const rows = [
@@ -16,10 +17,27 @@ export default function demo(): void {
       { name: "product", caption: "Product", width: 220 },
       { name: "total", caption: "Total", width: 120, textAlign: "end" }
     ],
-    groupColumns: ["region"],
+    groupColumns: ["region", "product"],
+    groupSummary: [{ field: "total", summaryType: "sum" }],
     stickyGroupRows: true
   });
-  grid.dom.style.height = "360px";
+  grid.dom.style.height = "310px";
+  const status = e("span", { ui: ["text-muted"], role: "status" });
+  const controls: HTMLButtonElement[] = [];
+  const button = (text: string, action: () => Promise<void>) => {
+    const control = e("button", { ui: ["elg", "btn", "neutral"], type: "button", onclick: async () => {
+      controls.forEach(button => { button.disabled = true; });
+      status.textContent = "";
+      try { await action(); } catch (error) { status.textContent = error instanceof Error ? error.message : String(error); }
+      finally { controls.forEach(button => { button.disabled = false; }); }
+    } }, text);
+    controls.push(control);
+    return control;
+  };
+  document.body.append(e("div", { ui: ["d-flex", "flex-wrap", "gap-2", "items-center", "mb-2"] },
+    button("Expand all", () => grid.expandAllGroups()),
+    button("Collapse all", () => grid.collapseAllGroups()),
+    button("Expand product level", () => grid.expandAllGroups(1)), status));
   grid.refresh();
   grid.mount(document.body);
 }

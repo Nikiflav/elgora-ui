@@ -42,9 +42,11 @@ describe("Field contracts", () => {
         expect(await getFieldGroupValue(field, row)).toBe("K");
         const calculated: DataField<Row> = {
             name: "amount", getValue: async item => item.quantity * item.price,
-            getGroupValue: (_item, value) => value >= 20 ? "Large" : "Small"
+            groupInterval: "size"
         };
-        expect(await getFieldGroupValue(calculated, row)).toBe("Large");
+        expect(await getFieldGroupValue(calculated, row, [{
+            name: "size", text: "Size", getGroupValue: (_item, value) => value >= 20 ? "Large" : "Small"
+        }])).toBe("Large");
     });
 
     it("calculates numeric summaries with only data-access metadata", async () => {

@@ -75,7 +75,7 @@ export class LocalQueryKeys {
     query(args: QueryArgs, extra?: unknown): string | undefined {
         this.cacheable = true;
         const key = JSON.stringify([this.filter(args.filter), args.orderby, this.value(args.parentId),
-            args.groupColumn, args.groupInterval, args.groupSummary, args.totalSummary, args.select, extra]);
+            args.groupBy?.map(group => [group.field, group.interval]), args.groupSummary, args.totalSummary, args.select, extra]);
         return this.cacheable ? key : undefined;
     }
 }
