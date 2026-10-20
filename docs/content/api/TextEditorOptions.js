@@ -13,7 +13,7 @@ export default {
     {
       "name": "parse",
       "type": "((text: string) => T | Promise<T>) | undefined",
-      "description": "",
+      "description": "Converts draft text to a candidate value. Used when no resolveText override is supplied.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "format",
       "type": "((value: T) => string) | undefined",
-      "description": "",
+      "description": "Converts accepted values to input text; falls back to string conversion with empty text for nullish values.",
       "tags": [],
       "topics": [],
       "optional": true,

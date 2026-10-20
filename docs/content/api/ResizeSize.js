@@ -13,7 +13,7 @@ export default {
     {
       "name": "width",
       "type": "number",
-      "description": "",
+      "description": "Target border-box width in CSS pixels.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "height",
       "type": "number",
-      "description": "",
+      "description": "Target border-box height in CSS pixels.",
       "tags": [],
       "topics": [],
       "optional": false,

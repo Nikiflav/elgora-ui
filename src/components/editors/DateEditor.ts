@@ -9,7 +9,9 @@ import { DateFormatter } from "../../formatting/DateFormatter";
 
 /** Date-only text editing with an optional calendar popup. Values are YYYY-MM-DD or null. */
 export interface DateEditorOptions extends TextEditorOptions<string | null>, PopoverEditorOptions {
+    /** Inclusive earliest accepted and selectable date, in YYYY-MM-DD form. */
     min?: string;
+    /** Inclusive latest accepted and selectable date, in YYYY-MM-DD form. */
     max?: string;
     /** Controls calendar labels and the locale-dependent standard dateFormat "d". */
     locale?: string;

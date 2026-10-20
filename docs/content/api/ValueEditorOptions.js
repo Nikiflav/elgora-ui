@@ -13,7 +13,7 @@ export default {
     {
       "name": "value",
       "type": "T",
-      "description": "",
+      "description": "Initial accepted value, retained by reference rather than cloned.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "readOnly",
       "type": "boolean | undefined",
-      "description": "",
+      "description": "Prevents user edits while retaining focus/read access where the native control permits it.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "disabled",
       "type": "boolean | undefined",
-      "description": "",
+      "description": "Disables user interaction with the native editing control. Defaults to false.",
       "tags": [],
       "topics": [],
       "optional": true,

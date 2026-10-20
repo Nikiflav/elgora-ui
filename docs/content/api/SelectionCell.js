@@ -33,7 +33,7 @@ export default {
     {
       "name": "wholeRow",
       "type": "boolean | undefined",
-      "description": "",
+      "description": "Marks this endpoint as selecting a complete row rather than a single cell.",
       "tags": [],
       "topics": [],
       "optional": true,

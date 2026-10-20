@@ -13,7 +13,7 @@ export default {
     {
       "name": "columns",
       "type": "import(\"D:/Dev/github/elgora-ui/src/index\").DataGridColumn<TItem>[] | undefined",
-      "description": "",
+      "description": "Optional result columns; omit for a single label column.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "loadItems",
       "type": "(query: LookupQuery, context: FieldEditContext<TRow>) => Promise<LookupResult<TItem>>",
-      "description": "",
+      "description": "Loads matching items with paging, using the edited row as business-rule context.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -52,7 +52,7 @@ export default {
     {
       "name": "getValueText",
       "type": "(value: any, context: FieldEditContext<TRow>) => string | Promise<string>",
-      "description": "",
+      "description": "Resolves a stored value's label even when its item is outside the loaded lookup page.",
       "tags": [],
       "topics": [],
       "optional": false,

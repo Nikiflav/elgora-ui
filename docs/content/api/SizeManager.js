@@ -13,7 +13,7 @@ export default {
     {
       "name": "defaultSize",
       "type": "number",
-      "description": "",
+      "description": "Default row height in CSS pixels, used where no individual measurement exists.\nChanges the fallback row height used by offset calculations.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "defaultSize",
       "type": "number",
-      "description": "",
+      "description": "Default row height in CSS pixels, used where no individual measurement exists.\nChanges the fallback row height used by offset calculations.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "getSize",
       "type": "(index: number) => number",
-      "description": "",
+      "description": "Returns the effective height of a zero-based row.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -56,7 +56,7 @@ export default {
     {
       "name": "update",
       "type": "(index: number, newSize: number) => void",
-      "description": "",
+      "description": "Records a measured height. Fixed-size implementations apply it to all rows.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -85,7 +85,7 @@ export default {
     {
       "name": "getOffset",
       "type": "(index: number) => number",
-      "description": "",
+      "description": "Returns the cumulative height before the specified zero-based row.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -108,7 +108,7 @@ export default {
     {
       "name": "findIndex",
       "type": "(offset: number) => number",
-      "description": "",
+      "description": "Returns the zero-based row containing a scroll offset in CSS pixels.",
       "tags": [],
       "topics": [],
       "optional": false,

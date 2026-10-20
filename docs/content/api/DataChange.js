@@ -13,7 +13,7 @@ export default {
     {
       "name": "type",
       "type": "\"update\" | \"insert\" | \"remove\"",
-      "description": "",
+      "description": "Transport operation: insert a row, update its fields, or remove it by key.",
       "tags": [],
       "topics": [],
       "optional": false,

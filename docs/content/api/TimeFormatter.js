@@ -13,7 +13,7 @@ export default {
     {
       "name": "pattern",
       "type": "\"HH:mm\" | \"HH:mm:ss\"",
-      "description": "",
+      "description": "Validated 24-hour pattern used for parsing and formatting.",
       "tags": [],
       "topics": [],
       "optional": false,

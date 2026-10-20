@@ -6,8 +6,11 @@ import type { LookupEditorOptions, LookupQuery, LookupResult } from "../componen
 
 /** Original source row and field supplied to value conversion and validation. */
 export interface FieldEditContext<TRow> {
+    /** Original domain row supplied by the hosting component. */
     row: TRow;
+    /** Field whose value is being converted, displayed or validated. */
     field: DataViewField<TRow>;
+    /** Current field value at the time the context was created. */
     value: any;
 }
 
@@ -15,23 +18,32 @@ export interface FieldEditContext<TRow> {
 export interface FieldEditorContext<TRow> extends FieldEditContext<TRow> {
     /** Preloaded cell label, avoiding a second lookup request at the start of editing. */
     text?: string;
+    /** Asynchronously submits a candidate value through the host's validation and saving pipeline. */
     onCommit(value: any): Promise<void>;
 }
 
 /** Shared lookup data and presentation. Items need not have a prescribed shape. */
 export interface FieldLookup<TRow, TItem = any> extends Pick<LookupEditorOptions<any, TItem>,
     "getItemValue" | "getItemText" | "pageSize" | "searchDelay" | "popupWidth" | "popupHeight" | "resizable"> {
+    /** Optional result columns; omit for a single label column. */
     columns?: import("../components/datagrid/DataGridColumn").DataGridColumn<TItem>[];
+    /** Loads matching items with paging, using the edited row as business-rule context. */
     loadItems(query: LookupQuery, context: FieldEditContext<TRow>): Promise<LookupResult<TItem>>;
+    /** Resolves a stored value's label even when its item is outside the loaded lookup page. */
     getValueText(value: any, context: FieldEditContext<TRow>): string | Promise<string>;
 }
 
 /** One selectable option for a column's allowed-value list (e.g. a dropdown item). */
 export type DisplayValue = {
+    /** Stored value represented by the option. */
     value: any,
+    /** Human-readable label for the option. */
     text: string,
+    /** Optional CSS color associated with the option. */
     color?: string;
+    /** Optional icon class name for consumers that render option icons. */
     icon?: string;
+    /** Optional image URL for consumers that render option images. */
     image?: string;
 }
 
@@ -71,7 +83,9 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     description?: string;
     /** Opaque, caller-defined presentation metadata (not used internally). */
     userState?: any;
+    /** Prevents editing in consumers that honor this presentation flag. */
     readonly?: boolean;
+    /** Rejects missing values in the default field editor. Custom consumers may add validation. */
     required?: boolean;
     /** Whether a card/form consumer should omit the field label. */
     hideLabel?: boolean,

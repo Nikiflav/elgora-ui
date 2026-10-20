@@ -2,7 +2,7 @@ export default {
   "name": "FilterFunctionRegistry",
   "kind": "type",
   "type": "any",
-  "description": "",
+  "description": "Local selector evaluators keyed by their serializable function names.",
   "tags": [],
   "topics": [],
   "group": "types",

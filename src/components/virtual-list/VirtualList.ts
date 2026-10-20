@@ -5,12 +5,11 @@ import { VariableSizeManager } from "./SizeManager"
 // Data interfaces
 // --------------------------------------
 
-/**
- * Interface for a virtual list data source.
- */
 /** Random-access data source consumed by a VirtualList. */
 export interface VirtualDataSource<T> {
+    /** Current total item count used for virtual scroll geometry. */
     count(): number
+    /** Returns an item at a zero-based index, or undefined while unavailable. */
     getAt(index: number): T | undefined
 }
 
@@ -31,9 +30,6 @@ export type RenderRowArgs<T> = {
     readonly index: number
 }
 
-/**
- * Options for the virtual list component.
- */
 /** Construction options for a virtualized list component. */
 export interface VirtualListOptions<T> {
     /** A virtual list data source. The data items are rendered as rows in the list.  */
@@ -132,6 +128,7 @@ export class VirtualList<T> extends Component {
 
     private readonly MAX_ROWS = 100
 
+    /** Creates a virtual viewport; renderRow owns the content of each recycled row element. */
     constructor(options: VirtualListOptions<T>) {
         super()
 
@@ -215,6 +212,7 @@ export class VirtualList<T> extends Component {
     // Public API
     // --------------------------------------
 
+    /** Marks one zero-based row for rerendering and schedules a refresh. */
     invalidateRow(index: number): void {
         this.dirtyRows.add(index)
         this.refresh()

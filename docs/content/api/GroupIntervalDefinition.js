@@ -9,5 +9,5 @@ export default {
   "namespace": "Data",
   "path": "/api-reference/GroupIntervalDefinition",
   "source": "src/data/grouping.ts",
-  "definition": "{\n    name: string;\n    text: string;\n    getGroupValue: (row: TRow, value: any) => any;\n}"
+  "definition": "{\n    /** Serializable identifier used by groupInterval, groupBy and structured child filters. */\n    name: string;\n    /** Human-readable label shown in interval selection menus. */\n    text: string;\n    /** Maps a row's resolved field value to a stable bucket value. May return a promise; must not mutate rows. */\n    getGroupValue: (row: TRow, value: any) => any;\n}"
 };

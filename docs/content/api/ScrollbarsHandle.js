@@ -23,7 +23,7 @@ export default {
     {
       "name": "scrollbarMode",
       "type": "ScrollbarMode",
-      "description": "",
+      "description": "Current presentation mode for this viewport; assignment updates its scrollbar views.",
       "tags": [],
       "topics": [],
       "optional": false,

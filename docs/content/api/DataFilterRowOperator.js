@@ -2,7 +2,7 @@ export default {
   "name": "DataFilterRowOperator",
   "kind": "type",
   "type": "any",
-  "description": "",
+  "description": "Supported comparison/text operators in a compact per-column filter expression.",
   "tags": [],
   "topics": [],
   "group": "types",

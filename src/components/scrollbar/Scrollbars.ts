@@ -14,6 +14,7 @@ export interface ScrollbarsOptions {
 export interface ScrollbarsHandle extends Disposable {
     /** Scrollable element, or the document scrolling element for a Window attachment. */
     readonly element: HTMLElement;
+    /** Current presentation mode for this viewport; assignment updates its scrollbar views. */
     scrollbarMode: ScrollbarMode;
     /** Mouse proximity threshold in CSS pixels; zero enables direct scrollbar hover only. */
     scrollbarHoverDistance: number;
@@ -23,6 +24,7 @@ export interface ScrollbarsHandle extends Disposable {
 
 /** Owns automatically discovered native scroll viewports in a Window or container subtree. */
 export interface ScrollbarsInstallation extends Disposable {
+    /** Presentation mode propagated to all attachments owned by this installation. */
     scrollbarMode: ScrollbarMode;
     /** Mouse proximity threshold for every attachment owned by this installation. Defaults to 50. */
     scrollbarHoverDistance: number;

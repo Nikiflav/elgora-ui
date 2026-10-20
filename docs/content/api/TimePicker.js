@@ -13,7 +13,7 @@ export default {
     {
       "name": "value",
       "type": "string | null",
-      "description": "",
+      "description": "Current selected canonical time, or null when unselected.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "setValue",
       "type": "(value: string | null) => void",
-      "description": "",
+      "description": "Validates and updates selection without invoking onSelect.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -46,7 +46,7 @@ export default {
     {
       "name": "focus",
       "type": "() => void",
-      "description": "",
+      "description": "Focuses the selected/default time slot, falling back to the first slot when no exact match exists.",
       "tags": [],
       "topics": [],
       "optional": false,

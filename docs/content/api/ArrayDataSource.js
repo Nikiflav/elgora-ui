@@ -13,7 +13,7 @@ export default {
     {
       "name": "array",
       "type": "T[]",
-      "description": "",
+      "description": "Original array, retained by reference. Call invalidateCache() after editing it directly.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -107,7 +107,7 @@ export default {
     {
       "name": "indexOfRow",
       "type": "(row: T) => Promise<number>",
-      "description": "",
+      "description": "Returns the row's index in the original array by reference, or -1 if absent; ignores query sorting/filtering.",
       "tags": [],
       "topics": [],
       "optional": false,

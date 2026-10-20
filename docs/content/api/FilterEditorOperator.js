@@ -2,7 +2,7 @@ export default {
   "name": "FilterEditorOperator",
   "kind": "type",
   "type": "any",
-  "description": "",
+  "description": "Comparison and text-match operators available for editable filter conditions.",
   "tags": [],
   "topics": [],
   "group": "types",

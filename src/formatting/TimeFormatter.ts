@@ -2,6 +2,7 @@ import type { ValueFormatter } from "./ValueFormatter";
 
 /** Formats and parses strict 24-hour time values without timezone conversion. */
 export class TimeFormatter implements ValueFormatter<string> {
+    /** Validated 24-hour pattern used for parsing and formatting. */
     readonly pattern: "HH:mm" | "HH:mm:ss";
     private readonly expression: RegExp;
 

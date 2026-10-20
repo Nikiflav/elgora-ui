@@ -13,7 +13,7 @@ export default {
     {
       "name": "columns",
       "type": "DataGridColumn<TItem>[]",
-      "description": "",
+      "description": "Result-grid columns; use one text column for a simple list or several for richer lookup items.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "loadItems",
       "type": "(query: LookupQuery) => Promise<LookupResult<TItem>>",
-      "description": "",
+      "description": "Loads a matching page and total count. Honor abortSignal to cancel obsolete remote requests.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "getItemValue",
       "type": "(item: TItem) => TValue",
-      "description": "",
+      "description": "Maps a chosen lookup item to the value accepted by the editor.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -43,7 +43,7 @@ export default {
     {
       "name": "getItemText",
       "type": "(item: TItem) => string",
-      "description": "",
+      "description": "Returns the item's label, also used for exact-text resolution.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -63,7 +63,7 @@ export default {
     {
       "name": "pageSize",
       "type": "number | undefined",
-      "description": "",
+      "description": "Maximum items requested per result page. Defaults to 50.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -93,7 +93,7 @@ export default {
     {
       "name": "popupHeight",
       "type": "number | undefined",
-      "description": "",
+      "description": "Initial popup height in CSS pixels. Defaults to 300; resizing may override it.",
       "tags": [],
       "topics": [],
       "optional": true,

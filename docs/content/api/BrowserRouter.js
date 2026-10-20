@@ -13,7 +13,7 @@ export default {
     {
       "name": "routes",
       "type": "RouterHandler[]",
-      "description": "",
+      "description": "Ordered route handlers, tested until the first match.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "page404",
       "type": "RouterPage",
-      "description": "The currently active page",
+      "description": "Fallback page displayed when no route matches.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -63,7 +63,7 @@ export default {
     {
       "name": "currentRoute",
       "type": "RouterHandler | undefined",
-      "description": "",
+      "description": "Handler selected by the most recent route match; undefined when none matched.",
       "tags": [],
       "topics": [],
       "optional": false,

@@ -13,7 +13,7 @@ export default {
     {
       "name": "subscribe",
       "type": "(fn: ObservableHandler<T>) => Disposable",
-      "description": "",
+      "description": "Registers a listener and returns a handle that removes only that listener.",
       "tags": [],
       "topics": [],
       "optional": false,

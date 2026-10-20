@@ -2,7 +2,7 @@ export default {
   "name": "DataFilterRowColumn",
   "kind": "type",
   "type": "any",
-  "description": "",
+  "description": "Field metadata needed to parse and display a compact filter-row expression.",
   "tags": [],
   "topics": [],
   "group": "types",

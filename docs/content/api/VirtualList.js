@@ -63,7 +63,7 @@ export default {
     {
       "name": "invalidateRow",
       "type": "(index: number) => void",
-      "description": "",
+      "description": "Marks one zero-based row for rerendering and schedules a refresh.",
       "tags": [],
       "topics": [],
       "optional": false,

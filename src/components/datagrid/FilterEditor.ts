@@ -7,13 +7,20 @@ import type { DataType } from "../../data/DataField";
 import type { DataFilter, FilterSelector } from "../../data/filter";
 import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
 
+/** Field identity, caption and semantic type offered by the filter builder. */
 export type FilterEditorColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType">;
+/** Comparison and text-match operators available for editable filter conditions. */
 export type FilterEditorOperator = "=" | "<>" | ">" | ">=" | "<" | "<=" | "contains" | "notcontains" | "startswith" | "endswith";
 
+/** Filter-builder fields, initial expression and explicit apply/cancel callbacks. */
 export interface FilterEditorOptions<TRow = any> extends Omit<ComponentOptions, "children" | "tag"> {
+    /** Fields users can choose when creating conditions. */
     columns: FilterEditorColumn<TRow>[];
+    /** Initial expression. Omit to start without a filter. */
     filter?: DataFilter;
+    /** Receives the expression when Apply is invoked; the host decides how to apply it to data. */
     onApply?: (filter: DataFilter | undefined, editor: FilterEditor<TRow>) => void;
+    /** Receives an explicit cancellation request; the host decides whether to close the editor. */
     onCancel?: (editor: FilterEditor<TRow>) => void;
 }
 
@@ -145,6 +152,7 @@ export class FilterEditor<TRow = any> extends Component {
     private readonly menu: PopupMenu;
     private readonly applyButton: HTMLButtonElement;
 
+    /** Creates a filter builder from the supplied field metadata and optional initial expression. */
     constructor(options: FilterEditorOptions<TRow>) {
         super({ tag: "div", ui: options.ui ?? ["elg", "box", "p-3"] });
         this.columns = options.columns;

@@ -9,5 +9,5 @@ export default {
   "namespace": "Data",
   "path": "/api-reference/SummaryResult",
   "source": "src/data/summary.ts",
-  "definition": "{ field: string, summaryType: SummaryType, value: any }"
+  "definition": "{\n    /** Field from the corresponding summary request. */\n    field: string;\n    /** Aggregation from the corresponding summary request. */\n    summaryType: SummaryType;\n    /** Computed aggregate; may be undefined when the aggregation has no eligible values. */\n    value: any;\n}"
 };

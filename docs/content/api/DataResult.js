@@ -13,7 +13,7 @@ export default {
     {
       "name": "totalCount",
       "type": "number | undefined",
-      "description": "",
+      "description": "Matching row count, or outer-group count, before paging. Required when requireTotalCount is true.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "args",
       "type": "QueryArgs",
-      "description": "",
+      "description": "Query that produced this response, retained so consumers can correlate requests and results.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "dataItems",
       "type": "TRow[] | undefined",
-      "description": "",
+      "description": "Requested page of original row objects for flat queries; omitted for grouped queries.",
       "tags": [],
       "topics": [],
       "optional": true,

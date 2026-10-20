@@ -13,7 +13,7 @@ export default {
     {
       "name": "scrollbarMode",
       "type": "ScrollbarMode",
-      "description": "",
+      "description": "Presentation mode propagated to all attachments owned by this installation.",
       "tags": [],
       "topics": [],
       "optional": false,

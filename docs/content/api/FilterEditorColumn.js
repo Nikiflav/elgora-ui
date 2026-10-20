@@ -2,7 +2,7 @@ export default {
   "name": "FilterEditorColumn",
   "kind": "type",
   "type": "any",
-  "description": "",
+  "description": "Field identity, caption and semantic type offered by the filter builder.",
   "tags": [],
   "topics": [],
   "group": "types",

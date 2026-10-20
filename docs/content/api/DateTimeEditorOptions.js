@@ -2,7 +2,7 @@ export default {
   "name": "DateTimeEditorOptions",
   "kind": "interface",
   "type": "DateTimeEditorOptions",
-  "description": "",
+  "description": "Local date-time input and combined calendar/time picker configuration; values have no timezone suffix.",
   "tags": [],
   "topics": [],
   "group": "types",
@@ -13,7 +13,7 @@ export default {
     {
       "name": "dateFormat",
       "type": "string | undefined",
-      "description": "",
+      "description": "DateFormatter pattern for the input's date portion. Defaults to yyyy-MM-dd.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "timeFormat",
       "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
-      "description": "",
+      "description": "Strict 24-hour format for the time portion. Defaults to HH:mm.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "locale",
       "type": "string | undefined",
-      "description": "",
+      "description": "Calendar-label locale and locale used by standard date formats. Defaults to the browser locale.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -43,7 +43,7 @@ export default {
     {
       "name": "firstDayOfWeek",
       "type": "number | undefined",
-      "description": "",
+      "description": "First calendar weekday: 0 = Sunday through 6 = Saturday. Defaults to 1 (Monday).",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -53,7 +53,7 @@ export default {
     {
       "name": "minuteStep",
       "type": "number | undefined",
-      "description": "",
+      "description": "Time-picker slot interval in minutes, an integer divisor of 60. Defaults to 15.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -63,7 +63,7 @@ export default {
     {
       "name": "defaultTime",
       "type": "string | undefined",
-      "description": "",
+      "description": "Time used when selecting a date without an existing time. Defaults to 10:00.",
       "tags": [],
       "topics": [],
       "optional": true,

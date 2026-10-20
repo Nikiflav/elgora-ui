@@ -3,14 +3,18 @@ import { DataViewFieldUtils } from "../../data/DataViewField";
 import type { DataViewField } from "../../data/DataViewField";
 import type { DataType } from "../../data/DataField";
 
+/** Field metadata needed to parse and display a compact filter-row expression. */
 export type DataFilterRowColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType">;
 
 /** One text expression displayed by a filter-row column. */
 export interface DataFilterRowValue {
+    /** Column name identifying the field to filter. */
     field: string;
+    /** Editable compact expression, optionally prefixed by an operator; empty text clears the field filter. */
     text: string;
 }
 
+/** Supported comparison/text operators in a compact per-column filter expression. */
 export type DataFilterRowOperator = "=" | "<>" | ">" | ">=" | "<" | "<=" | "contains" | "notcontains" | "startswith" | "endswith";
 
 type BinaryFilter = [string, DataFilterRowOperator, any];
@@ -184,6 +188,7 @@ function readableValue(value: any, dataType?: DataType): string {
 
 /** Converts a DataFilter to the compact, per-column expressions used by a filter row. */
 export class DataFilterRow<TRow = any> {
+    /** Original column metadata used to parse values according to their semantic types. */
     readonly columns: DataFilterRowColumn<TRow>[];
 
     /**

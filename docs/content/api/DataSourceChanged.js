@@ -23,7 +23,7 @@ export default {
     {
       "name": "row",
       "type": "TRow | undefined",
-      "description": "",
+      "description": "Actual affected row, including pending drafts. Omitted for source-wide invalidation.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "fields",
       "type": "readonly string[] | undefined",
-      "description": "",
+      "description": "Changed field names when known; omission means consumers must not assume a field-level change.",
       "tags": [],
       "topics": [],
       "optional": true,

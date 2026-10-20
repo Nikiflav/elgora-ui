@@ -47,8 +47,12 @@ export type DataCellStyle = {
 
 /** Lightweight per-column override, e.g. for persisted layout/visible-column state. */
 export type DataGridColumnLayoutInfo = {
+    /** Column name identifying the definition to override. */
     name: string,
+    /** Persisted or caller-provided width in CSS pixels. */
     width?: number;
+    /** Optional aggregation associated with this column's layout entry. */
     summaryType?: SummaryType;
+    /** Opaque application state retained alongside the layout entry. */
     userState?: any;
 }

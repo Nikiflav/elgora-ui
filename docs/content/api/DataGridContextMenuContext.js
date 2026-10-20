@@ -13,7 +13,7 @@ export default {
     {
       "name": "target",
       "type": "GridContextMenuTarget",
-      "description": "",
+      "description": "Grid surface on which the context menu was requested.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "row",
       "type": "GridRow | undefined",
-      "description": "",
+      "description": "Flattened row under the pointer; absent for column headers and group chips.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "rowData",
       "type": "TRow | undefined",
-      "description": "",
+      "description": "Business row for data cells/rows; absent for group metadata and headers.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -43,7 +43,7 @@ export default {
     {
       "name": "column",
       "type": "DataGridColumn<TRow> | undefined",
-      "description": "",
+      "description": "Data-column definition when the target identifies a column.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -53,7 +53,7 @@ export default {
     {
       "name": "rowIndex",
       "type": "number | undefined",
-      "description": "",
+      "description": "Zero-based visible row index, when a row is targeted.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -63,7 +63,7 @@ export default {
     {
       "name": "colIndex",
       "type": "number | undefined",
-      "description": "",
+      "description": "Zero-based data-column index when supplied by the target; excludes the row header.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -73,7 +73,7 @@ export default {
     {
       "name": "selectedRanges",
       "type": "SelectionRange[]",
-      "description": "",
+      "description": "Snapshot of the selection ranges when the menu was requested.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -83,7 +83,7 @@ export default {
     {
       "name": "event",
       "type": "MouseEvent",
-      "description": "",
+      "description": "Original browser context-menu event, including pointer coordinates and modifiers.",
       "tags": [],
       "topics": [],
       "optional": false,

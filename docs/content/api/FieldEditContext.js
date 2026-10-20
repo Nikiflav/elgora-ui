@@ -13,7 +13,7 @@ export default {
     {
       "name": "row",
       "type": "TRow",
-      "description": "",
+      "description": "Original domain row supplied by the hosting component.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "field",
       "type": "DataViewField<TRow>",
-      "description": "",
+      "description": "Field whose value is being converted, displayed or validated.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "value",
       "type": "any",
-      "description": "",
+      "description": "Current field value at the time the context was created.",
       "tags": [],
       "topics": [],
       "optional": false,

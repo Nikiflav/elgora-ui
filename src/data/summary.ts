@@ -58,10 +58,22 @@ export function isNumericSummary(summaryType: SummaryType): boolean {
 }
 
 /** A summary request for one field. Multiple summaries may target the same field. */
-export type SummaryRequest = { field: string, summaryType: SummaryType };
+export type SummaryRequest = {
+    /** Field whose values are aggregated. */
+    field: string;
+    /** Built-in aggregation or registered custom summary name. */
+    summaryType: SummaryType;
+};
 
 /** A resolved summary value returned alongside the requested data. */
-export type SummaryResult = { field: string, summaryType: SummaryType, value: any };
+export type SummaryResult = {
+    /** Field from the corresponding summary request. */
+    field: string;
+    /** Aggregation from the corresponding summary request. */
+    summaryType: SummaryType;
+    /** Computed aggregate; may be undefined when the aggregation has no eligible values. */
+    value: any;
+};
 
 const averageSummary: SummaryDefinition<any, any, any> = {
     name: "avg",

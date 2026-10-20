@@ -23,7 +23,7 @@ export default {
     {
       "name": "onCommit",
       "type": "(value: any) => Promise<void>",
-      "description": "",
+      "description": "Asynchronously submits a candidate value through the host's validation and saving pipeline.",
       "tags": [],
       "topics": [],
       "optional": false,

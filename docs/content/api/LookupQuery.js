@@ -13,7 +13,7 @@ export default {
     {
       "name": "search",
       "type": "string",
-      "description": "",
+      "description": "User-entered search text; an empty string requests the unfiltered lookup list.",
       "tags": [],
       "topics": [],
       "optional": false,

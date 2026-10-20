@@ -56,8 +56,11 @@ export type GroupInterval =
 
 /** A custom grouping interval with a serializable name and local fallback evaluator. */
 export type GroupIntervalDefinition<TRow> = {
+    /** Serializable identifier used by groupInterval, groupBy and structured child filters. */
     name: string;
+    /** Human-readable label shown in interval selection menus. */
     text: string;
+    /** Maps a row's resolved field value to a stable bucket value. May return a promise; must not mutate rows. */
     getGroupValue: (row: TRow, value: any) => any;
 };
 

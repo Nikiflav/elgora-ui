@@ -18,7 +18,7 @@ export default {
     {
       "name": "row",
       "type": "TRow",
-      "description": "",
+      "description": "Actual source row being edited; update it through the source before inserting.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -28,7 +28,7 @@ export default {
     {
       "name": "state",
       "type": "\"pending\" | \"inserted\" | \"cancelled\"",
-      "description": "",
+      "description": "Session lifecycle. Only pending rows can be inserted or cancelled for the first time.",
       "tags": [],
       "topics": [],
       "optional": false,

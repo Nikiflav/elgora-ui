@@ -13,7 +13,7 @@ export default {
     {
       "name": "items",
       "type": "TItem[]",
-      "description": "",
+      "description": "Matching items for the requested skip/top page, retaining their application-defined shape.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "totalCount",
       "type": "number",
-      "description": "",
+      "description": "Accurate number of matches before paging, used by the virtual result grid.",
       "tags": [],
       "topics": [],
       "optional": false,

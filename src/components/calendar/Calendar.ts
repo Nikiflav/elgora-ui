@@ -6,8 +6,11 @@ import { parseCalendarDate as parseDate, formatCalendarDate as formatDate, local
 
 /** Standalone date-only calendar options. Dates use strict YYYY-MM-DD strings. */
 export interface CalendarOptions extends Omit<ComponentOptions, "tag" | "children"> {
+    /** Initially selected date, or null for no selection. Does not emit onSelect during construction. */
     value?: string | null;
+    /** Inclusive earliest selectable date in YYYY-MM-DD form. */
     min?: string;
+    /** Inclusive latest selectable date in YYYY-MM-DD form. */
     max?: string;
     /** Formatting locale; defaults to the browser language. */
     locale?: string;

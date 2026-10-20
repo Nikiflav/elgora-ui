@@ -283,7 +283,7 @@ export default {
     {
       "name": "getSelectionManager",
       "type": "() => SelectionManager",
-      "description": "",
+      "description": "Returns the live selection controller. Refresh the grid after direct controller mutations.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -299,7 +299,7 @@ export default {
     {
       "name": "getSelectedRanges",
       "type": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionRange[]",
-      "description": "",
+      "description": "Returns copied selection ranges in current visible row and data-column coordinates.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -315,7 +315,7 @@ export default {
     {
       "name": "getActiveSelectionCell",
       "type": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionCell | null",
-      "description": "",
+      "description": "Returns the active cell coordinates, or null when no cell is active.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -331,7 +331,7 @@ export default {
     {
       "name": "clearSelection",
       "type": "() => void",
-      "description": "",
+      "description": "Clears ranges and active cell, then schedules a grid repaint.",
       "tags": [],
       "topics": [],
       "optional": false,

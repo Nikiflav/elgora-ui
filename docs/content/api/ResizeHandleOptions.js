@@ -13,7 +13,7 @@ export default {
     {
       "name": "target",
       "type": "HTMLElement",
-      "description": "",
+      "description": "Positioned element resized by this grip; its dimensions are written as border-box CSS pixels.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "minWidth",
       "type": "number | undefined",
-      "description": "",
+      "description": "Requested minimum width in CSS pixels; available viewport space takes precedence.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "minHeight",
       "type": "number | undefined",
-      "description": "",
+      "description": "Requested minimum height in CSS pixels; available viewport space takes precedence.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -43,7 +43,7 @@ export default {
     {
       "name": "maxWidth",
       "type": "number | undefined",
-      "description": "",
+      "description": "Optional maximum width in CSS pixels, further limited by viewport space.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -53,7 +53,7 @@ export default {
     {
       "name": "maxHeight",
       "type": "number | undefined",
-      "description": "",
+      "description": "Optional maximum height in CSS pixels, further limited by viewport space.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -73,7 +73,7 @@ export default {
     {
       "name": "onResize",
       "type": "((size: ResizeSize) => void) | undefined",
-      "description": "",
+      "description": "Called after dimensions are applied during a resize gesture.",
       "tags": [],
       "topics": [],
       "optional": true,

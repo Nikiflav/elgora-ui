@@ -6,8 +6,11 @@ import { createInputErrorAdornment } from "./InputAdornment";
 
 /** Configuration shared by editors in forms, grids and standalone controls. */
 export interface ValueEditorOptions<T> extends Omit<ComponentOptions, "tag" | "children"> {
+    /** Initial accepted value, retained by reference rather than cloned. */
     value: T;
+    /** Prevents user edits while retaining focus/read access where the native control permits it. */
     readOnly?: boolean;
+    /** Disables user interaction with the native editing control. Defaults to false. */
     disabled?: boolean;
     /** Accessible name for the input or button. */
     label?: string;
@@ -250,7 +253,9 @@ export abstract class ValueEditor<T> extends Component {
 
 /** Text-specific parsing and formatting, in addition to the shared value lifecycle. */
 export interface TextEditorOptions<T = string> extends ValueEditorOptions<T> {
+    /** Converts draft text to a candidate value. Used when no resolveText override is supplied. */
     parse?: (text: string) => T | Promise<T>;
+    /** Converts accepted values to input text; falls back to string conversion with empty text for nullish values. */
     format?: (value: T) => string;
     /** Defaults to true. Enter always confirms; Escape always cancels. */
     commitOnBlur?: boolean;

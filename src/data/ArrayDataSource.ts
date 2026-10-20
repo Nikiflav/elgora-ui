@@ -6,9 +6,11 @@ import { LocalQueryEngine, localQueryEngine } from "./LocalQueryEngine";
 
 /** Identity, defaults and query configuration for an editable in-memory array. */
 export interface ArrayDataSourceOptions<T> {
+    /** Parent-reference member for hierarchical queries. Omit for a flat source. */
     parentField?: string;
     /** Identity field for new rows. Default: id. Existing rows are edited by reference. */
     idField?: string;
+    /** Named local evaluators for structured filter selectors, including custom grouping intervals. */
     filterFunctions?: FilterFunctionRegistry;
     /** Initial values for new plain-object rows. A factory runs independently for every session. */
     defaults?: Partial<T> | (() => Partial<T> | Promise<Partial<T>>);
@@ -25,6 +27,7 @@ export interface ArrayDataSourceOptions<T> {
  * changes to external callback dependencies require invalidateCache().
  */
 export class ArrayDataSource<T> implements DataSource<T> {
+    /** Original array, retained by reference. Call invalidateCache() after editing it directly. */
     readonly array: Array<T>;
     /** Notifications for successful edits, including pending-row edits. */
     readonly changed = new ObservableEvent<DataSourceChanged<T>>();
@@ -59,6 +62,7 @@ export class ArrayDataSource<T> implements DataSource<T> {
     getRowId?: (row: T) => any;
     hasChildren?: (row: T) => Promise<boolean>;
 
+    /** Wraps an existing array without copying rows; optional factories configure new-row sessions. */
     constructor(array: Array<T>, private readonly options: ArrayDataSourceOptions<T> = {}) {
         this.array = array;
         this[localQueryEngine] = new LocalQueryEngine(() => this.array, undefined,
@@ -80,6 +84,7 @@ export class ArrayDataSource<T> implements DataSource<T> {
         return this[localQueryEngine].loadData(args);
     }
 
+    /** Returns the row's index in the original array by reference, or -1 if absent; ignores query sorting/filtering. */
     async indexOfRow(row: T): Promise<number> {
         return this.array.indexOf(row);
     }

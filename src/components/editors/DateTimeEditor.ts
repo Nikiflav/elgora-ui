@@ -9,12 +9,19 @@ import { Popover } from "../popup/popover";
 import { e } from "../../core/e";
 import type { PopoverEditorOptions } from "./PopoverEditorOptions";
 
+/** Local date-time input and combined calendar/time picker configuration; values have no timezone suffix. */
 export interface DateTimeEditorOptions extends TextEditorOptions<string | null>, PopoverEditorOptions {
+    /** DateFormatter pattern for the input's date portion. Defaults to yyyy-MM-dd. */
     dateFormat?: string;
+    /** Strict 24-hour format for the time portion. Defaults to HH:mm. */
     timeFormat?: "HH:mm" | "HH:mm:ss";
+    /** Calendar-label locale and locale used by standard date formats. Defaults to the browser locale. */
     locale?: string;
+    /** First calendar weekday: 0 = Sunday through 6 = Saturday. Defaults to 1 (Monday). */
     firstDayOfWeek?: number;
+    /** Time-picker slot interval in minutes, an integer divisor of 60. Defaults to 15. */
     minuteStep?: number;
+    /** Time used when selecting a date without an existing time. Defaults to 10:00. */
     defaultTime?: string;
 }
 
@@ -28,6 +35,7 @@ export class DateTimeEditor extends PopoverEditor<string | null> {
     private layout?: HTMLElement;
     private resizeObserver?: ResizeObserver;
 
+    /** Creates an editor for canonical YYYY-MM-DDTHH:mm[:ss] values or null, without timezone conversion. */
     constructor(options: DateTimeEditorOptions) {
         const { dateFormat = "yyyy-MM-dd", timeFormat = "HH:mm", locale, firstDayOfWeek, minuteStep = 15, openOnFocus, ...textOptions } = options;
         const dateFormatter = new DateFormatter(dateFormat, locale);

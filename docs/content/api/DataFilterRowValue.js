@@ -13,7 +13,7 @@ export default {
     {
       "name": "field",
       "type": "string",
-      "description": "",
+      "description": "Column name identifying the field to filter.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "text",
       "type": "string",
-      "description": "",
+      "description": "Editable compact expression, optionally prefixed by an operator; empty text clears the field filter.",
       "tags": [],
       "topics": [],
       "optional": false,

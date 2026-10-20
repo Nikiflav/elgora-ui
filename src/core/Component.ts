@@ -44,10 +44,14 @@ export type ComponentLifecycleProps = {
 
 /** Configuration for a Component instance, including DOM and lifecycle props. */
 export type ComponentOptions = {
+  /** Native root element tag. Defaults to div. */
   tag?: string
+  /** Caller-defined identity available to component hosts. */
   key?: any
+  /** Utility-style names applied to the root element through the shared class patcher. */
   ui?: UiStyle | UiStyle[]
 
+  /** Initial children to append to the component's root element. */
   children?: ComponentChild
 } & ComponentLifecycleProps & DOMProps
 

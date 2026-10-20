@@ -10,7 +10,12 @@ export type PopoverPlacement = "bottom-start" | "bottom" | "bottom-end" | "top-s
 export type PopoverCloseMode = "auto" | "manual";
 
 /** A viewport point used to position a popup without an anchor element. */
-export interface PopoverPoint { x: number; y: number; }
+export interface PopoverPoint {
+    /** Horizontal viewport coordinate in CSS pixels, as in MouseEvent.clientX. */
+    x: number;
+    /** Vertical viewport coordinate in CSS pixels, as in MouseEvent.clientY. */
+    y: number;
+}
 
 /** Configuration for a native Popover API popup. */
 export interface PopoverOptions extends Omit<ComponentOptions, "onclose"> {
@@ -44,6 +49,7 @@ export class Popover extends Component {
     private readonly bindAnchorTarget: boolean;
     private readonly reposition = () => this.updatePosition();
 
+    /** Creates a native popup anchored to an element or viewport point; requires browser Popover API support. */
     constructor(options: PopoverOptions) {
         if (!("showPopover" in HTMLElement.prototype))
             throw new Error("Popover requires the native Popover API.");

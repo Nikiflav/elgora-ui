@@ -9,5 +9,5 @@ export default {
   "namespace": "Data",
   "path": "/api-reference/SummaryRequest",
   "source": "src/data/summary.ts",
-  "definition": "{ field: string, summaryType: SummaryType }"
+  "definition": "{\n    /** Field whose values are aggregated. */\n    field: string;\n    /** Built-in aggregation or registered custom summary name. */\n    summaryType: SummaryType;\n}"
 };

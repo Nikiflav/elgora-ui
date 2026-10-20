@@ -30,6 +30,11 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
     get changed(): DataSource<TRow>["changed"] { return this.ds.changed; }
     /** The source's shared coordinator; the grouping adapter owns no separate history. */
     get undoCoordinator(): DataSource<TRow>["undoCoordinator"] { return this.ds.undoCoordinator; }
+    /**
+     * Wraps a source, delegating supported queries and evaluating unsupported grouping locally.
+     * getValue reads fields for local processing; getColumn supplies optional semantic metadata.
+     * Register named custom intervals and summaries to match the identifiers in query descriptors.
+     */
     constructor(
         private ds: DataSource<TRow>,
         private getValue: (row: TRow, column: string) => any | Promise<any>,

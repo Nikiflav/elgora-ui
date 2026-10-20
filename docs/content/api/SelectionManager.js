@@ -80,7 +80,7 @@ export default {
     {
       "name": "selectSingleRow",
       "type": "(rowIndex: number) => void",
-      "description": "",
+      "description": "Replaces all ranges with the specified whole row and sets its first cell active.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -103,7 +103,7 @@ export default {
     {
       "name": "addRowRange",
       "type": "(rowIndex: number) => void",
-      "description": "",
+      "description": "Adds a whole-row range; single-row mode replaces the previous selection instead.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -126,7 +126,7 @@ export default {
     {
       "name": "extendRowSelection",
       "type": "(rowIndex: number) => void",
-      "description": "",
+      "description": "Extends the last whole-row range; single-row mode selects the destination row only.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -271,7 +271,7 @@ export default {
     {
       "name": "handleRowHeaderClick",
       "type": "(rowIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void",
-      "description": "",
+      "description": "Applies row-header selection, honoring Shift extension, Ctrl/Cmd addition and selection mode.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -500,7 +500,7 @@ export default {
     {
       "name": "isWholeRowSelected",
       "type": "(rowIndex: number) => boolean",
-      "description": "",
+      "description": "Returns whether any whole-row range includes this zero-based visible row.",
       "tags": [],
       "topics": [],
       "optional": false,

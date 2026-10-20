@@ -13,7 +13,7 @@ export default {
     {
       "name": "min",
       "type": "string | undefined",
-      "description": "",
+      "description": "Inclusive earliest accepted and selectable date, in YYYY-MM-DD form.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "max",
       "type": "string | undefined",
-      "description": "",
+      "description": "Inclusive latest accepted and selectable date, in YYYY-MM-DD form.",
       "tags": [],
       "topics": [],
       "optional": true,

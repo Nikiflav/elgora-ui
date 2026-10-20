@@ -2,14 +2,19 @@ import { Component, type ComponentOptions } from "../../core/Component";
 import { e, v, setElementProps, type VNode } from "../../core/e";
 import { TimeFormatter } from "../../formatting/TimeFormatter";
 
+/** Time-slot list configuration using strict 24-hour strings without timezone conversion. */
 export interface TimePickerOptions extends Omit<ComponentOptions, "tag" | "children"> {
+    /** Initially selected time matching timeFormat; null or omission means no selection. */
     value?: string | null;
+    /** Slot label and value format. Defaults to HH:mm; second-bearing slots use :00 seconds. */
     timeFormat?: "HH:mm" | "HH:mm:ss";
+    /** Minutes between slots; an integer divisor of 60 from 1 to 60. Defaults to 15. */
     minuteStep?: number;
     /** Time used for initial focus when no value has been selected. Defaults to 10:00. */
     defaultTime?: string;
     /** Maximum height of the scrollable slot list. Defaults to 240px. */
     maxHeight?: string;
+    /** Receives explicit user selections; programmatic setValue does not invoke it. */
     onSelect?: (value: string, picker: TimePicker) => void;
 }
 
@@ -24,6 +29,7 @@ export class TimePicker extends Component {
     private currentValue: string | null;
     private readonly content: HTMLElement;
 
+    /** Creates a slot list, validating the configured time strings and minute interval. */
     constructor(options: TimePickerOptions = {}) {
         const { value, timeFormat = "HH:mm", minuteStep = 15, defaultTime = "10:00", maxHeight = "240px", onSelect, ...domOptions } = options;
         if (!Number.isInteger(minuteStep) || minuteStep < 1 || minuteStep > 60 || 60 % minuteStep !== 0)
@@ -48,14 +54,17 @@ export class TimePicker extends Component {
         this.renderPicker();
     }
 
+    /** Current selected canonical time, or null when unselected. */
     get value(): string | null { return this.currentValue; }
 
+    /** Validates and updates selection without invoking onSelect. */
     setValue(value: string | null): void {
         if (value !== null) this.formatter.parse(value);
         this.currentValue = value;
         this.renderPicker();
     }
 
+    /** Focuses the selected/default time slot, falling back to the first slot when no exact match exists. */
     focus(): void {
         const target = this.content.querySelector<HTMLButtonElement>(`button[data-time='${this.currentValue ?? this.defaultTime}']`)
             ?? this.content.querySelector<HTMLButtonElement>("button[data-time]");

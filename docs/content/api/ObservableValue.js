@@ -13,7 +13,7 @@ export default {
     {
       "name": "Value",
       "type": "T",
-      "description": "",
+      "description": "Current value; assignments notify synchronously only when Object.is reports a change.\nAssigns the value by reference and synchronously notifies registered listeners if it changed.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "Value",
       "type": "T",
-      "description": "",
+      "description": "Current value; assignments notify synchronously only when Object.is reports a change.\nAssigns the value by reference and synchronously notifies registered listeners if it changed.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -37,7 +37,7 @@ export default {
       "tags": [
         {
           "name": "param",
-          "text": "fn Subscriber function to be called on value changes. Will be called immediately with the current value upon subscription."
+          "text": "fn Receives subsequent changes only. Read Value explicitly for the current value."
         },
         {
           "name": "returns",
@@ -52,7 +52,7 @@ export default {
           "name": "fn",
           "type": "ObservableHandler<T>",
           "optional": false,
-          "description": "Subscriber function to be called on value changes. Will be called immediately with the current value upon subscription."
+          "description": "Receives subsequent changes only. Read Value explicitly for the current value."
         }
       ],
       "returns": {
@@ -79,7 +79,7 @@ export default {
       "signature": "() => void"
     },
     {
-      "name": "__@toPrimitive@55",
+      "name": "__@toPrimitive@52",
       "type": "() => any",
       "description": "Controls how object is converted to primitive",
       "tags": [],
@@ -113,7 +113,7 @@ export default {
     {
       "name": "valueOf",
       "type": "() => any",
-      "description": "Returns the primitive value of the specified object.",
+      "description": "Returns the current value for JavaScript value conversion.",
       "tags": [],
       "topics": [],
       "optional": false,

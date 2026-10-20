@@ -13,7 +13,7 @@ export default {
     {
       "name": "parentField",
       "type": "string | undefined",
-      "description": "",
+      "description": "Parent-reference member for hierarchical queries. Omit for a flat source.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "filterFunctions",
       "type": "FilterFunctionRegistry | undefined",
-      "description": "",
+      "description": "Named local evaluators for structured filter selectors, including custom grouping intervals.",
       "tags": [],
       "topics": [],
       "optional": true,

@@ -2,7 +2,7 @@ export default {
   "name": "TimePickerOptions",
   "kind": "interface",
   "type": "TimePickerOptions",
-  "description": "",
+  "description": "Time-slot list configuration using strict 24-hour strings without timezone conversion.",
   "tags": [],
   "topics": [],
   "group": "types",
@@ -13,7 +13,7 @@ export default {
     {
       "name": "value",
       "type": "string | null | undefined",
-      "description": "",
+      "description": "Initially selected time matching timeFormat; null or omission means no selection.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "timeFormat",
       "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
-      "description": "",
+      "description": "Slot label and value format. Defaults to HH:mm; second-bearing slots use :00 seconds.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "minuteStep",
       "type": "number | undefined",
-      "description": "",
+      "description": "Minutes between slots; an integer divisor of 60 from 1 to 60. Defaults to 15.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -63,7 +63,7 @@ export default {
     {
       "name": "onSelect",
       "type": "((value: string, picker: TimePicker) => void) | undefined",
-      "description": "",
+      "description": "Receives explicit user selections; programmatic setValue does not invoke it.",
       "tags": [],
       "topics": [],
       "optional": true,

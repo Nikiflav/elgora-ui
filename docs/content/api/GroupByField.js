@@ -13,7 +13,7 @@ export default {
     {
       "name": "field",
       "type": "string",
-      "description": "",
+      "description": "Field identifier to group, interpreted by the source's field accessors.",
       "tags": [],
       "topics": [],
       "optional": false,

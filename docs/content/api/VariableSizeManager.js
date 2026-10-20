@@ -13,7 +13,7 @@ export default {
     {
       "name": "defaultSize",
       "type": "number",
-      "description": "",
+      "description": "Height used for rows without an individual measurement, in CSS pixels.\nChanges the fallback height and recalculates offsets while retaining measured heights.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "defaultSize",
       "type": "number",
-      "description": "",
+      "description": "Height used for rows without an individual measurement, in CSS pixels.\nChanges the fallback height and recalculates offsets while retaining measured heights.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "getSize",
       "type": "(index: number) => number",
-      "description": "",
+      "description": "Returns the measured row height or defaultSize for an unmeasured row.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -56,7 +56,7 @@ export default {
     {
       "name": "update",
       "type": "(index: number, newSize: number) => void",
-      "description": "",
+      "description": "Records one row's height and updates cumulative offsets, growing storage as needed.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -108,7 +108,7 @@ export default {
     {
       "name": "findIndex",
       "type": "(offset: number) => number",
-      "description": "",
+      "description": "Finds the row containing a pixel offset, using defaultSize beyond measured storage.",
       "tags": [],
       "topics": [],
       "optional": false,

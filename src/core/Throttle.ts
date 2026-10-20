@@ -6,6 +6,7 @@ export class Throttle<T extends (...args: any[]) => void> {
     private timer: number | null = null
     private lastArgs: Parameters<T> | null = null
 
+    /** Creates a throttled callback with the minimum interval between executions, in milliseconds. */
     constructor(
         private fn: T,
         private delay: number

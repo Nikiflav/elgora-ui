@@ -29,8 +29,20 @@ export interface DataSetOptions {
 export type DataSetChanges = Record<string, ChangeSet>;
 /** Result of saving the complete batch. Mappings apply to successfully inserted rows, grouped by table. */
 export type DataSetSaveChangesResult =
-    | { success: true; keyMappings?: Record<string, KeyMapping[]> }
-    | { success: false; error: string; fieldErrors?: Record<string, string> };
+    | {
+        /** The complete batch was persisted and may be accepted locally. */
+        success: true;
+        /** Temporary-to-persisted identity mappings, keyed by table name. */
+        keyMappings?: Record<string, KeyMapping[]>;
+    }
+    | {
+        /** Saving was rejected; working changes remain available for correction and retry. */
+        success: false;
+        /** User-facing explanation of why the batch could not be saved. */
+        error: string;
+        /** Optional application-defined field validation messages, forwarded to the caller. */
+        fieldErrors?: Record<string, string>;
+    };
 /** Persists one batch for all changed tables; resolve success only after the complete batch is saved. */
 export type DataSetSaveHandler = (changes: DataSetChanges) => Promise<DataSetSaveChangesResult>;
 

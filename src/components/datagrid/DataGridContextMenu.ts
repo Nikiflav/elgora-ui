@@ -30,13 +30,21 @@ export type GridStandardContextMenuItem =
 
 /** Context passed to grid, row, and column context-menu customization points. */
 export interface DataGridContextMenuContext<TRow> {
+    /** Grid surface on which the context menu was requested. */
     target: GridContextMenuTarget;
+    /** Flattened row under the pointer; absent for column headers and group chips. */
     row?: GridRow;
+    /** Business row for data cells/rows; absent for group metadata and headers. */
     rowData?: TRow;
+    /** Data-column definition when the target identifies a column. */
     column?: DataGridColumn<TRow>;
+    /** Zero-based visible row index, when a row is targeted. */
     rowIndex?: number;
+    /** Zero-based data-column index when supplied by the target; excludes the row header. */
     colIndex?: number;
+    /** Snapshot of the selection ranges when the menu was requested. */
     selectedRanges: SelectionRange[];
+    /** Original browser context-menu event, including pointer coordinates and modifiers. */
     event: MouseEvent;
 }
 

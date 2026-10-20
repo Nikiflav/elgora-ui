@@ -13,7 +13,7 @@ export default {
     {
       "name": "triggerIcon",
       "type": "string",
-      "description": "",
+      "description": "Icon class for the inset button that opens or closes the picker.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "triggerLabel",
       "type": "string",
-      "description": "",
+      "description": "Accessible name and tooltip for the picker trigger button.",
       "tags": [],
       "topics": [],
       "optional": false,

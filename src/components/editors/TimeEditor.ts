@@ -6,9 +6,13 @@ import { Popover } from "../popup/popover";
 import { e } from "../../core/e";
 import type { PopoverEditorOptions } from "./PopoverEditorOptions";
 
+/** Time text editing and optional slot-picker configuration; values use HH:mm or HH:mm:ss. */
 export interface TimeEditorOptions extends TextEditorOptions<string | null>, PopoverEditorOptions {
+    /** Strict 24-hour input and picker format. Defaults to HH:mm. */
     timeFormat?: "HH:mm" | "HH:mm:ss";
+    /** Picker slot interval in minutes; must divide 60 evenly. Defaults to 15. Does not restrict typed minutes. */
     minuteStep?: number;
+    /** Picker's initial focus time when the value is empty. Defaults to 10:00; does not prefill the editor. */
     defaultTime?: string;
 }
 
@@ -17,6 +21,7 @@ export class TimeEditor extends PopoverEditor<string | null> {
     private readonly timeOptions: TimeEditorOptions;
     private picker?: TimePicker;
 
+    /** Creates a time editor, using TimeFormatter unless parse/format callbacks override it. */
     constructor(options: TimeEditorOptions) {
         const { timeFormat = "HH:mm", minuteStep = 15, openOnFocus, ...textOptions } = options;
         const formatter = new TimeFormatter(timeFormat);

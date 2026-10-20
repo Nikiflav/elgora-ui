@@ -33,6 +33,7 @@ export interface DataRowChangeEvent {
      * });
      */
     readonly kind: Exclude<DataSourceChanged<DataRow>["kind"], "reset">;
+    /** Actual affected row; use context for edits that must join this transaction. */
     readonly row: DataRow;
     /** Names of fields that actually change for update; empty for create, insert, delete and cancel. */
     readonly fields: readonly string[];
@@ -40,6 +41,7 @@ export interface DataRowChangeEvent {
     readonly oldValues: Readonly<Record<string, unknown>>;
     /** Proposed values before an update, applied values after it; field values are not cloned. */
     readonly values: Readonly<Record<string, unknown>>;
+    /** Transaction-bound editing API for applying derived changes, including edits to related rows. */
     readonly context: DataEditContext;
     /** Rejects the complete transaction. Example: e.reject("Quantity must be positive"). */
     reject(error: string, fieldErrors?: Record<string, string>): void;

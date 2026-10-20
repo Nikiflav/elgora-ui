@@ -5,13 +5,17 @@ type GroupOperator = "and" | "or";
 
 /** A field name or a serializable transformation applied to a field. */
 export type FilterSelector = string | {
+    /** Serializable transformation name, resolved through the source's filter-function registry. */
     function: string;
+    /** Field whose value is passed to the transformation. */
     field: string;
+    /** Additional transformation arguments; defaults to an empty array during local evaluation. */
     args?: unknown[];
 };
 
 /** Local implementations for structured filter selectors. */
 export type FilterFunction = (value: any, args: unknown[], item: any) => any;
+/** Local selector evaluators keyed by their serializable function names. */
 export type FilterFunctionRegistry = Record<string, FilterFunction>;
 
 /** [ "field", "op", value ] */

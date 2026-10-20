@@ -48,7 +48,7 @@ export default {
     {
       "name": "readonly",
       "type": "boolean | undefined",
-      "description": "",
+      "description": "Prevents editing in consumers that honor this presentation flag.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -58,7 +58,7 @@ export default {
     {
       "name": "required",
       "type": "boolean | undefined",
-      "description": "",
+      "description": "Rejects missing values in the default field editor. Custom consumers may add validation.",
       "tags": [],
       "topics": [],
       "optional": true,

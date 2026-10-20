@@ -10,22 +10,36 @@ import type { PopoverEditorOptions } from "./PopoverEditorOptions";
 import "./LookupEditor.css";
 
 /** Search plus standard query paging and cancellation fields. */
-export interface LookupQuery extends Pick<QueryArgs, "skip" | "top" | "abortSignal"> { search: string; }
+export interface LookupQuery extends Pick<QueryArgs, "skip" | "top" | "abortSignal"> {
+    /** User-entered search text; an empty string requests the unfiltered lookup list. */
+    search: string;
+}
 /** A page and the accurate count of all matches, not just this page. */
-export interface LookupResult<TItem> { items: TItem[]; totalCount: number; }
+export interface LookupResult<TItem> {
+    /** Matching items for the requested skip/top page, retaining their application-defined shape. */
+    items: TItem[];
+    /** Accurate number of matches before paging, used by the virtual result grid. */
+    totalCount: number;
+}
 /** Lookup configuration; the host remains responsible for accepting a value. */
 export interface LookupEditorOptions<TValue, TItem> extends ValueEditorOptions<TValue>, PopoverEditorOptions {
+    /** Result-grid columns; use one text column for a simple list or several for richer lookup items. */
     columns: DataGridColumn<TItem>[];
+    /** Loads a matching page and total count. Honor abortSignal to cancel obsolete remote requests. */
     loadItems: (query: LookupQuery) => Promise<LookupResult<TItem>>;
+    /** Maps a chosen lookup item to the value accepted by the editor. */
     getItemValue: (item: TItem) => TValue;
+    /** Returns the item's label, also used for exact-text resolution. */
     getItemText: (item: TItem) => string;
     /** Resolves a current value even when its item is not in a loaded page. */
     getValueText: (value: TValue) => string | Promise<string>;
+    /** Maximum items requested per result page. Defaults to 50. */
     pageSize?: number;
     /** Search debounce in milliseconds; defaults to 150. */
     searchDelay?: number;
     /** Explicit popup width in pixels; otherwise matches the input, with a 200px minimum. */
     popupWidth?: number;
+    /** Initial popup height in CSS pixels. Defaults to 300; resizing may override it. */
     popupHeight?: number;
     /** Defaults to true; resized dimensions remain for this editor instance. */
     resizable?: boolean;

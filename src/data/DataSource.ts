@@ -7,6 +7,7 @@ import type { UndoCoordinator } from "../core/UndoCoordinator";
 
 /** One grouping level in a loadData query, from outermost to innermost. */
 export interface GroupByField {
+    /** Field identifier to group, interpreted by the source's field accessors. */
     field: string;
     /** Named grouping interval; omit to group raw values. */
     interval?: GroupInterval;
@@ -14,11 +15,15 @@ export interface GroupByField {
 
 /** A single page/query request made against a DataSource. */
 export interface QueryArgs {
+    /** Conditions applied before sorting, grouping, paging and aggregation. Omit for all rows. */
     filter?: DataFilter;
+    /** Ordered sort keys; a bare field name means ascending order. Omit for source order. */
     orderby?: OrderByToken[];
     /** Field names to include; omit to fetch all fields. */
     select?: string[];
+    /** Number of matching rows or outer groups to skip; zero-based, default 0. */
     skip?: number;
+    /** Maximum rows or outer groups to return after skip. Omit to return the remaining result. */
     top?: number;
     /**
      * Requested grouping levels. A nonempty list returns groups, not dataItems.
@@ -27,7 +32,12 @@ export interface QueryArgs {
      */
     groupBy?: GroupByField[];
     /** Aggregations to compute per group, per field. */
-    groupSummary?: { field: string, summaryType: SummaryType }[];
+    groupSummary?: {
+        /** Field whose values are aggregated within each bucket. */
+        field: string;
+        /** Built-in aggregation or registered custom summary name. */
+        summaryType: SummaryType;
+    }[];
     /**
      * Optional, demand-driven aggregations for the complete filtered result,
      * independently of paging and grouping. When omitted, the datasource
@@ -49,6 +59,7 @@ export interface QueryArgs {
 
 /** A group bucket produced by QueryArgs.groupBy; count is the number of matching data rows. */
 export type GroupItem = {
+    /** Field identifier from the corresponding groupBy descriptor. */
     groupField: string;
     /**
      * Group value, without dataType-based conversion. null/undefined share null;
@@ -59,6 +70,7 @@ export type GroupItem = {
      * counts/summaries per distinct group before paging.
      */
     groupValue: any;
+    /** Matching data-row count in this bucket, including all nested groups, before paging. */
     count: number;
     /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */
     summaryValues?: Record<string, any>;
@@ -68,8 +80,11 @@ export type GroupItem = {
 
 /** The response to a QueryArgs request: either flat data rows or, when grouping, group buckets. */
 export interface DataResult<TRow> {
+    /** Matching row count, or outer-group count, before paging. Required when requireTotalCount is true. */
     totalCount?: number;
+    /** Query that produced this response, retained so consumers can correlate requests and results. */
     args: QueryArgs;
+    /** Requested page of original row objects for flat queries; omitted for grouped queries. */
     dataItems?: TRow[];
     /** Used exclusively for a nonempty args.groupBy. totalCount counts outermost groups before paging. */
     groups?: GroupItem[];
@@ -82,8 +97,13 @@ export interface DataResult<TRow> {
 }
 
 /** Result of a row mutation. Expected validation failures resolve; transport failures reject. */
-export type MutationResult = { success: true } | {
+export type MutationResult = {
+    /** The mutation completed successfully. Persistence depends on the source implementation. */
+    success: true;
+} | {
+    /** The mutation was rejected; inspect error and optional fieldErrors. */
     success: false;
+    /** User-facing explanation of why the mutation was rejected. */
     error: string;
     /** Optional field-specific validation messages, e.g. { quantity: "Must be positive" }. */
     fieldErrors?: Record<string, string>;
@@ -100,7 +120,9 @@ export type MutationResult = { success: true } | {
  * if (!result.success) showError(result.error);
  */
 export interface NewRowSession<TRow> {
+    /** Actual source row being edited; update it through the source before inserting. */
     readonly row: TRow;
+    /** Session lifecycle. Only pending rows can be inserted or cancelled for the first time. */
     readonly state: "pending" | "inserted" | "cancelled";
     /**
      * Confirms insertion. A rejected result leaves the session pending for correction.
@@ -127,7 +149,9 @@ export interface DataSourceChanged<TRow> {
      * reset requests a broader repaint after undo/redo, import, acceptance or rejection.
      */
     kind: "create" | "update" | "insert" | "delete" | "cancel" | "reset";
+    /** Actual affected row, including pending drafts. Omitted for source-wide invalidation. */
     row?: TRow;
+    /** Changed field names when known; omission means consumers must not assume a field-level change. */
     fields?: readonly string[];
 }
 

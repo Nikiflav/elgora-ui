@@ -13,7 +13,7 @@ export default {
     {
       "name": "waitUntil",
       "type": "(completion: PromiseLike<void>) => void",
-      "description": "",
+      "description": "Registers asynchronous baseline cleanup before the event handler returns; replay waits for completion.",
       "tags": [],
       "topics": [],
       "optional": false,

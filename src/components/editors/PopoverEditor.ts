@@ -6,7 +6,9 @@ import { createInputAdornment, inputAdornmentProps } from "./InputAdornment";
 
 /** Input, inset trigger and picker lifecycle shared by concrete popover editors. */
 export interface PopoverTextEditorOptions<T> extends TextEditorOptions<T>, PopoverEditorOptions {
+    /** Icon class for the inset button that opens or closes the picker. */
     triggerIcon: string;
+    /** Accessible name and tooltip for the picker trigger button. */
     triggerLabel: string;
 }
 

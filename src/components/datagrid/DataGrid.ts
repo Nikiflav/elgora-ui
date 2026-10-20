@@ -58,9 +58,19 @@ export interface DataGridCellNavigatingEvent {
     /** True for reverse Tab/Enter traversal or extended arrow selection. */
     readonly shiftKey: boolean;
     /** Active cell before navigation; changing this snapshot has no effect. */
-    readonly currentCell: { readonly rowIndex: number; readonly colIndex: number };
+    readonly currentCell: {
+        /** Zero-based row in the current flattened view. */
+        readonly rowIndex: number;
+        /** Zero-based visible data column, excluding row headers. */
+        readonly colIndex: number;
+    };
     /** Proposed destination. Change its coordinates to redirect navigation. Invalid destinations cancel the move. */
-    targetCell: { rowIndex: number; colIndex: number };
+    targetCell: {
+        /** Zero-based destination row in the current flattened view. */
+        rowIndex: number;
+        /** Zero-based destination data column, excluding row headers. */
+        colIndex: number;
+    };
     /** Set true to retain the active cell and selection. A completed edit is not rolled back. */
     cancel: boolean;
 }
@@ -71,7 +81,6 @@ export interface DataGridCellNavigatingEvent {
 //=================
 
 
-/** Construction-time configuration for a DataGrid instance. */
 /** How spare viewport width is distributed; columns are never shrunk below their base width. */
 export type ColumnWidthMode = "fixed" | "stretch-auto" | "stretch-all";
 /** Mouse cursor used over the data-grid body. */
@@ -79,11 +88,13 @@ export type DataGridCursor = "default" | "pointer" | "text";
 /** Cell separator style used by a DataGrid. */
 export type DataGridCellBorders = "none" | "rows" | "all";
 
+/** Data, column, interaction and presentation options for a DataGrid. */
 export type DataGridOptions<TRow> = {
     /** Enables existing-cell editing when the source supports update. Defaults to false. */
     allowEdit?: boolean;
     /** Row data; defaults to an empty array if omitted. */
     data?: GridDataSource<TRow>,
+    /** Field and presentation definitions, identified by unique column names. */
     columns: DataGridColumn<TRow>[],
     /** Number of leading columns kept sticky, in addition to the row-header column. */
     fixedLeftColumns?: number,
@@ -102,9 +113,19 @@ export type DataGridOptions<TRow> = {
     /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */
     groupColumns?: string[],
     /** The aggregation summary for group rows. */
-    groupSummary?: { field: string, summaryType: SummaryType }[],
+    groupSummary?: {
+        /** Column name whose values are aggregated in each group. */
+        field: string;
+        /** Built-in or registered custom aggregation. */
+        summaryType: SummaryType;
+    }[],
     /** Aggregations for the complete filtered result, independently of paging and grouping. */
-    totalSummary?: { field: string, summaryType: SummaryType }[],
+    totalSummary?: {
+        /** Column name whose values are aggregated over the complete filtered result. */
+        field: string;
+        /** Built-in or registered custom aggregation. */
+        summaryType: SummaryType;
+    }[],
     /** Custom group intervals available in the Group by context-menu submenu. */
     groupIntervals?: GroupIntervalDefinition<TRow>[],
     /** Custom summary accumulators available for locally grouped data. */
@@ -282,6 +303,7 @@ export class DataGrid<TRow> extends Component {
 
     private readonly _MAX_ROWS = 100
 
+    /** Creates a grid with a virtualized row view; mount it to display the supplied columns and source. */
     constructor(options: DataGridOptions<TRow>) {
         super({ ui: "h-100" })
 
@@ -1580,9 +1602,13 @@ export class DataGrid<TRow> extends Component {
         return this._columnsIndex.get(name);
     }
 
+    /** Returns the live selection controller. Refresh the grid after direct controller mutations. */
     public getSelectionManager(): SelectionManager { return this._selection; }
+    /** Returns copied selection ranges in current visible row and data-column coordinates. */
     public getSelectedRanges() { return this._selection.getRanges(); }
+    /** Returns the active cell coordinates, or null when no cell is active. */
     public getActiveSelectionCell() { return this._selection.getActiveCell(); }
+    /** Clears ranges and active cell, then schedules a grid repaint. */
     public clearSelection() { this._selection.clear(); this.refresh(); }
 
     /** Patches an existing column's definition in place and updates the grid's layout accordingly. */

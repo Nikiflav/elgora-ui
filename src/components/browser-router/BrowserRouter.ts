@@ -3,8 +3,11 @@ import { Component } from "../../core/Component";
  * Defines a route handler for the router. Each handler can specify a URL pattern (either as a string with parameters or as a regular expression) and a function to create the corresponding page component when the route is matched.
  */
 export interface RouterHandler {
+    /** Route pattern, including optional named parameters. Used when regex is not supplied. */
     path?: string;
+    /** Explicit matching expression; takes precedence over path. */
     regex?: RegExp;
+    /** Creates the page for a matched route, receiving its extracted URL parameters. */
     createPage(urlParams?: any): RouterPage;
 }
 /**
@@ -35,8 +38,9 @@ export interface RouterPage {
  * Only one instance of `BrowserRouter` should be created in the application, and it should be mounted to a container element where the page content will be displayed.
  */
 export class BrowserRouter extends Component {
+    /** Ordered route handlers, tested until the first match. */
     public readonly routes: RouterHandler[];
-    /** The currently active page */
+    /** Fallback page displayed when no route matches. */
     public page404: RouterPage;
     /** The last handled URL */
     public lastUrl?: string;
@@ -47,6 +51,7 @@ export class BrowserRouter extends Component {
 
     private static instance?: BrowserRouter;
 
+    /** Creates the application's single router and starts handling the current URL. */
     constructor(routes: RouterHandler[], page404?: RouterPage) {
 
         if (BrowserRouter.instance)
@@ -89,6 +94,7 @@ export class BrowserRouter extends Component {
         }
     }
 
+    /** Handler selected by the most recent route match; undefined when none matched. */
     public get currentRoute(): RouterHandler | undefined {
         return this._currentRoute;
     }

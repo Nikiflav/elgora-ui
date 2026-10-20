@@ -9,5 +9,5 @@ export default {
   "namespace": "Components.DataGrid",
   "path": "/api-reference/DataGridColumnLayoutInfo",
   "source": "src/components/datagrid/DataGridColumn.ts",
-  "definition": "{\n    name: string,\n    width?: number;\n    summaryType?: SummaryType;\n    userState?: any;\n}"
+  "definition": "{\n    /** Column name identifying the definition to override. */\n    name: string,\n    /** Persisted or caller-provided width in CSS pixels. */\n    width?: number;\n    /** Optional aggregation associated with this column's layout entry. */\n    summaryType?: SummaryType;\n    /** Opaque application state retained alongside the layout entry. */\n    userState?: any;\n}"
 };

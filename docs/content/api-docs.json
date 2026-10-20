@@ -19,7 +19,7 @@
         {
           "name": "array",
           "type": "T[]",
-          "description": "",
+          "description": "Original array, retained by reference. Call invalidateCache() after editing it directly.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -113,7 +113,7 @@
         {
           "name": "indexOfRow",
           "type": "(row: T) => Promise<number>",
-          "description": "",
+          "description": "Returns the row's index in the original array by reference, or -1 if absent; ignores query sorting/filtering.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -228,7 +228,7 @@
         {
           "name": "parentField",
           "type": "string | undefined",
-          "description": "",
+          "description": "Parent-reference member for hierarchical queries. Omit for a flat source.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -248,7 +248,7 @@
         {
           "name": "filterFunctions",
           "type": "FilterFunctionRegistry | undefined",
-          "description": "",
+          "description": "Named local evaluators for structured filter selectors, including custom grouping intervals.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -410,7 +410,7 @@
         {
           "name": "routes",
           "type": "RouterHandler[]",
-          "description": "",
+          "description": "Ordered route handlers, tested until the first match.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -420,7 +420,7 @@
         {
           "name": "page404",
           "type": "RouterPage",
-          "description": "The currently active page",
+          "description": "Fallback page displayed when no route matches.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -460,7 +460,7 @@
         {
           "name": "currentRoute",
           "type": "RouterHandler | undefined",
-          "description": "",
+          "description": "Handler selected by the most recent route match; undefined when none matched.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -676,7 +676,7 @@
         {
           "name": "value",
           "type": "string | null | undefined",
-          "description": "",
+          "description": "Initially selected date, or null for no selection. Does not emit onSelect during construction.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -686,7 +686,7 @@
         {
           "name": "min",
           "type": "string | undefined",
-          "description": "",
+          "description": "Inclusive earliest selectable date in YYYY-MM-DD form.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -696,7 +696,7 @@
         {
           "name": "max",
           "type": "string | undefined",
-          "description": "",
+          "description": "Inclusive latest selectable date in YYYY-MM-DD form.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -1610,7 +1610,7 @@
       "namespace": "Core",
       "path": "/api-reference/ComponentOptions",
       "source": "src/core/Component.ts",
-      "definition": "{\n  tag?: string\r\n  key?: any\r\n  ui?: UiStyle | UiStyle[]\r\n\r\n  children?: ComponentChild\r\n} & ComponentLifecycleProps & DOMProps"
+      "definition": "{\n  /** Native root element tag. Defaults to div. */\r\n  tag?: string\r\n  /** Caller-defined identity available to component hosts. */\r\n  key?: any\r\n  /** Utility-style names applied to the root element through the shared class patcher. */\r\n  ui?: UiStyle | UiStyle[]\r\n\r\n  /** Initial children to append to the component's root element. */\r\n  children?: ComponentChild\r\n} & ComponentLifecycleProps & DOMProps"
     },
     {
       "name": "createFieldEditor",
@@ -1682,7 +1682,7 @@
         {
           "name": "type",
           "type": "\"update\" | \"insert\" | \"remove\"",
-          "description": "",
+          "description": "Transport operation: insert a row, update its fields, or remove it by key.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2083,7 +2083,7 @@
         {
           "name": "columns",
           "type": "DataFilterRowColumn<TRow>[]",
-          "description": "",
+          "description": "Original column metadata used to parse values according to their semantic types.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2214,7 +2214,7 @@
       "name": "DataFilterRowColumn",
       "kind": "type",
       "type": "any",
-      "description": "",
+      "description": "Field metadata needed to parse and display a compact filter-row expression.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -2227,7 +2227,7 @@
       "name": "DataFilterRowOperator",
       "kind": "type",
       "type": "any",
-      "description": "",
+      "description": "Supported comparison/text operators in a compact per-column filter expression.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -2251,7 +2251,7 @@
         {
           "name": "field",
           "type": "string",
-          "description": "",
+          "description": "Column name identifying the field to filter.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2261,7 +2261,7 @@
         {
           "name": "text",
           "type": "string",
-          "description": "",
+          "description": "Editable compact expression, optionally prefixed by an operator; empty text clears the field filter.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2555,7 +2555,7 @@
         {
           "name": "getSelectionManager",
           "type": "() => SelectionManager",
-          "description": "",
+          "description": "Returns the live selection controller. Refresh the grid after direct controller mutations.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2571,7 +2571,7 @@
         {
           "name": "getSelectedRanges",
           "type": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionRange[]",
-          "description": "",
+          "description": "Returns copied selection ranges in current visible row and data-column coordinates.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2587,7 +2587,7 @@
         {
           "name": "getActiveSelectionCell",
           "type": "() => import(\"D:/Dev/github/elgora-ui/src/index\").SelectionCell | null",
-          "description": "",
+          "description": "Returns the active cell coordinates, or null when no cell is active.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2603,7 +2603,7 @@
         {
           "name": "clearSelection",
           "type": "() => void",
-          "description": "",
+          "description": "Clears ranges and active cell, then schedules a grid repaint.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3050,7 +3050,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridColumnLayoutInfo",
       "source": "src/components/datagrid/DataGridColumn.ts",
-      "definition": "{\n    name: string,\n    width?: number;\n    summaryType?: SummaryType;\n    userState?: any;\n}"
+      "definition": "{\n    /** Column name identifying the definition to override. */\n    name: string,\n    /** Persisted or caller-provided width in CSS pixels. */\n    width?: number;\n    /** Optional aggregation associated with this column's layout entry. */\n    summaryType?: SummaryType;\n    /** Opaque application state retained alongside the layout entry. */\n    userState?: any;\n}"
     },
     {
       "name": "DataGridContextMenuContext",
@@ -3067,7 +3067,7 @@
         {
           "name": "target",
           "type": "GridContextMenuTarget",
-          "description": "",
+          "description": "Grid surface on which the context menu was requested.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3077,7 +3077,7 @@
         {
           "name": "row",
           "type": "GridRow | undefined",
-          "description": "",
+          "description": "Flattened row under the pointer; absent for column headers and group chips.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -3087,7 +3087,7 @@
         {
           "name": "rowData",
           "type": "TRow | undefined",
-          "description": "",
+          "description": "Business row for data cells/rows; absent for group metadata and headers.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -3097,7 +3097,7 @@
         {
           "name": "column",
           "type": "DataGridColumn<TRow> | undefined",
-          "description": "",
+          "description": "Data-column definition when the target identifies a column.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -3107,7 +3107,7 @@
         {
           "name": "rowIndex",
           "type": "number | undefined",
-          "description": "",
+          "description": "Zero-based visible row index, when a row is targeted.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -3117,7 +3117,7 @@
         {
           "name": "colIndex",
           "type": "number | undefined",
-          "description": "",
+          "description": "Zero-based data-column index when supplied by the target; excludes the row header.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -3127,7 +3127,7 @@
         {
           "name": "selectedRanges",
           "type": "SelectionRange[]",
-          "description": "",
+          "description": "Snapshot of the selection ranges when the menu was requested.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3137,7 +3137,7 @@
         {
           "name": "event",
           "type": "MouseEvent",
-          "description": "",
+          "description": "Original browser context-menu event, including pointer coordinates and modifiers.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3163,14 +3163,14 @@
       "name": "DataGridOptions",
       "kind": "type",
       "type": "any",
-      "description": "",
+      "description": "Data, column, interaction and presentation options for a DataGrid.",
       "tags": [],
       "topics": [],
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
       "source": "src/components/datagrid/DataGrid.ts",
-      "definition": "{\r\n    /** Enables existing-cell editing when the source supports update. Defaults to false. */\r\n    allowEdit?: boolean;\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: { field: string, summaryType: SummaryType }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
+      "definition": "{\r\n    /** Enables existing-cell editing when the source supports update. Defaults to false. */\r\n    allowEdit?: boolean;\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    /** Field and presentation definitions, identified by unique column names. */\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: {\r\n        /** Column name whose values are aggregated in each group. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: {\r\n        /** Column name whose values are aggregated over the complete filtered result. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
     },
     {
       "name": "DataList",
@@ -3187,7 +3187,7 @@
         {
           "name": "count",
           "type": "() => number",
-          "description": "",
+          "description": "Current total item count used for virtual scroll geometry.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3203,7 +3203,7 @@
         {
           "name": "getAt",
           "type": "(index: number) => T | undefined",
-          "description": "",
+          "description": "Returns an item at a zero-based index, or undefined while unavailable.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3240,7 +3240,7 @@
         {
           "name": "totalCount",
           "type": "number | undefined",
-          "description": "",
+          "description": "Matching row count, or outer-group count, before paging. Required when requireTotalCount is true.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -3250,7 +3250,7 @@
         {
           "name": "args",
           "type": "QueryArgs",
-          "description": "",
+          "description": "Query that produced this response, retained so consumers can correlate requests and results.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3260,7 +3260,7 @@
         {
           "name": "dataItems",
           "type": "TRow[] | undefined",
-          "description": "",
+          "description": "Requested page of original row objects for flat queries; omitted for grouped queries.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -3714,7 +3714,7 @@
         {
           "name": "row",
           "type": "DataRow",
-          "description": "",
+          "description": "Actual affected row; use context for edits that must join this transaction.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3754,7 +3754,7 @@
         {
           "name": "context",
           "type": "DataEditContext",
-          "description": "",
+          "description": "Transaction-bound editing API for applying derived changes, including edits to related rows.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -4277,7 +4277,7 @@
       "namespace": "Data",
       "path": "/api-reference/DataSetSaveChangesResult",
       "source": "src/data/dataset/DataSet.ts",
-      "definition": "| { success: true; keyMappings?: Record<string, KeyMapping[]> }\n    | { success: false; error: string; fieldErrors?: Record<string, string> }"
+      "definition": "| {\n        /** The complete batch was persisted and may be accepted locally. */\n        success: true;\n        /** Temporary-to-persisted identity mappings, keyed by table name. */\n        keyMappings?: Record<string, KeyMapping[]>;\n    }\n    | {\n        /** Saving was rejected; working changes remain available for correction and retry. */\n        success: false;\n        /** User-facing explanation of why the batch could not be saved. */\n        error: string;\n        /** Optional application-defined field validation messages, forwarded to the caller. */\n        fieldErrors?: Record<string, string>;\n    }"
     },
     {
       "name": "DataSetSaveHandler",
@@ -4497,7 +4497,7 @@
         {
           "name": "row",
           "type": "TRow | undefined",
-          "description": "",
+          "description": "Actual affected row, including pending drafts. Omitted for source-wide invalidation.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -4507,7 +4507,7 @@
         {
           "name": "fields",
           "type": "readonly string[] | undefined",
-          "description": "",
+          "description": "Changed field names when known; omission means consumers must not assume a field-level change.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -5829,7 +5829,7 @@
         {
           "name": "readonly",
           "type": "boolean | undefined",
-          "description": "",
+          "description": "Prevents editing in consumers that honor this presentation flag.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -5839,7 +5839,7 @@
         {
           "name": "required",
           "type": "boolean | undefined",
-          "description": "",
+          "description": "Rejects missing values in the default field editor. Custom consumers may add validation.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6109,7 +6109,7 @@
         {
           "name": "min",
           "type": "string | undefined",
-          "description": "",
+          "description": "Inclusive earliest accepted and selectable date, in YYYY-MM-DD form.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6119,7 +6119,7 @@
         {
           "name": "max",
           "type": "string | undefined",
-          "description": "",
+          "description": "Inclusive latest accepted and selectable date, in YYYY-MM-DD form.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6284,7 +6284,7 @@
       "name": "DateTimeEditorOptions",
       "kind": "interface",
       "type": "DateTimeEditorOptions",
-      "description": "",
+      "description": "Local date-time input and combined calendar/time picker configuration; values have no timezone suffix.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -6295,7 +6295,7 @@
         {
           "name": "dateFormat",
           "type": "string | undefined",
-          "description": "",
+          "description": "DateFormatter pattern for the input's date portion. Defaults to yyyy-MM-dd.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6305,7 +6305,7 @@
         {
           "name": "timeFormat",
           "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
-          "description": "",
+          "description": "Strict 24-hour format for the time portion. Defaults to HH:mm.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6315,7 +6315,7 @@
         {
           "name": "locale",
           "type": "string | undefined",
-          "description": "",
+          "description": "Calendar-label locale and locale used by standard date formats. Defaults to the browser locale.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6325,7 +6325,7 @@
         {
           "name": "firstDayOfWeek",
           "type": "number | undefined",
-          "description": "",
+          "description": "First calendar weekday: 0 = Sunday through 6 = Saturday. Defaults to 1 (Monday).",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6335,7 +6335,7 @@
         {
           "name": "minuteStep",
           "type": "number | undefined",
-          "description": "",
+          "description": "Time-picker slot interval in minutes, an integer divisor of 60. Defaults to 15.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6345,7 +6345,7 @@
         {
           "name": "defaultTime",
           "type": "string | undefined",
-          "description": "",
+          "description": "Time used when selecting a date without an existing time. Defaults to 10:00.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6365,7 +6365,7 @@
       "namespace": "Data",
       "path": "/api-reference/DisplayValue",
       "source": "src/data/DataViewField.ts",
-      "definition": "{\n    value: any,\n    text: string,\n    color?: string;\n    icon?: string;\n    image?: string;\n}"
+      "definition": "{\n    /** Stored value represented by the option. */\n    value: any,\n    /** Human-readable label for the option. */\n    text: string,\n    /** Optional CSS color associated with the option. */\n    color?: string;\n    /** Optional icon class name for consumers that render option icons. */\n    icon?: string;\n    /** Optional image URL for consumers that render option images. */\n    image?: string;\n}"
     },
     {
       "name": "e",
@@ -6470,7 +6470,7 @@
         {
           "name": "row",
           "type": "TRow",
-          "description": "",
+          "description": "Original domain row supplied by the hosting component.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6480,7 +6480,7 @@
         {
           "name": "field",
           "type": "DataViewField<TRow>",
-          "description": "",
+          "description": "Field whose value is being converted, displayed or validated.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6490,7 +6490,7 @@
         {
           "name": "value",
           "type": "any",
-          "description": "",
+          "description": "Current field value at the time the context was created.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6524,7 +6524,7 @@
         {
           "name": "onCommit",
           "type": "(value: any) => Promise<void>",
-          "description": "",
+          "description": "Asynchronously submits a candidate value through the host's validation and saving pipeline.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6561,7 +6561,7 @@
         {
           "name": "columns",
           "type": "import(\"D:/Dev/github/elgora-ui/src/index\").DataGridColumn<TItem>[] | undefined",
-          "description": "",
+          "description": "Optional result columns; omit for a single label column.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6571,7 +6571,7 @@
         {
           "name": "loadItems",
           "type": "(query: LookupQuery, context: FieldEditContext<TRow>) => Promise<LookupResult<TItem>>",
-          "description": "",
+          "description": "Loads matching items with paging, using the edited row as business-rule context.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6600,7 +6600,7 @@
         {
           "name": "getValueText",
           "type": "(value: any, context: FieldEditContext<TRow>) => string | Promise<string>",
-          "description": "",
+          "description": "Resolves a stored value's label even when its item is outside the loaded lookup page.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6733,7 +6733,7 @@
       "name": "FilterEditorColumn",
       "kind": "type",
       "type": "any",
-      "description": "",
+      "description": "Field identity, caption and semantic type offered by the filter builder.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -6746,7 +6746,7 @@
       "name": "FilterEditorOperator",
       "kind": "type",
       "type": "any",
-      "description": "",
+      "description": "Comparison and text-match operators available for editable filter conditions.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -6759,7 +6759,7 @@
       "name": "FilterEditorOptions",
       "kind": "interface",
       "type": "FilterEditorOptions<TRow>",
-      "description": "",
+      "description": "Filter-builder fields, initial expression and explicit apply/cancel callbacks.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -6770,7 +6770,7 @@
         {
           "name": "columns",
           "type": "FilterEditorColumn<TRow>[]",
-          "description": "",
+          "description": "Fields users can choose when creating conditions.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6780,7 +6780,7 @@
         {
           "name": "filter",
           "type": "DataFilter | undefined",
-          "description": "",
+          "description": "Initial expression. Omit to start without a filter.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6790,7 +6790,7 @@
         {
           "name": "onApply",
           "type": "((filter: DataFilter | undefined, editor: FilterEditor<TRow>) => void) | undefined",
-          "description": "",
+          "description": "Receives the expression when Apply is invoked; the host decides how to apply it to data.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6800,7 +6800,7 @@
         {
           "name": "onCancel",
           "type": "((editor: FilterEditor<TRow>) => void) | undefined",
-          "description": "",
+          "description": "Receives an explicit cancellation request; the host decides whether to close the editor.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6826,7 +6826,7 @@
       "name": "FilterFunctionRegistry",
       "kind": "type",
       "type": "any",
-      "description": "",
+      "description": "Local selector evaluators keyed by their serializable function names.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -6846,7 +6846,7 @@
       "namespace": "Data",
       "path": "/api-reference/FilterSelector",
       "source": "src/data/filter.ts",
-      "definition": "string | {\n    function: string;\n    field: string;\n    args?: unknown[];\n}"
+      "definition": "string | {\n    /** Serializable transformation name, resolved through the source's filter-function registry. */\n    function: string;\n    /** Field whose value is passed to the transformation. */\n    field: string;\n    /** Additional transformation arguments; defaults to an empty array during local evaluation. */\n    args?: unknown[];\n}"
     },
     {
       "name": "FixedSizeManager",
@@ -6863,7 +6863,7 @@
         {
           "name": "defaultSize",
           "type": "number",
-          "description": "",
+          "description": "Shared height of every row, in CSS pixels.\nChanges the height used for all rows and offsets.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6873,7 +6873,7 @@
         {
           "name": "defaultSize",
           "type": "number",
-          "description": "",
+          "description": "Shared height of every row, in CSS pixels.\nChanges the height used for all rows and offsets.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6883,7 +6883,7 @@
         {
           "name": "getSize",
           "type": "(index: number) => number",
-          "description": "",
+          "description": "Returns the shared height; index does not affect the result.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6906,7 +6906,7 @@
         {
           "name": "update",
           "type": "(index: number, newSize: number) => void",
-          "description": "",
+          "description": "Changes the shared height for every row, regardless of index.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6935,7 +6935,7 @@
         {
           "name": "findIndex",
           "type": "(offset: number) => number",
-          "description": "",
+          "description": "Maps a pixel offset to a zero-based row using the shared height.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -6958,7 +6958,7 @@
         {
           "name": "getOffset",
           "type": "(index: number) => number",
-          "description": "",
+          "description": "Returns index multiplied by the shared row height.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7008,7 +7008,7 @@
         {
           "name": "totalRows",
           "type": "number",
-          "description": "",
+          "description": "Number of rows in the current flattened view, including structural rows.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7018,7 +7018,7 @@
         {
           "name": "columns",
           "type": "string[]",
-          "description": "",
+          "description": "Ordered names of the selectable data columns.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7028,7 +7028,7 @@
         {
           "name": "isRowSelectable",
           "type": "((rowIndex: number) => boolean) | undefined",
-          "description": "",
+          "description": "Returns whether navigation may select a particular visible row.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -7038,7 +7038,7 @@
         {
           "name": "findNextSelectableRow",
           "type": "((rowIndex: number, direction: 1 | -1) => number) | undefined",
-          "description": "",
+          "description": "Finds a selectable row in the given direction; return -1 when no candidate exists.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -7114,7 +7114,7 @@
         {
           "name": "field",
           "type": "string",
-          "description": "",
+          "description": "Field identifier to group, interpreted by the source's field accessors.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7157,7 +7157,7 @@
       "namespace": "Data",
       "path": "/api-reference/GroupIntervalDefinition",
       "source": "src/data/grouping.ts",
-      "definition": "{\n    name: string;\n    text: string;\n    getGroupValue: (row: TRow, value: any) => any;\n}"
+      "definition": "{\n    /** Serializable identifier used by groupInterval, groupBy and structured child filters. */\n    name: string;\n    /** Human-readable label shown in interval selection menus. */\n    text: string;\n    /** Maps a row's resolved field value to a stable bucket value. May return a promise; must not mutate rows. */\n    getGroupValue: (row: TRow, value: any) => any;\n}"
     },
     {
       "name": "GroupItem",
@@ -7170,7 +7170,7 @@
       "namespace": "Data",
       "path": "/api-reference/GroupItem",
       "source": "src/data/DataSource.ts",
-      "definition": "{\n    groupField: string;\n    /**\n     * Group value, without dataType-based conversion. null/undefined share null;\n     * empty text (\"\") is a separate group and must not be merged with null.\n     * other values retain their type. Sources supply one consistent value type per\n     * grouped field. Intervals return bucket values (e.g. month -> 2), not the\n     * original date. Remote sources return null for missing values and calculate\n     * counts/summaries per distinct group before paging.\n     */\n    groupValue: any;\n    count: number;\n    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */\n    summaryValues?: Record<string, any>;\n    /** Complete children for the next requested groupBy level; omitted at the last level. */\n    groups?: GroupItem[];\n}"
+      "definition": "{\n    /** Field identifier from the corresponding groupBy descriptor. */\n    groupField: string;\n    /**\n     * Group value, without dataType-based conversion. null/undefined share null;\n     * empty text (\"\") is a separate group and must not be merged with null.\n     * other values retain their type. Sources supply one consistent value type per\n     * grouped field. Intervals return bucket values (e.g. month -> 2), not the\n     * original date. Remote sources return null for missing values and calculate\n     * counts/summaries per distinct group before paging.\n     */\n    groupValue: any;\n    /** Matching data-row count in this bucket, including all nested groups, before paging. */\n    count: number;\n    /** Aggregated values, keyed by field name, per QueryArgs.groupSummary. */\n    summaryValues?: Record<string, any>;\n    /** Complete children for the next requested groupBy level; omitted at the last level. */\n    groups?: GroupItem[];\n}"
     },
     {
       "name": "KeyMapping",
@@ -7187,7 +7187,7 @@
         {
           "name": "temporaryKey",
           "type": "RowIdentity",
-          "description": "",
+          "description": "Identity used by the client before persistence.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7197,7 +7197,7 @@
         {
           "name": "key",
           "type": "RowIdentity",
-          "description": "",
+          "description": "Persisted identity assigned to the same row by the server.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7406,7 +7406,7 @@
         {
           "name": "columns",
           "type": "DataGridColumn<TItem>[]",
-          "description": "",
+          "description": "Result-grid columns; use one text column for a simple list or several for richer lookup items.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7416,7 +7416,7 @@
         {
           "name": "loadItems",
           "type": "(query: LookupQuery) => Promise<LookupResult<TItem>>",
-          "description": "",
+          "description": "Loads a matching page and total count. Honor abortSignal to cancel obsolete remote requests.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7426,7 +7426,7 @@
         {
           "name": "getItemValue",
           "type": "(item: TItem) => TValue",
-          "description": "",
+          "description": "Maps a chosen lookup item to the value accepted by the editor.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7436,7 +7436,7 @@
         {
           "name": "getItemText",
           "type": "(item: TItem) => string",
-          "description": "",
+          "description": "Returns the item's label, also used for exact-text resolution.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7456,7 +7456,7 @@
         {
           "name": "pageSize",
           "type": "number | undefined",
-          "description": "",
+          "description": "Maximum items requested per result page. Defaults to 50.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -7486,7 +7486,7 @@
         {
           "name": "popupHeight",
           "type": "number | undefined",
-          "description": "",
+          "description": "Initial popup height in CSS pixels. Defaults to 300; resizing may override it.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -7520,7 +7520,7 @@
         {
           "name": "search",
           "type": "string",
-          "description": "",
+          "description": "User-entered search text; an empty string requests the unfiltered lookup list.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7544,7 +7544,7 @@
         {
           "name": "items",
           "type": "TItem[]",
-          "description": "",
+          "description": "Matching items for the requested skip/top page, retaining their application-defined shape.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7554,7 +7554,7 @@
         {
           "name": "totalCount",
           "type": "number",
-          "description": "",
+          "description": "Accurate number of matches before paging, used by the virtual result grid.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7758,7 +7758,7 @@
       "namespace": "Data",
       "path": "/api-reference/MutationResult",
       "source": "src/data/DataSource.ts",
-      "definition": "{ success: true } | {\n    success: false;\n    error: string;\n    /** Optional field-specific validation messages, e.g. { quantity: \"Must be positive\" }. */\n    fieldErrors?: Record<string, string>;\n}"
+      "definition": "{\n    /** The mutation completed successfully. Persistence depends on the source implementation. */\n    success: true;\n} | {\n    /** The mutation was rejected; inspect error and optional fieldErrors. */\n    success: false;\n    /** User-facing explanation of why the mutation was rejected. */\n    error: string;\n    /** Optional field-specific validation messages, e.g. { quantity: \"Must be positive\" }. */\n    fieldErrors?: Record<string, string>;\n}"
     },
     {
       "name": "NewRowIdFactory",
@@ -7798,7 +7798,7 @@
         {
           "name": "row",
           "type": "TRow",
-          "description": "",
+          "description": "Actual source row being edited; update it through the source before inserting.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7808,7 +7808,7 @@
         {
           "name": "state",
           "type": "\"pending\" | \"inserted\" | \"cancelled\"",
-          "description": "",
+          "description": "Session lifecycle. Only pending rows can be inserted or cancelled for the first time.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7921,7 +7921,7 @@
         {
           "name": "subscribe",
           "type": "(fn: ObservableHandler<T>) => Disposable",
-          "description": "",
+          "description": "Registers a listener and returns a handle that removes only that listener.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8034,7 +8034,7 @@
         {
           "name": "Value",
           "type": "T",
-          "description": "",
+          "description": "Current value; assignments notify synchronously only when Object.is reports a change.\nAssigns the value by reference and synchronously notifies registered listeners if it changed.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8044,7 +8044,7 @@
         {
           "name": "Value",
           "type": "T",
-          "description": "",
+          "description": "Current value; assignments notify synchronously only when Object.is reports a change.\nAssigns the value by reference and synchronously notifies registered listeners if it changed.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8058,7 +8058,7 @@
           "tags": [
             {
               "name": "param",
-              "text": "fn Subscriber function to be called on value changes. Will be called immediately with the current value upon subscription."
+              "text": "fn Receives subsequent changes only. Read Value explicitly for the current value."
             },
             {
               "name": "returns",
@@ -8073,7 +8073,7 @@
               "name": "fn",
               "type": "ObservableHandler<T>",
               "optional": false,
-              "description": "Subscriber function to be called on value changes. Will be called immediately with the current value upon subscription."
+              "description": "Receives subsequent changes only. Read Value explicitly for the current value."
             }
           ],
           "returns": {
@@ -8100,7 +8100,7 @@
           "signature": "() => void"
         },
         {
-          "name": "__@toPrimitive@55",
+          "name": "__@toPrimitive@52",
           "type": "() => any",
           "description": "Controls how object is converted to primitive",
           "tags": [],
@@ -8134,7 +8134,7 @@
         {
           "name": "valueOf",
           "type": "() => any",
-          "description": "Returns the primitive value of the specified object.",
+          "description": "Returns the current value for JavaScript value conversion.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8651,7 +8651,7 @@
         {
           "name": "x",
           "type": "number",
-          "description": "",
+          "description": "Horizontal viewport coordinate in CSS pixels, as in MouseEvent.clientX.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8661,7 +8661,7 @@
         {
           "name": "y",
           "type": "number",
-          "description": "",
+          "description": "Vertical viewport coordinate in CSS pixels, as in MouseEvent.clientY.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8685,7 +8685,7 @@
         {
           "name": "triggerIcon",
           "type": "string",
-          "description": "",
+          "description": "Icon class for the inset button that opens or closes the picker.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8695,7 +8695,7 @@
         {
           "name": "triggerLabel",
           "type": "string",
-          "description": "",
+          "description": "Accessible name and tooltip for the picker trigger button.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8951,7 +8951,7 @@
         {
           "name": "filter",
           "type": "DataFilter | undefined",
-          "description": "",
+          "description": "Conditions applied before sorting, grouping, paging and aggregation. Omit for all rows.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -8961,7 +8961,7 @@
         {
           "name": "orderby",
           "type": "OrderByToken[] | undefined",
-          "description": "",
+          "description": "Ordered sort keys; a bare field name means ascending order. Omit for source order.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -8981,7 +8981,7 @@
         {
           "name": "skip",
           "type": "number | undefined",
-          "description": "",
+          "description": "Number of matching rows or outer groups to skip; zero-based, default 0.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -8991,7 +8991,7 @@
         {
           "name": "top",
           "type": "number | undefined",
-          "description": "",
+          "description": "Maximum rows or outer groups to return after skip. Omit to return the remaining result.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -9119,7 +9119,7 @@
         {
           "name": "target",
           "type": "HTMLElement",
-          "description": "",
+          "description": "Positioned element resized by this grip; its dimensions are written as border-box CSS pixels.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9129,7 +9129,7 @@
         {
           "name": "minWidth",
           "type": "number | undefined",
-          "description": "",
+          "description": "Requested minimum width in CSS pixels; available viewport space takes precedence.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -9139,7 +9139,7 @@
         {
           "name": "minHeight",
           "type": "number | undefined",
-          "description": "",
+          "description": "Requested minimum height in CSS pixels; available viewport space takes precedence.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -9149,7 +9149,7 @@
         {
           "name": "maxWidth",
           "type": "number | undefined",
-          "description": "",
+          "description": "Optional maximum width in CSS pixels, further limited by viewport space.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -9159,7 +9159,7 @@
         {
           "name": "maxHeight",
           "type": "number | undefined",
-          "description": "",
+          "description": "Optional maximum height in CSS pixels, further limited by viewport space.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -9179,7 +9179,7 @@
         {
           "name": "onResize",
           "type": "((size: ResizeSize) => void) | undefined",
-          "description": "",
+          "description": "Called after dimensions are applied during a resize gesture.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -9203,7 +9203,7 @@
         {
           "name": "width",
           "type": "number",
-          "description": "",
+          "description": "Target border-box width in CSS pixels.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9213,7 +9213,7 @@
         {
           "name": "height",
           "type": "number",
-          "description": "",
+          "description": "Target border-box height in CSS pixels.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9246,7 +9246,7 @@
       "namespace": "Data",
       "path": "/api-reference/SaveChangesResult",
       "source": "src/data/ChangeSet.ts",
-      "definition": "| {\n        success: true;\n        /** Present when the server replaced one or more temporary insert keys. */\n        keyMappings?: KeyMapping[];\n    }\n    | {\n        success: false;\n        /** A user-facing or application-level explanation of the rejected batch. */\n        error: string;\n    }"
+      "definition": "| {\n        /** The entire submitted batch was saved successfully. */\n        success: true;\n        /** Present when the server replaced one or more temporary insert keys. */\n        keyMappings?: KeyMapping[];\n    }\n    | {\n        /** The batch was rejected; pending changes remain available for correction. */\n        success: false;\n        /** A user-facing or application-level explanation of the rejected batch. */\n        error: string;\n    }"
     },
     {
       "name": "Scheduler",
@@ -9420,7 +9420,7 @@
         {
           "name": "scrollbarMode",
           "type": "ScrollbarMode",
-          "description": "",
+          "description": "Current presentation mode for this viewport; assignment updates its scrollbar views.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9470,7 +9470,7 @@
         {
           "name": "scrollbarMode",
           "type": "ScrollbarMode",
-          "description": "",
+          "description": "Presentation mode propagated to all attachments owned by this installation.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10025,7 +10025,7 @@
         {
           "name": "wholeRow",
           "type": "boolean | undefined",
-          "description": "",
+          "description": "Marks this endpoint as selecting a complete row rather than a single cell.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -10129,7 +10129,7 @@
         {
           "name": "selectSingleRow",
           "type": "(rowIndex: number) => void",
-          "description": "",
+          "description": "Replaces all ranges with the specified whole row and sets its first cell active.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10152,7 +10152,7 @@
         {
           "name": "addRowRange",
           "type": "(rowIndex: number) => void",
-          "description": "",
+          "description": "Adds a whole-row range; single-row mode replaces the previous selection instead.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10175,7 +10175,7 @@
         {
           "name": "extendRowSelection",
           "type": "(rowIndex: number) => void",
-          "description": "",
+          "description": "Extends the last whole-row range; single-row mode selects the destination row only.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10320,7 +10320,7 @@
         {
           "name": "handleRowHeaderClick",
           "type": "(rowIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void",
-          "description": "",
+          "description": "Applies row-header selection, honoring Shift extension, Ctrl/Cmd addition and selection mode.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10549,7 +10549,7 @@
         {
           "name": "isWholeRowSelected",
           "type": "(rowIndex: number) => boolean",
-          "description": "",
+          "description": "Returns whether any whole-row range includes this zero-based visible row.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10649,7 +10649,7 @@
         {
           "name": "defaultSize",
           "type": "number",
-          "description": "",
+          "description": "Default row height in CSS pixels, used where no individual measurement exists.\nChanges the fallback row height used by offset calculations.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10659,7 +10659,7 @@
         {
           "name": "defaultSize",
           "type": "number",
-          "description": "",
+          "description": "Default row height in CSS pixels, used where no individual measurement exists.\nChanges the fallback row height used by offset calculations.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10669,7 +10669,7 @@
         {
           "name": "getSize",
           "type": "(index: number) => number",
-          "description": "",
+          "description": "Returns the effective height of a zero-based row.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10692,7 +10692,7 @@
         {
           "name": "update",
           "type": "(index: number, newSize: number) => void",
-          "description": "",
+          "description": "Records a measured height. Fixed-size implementations apply it to all rows.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10721,7 +10721,7 @@
         {
           "name": "getOffset",
           "type": "(index: number) => number",
-          "description": "",
+          "description": "Returns the cumulative height before the specified zero-based row.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10744,7 +10744,7 @@
         {
           "name": "findIndex",
           "type": "(offset: number) => number",
-          "description": "",
+          "description": "Returns the zero-based row containing a scroll offset in CSS pixels.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10968,7 +10968,7 @@
       "namespace": "Data",
       "path": "/api-reference/SummaryRequest",
       "source": "src/data/summary.ts",
-      "definition": "{ field: string, summaryType: SummaryType }"
+      "definition": "{\n    /** Field whose values are aggregated. */\n    field: string;\n    /** Built-in aggregation or registered custom summary name. */\n    summaryType: SummaryType;\n}"
     },
     {
       "name": "SummaryResult",
@@ -10981,7 +10981,7 @@
       "namespace": "Data",
       "path": "/api-reference/SummaryResult",
       "source": "src/data/summary.ts",
-      "definition": "{ field: string, summaryType: SummaryType, value: any }"
+      "definition": "{\n    /** Field from the corresponding summary request. */\n    field: string;\n    /** Aggregation from the corresponding summary request. */\n    summaryType: SummaryType;\n    /** Computed aggregate; may be undefined when the aggregation has no eligible values. */\n    value: any;\n}"
     },
     {
       "name": "SummaryType",
@@ -11089,7 +11089,7 @@
         {
           "name": "parse",
           "type": "((text: string) => T | Promise<T>) | undefined",
-          "description": "",
+          "description": "Converts draft text to a candidate value. Used when no resolveText override is supplied.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11099,7 +11099,7 @@
         {
           "name": "format",
           "type": "((value: T) => string) | undefined",
-          "description": "",
+          "description": "Converts accepted values to input text; falls back to string conversion with empty text for nullish values.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11212,7 +11212,7 @@
       "name": "TimeEditorOptions",
       "kind": "interface",
       "type": "TimeEditorOptions",
-      "description": "",
+      "description": "Time text editing and optional slot-picker configuration; values use HH:mm or HH:mm:ss.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -11223,7 +11223,7 @@
         {
           "name": "timeFormat",
           "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
-          "description": "",
+          "description": "Strict 24-hour input and picker format. Defaults to HH:mm.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11233,7 +11233,7 @@
         {
           "name": "minuteStep",
           "type": "number | undefined",
-          "description": "",
+          "description": "Picker slot interval in minutes; must divide 60 evenly. Defaults to 15. Does not restrict typed minutes.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11243,7 +11243,7 @@
         {
           "name": "defaultTime",
           "type": "string | undefined",
-          "description": "",
+          "description": "Picker's initial focus time when the value is empty. Defaults to 10:00; does not prefill the editor.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11267,7 +11267,7 @@
         {
           "name": "pattern",
           "type": "\"HH:mm\" | \"HH:mm:ss\"",
-          "description": "",
+          "description": "Validated 24-hour pattern used for parsing and formatting.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11337,7 +11337,7 @@
         {
           "name": "value",
           "type": "string | null",
-          "description": "",
+          "description": "Current selected canonical time, or null when unselected.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11347,7 +11347,7 @@
         {
           "name": "setValue",
           "type": "(value: string | null) => void",
-          "description": "",
+          "description": "Validates and updates selection without invoking onSelect.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11370,7 +11370,7 @@
         {
           "name": "focus",
           "type": "() => void",
-          "description": "",
+          "description": "Focuses the selected/default time slot, falling back to the first slot when no exact match exists.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11389,7 +11389,7 @@
       "name": "TimePickerOptions",
       "kind": "interface",
       "type": "TimePickerOptions",
-      "description": "",
+      "description": "Time-slot list configuration using strict 24-hour strings without timezone conversion.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -11400,7 +11400,7 @@
         {
           "name": "value",
           "type": "string | null | undefined",
-          "description": "",
+          "description": "Initially selected time matching timeFormat; null or omission means no selection.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11410,7 +11410,7 @@
         {
           "name": "timeFormat",
           "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
-          "description": "",
+          "description": "Slot label and value format. Defaults to HH:mm; second-bearing slots use :00 seconds.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11420,7 +11420,7 @@
         {
           "name": "minuteStep",
           "type": "number | undefined",
-          "description": "",
+          "description": "Minutes between slots; an integer divisor of 60 from 1 to 60. Defaults to 15.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11450,7 +11450,7 @@
         {
           "name": "onSelect",
           "type": "((value: string, picker: TimePicker) => void) | undefined",
-          "description": "",
+          "description": "Receives explicit user selections; programmatic setValue does not invoke it.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -11726,7 +11726,7 @@
         {
           "name": "waitUntil",
           "type": "(completion: PromiseLike<void>) => void",
-          "description": "",
+          "description": "Registers asynchronous baseline cleanup before the event handler returns; replay waits for completion.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11916,7 +11916,7 @@
         {
           "name": "name",
           "type": "string",
-          "description": "",
+          "description": "Application-provided scope label; names need not be unique.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11926,7 +11926,7 @@
         {
           "name": "coordinator",
           "type": "UndoCoordinator",
-          "description": "",
+          "description": "Owner of the shared chronological journal and the only entry point for replay.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11936,7 +11936,7 @@
         {
           "name": "canUndo",
           "type": "boolean",
-          "description": "",
+          "description": "Whether this scope has an applied action in the shared journal.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11946,7 +11946,7 @@
         {
           "name": "canRedo",
           "type": "boolean",
-          "description": "",
+          "description": "Whether this scope has an undone action in the shared journal.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11956,7 +11956,7 @@
         {
           "name": "changed",
           "type": "ObservableEvent<\"record\" | \"undo\" | \"redo\" | \"clear\">",
-          "description": "",
+          "description": "Reports recording, replay or clearing that affects this scope.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -11966,7 +11966,7 @@
         {
           "name": "returnedToBaseline",
           "type": "ObservableEvent<UndoBaselineEvent>",
-          "description": "",
+          "description": "Emitted when undo returns this scope to its baseline, independently of other scopes.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12013,7 +12013,7 @@
         {
           "name": "label",
           "type": "string | undefined",
-          "description": "",
+          "description": "Optional human-readable action name for application undo/redo UI.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -12023,7 +12023,7 @@
         {
           "name": "undo",
           "type": "() => void | Promise<void>",
-          "description": "",
+          "description": "Reverses this applied action; rejection must leave its state unchanged.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12039,7 +12039,7 @@
         {
           "name": "redo",
           "type": "() => void | Promise<void>",
-          "description": "",
+          "description": "Reapplies this undone action; rejection must leave its state unchanged.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12308,7 +12308,7 @@
         {
           "name": "value",
           "type": "T",
-          "description": "",
+          "description": "Initial accepted value, retained by reference rather than cloned.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12318,7 +12318,7 @@
         {
           "name": "readOnly",
           "type": "boolean | undefined",
-          "description": "",
+          "description": "Prevents user edits while retaining focus/read access where the native control permits it.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -12328,7 +12328,7 @@
         {
           "name": "disabled",
           "type": "boolean | undefined",
-          "description": "",
+          "description": "Disables user interaction with the native editing control. Defaults to false.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -12462,7 +12462,7 @@
         {
           "name": "defaultSize",
           "type": "number",
-          "description": "",
+          "description": "Height used for rows without an individual measurement, in CSS pixels.\nChanges the fallback height and recalculates offsets while retaining measured heights.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12472,7 +12472,7 @@
         {
           "name": "defaultSize",
           "type": "number",
-          "description": "",
+          "description": "Height used for rows without an individual measurement, in CSS pixels.\nChanges the fallback height and recalculates offsets while retaining measured heights.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12482,7 +12482,7 @@
         {
           "name": "getSize",
           "type": "(index: number) => number",
-          "description": "",
+          "description": "Returns the measured row height or defaultSize for an unmeasured row.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12505,7 +12505,7 @@
         {
           "name": "update",
           "type": "(index: number, newSize: number) => void",
-          "description": "",
+          "description": "Records one row's height and updates cumulative offsets, growing storage as needed.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12557,7 +12557,7 @@
         {
           "name": "findIndex",
           "type": "(offset: number) => number",
-          "description": "",
+          "description": "Finds the row containing a pixel offset, using defaultSize beyond measured storage.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -12644,7 +12644,7 @@
         {
           "name": "invalidateRow",
           "type": "(index: number) => void",
-          "description": "",
+          "description": "Marks one zero-based row for rerendering and schedules a refresh.",
           "tags": [],
           "topics": [],
           "optional": false,

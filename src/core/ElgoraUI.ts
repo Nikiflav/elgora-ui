@@ -10,19 +10,25 @@ import 'remixicon/fonts/remixicon.css';
 // Vite / TypeScript library entry
 // ======================================================
 
+/** Resource or subscription whose owned work can be released explicitly. */
 export interface Disposable {
+  /** Releases the resources owned by this object. */
   dispose(): void
 }
 
+/** Receives a value emitted by an observable source. */
 export type ObservableHandler<T> = (value: T) => void
 
 
 /** A subscribable source of values or events. */
 export interface Observable<T> extends Disposable {
+  /** Registers a listener and returns a handle that removes only that listener. */
   subscribe(fn: ObservableHandler<T>): Disposable
 }
 
+/** Observable value that consumers may read but cannot assign through this interface. */
 export interface ReadOnlyObservableValue<T> extends Observable<T> {
+  /** Current value. Subscribe separately to observe subsequent changes. */
   readonly Value: T
 }
 
@@ -32,14 +38,17 @@ export class ObservableValue<T> implements ReadOnlyObservableValue<T> {
   private _value: T
   private subscribers = new Set<ObservableHandler<T>>()
 
+  /** Creates a value holder without emitting an initial notification. */
   constructor(initial: T) {
     this._value = initial
   }
 
+  /** Current value; assignments notify synchronously only when Object.is reports a change. */
   get Value(): T {
     return this._value
   }
 
+  /** Assigns the value by reference and synchronously notifies registered listeners if it changed. */
   set Value(v: T) {
     if (Object.is(this._value, v)) return
 
@@ -49,7 +58,7 @@ export class ObservableValue<T> implements ReadOnlyObservableValue<T> {
 
   /**
    * Subscribe to value changes.
-   * @param fn Subscriber function to be called on value changes. Will be called immediately with the current value upon subscription.
+   * @param fn Receives subsequent changes only. Read Value explicitly for the current value.
    * @returns A disposable subscription object. Dispose to unsubscribe.
    */
   subscribe(fn: ObservableHandler<T>): Disposable {
@@ -86,6 +95,7 @@ export class ObservableValue<T> implements ReadOnlyObservableValue<T> {
     return String(this._value)
   }
 
+  /** Returns the current value for JavaScript value conversion. */
   valueOf() {
     return this._value as any
   }

@@ -137,7 +137,10 @@ export class DataRow {
 
 /** @internal Row containers captured for rollback; field values are retained without cloning. */
 export interface DataRowSnapshot {
+    /** Current field-value container; the field values themselves are retained by reference. */
     values: Record<string, unknown>;
+    /** Accepted baseline values, if the row has tracked modifications. */
     originalValues?: Record<string, unknown>;
+    /** Change-tracking state to restore with the captured values. */
     state: DataRowState;
 }

@@ -28,7 +28,7 @@ export default {
     {
       "name": "row",
       "type": "DataRow",
-      "description": "",
+      "description": "Actual affected row; use context for edits that must join this transaction.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -68,7 +68,7 @@ export default {
     {
       "name": "context",
       "type": "DataEditContext",
-      "description": "",
+      "description": "Transaction-bound editing API for applying derived changes, including edits to related rows.",
       "tags": [],
       "topics": [],
       "optional": false,

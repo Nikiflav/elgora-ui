@@ -13,7 +13,7 @@ export default {
     {
       "name": "totalRows",
       "type": "number",
-      "description": "",
+      "description": "Number of rows in the current flattened view, including structural rows.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "columns",
       "type": "string[]",
-      "description": "",
+      "description": "Ordered names of the selectable data columns.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "isRowSelectable",
       "type": "((rowIndex: number) => boolean) | undefined",
-      "description": "",
+      "description": "Returns whether navigation may select a particular visible row.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -43,7 +43,7 @@ export default {
     {
       "name": "findNextSelectableRow",
       "type": "((rowIndex: number, direction: 1 | -1) => number) | undefined",
-      "description": "",
+      "description": "Finds a selectable row in the given direction; return -1 when no candidate exists.",
       "tags": [],
       "topics": [],
       "optional": true,

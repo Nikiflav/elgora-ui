@@ -13,7 +13,7 @@ export default {
     {
       "name": "label",
       "type": "string | undefined",
-      "description": "",
+      "description": "Optional human-readable action name for application undo/redo UI.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "undo",
       "type": "() => void | Promise<void>",
-      "description": "",
+      "description": "Reverses this applied action; rejection must leave its state unchanged.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -39,7 +39,7 @@ export default {
     {
       "name": "redo",
       "type": "() => void | Promise<void>",
-      "description": "",
+      "description": "Reapplies this undone action; rejection must leave its state unchanged.",
       "tags": [],
       "topics": [],
       "optional": false,

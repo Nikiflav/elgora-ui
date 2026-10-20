@@ -13,7 +13,7 @@ export default {
     {
       "name": "filter",
       "type": "DataFilter | undefined",
-      "description": "",
+      "description": "Conditions applied before sorting, grouping, paging and aggregation. Omit for all rows.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "orderby",
       "type": "OrderByToken[] | undefined",
-      "description": "",
+      "description": "Ordered sort keys; a bare field name means ascending order. Omit for source order.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -43,7 +43,7 @@ export default {
     {
       "name": "skip",
       "type": "number | undefined",
-      "description": "",
+      "description": "Number of matching rows or outer groups to skip; zero-based, default 0.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -53,7 +53,7 @@ export default {
     {
       "name": "top",
       "type": "number | undefined",
-      "description": "",
+      "description": "Maximum rows or outer groups to return after skip. Omit to return the remaining result.",
       "tags": [],
       "topics": [],
       "optional": true,

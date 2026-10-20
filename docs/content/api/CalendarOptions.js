@@ -13,7 +13,7 @@ export default {
     {
       "name": "value",
       "type": "string | null | undefined",
-      "description": "",
+      "description": "Initially selected date, or null for no selection. Does not emit onSelect during construction.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "min",
       "type": "string | undefined",
-      "description": "",
+      "description": "Inclusive earliest selectable date in YYYY-MM-DD form.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "max",
       "type": "string | undefined",
-      "description": "",
+      "description": "Inclusive latest selectable date in YYYY-MM-DD form.",
       "tags": [],
       "topics": [],
       "optional": true,

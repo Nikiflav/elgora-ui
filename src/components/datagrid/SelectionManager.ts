@@ -7,6 +7,7 @@ export interface SelectionCell {
     rowIndex: number;
     /** Visual column index on screen at the moment of selection */
     colIndex: number;
+    /** Marks this endpoint as selecting a complete row rather than a single cell. */
     wholeRow?: boolean;
 }
 
@@ -20,9 +21,13 @@ export interface SelectionRange {
 
 /** Grid callbacks and dimensions used by selection navigation. */
 export interface GridContext {
+    /** Number of rows in the current flattened view, including structural rows. */
     totalRows: number;
+    /** Ordered names of the selectable data columns. */
     columns: string[];
+    /** Returns whether navigation may select a particular visible row. */
     isRowSelectable?: (rowIndex: number) => boolean;
+    /** Finds a selectable row in the given direction; return -1 when no candidate exists. */
     findNextSelectableRow?: (rowIndex: number, direction: 1 | -1) => number;
 }
 
@@ -97,6 +102,7 @@ export class SelectionManager {
         this.normalizeRanges();
     }
 
+    /** Replaces all ranges with the specified whole row and sets its first cell active. */
     public selectSingleRow(rowIndex: number): void {
         const cell: SelectionCell = { rowIndex, colIndex: 0, wholeRow: true };
         this._ranges = [{ anchor: cell, focus: { ...cell } }];
@@ -104,6 +110,7 @@ export class SelectionManager {
         this.normalizeRanges();
     }
 
+    /** Adds a whole-row range; single-row mode replaces the previous selection instead. */
     public addRowRange(rowIndex: number): void {
         if (this._mode === "single-row") { this.selectSingleRow(rowIndex); return; }
         const cell: SelectionCell = { rowIndex, colIndex: 0, wholeRow: true };
@@ -112,6 +119,7 @@ export class SelectionManager {
         this.normalizeRanges();
     }
 
+    /** Extends the last whole-row range; single-row mode selects the destination row only. */
     public extendRowSelection(rowIndex: number): void {
         if (this._mode === "single-row") {
             this.selectSingleCell(rowIndex, this._activeCell?.colIndex ?? 0);
@@ -194,6 +202,7 @@ export class SelectionManager {
         }
     }
 
+    /** Applies row-header selection, honoring Shift extension, Ctrl/Cmd addition and selection mode. */
     public handleRowHeaderClick(
         rowIndex: number,
         event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean }
@@ -569,6 +578,7 @@ export class SelectionManager {
         return this._ranges.map(range => ({ anchor: { ...range.anchor }, focus: { ...range.focus } }));
     }
 
+    /** Returns whether any whole-row range includes this zero-based visible row. */
     public isWholeRowSelected(rowIndex: number): boolean {
         return this._ranges.some(range => {
             if (!range.anchor.wholeRow && !range.focus.wholeRow) return false;

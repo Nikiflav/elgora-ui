@@ -2,8 +2,11 @@ import { ObservableEvent } from "./ElgoraUI";
 
 /** An already-applied action. A failed replay must leave the action's state unchanged. */
 export interface UndoOperation {
+    /** Optional human-readable action name for application undo/redo UI. */
     label?: string;
+    /** Reverses this applied action; rejection must leave its state unchanged. */
     undo(): void | Promise<void>;
+    /** Reapplies this undone action; rejection must leave its state unchanged. */
     redo(): void | Promise<void>;
     /** Runs after replay commits its journal position; observer failures do not reverse replay. */
     afterReplay?(): void | Promise<void>;
@@ -11,16 +14,23 @@ export interface UndoOperation {
 
 /** Register async cleanup synchronously: `event.waitUntil(dataset.rejectChanges())`. */
 export interface UndoBaselineEvent {
+    /** Registers asynchronous baseline cleanup before the event handler returns; replay waits for completion. */
     waitUntil(completion: PromiseLike<void>): void;
 }
 
 /** One recording scope. Only its coordinator can execute or clear history. */
 export interface UndoHistory {
+    /** Application-provided scope label; names need not be unique. */
     readonly name: string;
+    /** Owner of the shared chronological journal and the only entry point for replay. */
     readonly coordinator: UndoCoordinator;
+    /** Whether this scope has an applied action in the shared journal. */
     readonly canUndo: boolean;
+    /** Whether this scope has an undone action in the shared journal. */
     readonly canRedo: boolean;
+    /** Reports recording, replay or clearing that affects this scope. */
     readonly changed: ObservableEvent<"record" | "undo" | "redo" | "clear">;
+    /** Emitted when undo returns this scope to its baseline, independently of other scopes. */
     readonly returnedToBaseline: ObservableEvent<UndoBaselineEvent>;
     /** Records an applied action, e.g. `scope.record({ undo, redo })`. */
     record(operation: UndoOperation): void;

@@ -13,7 +13,7 @@ export default {
     {
       "name": "columns",
       "type": "DataFilterRowColumn<TRow>[]",
-      "description": "",
+      "description": "Original column metadata used to parse values according to their semantic types.",
       "tags": [],
       "topics": [],
       "optional": false,

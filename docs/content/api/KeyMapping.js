@@ -13,7 +13,7 @@ export default {
     {
       "name": "temporaryKey",
       "type": "RowIdentity",
-      "description": "",
+      "description": "Identity used by the client before persistence.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "key",
       "type": "RowIdentity",
-      "description": "",
+      "description": "Persisted identity assigned to the same row by the server.",
       "tags": [],
       "topics": [],
       "optional": false,

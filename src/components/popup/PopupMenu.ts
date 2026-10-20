@@ -138,6 +138,7 @@ export class PopupMenu extends Component {
     private readonly reposition = () => this.updatePosition();
     private readonly onClose = () => this.stopTracking();
 
+    /** Creates a reusable popup menu; supply invocation-specific items and position to show(). */
     constructor(options: PopupMenuOptions = {}) {
         const { closeOnAction = true, density = "default", ...rest } = options;
         super({ ...rest, tag: options.tag || "div" });

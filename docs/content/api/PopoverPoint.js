@@ -13,7 +13,7 @@ export default {
     {
       "name": "x",
       "type": "number",
-      "description": "",
+      "description": "Horizontal viewport coordinate in CSS pixels, as in MouseEvent.clientX.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "y",
       "type": "number",
-      "description": "",
+      "description": "Vertical viewport coordinate in CSS pixels, as in MouseEvent.clientY.",
       "tags": [],
       "topics": [],
       "optional": false,

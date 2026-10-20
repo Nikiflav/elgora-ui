@@ -2,16 +2,27 @@ import { Component } from "../../core/Component";
 import "./ResizeHandle.css";
 
 /** Border-box dimensions reported by a resize handle. */
-export interface ResizeSize { width: number; height: number; }
+export interface ResizeSize {
+    /** Target border-box width in CSS pixels. */
+    width: number;
+    /** Target border-box height in CSS pixels. */
+    height: number;
+}
 /** Reusable bottom-right resize behavior for a panel, popover or other element. */
 export interface ResizeHandleOptions {
+    /** Positioned element resized by this grip; its dimensions are written as border-box CSS pixels. */
     target: HTMLElement;
+    /** Requested minimum width in CSS pixels; available viewport space takes precedence. */
     minWidth?: number;
+    /** Requested minimum height in CSS pixels; available viewport space takes precedence. */
     minHeight?: number;
+    /** Optional maximum width in CSS pixels, further limited by viewport space. */
     maxWidth?: number;
+    /** Optional maximum height in CSS pixels, further limited by viewport space. */
     maxHeight?: number;
     /** Viewport inset; available space takes precedence over minimum dimensions. */
     viewportGap?: number;
+    /** Called after dimensions are applied during a resize gesture. */
     onResize?: (size: ResizeSize) => void;
 }
 

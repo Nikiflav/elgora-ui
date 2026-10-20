@@ -13,7 +13,7 @@ export default {
     {
       "name": "defaultSize",
       "type": "number",
-      "description": "",
+      "description": "Shared height of every row, in CSS pixels.\nChanges the height used for all rows and offsets.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "defaultSize",
       "type": "number",
-      "description": "",
+      "description": "Shared height of every row, in CSS pixels.\nChanges the height used for all rows and offsets.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "getSize",
       "type": "(index: number) => number",
-      "description": "",
+      "description": "Returns the shared height; index does not affect the result.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -56,7 +56,7 @@ export default {
     {
       "name": "update",
       "type": "(index: number, newSize: number) => void",
-      "description": "",
+      "description": "Changes the shared height for every row, regardless of index.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -85,7 +85,7 @@ export default {
     {
       "name": "findIndex",
       "type": "(offset: number) => number",
-      "description": "",
+      "description": "Maps a pixel offset to a zero-based row using the shared height.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -108,7 +108,7 @@ export default {
     {
       "name": "getOffset",
       "type": "(index: number) => number",
-      "description": "",
+      "description": "Returns index multiplied by the shared row height.",
       "tags": [],
       "topics": [],
       "optional": false,

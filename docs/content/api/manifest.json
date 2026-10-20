@@ -241,7 +241,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataFilterRowColumn",
-      "description": "",
+      "description": "Field metadata needed to parse and display a compact filter-row expression.",
       "module": "./content/api/DataFilterRowColumn.js"
     },
     {
@@ -250,7 +250,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataFilterRowOperator",
-      "description": "",
+      "description": "Supported comparison/text operators in a compact per-column filter expression.",
       "module": "./content/api/DataFilterRowOperator.js"
     },
     {
@@ -331,7 +331,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
-      "description": "",
+      "description": "Data, column, interaction and presentation options for a DataGrid.",
       "module": "./content/api/DataGridOptions.js"
     },
     {
@@ -529,7 +529,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/DateTimeEditorOptions",
-      "description": "",
+      "description": "Local date-time input and combined calendar/time picker configuration; values have no timezone suffix.",
       "module": "./content/api/DateTimeEditorOptions.js"
     },
     {
@@ -610,7 +610,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/FilterEditorColumn",
-      "description": "",
+      "description": "Field identity, caption and semantic type offered by the filter builder.",
       "module": "./content/api/FilterEditorColumn.js"
     },
     {
@@ -619,7 +619,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/FilterEditorOperator",
-      "description": "",
+      "description": "Comparison and text-match operators available for editable filter conditions.",
       "module": "./content/api/FilterEditorOperator.js"
     },
     {
@@ -628,7 +628,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/FilterEditorOptions",
-      "description": "",
+      "description": "Filter-builder fields, initial expression and explicit apply/cancel callbacks.",
       "module": "./content/api/FilterEditorOptions.js"
     },
     {
@@ -646,7 +646,7 @@
       "group": "types",
       "namespace": "Data",
       "path": "/api-reference/FilterFunctionRegistry",
-      "description": "",
+      "description": "Local selector evaluators keyed by their serializable function names.",
       "module": "./content/api/FilterFunctionRegistry.js"
     },
     {
@@ -1303,7 +1303,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/TimeEditorOptions",
-      "description": "",
+      "description": "Time text editing and optional slot-picker configuration; values use HH:mm or HH:mm:ss.",
       "module": "./content/api/TimeEditorOptions.js"
     },
     {
@@ -1330,7 +1330,7 @@
       "group": "types",
       "namespace": "Components.Time Picker",
       "path": "/api-reference/TimePickerOptions",
-      "description": "",
+      "description": "Time-slot list configuration using strict 24-hour strings without timezone conversion.",
       "module": "./content/api/TimePickerOptions.js"
     },
     {

@@ -13,7 +13,7 @@ export default {
     {
       "name": "name",
       "type": "string",
-      "description": "",
+      "description": "Application-provided scope label; names need not be unique.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,7 @@ export default {
     {
       "name": "coordinator",
       "type": "UndoCoordinator",
-      "description": "",
+      "description": "Owner of the shared chronological journal and the only entry point for replay.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -33,7 +33,7 @@ export default {
     {
       "name": "canUndo",
       "type": "boolean",
-      "description": "",
+      "description": "Whether this scope has an applied action in the shared journal.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -43,7 +43,7 @@ export default {
     {
       "name": "canRedo",
       "type": "boolean",
-      "description": "",
+      "description": "Whether this scope has an undone action in the shared journal.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -53,7 +53,7 @@ export default {
     {
       "name": "changed",
       "type": "ObservableEvent<\"record\" | \"undo\" | \"redo\" | \"clear\">",
-      "description": "",
+      "description": "Reports recording, replay or clearing that affects this scope.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -63,7 +63,7 @@ export default {
     {
       "name": "returnedToBaseline",
       "type": "ObservableEvent<UndoBaselineEvent>",
-      "description": "",
+      "description": "Emitted when undo returns this scope to its baseline, independently of other scopes.",
       "tags": [],
       "topics": [],
       "optional": false,

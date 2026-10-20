@@ -13,7 +13,7 @@ export default {
     {
       "name": "count",
       "type": "() => number",
-      "description": "",
+      "description": "Current total item count used for virtual scroll geometry.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -29,7 +29,7 @@ export default {
     {
       "name": "getAt",
       "type": "(index: number) => T | undefined",
-      "description": "",
+      "description": "Returns an item at a zero-based index, or undefined while unavailable.",
       "tags": [],
       "topics": [],
       "optional": false,
