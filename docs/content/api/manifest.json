@@ -128,6 +128,15 @@
       "module": "./content/api/CheckboxEditor.js"
     },
     {
+      "name": "ColumnResizeMode",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/ColumnResizeMode",
+      "description": "Manual column resizing: change only this column or exchange width with the next visible data column.",
+      "module": "./content/api/ColumnResizeMode.js"
+    },
+    {
       "name": "ColumnWidthMode",
       "kind": "type",
       "group": "types",
@@ -711,6 +720,15 @@
       "path": "/api-reference/GridDataSource",
       "description": "Accepted row data inputs: a full DataSource, or a plain array wrapped in an ArrayDataSource.",
       "module": "./content/api/GridDataSource.js"
+    },
+    {
+      "name": "GridExpansionState",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridExpansionState",
+      "description": "Independent snapshot of group expansion for one source and grouping definition.\nContains no rows or cached query results. Treat keys as opaque identifiers; reuse\nonly with the same source and ordered grouping fields/intervals. Tree mode is not included.",
+      "module": "./content/api/GridExpansionState.js"
     },
     {
       "name": "GridStandardContextMenuItem",

@@ -30,6 +30,139 @@ afterEach(() => { document.body.replaceChildren(); vi.restoreAllMocks(); });
 afterAll(() => vi.unstubAllGlobals());
 
 describe("Batch grouping through loadData", () => {
+    it("copies hidden expansion snapshots and replaces rather than merges them", async () => {
+        const { provider, load } = setup();
+        await provider.setGroupsExpanded(true);
+        await provider.setGroupsExpanded(false, 0);
+        const saved = provider.getExpansionState();
+        expect(saved.expandedGroupKeys).toEqual(["$/A/X", "$/A/Y", "$/B/X"]);
+        expect(provider.visibleCount).toBe(2);
+        (saved.expandedGroupKeys as string[]).push("unrelated");
+        expect(provider.getExpansionState().expandedGroupKeys).not.toContain("unrelated");
+        load.mockClear();
+        const requested = { expandedGroupKeys: ["$/B", "$/missing", "$/B"] };
+        const restoring = provider.setExpansionState(requested);
+        requested.expandedGroupKeys.push("$/A");
+        await restoring;
+        expect(load).toHaveBeenCalledOnce();
+        expect(load.mock.calls[0][0].groupBy).toHaveLength(2);
+        expect(provider.getExpansionState()).toEqual({ expandedGroupKeys: ["$/B"] });
+        expect(provider.visibleCount).toBe(3);
+        const calls = load.mock.calls.length;
+        await provider.setExpansionState({ expandedGroupKeys: [] });
+        expect(provider.visibleCount).toBe(2);
+        expect(load).toHaveBeenCalledTimes(calls);
+        provider.dispose();
+    });
+
+    it("recreates a provider directly in the saved state without publishing collapsed rows or fetching data", async () => {
+        const { provider, state, load } = setup();
+        await provider.setGroupsExpanded(true);
+        await provider.setGroupsExpanded(false, 0);
+        const saved = provider.getExpansionState();
+        provider.dispose();
+        load.mockClear();
+        const restored = new DefaultGridRowsProvider(state, saved);
+        (saved.expandedGroupKeys as string[]).length = 0;
+        expect(restored.getExpansionState().expandedGroupKeys).toHaveLength(3);
+        const result = await restored.load({ skip: 0, top: 0 });
+        expect(result.totalCount).toBe(2);
+        expect(load).toHaveBeenCalledOnce();
+        expect(load.mock.calls[0][0].groupBy).toHaveLength(2);
+        expect(restored.getExpansionState().expandedGroupKeys).toHaveLength(3);
+        const roots = (await restored.load({ skip: 0, top: 2 })).rows;
+        await restored.setExpanded(roots[0], true);
+        expect(restored.visibleCount).toBe(6);
+        restored.dispose();
+    });
+
+    it("does not publish a failed snapshot restore and permits retry", async () => {
+        const { provider, load } = setup();
+        await provider.setGroupsExpanded(true, 0);
+        const saved = provider.getExpansionState();
+        const oldRoot = (await provider.load({ skip: 0, top: 1 })).rows[0].data;
+        load.mockResolvedValueOnce({ args: {}, totalCount: 2, groups: [
+            { groupField: "country", groupValue: "A", count: 2 }, { groupField: "country", groupValue: "B", count: 2 }
+        ] });
+        await expect(provider.setExpansionState({ expandedGroupKeys: ["$/A/X"] })).rejects.toThrow("complete nested groups");
+        expect(provider.getExpansionState()).toEqual(saved);
+        expect((await provider.load({ skip: 0, top: 1 })).rows[0].data).toBe(oldRoot);
+        await provider.setExpansionState({ expandedGroupKeys: ["$/A/X"] });
+        expect(provider.getExpansionState()).toEqual({ expandedGroupKeys: ["$/A/X"] });
+        expect(provider.visibleCount).toBe(2);
+        provider.dispose();
+    });
+
+    it.each(["state", "dispose"])("cancels snapshot restoration on %s", async action => {
+        const { provider, state, load } = setup();
+        await provider.load({ skip: 0, top: 2 });
+        const request = deferred<DataResult<any>>();
+        load.mockClear().mockImplementationOnce(() => request.promise);
+        const restoring = provider.setExpansionState({ expandedGroupKeys: ["$/A"] });
+        const rejected = expect(restoring).rejects.toMatchObject({ name: "AbortError" });
+        await vi.waitFor(() => expect(load).toHaveBeenCalledOnce());
+        const args = load.mock.calls[0][0];
+        if (action === "state") provider.setState(state); else provider.dispose();
+        await rejected;
+        request.resolve({ args, groups: [], totalCount: 0 });
+        expect(args.abortSignal?.aborted).toBe(true);
+        expect(provider.getExpansionState().expandedGroupKeys).toEqual([]);
+        provider.dispose();
+    });
+
+    it("keeps the pending snapshot available if a replacement provider is superseded while loading", async () => {
+        const { provider, state, load } = setup(); provider.dispose();
+        const request = deferred<DataResult<any>>();
+        load.mockImplementationOnce(() => request.promise);
+        const replacement = new DefaultGridRowsProvider(state, { expandedGroupKeys: ["$/A", "$/A/X"] });
+        const pending = replacement.load({ skip: 0, top: 0 });
+        const rejected = expect(pending).rejects.toMatchObject({ name: "AbortError" });
+        const saved = replacement.getExpansionState();
+        replacement.dispose();
+        await rejected;
+        request.resolve({ args: {}, groups: [], totalCount: 0 });
+        const newer = new DefaultGridRowsProvider(state, saved);
+        expect((await newer.load({ skip: 0, top: 0 })).totalCount).toBe(5);
+        expect(newer.getExpansionState()).toEqual(saved);
+        newer.dispose();
+    });
+
+    it("serializes snapshot replacement and expand-all in invocation order", async () => {
+        const { provider } = setup();
+        const first = provider.setExpansionState({ expandedGroupKeys: ["$/A"] });
+        const second = provider.setGroupsExpanded(true);
+        await Promise.all([first, second]);
+        expect(provider.visibleCount).toBe(9);
+        const third = provider.setExpansionState({ expandedGroupKeys: ["$/B"] });
+        const fourth = provider.setExpansionState({ expandedGroupKeys: [] });
+        await Promise.all([third, fourth]);
+        expect(provider.getExpansionState()).toEqual({ expandedGroupKeys: [] });
+        expect(provider.visibleCount).toBe(2);
+        provider.dispose();
+    });
+
+    it("forwards snapshots through both wrappers and the public grid API", async () => {
+        const { provider } = setup();
+        const wrapped = new NewRowGridRowsProvider(provider, async index => ({ type: "new", visibleIndex: index, level: 0 }));
+        const virtual = new VirtualGridRows(wrapped, 20);
+        await virtual.setExpansionState({ expandedGroupKeys: ["$/A", "$/A/X"] });
+        expect(virtual.count()).toBe(6);
+        const saved = virtual.getExpansionState();
+        await virtual.setExpansionState({ expandedGroupKeys: [] });
+        expect(virtual.count()).toBe(3);
+        await virtual.setExpansionState(saved);
+        expect(virtual.count()).toBe(6);
+        virtual.dispose();
+        const grid = new DataGrid({ data, columns: [{ name: "country" }, { name: "city" }], groupColumns: ["country", "city"] });
+        try {
+            await grid.setExpansionState(saved);
+            expect(grid.getExpansionState()).toEqual(saved);
+            expect((grid as any)._gridRows.count()).toBe(5);
+            await grid.setExpansionState({ expandedGroupKeys: [] });
+            expect((grid as any)._gridRows.count()).toBe(2);
+        } finally { grid.dispose(); }
+    });
+
     it("requests the whole group tree once and does not fetch leaf rows until viewport loading", async () => {
         const { provider, load } = setup();
         await provider.load({ skip: 0, top: 2 });
@@ -176,6 +309,13 @@ describe("Batch grouping through loadData", () => {
         await provider.setGroupsExpanded(true);
         expect(loadData).toHaveBeenCalledOnce();
         expect(provider.visibleCount).toBe(1);
+        const node = (await provider.load({ skip: 0, top: 1 })).rows[0];
+        await provider.setExpanded(node, true);
+        const count = provider.visibleCount;
+        expect(provider.getExpansionState()).toEqual({ expandedGroupKeys: [] });
+        await provider.setExpansionState({ expandedGroupKeys: [] });
+        expect(provider.visibleCount).toBe(count);
+        await expect(provider.setExpansionState({ expandedGroupKeys: ["$/A"] })).rejects.toThrow("non-hierarchical");
         provider.dispose();
     });
 

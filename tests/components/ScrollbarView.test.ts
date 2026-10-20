@@ -34,6 +34,14 @@ afterEach(() => {
 });
 
 describe("ScrollbarView mouse proximity", () => {
+    it("does not expand the vertical scrollbar while hovering the excluded header area", () => {
+        const { host, view } = create(); view.vertical.style.top = "80px";
+        move(host, 480, 150); expect(near(view)).toEqual([false, false]);
+        move(host, 480, 180); expect(near(view)).toEqual([false, true]);
+        view.vertical.style.top = "0px";
+        view.refreshHover(); vi.advanceTimersByTime(20);
+        expect(near(view)).toEqual([false, true]);
+    });
     it("keeps thin thumbs narrow during scroll and touch activity but expands during drag", () => {
         const { host, view } = create(); host.classList.add("elg-scroll-container");
         host.setPointerCapture = vi.fn(); host.releasePointerCapture = vi.fn();

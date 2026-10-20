@@ -9,6 +9,9 @@ export interface ScrollEngineOptions {
     scrollbarMode?: ScrollbarMode;
     /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */
     scrollbarHoverDistance?: number;
+    /** Space above the vertical scrollbar track, in CSS pixels, for fixed headers. Defaults to 0.
+     * Affects track/thumb geometry only; virtual scroll coordinates and range stay unchanged. */
+    verticalScrollbarTop?: number;
 }
 
 /** Custom scroll container supporting virtual dimensions and multiple input modes. */
@@ -60,10 +63,12 @@ export class ScrollEngine implements Disposable {
     private _disposed = false;
     private _scrollbarMode: ScrollbarMode = "thin";
     private _scrollbarHoverDistance = 50;
+    private _verticalScrollbarTop = 0;
 
     /** Creates a scroll engine for an existing viewport element. */
     constructor(dom: HTMLElement, options: ScrollEngineOptions = {}) {
         this._scrollbarHoverDistance = ScrollbarView.validateHoverDistance(options.scrollbarHoverDistance ?? 50);
+        this._verticalScrollbarTop = this.validateVerticalScrollbarTop(options.verticalScrollbarTop ?? 0);
         this.dom = dom;
         this._clientWidth = dom.clientWidth;
         this._clientHeight = dom.clientHeight;
@@ -94,6 +99,23 @@ export class ScrollEngine implements Disposable {
     public get clientWidth(): number { return this._clientWidth; }
     /** Current physical viewport height in CSS pixels. */
     public get clientHeight(): number { return this._clientHeight; }
+
+    /** Requested top inset of the vertical track in CSS pixels, clamped to viewport height when rendered. */
+    public get verticalScrollbarTop(): number { return this._verticalScrollbarTop; }
+    /** Moves the track below fixed content without scrolling or notifying onScroll. Must be finite and non-negative. */
+    public set verticalScrollbarTop(value: number) {
+        if (this._disposed) return;
+        this.validateVerticalScrollbarTop(value);
+        if (value === this._verticalScrollbarTop) return;
+        this._verticalScrollbarTop = value;
+        this.updateScrollbarVisibilitiesAndSizes();
+    }
+
+    private validateVerticalScrollbarTop(value: number): number {
+        if (!Number.isFinite(value) || value < 0)
+            throw new Error("Failed to position vertical scrollbar. verticalScrollbarTop must be a finite non-negative number.");
+        return value;
+    }
 
     /** Current scrollbar presentation, independent of overflow and scroll coordinates. */
     public get scrollbarMode(): ScrollbarMode { return this._scrollbarMode; }
@@ -247,6 +269,7 @@ export class ScrollEngine implements Disposable {
         }, { hoverDistance: this._scrollbarHoverDistance });
         this._hTrack = this._bars.horizontal; this._vTrack = this._bars.vertical;
         this._hThumb = this._bars.horizontalThumb; this._vThumb = this._bars.verticalThumb;
+        this.updateScrollbarVisibilitiesAndSizes();
     }
 
     private bindEvents(): void {
@@ -416,12 +439,15 @@ export class ScrollEngine implements Disposable {
     private updateScrollbarVisibilitiesAndSizes(): void {
         const viewWidth = this._clientWidth;
         const viewHeight = this._clientHeight;
+        const top = Math.min(this._verticalScrollbarTop, viewHeight);
+        const visibleHeight = Math.max(0, viewHeight - top);
+        this._vTrack.style.top = `${top}px`;
 
         // Ignore subpixel overflow caused by fractional layout calculations. There is no useful
         // horizontal distance to scroll in that range, and exposing it causes a one-frame flash
         // while the browser rounds the rendered element width.
         const showH = this._scrollWidth > viewWidth + 0.5;
-        const showV = this._scrollHeight > viewHeight;
+        const showV = this._scrollHeight > viewHeight && visibleHeight > 0;
 
         this._hTrack.style.display = showH ? 'block' : 'none';
         this._vTrack.style.display = showV ? 'block' : 'none';
@@ -434,8 +460,14 @@ export class ScrollEngine implements Disposable {
         }
 
         // Base thumb sizes on exact current client widths/heights of custom track frames
-        const hThumbWidth = Math.max(20, (viewWidth / this._physicalScrollWidth) * this._hTrack.clientWidth);
-        const vThumbHeight = Math.max(20, (viewHeight / this._physicalScrollHeight) * this._vTrack.clientHeight);
+        const hTrackWidth = this._hTrack.clientWidth;
+        const vTrackHeight = this._vTrack.clientHeight;
+        const hThumbWidth = Math.min(hTrackWidth, Math.max(20,
+            (viewWidth / Math.max(1, this._physicalScrollWidth)) * hTrackWidth));
+        // The excluded header occupies both viewport and virtual content height. Its
+        // pixels must not make the thumb look like additional scrollable body rows.
+        const vThumbHeight = Math.min(vTrackHeight, Math.max(20,
+            (visibleHeight / Math.max(1, this._physicalScrollHeight - top)) * vTrackHeight));
 
         this._hThumb.style.width = `${hThumbWidth}px`;
         this._vThumb.style.height = `${vThumbHeight}px`;
@@ -454,8 +486,8 @@ export class ScrollEngine implements Disposable {
         const hRatio = maxPhysicalLeft > 0 ? physicalLeft / maxPhysicalLeft : 0;
         const vRatio = maxPhysicalTop > 0 ? physicalTop / maxPhysicalTop : 0;
 
-        const maxThumbLeft = this._hTrack.clientWidth - this._hThumb.clientWidth;
-        const maxThumbTop = this._vTrack.clientHeight - this._vThumb.clientHeight;
+        const maxThumbLeft = Math.max(0, this._hTrack.clientWidth - this._hThumb.clientWidth);
+        const maxThumbTop = Math.max(0, this._vTrack.clientHeight - this._vThumb.clientHeight);
 
         this._hThumb.style.transform = `translateX(${hRatio * maxThumbLeft}px)`;
         this._vThumb.style.transform = `translateY(${vRatio * maxThumbTop}px)`;

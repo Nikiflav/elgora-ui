@@ -83,6 +83,7 @@ export class ScrollbarView implements Disposable {
         this.horizontal.classList.toggle("elg-scrollbar-near", !!inside && this.horizontal.style.display !== "none"
             && bounds.bottom - point.y <= this.distance);
         this.vertical.classList.toggle("elg-scrollbar-near", !!inside && this.vertical.style.display !== "none"
+            && point.y >= bounds.top + (Number.parseFloat(this.vertical.style.top) || 0)
             && bounds.right - point.x <= this.distance);
     };
 

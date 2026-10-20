@@ -512,6 +512,55 @@ export default {
       "signature": "(groupIndex?: number) => Promise<void>"
     },
     {
+      "name": "getExpansionState",
+      "type": "() => GridExpansionState",
+      "description": "Returns an independent snapshot of expanded groups, including hidden descendants.\r\nContains opaque group keys, not nodes or rows. Tree expansion is not included.\r\nReuse only with the same source and ordered grouping fields/intervals.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const state = grid.getExpansionState();"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [],
+      "returns": {
+        "type": "GridExpansionState",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => GridExpansionState"
+    },
+    {
+      "name": "setExpansionState",
+      "type": "(state: GridExpansionState) => Promise<void>",
+      "description": "Replaces group expansion after finishing the active row edit. An empty key list\r\ncollapses all groups; absent groups are ignored. Does not open a key's collapsed\r\nparents implicitly. Loads grouped metadata via loadData, leaving data rows paged.\r\nFailure leaves the previous expansion intact; replacing/disposing the view cancels\r\nrestoration. A nonempty state requires a grouped, non-hierarchical view.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "await grid.setExpansionState(savedState);"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [
+        {
+          "name": "state",
+          "type": "GridExpansionState",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<void>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(state: GridExpansionState) => Promise<void>"
+    },
+    {
       "name": "getVisibleColumns",
       "type": "() => DataGridColumn<TRow>[]",
       "description": "Returns the currently visible columns",

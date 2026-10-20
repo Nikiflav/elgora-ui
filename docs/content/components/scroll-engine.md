@@ -80,3 +80,27 @@ grid.setOptions({ scrollbarMode: "auto", scrollbarHoverDistance: 25 });
 
 See [ScrollEngineOptions](?!=/api-reference/ScrollEngineOptions) and
 [ScrollbarMode](?!=/api-reference/ScrollbarMode).
+
+## Fixed header space
+
+Use `verticalScrollbarTop` to place the vertical track below a fixed header. The
+value is a non-negative finite number in CSS pixels, defaulting to `0`:
+
+```ts
+const scroller = new ScrollEngine(viewport, { verticalScrollbarTop: 72 });
+scroller.verticalScrollbarTop = header.offsetHeight; // update after layout changes
+```
+
+The inset shortens the track and adjusts the thumb to represent the remaining
+body area. It does not change virtual scroll coordinates, the maximum scroll
+position, or fire `onScroll`. Track clicks and dragging still reach both ends.
+An inset covering the whole viewport hides the vertical track; reducing it makes
+the track available again when content overflows.
+
+DataGrid manages this automatically from its complete table-header height:
+column headers, the filter row and all rendered sticky group/tree rows. The
+group panel is already outside the scroll viewport. The scrollbar's pointer
+area therefore never covers those header controls, including the last column's
+resize handle. No grid-specific configuration is required.
+
+API: [ScrollEngine.verticalScrollbarTop](?!=/api-reference/ScrollEngine#verticalScrollbarTop).

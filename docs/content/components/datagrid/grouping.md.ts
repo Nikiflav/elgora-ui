@@ -1,5 +1,6 @@
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
 import { e } from "../../../../src/core/e";
+import type { GridExpansionState } from "../../../../src/components/datagrid/GridExpansionState";
 
 export default function demo(): void {
   const rows = [
@@ -24,6 +25,7 @@ export default function demo(): void {
   grid.dom.style.height = "310px";
   const status = e("span", { ui: ["text-muted"], role: "status" });
   const controls: HTMLButtonElement[] = [];
+  let savedExpansion: GridExpansionState | undefined;
   const button = (text: string, action: () => Promise<void>) => {
     const control = e("button", { ui: ["elg", "btn", "neutral"], type: "button", onclick: async () => {
       controls.forEach(button => { button.disabled = true; });
@@ -37,7 +39,12 @@ export default function demo(): void {
   document.body.append(e("div", { ui: ["d-flex", "flex-wrap", "gap-2", "items-center", "mb-2"] },
     button("Expand all", () => grid.expandAllGroups()),
     button("Collapse all", () => grid.collapseAllGroups()),
-    button("Expand product level", () => grid.expandAllGroups(1)), status));
+    button("Expand product level", () => grid.expandAllGroups(1)),
+    button("Save expansion", async () => { savedExpansion = grid.getExpansionState(); status.textContent = "Expansion saved."; }),
+    button("Restore expansion", async () => {
+      if (savedExpansion) await grid.setExpansionState(savedExpansion);
+      else status.textContent = "Save an expansion state first.";
+    }), status));
   grid.refresh();
   grid.mount(document.body);
 }

@@ -27,6 +27,84 @@ function type(grid: DataGrid<any>, value: string) {
 }
 const settle = () => new Promise(resolve => setTimeout(resolve, 40));
 describe("DataGrid cell editing", () => {
+    it("preserves expansion across DataTable changes and undo/redo notifications", async () => {
+        const dataset = new DataSet();
+        const table = dataset.createTable("items", [{ id: 1, name: "Alpha", amount: 10 }, { id: 2, name: "Beta", amount: 20 }]);
+        const { grid } = create({ data: table, groupColumns: ["name"], columns: [
+            { name: "name", getValue: (row: any) => row.getValue("name") },
+            { name: "amount", dataType: "number", getValue: (row: any) => row.getValue("amount") }
+        ] });
+        await grid.expandAllGroups();
+        const saved = grid.getExpansionState();
+        await table.rows[0].setValue("amount", 25);
+        await (grid as any)._gridRows.load(0, 1);
+        expect(grid.getExpansionState()).toEqual(saved);
+        await dataset.undoCoordinator.undo();
+        await (grid as any)._gridRows.load(0, 1);
+        expect(grid.getExpansionState()).toEqual(saved);
+        await dataset.undoCoordinator.redo();
+        await (grid as any)._gridRows.load(0, 1);
+        expect(grid.getExpansionState()).toEqual(saved);
+    });
+
+    it("clears expansion for source and grouped interval changes through public setters", async () => {
+        const { grid } = create({ groupColumns: ["name"] });
+        await grid.expandAllGroups();
+        grid.setColumnOptions("name", { groupInterval: "firstChar" });
+        await (grid as any)._gridRows.load(0, 1);
+        expect(grid.getExpansionState()).toEqual({ expandedGroupKeys: [] });
+        await grid.expandAllGroups();
+        expect(grid.getExpansionState().expandedGroupKeys).toEqual(["$/A", "$/B"]);
+        grid.setOptions({ columns: [{ name: "name", groupInterval: undefined }, { name: "amount", dataType: "number" }] });
+        await (grid as any)._gridRows.load(0, 1);
+        expect(grid.getExpansionState()).toEqual({ expandedGroupKeys: [] });
+        await grid.expandAllGroups();
+        grid.setOptions({ data: [{ id: 3, name: "Alpha", amount: 30 }] });
+        await (grid as any)._gridRows.load(0, 1);
+        expect(grid.getExpansionState()).toEqual({ expandedGroupKeys: [] });
+    });
+
+    it("preserves group expansion after a successful cell edit", async () => {
+        const { grid, rows } = create({ groupColumns: ["name"] });
+        await grid.expandAllGroups();
+        const saved = grid.getExpansionState();
+        expect(saved.expandedGroupKeys).toEqual(["$/Alpha", "$/Beta"]);
+        expect(await grid.beginEdit(1, "amount")).toBe(true);
+        type(grid, "55");
+        expect(await grid.endEdit()).toBe(true);
+        await (grid as any)._gridRows.load(0, 1);
+        expect(rows[0].amount).toBe(55);
+        expect(grid.getExpansionState()).toEqual(saved);
+        expect((grid as any)._gridRows.count()).toBe(5); // two groups, two data rows and the new-row placeholder
+        grid.setOptions({ groupColumns: [] });
+        expect(grid.getExpansionState()).toEqual({ expandedGroupKeys: [] });
+    });
+
+    it("ignores groups removed by editing and does not implicitly expand a newly created group", async () => {
+        const { grid, rows } = create({ groupColumns: ["name"] });
+        await grid.expandAllGroups();
+        expect(await grid.beginEdit(1, "name")).toBe(true);
+        type(grid, "Gamma");
+        expect(await grid.endEdit()).toBe(true);
+        await (grid as any)._gridRows.load(0, 1);
+        expect(rows[0].name).toBe("Gamma");
+        expect(grid.getExpansionState()).toEqual({ expandedGroupKeys: ["$/Beta"] });
+        expect((grid as any)._gridRows.count()).toBe(4); // Beta + its data, closed Gamma, placeholder
+    });
+
+    it("preserves expansion through pending-row updates and insertion reloads", async () => {
+        const { grid, rows } = create({ groupColumns: ["name"] });
+        await grid.expandAllGroups();
+        const saved = grid.getExpansionState();
+        expect(await grid.beginEdit((grid as any)._gridRows.count() - 1, "name")).toBe(true);
+        type(grid, "Gamma");
+        expect(await grid.endRowEdit()).toBe(true);
+        await (grid as any)._gridRows.load(0, 1);
+        expect(rows).toHaveLength(3);
+        expect(grid.getExpansionState()).toEqual(saved);
+        expect((grid as any)._gridRows.count()).toBe(6);
+    });
+
     it("cancels post-edit navigation without undoing the save or changing the selected block", async () => {
         const { grid, rows } = create(); const manager = grid.getSelectionManager();
         manager.selectSingleCell(0, 0); manager.extendSelection(1, 1);

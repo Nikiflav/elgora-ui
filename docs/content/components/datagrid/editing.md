@@ -189,6 +189,11 @@ See [`beginEdit`](?!=/api-reference/DataGrid#beginEdit),
 [`cancelEdit`](?!=/api-reference/DataGrid#cancelEdit) and
 [`editing`](?!=/api-reference/DataGrid#editing).
 
+Successful edits and source notifications automatically preserve expanded groups
+when the row view is rebuilt. If an edit moves a row to a new group, that group
+is not opened implicitly. See [saving and restoring expansion](?!=/components/datagrid/grouping#saving-and-restoring-expansion)
+for `getExpansionState()` and `setExpansionState()`.
+
 Finish or cancel editing before changing data, query or column options. `setOptions`
 rejects those changes while a cell edit is active instead of silently losing its
 draft. Source `changed` notifications are deferred until the edit ends. Scrolling

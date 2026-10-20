@@ -29,6 +29,16 @@ export default {
       "optional": true,
       "source": "src/components/scrollbar/scroll-engine.ts",
       "kind": "property"
+    },
+    {
+      "name": "verticalScrollbarTop",
+      "type": "number | undefined",
+      "description": "Space above the vertical scrollbar track, in CSS pixels, for fixed headers. Defaults to 0.\nAffects track/thumb geometry only; virtual scroll coordinates and range stay unchanged.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "kind": "property"
     }
   ]
 };

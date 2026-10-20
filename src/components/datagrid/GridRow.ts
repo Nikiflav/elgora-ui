@@ -4,6 +4,7 @@ import { DataViewFieldUtils } from "../../data/DataViewField";
 import type { OrderByToken } from "../../data/grouping";
 import type { SummaryResult } from "../../data/summary";
 import type { DataSource } from "../../data/DataSource";
+import type { GridExpansionState } from "./GridExpansionState";
 
 /** Discriminates how a GridRow should be rendered. */
 export type RowType = 'data' | 'new' | 'group' | 'node' | 'summary' | 'loading' | 'error' | 'empty' | 'header' | 'filter' | 'footer' | 'detail';
@@ -60,6 +61,10 @@ export interface GridRowsProvider<TRow> {
     setExpanded: (row: GridRow, expanded: boolean) => Promise<void>;
     /** Optional batch group expansion. includeParents also opens levels above groupIndex when expanding. */
     setGroupsExpanded?(expanded: boolean, groupIndex?: number, includeParents?: boolean): Promise<void>;
+    /** Copies group expansion independently of the current node tree. */
+    getExpansionState?(): GridExpansionState;
+    /** Replaces group expansion after successful metadata loading, without opening collapsed parents implicitly. */
+    setExpansionState?(state: GridExpansionState): Promise<void>;
     /** Cancels owned queries and releases cached row state when the view is replaced. */
     dispose?(): void;
 }

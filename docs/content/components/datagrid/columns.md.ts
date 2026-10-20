@@ -1,7 +1,7 @@
 import { e } from "../../../../src/core/e";
 import { DataGrid } from "../../../../src/components/datagrid/DataGrid";
 import { ArrayDataSource } from "../../../../src/data/ArrayDataSource";
-import type { ColumnWidthMode } from "../../../../src/components/datagrid/DataGrid";
+import type { ColumnWidthMode, ColumnResizeMode } from "../../../../src/components/datagrid/DataGrid";
 
 export default function demo(): void {
   const rows = [
@@ -29,12 +29,19 @@ export default function demo(): void {
     e("option", { value: "fixed" }, "Fixed"),
     e("option", { value: "stretch-auto", selected: true }, "Stretch auto columns"),
     e("option", { value: "stretch-all" }, "Stretch all columns"));
+  const resize = e("select", { ui: ["elg", "field"], ariaLabel: "Column resize mode", onchange: () => {
+    grid.setOptions({ columnResizeMode: resize.value ? resize.value as ColumnResizeMode : undefined });
+  } },
+    e("option", { value: "" }, "Default for width mode"),
+    e("option", { value: "next-column" }, "Resize next column"),
+    e("option", { value: "independent" }, "Resize independently"));
   const panel = e("div", { style: { width: "600px" } });
   const width = e("input", { type: "range", min: "320", max: "1000", value: "600",
     ariaLabel: "Grid container width", oninput: () => { panel.style.width = width.value + "px"; } });
   document.body.append(
     e("div", { ui: ["d-flex", "flex-wrap", "gap-2", "items-center", "mb-2"] },
-      e("label", {}, "Column widths ", mode), e("label", {}, "Container width ", width)),
+      e("label", {}, "Column widths ", mode), e("label", {}, "Manual resize ", resize),
+      e("label", {}, "Container width ", width)),
     e("div", { ui: ["overflow-auto", "p-1"] }, panel));
   grid.refresh();
   grid.mount(panel);

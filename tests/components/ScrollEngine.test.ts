@@ -94,6 +94,82 @@ afterEach(() => {
     document.body.replaceChildren(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks();
 });
 
+describe("ScrollEngine vertical track inset", () => {
+    function geometry(engine: ScrollEngine) {
+        const track = engine.dom.querySelector<HTMLElement>(".elg-scrollbar-y")!;
+        const thumb = track.firstElementChild as HTMLElement;
+        Object.defineProperty(track, "clientHeight", { get: () => Math.max(0, engine.clientHeight
+            - Number.parseFloat(track.style.top || "0") - (engine.dom.classList.contains("elg-scrollbar-both") ? 12 : 0)) });
+        Object.defineProperty(thumb, "clientHeight", { get: () => Number.parseFloat(thumb.style.height || "0") });
+        track.getBoundingClientRect = () => ({ left: 188, right: 200, top: Number.parseFloat(track.style.top || "0"),
+            bottom: Number.parseFloat(track.style.top || "0") + track.clientHeight, width: 12, height: track.clientHeight }) as DOMRect;
+        return { track, thumb };
+    }
+
+    it("moves below headers and updates body-relative thumb size without scrolling or changing range", () => {
+        const engine = create(); const { track, thumb } = geometry(engine);
+        engine.updateDimensions(200, 200); engine.scrollTop = 50;
+        const changed = vi.fn(); engine.onScroll(changed);
+        engine.verticalScrollbarTop = 20;
+        expect(track.style.top).toBe("20px");
+        expect(Number.parseFloat(thumb.style.height)).toBeCloseTo(80 / 180 * 80);
+        expect([engine.scrollTop, engine.maxScrollTop]).toEqual([50, 100]);
+        expect(changed).not.toHaveBeenCalled();
+        engine.scrollTop = 100;
+        expect(thumb.style.transform).toBe(`translateY(${track.clientHeight - thumb.clientHeight}px)`);
+        engine.verticalScrollbarTop = 50; // additional sticky group row
+        expect(track.style.top).toBe("50px");
+        expect(Number.parseFloat(thumb.style.height)).toBe(20);
+        expect(thumb.style.transform).toBe("translateY(30px)");
+        engine.verticalScrollbarTop = 0;
+        expect(Number.parseFloat(thumb.style.height)).toBe(50);
+        expect(engine.scrollTop).toBe(100);
+    });
+
+    it("accounts for both-axis tracks and maps track clicks to the same virtual endpoints", () => {
+        const engine = create(); const { track, thumb } = geometry(engine);
+        engine.updateDimensions(1000, 200); engine.verticalScrollbarTop = 20;
+        expect(track.clientHeight).toBe(68);
+        expect(thumb.clientHeight).toBeCloseTo(80 / 180 * 68);
+        track.dispatchEvent(new MouseEvent("pointerdown", { button: 0, clientY: 88, bubbles: true }));
+        expect(engine.scrollTop).toBe(100);
+        expect(thumb.style.transform).toBe(`translateY(${68 - thumb.clientHeight}px)`);
+        track.dispatchEvent(new MouseEvent("pointerdown", { button: 0, clientY: 20, bubbles: true }));
+        expect(engine.scrollTop).toBe(0);
+        expect(thumb.style.transform).toBe("translateY(0px)");
+    });
+
+    it("clamps the thumb to short tracks and hides a track covered entirely by the header", () => {
+        const engine = create(); const { track, thumb } = geometry(engine);
+        engine.updateDimensions(200, 200); engine.verticalScrollbarTop = 95;
+        expect(thumb.style.height).toBe("5px");
+        engine.scrollTop = 100;
+        expect(thumb.style.transform).toBe("translateY(0px)");
+        engine.verticalScrollbarTop = 150;
+        expect(engine.verticalScrollbarTop).toBe(150);
+        expect(track.style.top).toBe("100px");
+        expect(track.style.display).toBe("none");
+        expect(thumb.style.height).toBe("0px");
+        engine.verticalScrollbarTop = 20;
+        expect(track.style.display).toBe("block");
+        expect(engine.scrollTop).toBe(100);
+    });
+
+    it("supports construction options and rejects invalid insets before mutating the viewport", () => {
+        const viewport = document.createElement("div");
+        Object.defineProperties(viewport, { clientWidth: { value: 200 }, clientHeight: { value: 100 } });
+        const engine = new ScrollEngine(viewport, { verticalScrollbarTop: 30 }); engines.push(engine);
+        expect(engine.verticalScrollbarTop).toBe(30);
+        expect(viewport.querySelector<HTMLElement>(".elg-scrollbar-y")!.style.top).toBe("30px");
+        for (const value of [-1, NaN, Infinity]) {
+            expect(() => { engine.verticalScrollbarTop = value; }).toThrow("verticalScrollbarTop");
+            const target = document.createElement("div");
+            expect(() => new ScrollEngine(target, { verticalScrollbarTop: value })).toThrow("verticalScrollbarTop");
+            expect(target.children).toHaveLength(0);
+        }
+    });
+});
+
 describe("ScrollEngine scrollbar behavior", () => {
     it("defaults to thin and can change presentation without moving or notifying scroll", () => {
         const engine = create(); engine.updateDimensions(1000, 800); engine.scrollTo(50, 60);

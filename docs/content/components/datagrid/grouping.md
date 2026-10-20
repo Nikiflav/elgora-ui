@@ -24,7 +24,7 @@ Grouping turns a flat result into an expandable hierarchy. Configure
 `groupColumns` for the initial state, then let users add, remove, and reorder
 groups from the group panel or column context menu.
 
-<live-demo id="datagrid-grouping" height="420px"></live-demo>
+<live-demo id="datagrid-grouping" height="475px"></live-demo>
 
 Dates and numbers can use built-in intervals. Application-specific buckets can
 be registered with `groupIntervals`; each interval defines its own `getGroupValue`.
@@ -101,6 +101,50 @@ Collapse-all changes known expansion states without loading group metadata.
 
 API: [expandAllGroups()](?!=/api-reference/DataGrid#expandAllGroups),
 [collapseAllGroups()](?!=/api-reference/DataGrid#collapseAllGroups).
+
+## Saving and restoring expansion
+
+`getExpansionState()` returns an independent [GridExpansionState](?!=/api-reference/GridExpansionState)
+snapshot with an `expandedGroupKeys` array. Keys are opaque: retain them as returned
+instead of constructing or decoding them. The snapshot contains no nodes, rows or
+query caches and can be serialized as JSON.
+
+```ts
+const saved = grid.getExpansionState();
+await grid.collapseAllGroups();
+await grid.setExpansionState(saved);
+
+await grid.setExpansionState({ expandedGroupKeys: [] }); // collapse every group
+```
+
+Try **Save expansion**, change the groups' expansion, then **Restore expansion**
+in the demo. Setting a state replaces the current state, rather than merging it.
+Missing groups are ignored. Expanded descendants below a collapsed parent are
+retained without implicitly opening that parent; reopening it reveals their state.
+Both returned and submitted snapshots are copied, so later array changes cannot
+affect the grid or an in-flight restore.
+
+Restoration uses the same complete grouped-metadata `loadData()` request as
+expand-all. Data rows remain viewport-paged. The old expansion remains in place
+until metadata loading and validation succeed; failed restoration rejects and is
+retryable. Replacing the view or disposing the grid cancels outstanding restores.
+An active row edit must finish successfully first.
+
+Reuse a snapshot only with the same source and grouping fields, order and
+intervals. The snapshot does not identify its source or validate compatibility.
+Tree-mode expansion is not included: its snapshot is empty, and applying a
+nonempty group snapshot to a tree or ungrouped view rejects.
+
+After successful editing, insertion, deletion or source change notifications
+(including DataTable undo/redo), the grid automatically transfers expansion to
+the replacement row view. Existing groups stay in their saved state; groups
+created by a changed field value are not opened automatically. Missing groups
+are dropped after restoration. Explicit query/source/grouping changes reset
+expansion; use these methods explicitly if you want a compatible state restored.
+This snapshot does not preserve selection or scroll position.
+
+API: [getExpansionState()](?!=/api-reference/DataGrid#getExpansionState),
+[setExpansionState()](?!=/api-reference/DataGrid#setExpansionState).
 
 ## Grouped loadData queries
 

@@ -7,6 +7,7 @@ import type { SummaryType, SummaryResult } from "../../data/summary";
 import type { DataSource, GroupItem, QueryArgs } from "../../data/DataSource";
 import { GridViewportArgs, GridResult, GridRow, GridRowsProvider } from "./GridRow";
 import { throwIfRowQueryAborted, waitForRowQuery } from "./RowQuery";
+import { copyExpansionState, type GridExpansionState } from "./GridExpansionState";
 
 // ========================================================
 // 1. OPTIMIZED GRID NODE INTERFACE
@@ -265,9 +266,11 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     private _batch?: Promise<void>;
     private _expansions = new WeakMap<GridNode, Promise<void>>();
     private readonly _activeChanges = new Set<Promise<void>>();
+    private _initialExpansion?: GridExpansionState;
 
-    constructor(state: DataGridState<TRow>) {
+    constructor(state: DataGridState<TRow>, expansion?: GridExpansionState) {
         this._state = state;
+        if (expansion) this._initialExpansion = copyExpansionState(expansion);
     }
 
     public get visibleCount() {
@@ -290,6 +293,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         this._batch = undefined;
         this._expansions = new WeakMap();
         this._activeChanges.clear();
+        this._initialExpansion = undefined;
     }
 
     /** Aborts all pages, including queries started by a pending expansion. */
@@ -315,6 +319,19 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     }
 
     private async loadRoot(signal: AbortSignal): Promise<SummaryResult[] | undefined> {
+        if (this._initialExpansion?.expandedGroupKeys.length && this._state.groupColumns?.length && !this._state.dataSource.hasChildren) {
+            const keys = new Set(this._initialExpansion.expandedGroupKeys);
+            const { root, summary } = await this.loadGroupedRoot(signal);
+            throwIfRowQueryAborted(signal);
+            this.applyGroupExpansion(root, node => keys.has(node.key));
+            throwIfRowQueryAborted(signal);
+            this._rootNode = root;
+            this._rootSummary = summary;
+            this._rootReady = true;
+            this._initialExpansion = undefined;
+            this.refreshGlobalExpandedNodes();
+            return summary;
+        }
         this._rootNode = {
             type: 'root',
             level: -1,
@@ -526,62 +543,112 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
             if (expanded) await this.initializeRoot();
             throwIfRowQueryAborted(signal);
             if (!this._rootNode || !this._rootReady) return;
-            const previous = new Map<string, boolean>();
-            const remember = (node: GridNode) => {
-                if (node.type === "group") previous.set(node.key, node.expanded);
-                for (const child of node.children?.knownNodes() ?? []) if (child.type === "group") remember(child);
-            };
-            remember(this._rootNode);
+            const previous = new Set(this.getExpansionState().expandedGroupKeys);
             let root = this._rootNode;
             let summary = this._rootSummary;
             if (expanded) {
-                const groupBy = fields.map(field => ({ field, interval: this._state.columns.get(field)?.groupInterval }));
-                const result = await waitForRowQuery(this._state.dataSource.loadData({
-                    groupBy, filter: this._state.baseFilter, orderby: this._state.orderBy,
-                    groupSummary: this._state.groupSummary, totalSummary: this._state.totalSummary,
-                    requireTotalCount: true, abortSignal: signal
-                }), signal);
-                throwIfRowQueryAborted(signal);
-                if (!Array.isArray(result.groups) || result.totalCount !== result.groups.length)
-                    throw new Error("Failed to expand groups. loadData must return all requested outer groups and an accurate totalCount.");
-                const validate = (groups: GroupItem[], level: number) => {
-                    for (const group of groups) {
-                        if (group.groupField !== fields[level] || !Number.isInteger(group.count) || group.count < 0)
-                            throw new Error("Failed to expand groups. Invalid grouped metadata returned by loadData.");
-                        if (level + 1 < fields.length) {
-                            if (!group.groups || group.groups.reduce((count, child) => count + child.count, 0) !== group.count)
-                                throw new Error("Failed to expand groups. loadData must return complete nested groups for every groupBy level.");
-                            validate(group.groups, level + 1);
-                        }
-                    }
-                };
-                validate(result.groups, 0);
-                // Prepare a detached tree: failure/cancellation never changes the visible view.
-                root = { type: "root", key: "$", level: -1, localIndex: 0, visibleIndex: 0,
-                    expanded: true, childrenCount: result.groups.length, totalExpandedChildren: 0, expandedChildren: [] };
-                root.children = new Paginator({ node: root, state: this._state, groupIndex: 0, signal, groups: result.groups });
-                summary = result.totalSummary ?? summary;
+                const loaded = await this.loadGroupedRoot(signal);
+                root = loaded.root;
+                summary = loaded.summary ?? summary;
             }
-            const apply = (node: GridNode) => {
-                if (node.type === "group") {
-                    node.expanded = groupIndex === undefined || node.level === groupIndex
-                        || (expanded && includeParents && node.level < groupIndex)
-                        ? expanded : previous.get(node.key) ?? false;
-                    if (node.expanded && !node.children) node.children = node.createPaginator?.();
-                }
-                const children = node.children?.knownNodes().filter(child => child.type === "group") ?? [];
-                for (const child of children) apply(child);
-                node.expandedChildren = children.filter(child => child.expanded);
-                node.totalExpandedChildren = node.expanded
-                    ? node.childrenCount + node.expandedChildren.reduce((count, child) => count + child.totalExpandedChildren, 0) : 0;
-            };
-            apply(root);
+            this.applyGroupExpansion(root, node => groupIndex === undefined || node.level === groupIndex
+                || (expanded && includeParents && node.level < groupIndex) ? expanded : previous.has(node.key));
             throwIfRowQueryAborted(signal);
             this._rootNode = root;
             this._rootSummary = summary;
             this._revision++;
             this.refreshGlobalExpandedNodes();
         });
+    }
+
+    /** Copies even hidden descendants; snapshots never contain live nodes or mutable provider collections. */
+    getExpansionState(): GridExpansionState {
+        if (!this._rootReady && this._initialExpansion) return copyExpansionState(this._initialExpansion);
+        const keys: string[] = [];
+        const visit = (node: GridNode) => {
+            if (node.type === "group" && node.expanded) keys.push(node.key);
+            for (const child of node.children?.knownNodes() ?? []) if (child.type === "group") visit(child);
+        };
+        if (this._rootNode) visit(this._rootNode);
+        return { expandedGroupKeys: keys };
+    }
+
+    /** Restores through the same atomic metadata path as expand-all; absent keys are simply not materialized. */
+    async setExpansionState(state: GridExpansionState): Promise<void> {
+        const snapshot = copyExpansionState(state);
+        if (!this._state.groupColumns?.length || this._state.dataSource.hasChildren) {
+            if (snapshot.expandedGroupKeys.length)
+                throw new Error("Failed to restore group expansion. A nonempty snapshot requires a grouped, non-hierarchical view.");
+            return;
+        }
+        return this.queueChange(async signal => {
+            // An initial viewport query may already own initialization. Never race its publication.
+            if (this._initializing) await this.initializeRoot();
+            throwIfRowQueryAborted(signal);
+            let root = this._rootNode;
+            let summary = this._rootSummary;
+            if (snapshot.expandedGroupKeys.length) {
+                const loaded = await this.loadGroupedRoot(signal);
+                root = loaded.root;
+                summary = loaded.summary ?? summary;
+            }
+            if (!root || (!this._rootReady && !snapshot.expandedGroupKeys.length)) return;
+            const keys = new Set(snapshot.expandedGroupKeys);
+            this.applyGroupExpansion(root, node => keys.has(node.key));
+            throwIfRowQueryAborted(signal);
+            this._rootNode = root;
+            this._rootSummary = summary;
+            this._rootReady = true;
+            this._initialExpansion = undefined;
+            this._revision++;
+            this.refreshGlobalExpandedNodes();
+        });
+    }
+
+    /** Complete grouped metadata, never leaf rows. Build detached nodes before publishing a replacement view. */
+    private async loadGroupedRoot(signal: AbortSignal): Promise<{ root: GridNode; summary?: SummaryResult[] }> {
+        const fields = this._state.groupColumns ?? [];
+        const result = await waitForRowQuery(this._state.dataSource.loadData({
+            groupBy: fields.map(field => ({ field, interval: this._state.columns.get(field)?.groupInterval })),
+            filter: this._state.baseFilter, orderby: this._state.orderBy,
+            groupSummary: this._state.groupSummary, totalSummary: this._state.totalSummary,
+            requireTotalCount: true, abortSignal: signal
+        }), signal);
+        throwIfRowQueryAborted(signal);
+        if (!Array.isArray(result.groups) || result.totalCount !== result.groups.length)
+            throw new Error("Failed to load group expansion. loadData must return all requested outer groups and an accurate totalCount.");
+        const validate = (groups: GroupItem[], level: number) => {
+            for (const group of groups) {
+                if (group.groupField !== fields[level] || !Number.isInteger(group.count) || group.count < 0)
+                    throw new Error("Failed to load group expansion. Invalid grouped metadata returned by loadData.");
+                if (level + 1 < fields.length) {
+                    if (!Array.isArray(group.groups) || group.groups.reduce((count, child) => count + child.count, 0) !== group.count)
+                        throw new Error("Failed to load group expansion. loadData must return complete nested groups for every groupBy level.");
+                    validate(group.groups, level + 1);
+                }
+            }
+        };
+        validate(result.groups, 0);
+        const root: GridNode = { type: "root", key: "$", level: -1, localIndex: 0, visibleIndex: 0,
+            expanded: true, childrenCount: result.groups.length, totalExpandedChildren: 0, expandedChildren: [] };
+        root.children = new Paginator({ node: root, state: this._state, groupIndex: 0, signal, groups: result.groups });
+        return { root, summary: result.totalSummary };
+    }
+
+    /** Recalculates structural weights once, while retaining flags for groups under collapsed parents. */
+    private applyGroupExpansion(root: GridNode, expanded: (node: GridNode) => boolean): void {
+        const apply = (node: GridNode) => {
+            if (node.type === "group") {
+                node.expanded = expanded(node);
+                if (node.expanded && !node.children) node.children = node.createPaginator?.();
+            }
+            const children = node.children?.knownNodes().filter(child => child.type === "group") ?? [];
+            for (const child of children) apply(child);
+            node.expandedChildren = children.filter(child => child.expanded);
+            node.totalExpandedChildren = node.expanded
+                ? node.childrenCount + node.expandedChildren.reduce((count, child) => count + child.totalExpandedChildren, 0) : 0;
+        };
+        apply(root);
     }
 
     private async changeNodeExpanded(node: GridNode, expanded: boolean, signal: AbortSignal) {

@@ -20,6 +20,7 @@ import { DataGridState, DefaultGridRowsProvider } from "./DefaultGridRowsProvide
 import { GridRow, GridRowsProvider } from "./GridRow";
 import { VirtualGridRows } from "./VirtualGridRows";
 import { NewRowGridRowsProvider } from "./NewRowGridRowsProvider";
+import { copyExpansionState, type GridExpansionState } from "./GridExpansionState";
 import { DataGridTexts, DEFAULT_GRID_TEXTS } from "./DataGridTexts";
 
 import "./DataGrid.css"
@@ -83,6 +84,8 @@ export interface DataGridCellNavigatingEvent {
 
 /** How spare viewport width is distributed; columns are never shrunk below their base width. */
 export type ColumnWidthMode = "fixed" | "stretch-auto" | "stretch-all";
+/** Manual column resizing: change only this column or exchange width with the next visible data column. */
+export type ColumnResizeMode = "independent" | "next-column";
 /** Mouse cursor used over the data-grid body. */
 export type DataGridCursor = "default" | "pointer" | "text";
 /** Cell separator style used by a DataGrid. */
@@ -157,6 +160,9 @@ export type DataGridOptions<TRow> = {
 
     /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */
     columnWidthMode?: ColumnWidthMode,
+    /** Manual resize behavior. Omit for next-column in stretch modes and independent in fixed mode.
+     * The last data column always resizes independently. The outer grid container never changes width. */
+    columnResizeMode?: ColumnResizeMode,
     /** Whether to show the row header column. Defaults to true. */
     showRowHeader?: boolean,
     /** Whether to show the column header row. Defaults to true. */
@@ -263,6 +269,8 @@ export class DataGrid<TRow> extends Component {
     private _scrollLeft = 0
     private _viewportHeight = 0
     private _viewportWidth = 0
+    /** Stable screen widths during and after manual resizing, until layout/viewport changes. */
+    private _columnResizeLayout?: { viewportWidth: number; mode: ColumnWidthMode; widths: Map<string, number> };
     private _totalBodyHeight = 0
     private _totalWidth = 0
     private _headerHeight = 0
@@ -381,9 +389,10 @@ export class DataGrid<TRow> extends Component {
         this.addCleanup(() => this._scrollEngine.dispose());
         this._scrollEngine.onScroll(this.updateLayout);
         this._scrollEngine.onResize(() => {
+            if (this._scrollEngine.clientWidth !== this._viewportWidth) this._cancelActiveResize?.();
             this.updateLayout();
             this.redistributeColumnWidths();
-            this.render(this.renderColGroup);
+            this.refresh();
         })
 
         this._dragDrop = new DragDropController({ onDrop: this.handleColumnDrop });
@@ -639,7 +648,7 @@ export class DataGrid<TRow> extends Component {
     private reloadEditedData(): void {
         if (this.disposed.Value || !this._initialized) return;
         this._totalSummaryLoaded = false; this._totalSummary = [];
-        this.reloadRows();
+        this.reloadRows(true);
     }
 
     /** Reanchors after VNode patches; an offscreen edit is confirmed before its row is recycled. */
@@ -1019,8 +1028,6 @@ export class DataGrid<TRow> extends Component {
         this.setColumnOptions(columnName, { groupInterval });
         if (!this._gridOptions.groupColumns?.includes(columnName)) {
             this.groupBy(columnName, this.getColumnSortDirection(columnName) ?? "asc");
-        } else {
-            this.reloadRows();
         }
     };
 
@@ -1471,11 +1478,14 @@ export class DataGrid<TRow> extends Component {
      * later change - fires an "optionChanged" DOM event on this.dom with the applied patch as detail.
      */
     public setOptions = (options: Partial<DataGridOptions<TRow>>) => {
+        if ("columnResizeMode" in options) this._cancelActiveResize?.();
         if ((this._cellEditor || this._openingEdit || this._newRowSession || this._newRowOperation) && Object.keys(options).some(key =>
             ["data", "columns", "defaultColumnOptions", "visibleColumns", "filter", "orderBy", "groupColumns", "hierarchyRootId",
                 "pageSize", "groupIntervals", "groupSummary", "totalSummary", "customSummaries", "allowEdit"].includes(key)))
             throw new Error("Failed to change grid options. Finish or cancel the active cell edit and pending new row first.");
         const previousFooterVisible = this._gridOptions.showColumnFooters !== false;
+        const previousIntervals = new Map((this._gridOptions.groupColumns ?? [])
+            .map(name => [name, this._columnsIndex.get(name)?.groupInterval]));
 
         if (this._initialized && ("data" in options || "groupColumns" in options || "hierarchyRootId" in options
             || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
@@ -1566,7 +1576,9 @@ export class DataGrid<TRow> extends Component {
             return;
         }
 
-        const reloadsRows = "data" in options || "groupColumns" in options || "hierarchyRootId" in options
+        const groupingIntervalChanged = (this._gridOptions.groupColumns ?? []).some(name =>
+            previousIntervals.has(name) && previousIntervals.get(name) !== this._columnsIndex.get(name)?.groupInterval);
+        const reloadsRows = groupingIntervalChanged || "data" in options || "groupColumns" in options || "hierarchyRootId" in options
             || "pageSize" in options || "filter" in options || "orderBy" in options || "groupSummary" in options
             || "totalSummary" in options || "groupIntervals" in options || "customSummaries" in options;
         const orderByOnly = Object.keys(options).length === 1 && "orderBy" in options;
@@ -1618,9 +1630,12 @@ export class DataGrid<TRow> extends Component {
             console.warn(`DataGrid.setColumnOptions: no column named "${name}".`);
             return;
         }
+        const groupingChanged = "groupInterval" in patch && this._gridOptions.groupColumns?.includes(name)
+            && this._columnsIndex.get(name)?.groupInterval !== patch.groupInterval;
         this._mergeColumnPatch({ ...patch, name });
         this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: { columns: [{ ...patch, name }] } }));
         this.layoutChanged();
+        if (groupingChanged) this.reloadRows();
     }
 
     /**
@@ -1802,10 +1817,10 @@ export class DataGrid<TRow> extends Component {
         });
     };
 
-    private createGridRows() {
+    private createGridRows(expansion?: GridExpansionState) {
         const version = ++this._rowsVersion;
         this._gridRows?.dispose();
-        let provider: GridRowsProvider<TRow> = new DefaultGridRowsProvider<TRow>(this.getState());
+        let provider: GridRowsProvider<TRow> = new DefaultGridRowsProvider<TRow>(this.getState(), expansion);
         if (this._gridOptions.allowEdit && this._dataSource.update && this._dataSource.createNewRow)
             provider = new NewRowGridRowsProvider(provider, index => this.getNewGridRow(index));
         return new VirtualGridRows(provider, this._gridOptions.pageSize!, (args, result) => {
@@ -1831,6 +1846,34 @@ export class DataGrid<TRow> extends Component {
     /** Collapses all groups or one grouping level, without loading additional group metadata. */
     async collapseAllGroups(groupIndex?: number): Promise<void> {
         await this.changeAllGroups(false, groupIndex);
+    }
+
+    /**
+     * Returns an independent snapshot of expanded groups, including hidden descendants.
+     * Contains opaque group keys, not nodes or rows. Tree expansion is not included.
+     * Reuse only with the same source and ordered grouping fields/intervals.
+     * @example const state = grid.getExpansionState();
+     */
+    getExpansionState(): GridExpansionState {
+        return this._gridRows.getExpansionState();
+    }
+
+    /**
+     * Replaces group expansion after finishing the active row edit. An empty key list
+     * collapses all groups; absent groups are ignored. Does not open a key's collapsed
+     * parents implicitly. Loads grouped metadata via loadData, leaving data rows paged.
+     * Failure leaves the previous expansion intact; replacing/disposing the view cancels
+     * restoration. A nonempty state requires a grouped, non-hierarchical view.
+     * @example await grid.setExpansionState(savedState);
+     */
+    async setExpansionState(state: GridExpansionState): Promise<void> {
+        const snapshot = copyExpansionState(state);
+        if (this._openingEdit || !await this.endRowEdit())
+            throw new Error("Failed to restore group expansion. Finish or correct the active edit first.");
+        if (this.disposed.Value) throw new DOMException("Failed to restore group expansion. The grid was disposed.", "AbortError");
+        const rows = this._gridRows;
+        await rows.setExpansionState(snapshot);
+        if (rows === this._gridRows && !this.disposed.Value) this.refresh();
     }
 
     /** Resolve the level at activation time: a menu can outlive grouping changes. */
@@ -1957,6 +2000,8 @@ export class DataGrid<TRow> extends Component {
      * Tells the grid to update internal cache and redraw
      */
     layoutChanged = async () => {
+        this._cancelActiveResize?.();
+        this._columnResizeLayout = undefined;
         this._gridColumns = await this.rebuildGridColumns();
 
         this.refresh();
@@ -2749,13 +2794,17 @@ export class DataGrid<TRow> extends Component {
         this._cancelActiveResize?.();
         this.dom.classList.add("elg-data-grid-resizing");
 
-        const startWidth = col.width;
-        const startNaturalWidth = col.naturalWidth;
-        const startIsAutoWidth = col.isAutoWidth;
-        const startScale = startNaturalWidth > 0 ? startWidth / startNaturalWidth : 1;
-
-        // Manually resizing a column takes it out of the auto-fill pool permanently.
-        col.isAutoWidth = false;
+        const mode = this._gridOptions.columnWidthMode!;
+        const resizeMode = this._gridOptions.columnResizeMode ?? (mode === "fixed" ? "independent" : "next-column");
+        const columns = this._gridColumns.filter(item => item.type === "data");
+        const next = resizeMode === "next-column" ? columns[columns.indexOf(col) + 1] : undefined;
+        const affected = next ? [col, next] : [col];
+        const start = affected.map(item => ({ column: item, width: item.width,
+            naturalWidth: item.naturalWidth, isAutoWidth: item.isAutoWidth }));
+        const previousLayout = this._columnResizeLayout;
+        const layout = { viewportWidth: this._viewportWidth || this._tableContainer.clientWidth,
+            mode, widths: new Map(columns.map(item => [item.dataColumn!.name, item.width])) };
+        let moved = false;
 
         let cancelResize: (() => void) | undefined;
         const clearResize = () => {
@@ -2766,27 +2815,50 @@ export class DataGrid<TRow> extends Component {
         cancelResize = trackGesture(e, {
             axis: "x",
             onMove: (dx) => {
-                col.width = Math.floor(Math.max(40, Math.min(800, startWidth + dx)));
-                col.naturalWidth = this._gridOptions.columnWidthMode === "stretch-all"
-                    ? Math.max(40, col.width / startScale) : col.width;
+                // Bound the pair as one delta: its total stays constant and both widths remain valid.
+                // Existing widths beyond the interactive limit must not jump on the first movement.
+                let lower = Math.min(0, 40 - start[0].width);
+                let upper = Math.max(0, 800 - start[0].width);
+                if (next) {
+                    lower = Math.max(lower, start[1].width - Math.max(800, start[1].width));
+                    upper = Math.min(upper, start[1].width - Math.min(40, start[1].width));
+                }
+                const delta = Math.max(lower, Math.min(upper, Math.round(dx)));
+                if (!delta && !moved) return;
+                moved = true;
+                for (let index = 0; index < start.length; index++) {
+                    const item = start[index];
+                    const width = item.width + (index === 0 ? delta : -delta);
+                    layout.widths.set(item.column.dataColumn!.name, width);
+                    item.column.isAutoWidth = false;
+                    // Keep stretch-all weights in their original coordinate system. For a pair,
+                    // the combined weight stays constant, so ordinary fill produces this exact split.
+                    const scale = mode === "stretch-all" && item.naturalWidth > 0 ? item.width / item.naturalWidth : 1;
+                    item.column.naturalWidth = width / scale;
+                }
+                this._columnResizeLayout = layout;
                 this.redistributeColumnWidths();
-                this.render(this.renderColGroup);
+                this.refresh();
             },
             onEnd: () => {
-                // Sync the resolved width back onto the column definition (same object referenced by
-                // _gridOptions.columns) so getColumn()/getOptions() reflect what's on screen.
-                if (col.dataColumn)
-                    col.dataColumn.width = Math.max(40, col.naturalWidth
-                        - (col.groupIndex >= 0 ? (col.groupIndex + 1) * this._groupPadding : 0));
+                if (moved) {
+                    // Persist only affected baselines. Other columns retain their configured widths
+                    // and automatic eligibility. The visible split remains stable after mouseup.
+                    for (const item of affected) item.dataColumn!.width = Math.max(1, item.naturalWidth
+                        - (item.groupIndex >= 0 ? (item.groupIndex + 1) * this._groupPadding : 0));
+                }
                 this.dom.classList.remove("elg-data-grid-resizing");
                 clearResize();
             },
             onCancel: () => {
-                col.width = startWidth;
-                col.naturalWidth = startNaturalWidth;
-                col.isAutoWidth = startIsAutoWidth;
+                for (const item of start) {
+                    item.column.width = item.width;
+                    item.column.naturalWidth = item.naturalWidth;
+                    item.column.isAutoWidth = item.isAutoWidth;
+                }
+                this._columnResizeLayout = previousLayout;
                 this.redistributeColumnWidths();
-                this.render(this.renderColGroup);
+                this.refresh();
                 this.dom.classList.remove("elg-data-grid-resizing");
                 clearResize();
             }
@@ -2924,11 +2996,13 @@ export class DataGrid<TRow> extends Component {
      * Rebuilds the rows pipeline from scratch against the current DataGridState (grouping,
      * filter, orderBy, ...). Used any time a data-shaping option changes - the DataSource
      * decides internally how "hard" the reload actually is (e.g. a local array source just
-     * re-buckets in memory). Resets expand/collapse state and scroll position, since the
-     * previous row tree no longer matches the new shape.
+     * re-buckets in memory). Query changes reset expansion; mutations/replay transfer
+     * an independent group snapshot before disposing the old provider. Selection and
+     * scroll restoration are separate from this group-expansion snapshot.
      */
-    private reloadRows() {
-        this._gridRows = this.createGridRows();
+    private reloadRows(preserveExpansion = false) {
+        const expansion = preserveExpansion ? this._gridRows.getExpansionState() : undefined;
+        this._gridRows = this.createGridRows(expansion);
         this.refresh();
     }
 
@@ -3209,6 +3283,10 @@ export class DataGrid<TRow> extends Component {
     private updateHeaderAndFooterDimensions() {
         const headerHeight = this._contentTable.tHead?.offsetHeight || 0;
         const footerHeight = this._contentTable.tFoot?.offsetHeight || 0;
+        // The shared thead contains column/filter headers and every rendered sticky
+        // group/node row. Keep the scrollbar's hit area below the entire section.
+        // The grouping panel is outside this scroll viewport, so it needs no inset.
+        this._scrollEngine.verticalScrollbarTop = headerHeight;
         if (headerHeight != this._headerHeight || footerHeight != this._footerHeight) {
 
             this._headerHeight = headerHeight;
@@ -3315,6 +3393,14 @@ export class DataGrid<TRow> extends Component {
     private redistributeColumnWidths() {
 
         const mode = this._gridOptions.columnWidthMode ?? "stretch-auto";
+        const viewportWidth = this._viewportWidth || this._tableContainer.clientWidth;
+        const layout = this._columnResizeLayout;
+        if (layout && layout.mode === mode && layout.viewportWidth === viewportWidth) {
+            for (const col of this._gridColumns) if (col.type === "data")
+                col.width = layout.widths.get(col.dataColumn!.name) ?? col.naturalWidth;
+            return;
+        }
+        this._columnResizeLayout = undefined;
         for (const col of this._gridColumns) col.width = col.naturalWidth;
         if (mode === "fixed") return;
         const stretchColumns = this._gridColumns.filter(c => c.type === "data"
@@ -3323,8 +3409,6 @@ export class DataGrid<TRow> extends Component {
 
         // Falls back to a direct (one-time) measurement if the ResizeObserver-driven _viewportWidth
         // hasn't reported yet - avoids a first-paint flash of unstretched columns.
-        const viewportWidth = this._viewportWidth || this._tableContainer.clientWidth;
-
         const fixedTotal = this._gridColumns
             .filter(c => !stretchColumns.includes(c))
             .reduce((sum, c) => sum + c.width, 0);

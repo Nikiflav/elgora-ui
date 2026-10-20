@@ -1,6 +1,7 @@
 import { VirtualDataSource } from "../virtual-list/VirtualList"
 import { GridResult, GridRow, GridRowsProvider, GridViewportArgs } from "./GridRow"
 import { throwIfRowQueryAborted, waitForRowQuery } from "./RowQuery";
+import { copyExpansionState, type GridExpansionState } from "./GridExpansionState";
 
 
 export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
@@ -112,6 +113,16 @@ export class VirtualGridRows<T> implements VirtualDataSource<GridRow> {
 
     async setGroupsExpanded(expanded: boolean, groupIndex?: number, includeParents?: boolean): Promise<void> {
         await this.changeStructure(() => this._source.setGroupsExpanded?.(expanded, groupIndex, includeParents) ?? Promise.resolve());
+        await this.load(0, 1);
+    }
+
+    getExpansionState(): GridExpansionState {
+        return this._source.getExpansionState?.() ?? { expandedGroupKeys: [] };
+    }
+
+    async setExpansionState(state: GridExpansionState): Promise<void> {
+        const snapshot = copyExpansionState(state);
+        await this.changeStructure(() => this._source.setExpansionState?.(snapshot) ?? Promise.resolve());
         await this.load(0, 1);
     }
 

@@ -16,7 +16,7 @@ export { BrowserRouter } from './components/browser-router/BrowserRouter';
 export { ScrollSpy, type ScrollSpyOptions } from './components/scroll-spy/ScrollSpy';
 export { ScrollEngine, type ScrollEngineOptions, type ScrollbarMode } from './components/scrollbar/scroll-engine';
 export { Scrollbars, type ScrollbarsOptions, type ScrollbarsHandle, type ScrollbarsInstallation } from './components/scrollbar/Scrollbars';
-export { DataGrid, type DataGridOptions, type DataGridCellNavigatingEvent, type ColumnWidthMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
+export { DataGrid, type DataGridOptions, type DataGridCellNavigatingEvent, type ColumnWidthMode, type ColumnResizeMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
 export { type DataCell, type DataViewField, type DisplayValue, type FieldLookup, type FieldEditContext, type FieldEditorContext } from './data/DataViewField';
 export { createFieldEditor } from './components/editors/createFieldEditor';
 export { type DataType, type DataField } from './data/DataField';
@@ -25,6 +25,7 @@ export { type SummaryDefinition, type SummaryContext, type SummaryType, type Sum
 export { type DataGridColumn, type GridCell, type DataCellStyle, type DataGridColumnLayoutInfo } from './components/datagrid/DataGridColumn';
 export { SelectionManager, type SelectionMode, type SelectionCell, type SelectionRange, type GridContext, type SelectionEdge, type CellSelectionState } from './components/datagrid/SelectionManager';
 export { type GridContextMenuTarget, type GridStandardContextMenuItem, type DataGridContextMenuContext, type GridContextMenuItems } from './components/datagrid/DataGridContextMenu';
+export { type GridExpansionState } from './components/datagrid/GridExpansionState';
 export { type DataSource, type QueryArgs, type DataResult, type GroupByField, type GroupItem, type MutationResult, type NewRowSession, type DataSourceChanged } from './data/DataSource';
 export { ArrayDataSource, type ArrayDataSourceOptions } from './data/ArrayDataSource';
 export { LocalGroupingDataSource } from './data/LocalGroupingDataSource';

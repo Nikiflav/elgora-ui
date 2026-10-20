@@ -1,5 +1,6 @@
 import type { GridRow, GridRowsProvider, GridViewportArgs } from "./GridRow";
 import { throwIfRowQueryAborted } from "./RowQuery";
+import type { GridExpansionState } from "./GridExpansionState";
 
 /** Appends one input row outside the source query, sort order and summaries. */
 export class NewRowGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
@@ -21,6 +22,14 @@ export class NewRowGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
 
     setGroupsExpanded(expanded: boolean, groupIndex?: number, includeParents?: boolean): Promise<void> {
         return this.source.setGroupsExpanded?.(expanded, groupIndex, includeParents) ?? Promise.resolve();
+    }
+
+    getExpansionState(): GridExpansionState {
+        return this.source.getExpansionState?.() ?? { expandedGroupKeys: [] };
+    }
+
+    setExpansionState(state: GridExpansionState): Promise<void> {
+        return this.source.setExpansionState?.(state) ?? Promise.resolve();
     }
 
     /** Releases the wrapped query provider; the pending editing session belongs to the grid. */

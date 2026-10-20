@@ -32,11 +32,12 @@ can be shared with other views; width, alignment, resize/reorder, context menus
 and custom cell rendering belong to the grid column.
 See [Fields and presentation](?!=/data/fields) for the three layers.
 
-<live-demo id="datagrid-columns" height="455px"></live-demo>
+<live-demo id="datagrid-columns" height="520px"></live-demo>
 
 The demo combines explicitly sized columns with an automatic Product column and
 pinned columns. Switch the width mode and resize the container to compare the
-behavior. Column headers can also be resized and reordered directly.
+behavior. Use **Manual resize** to compare resizing only one column with changing
+its neighbor too. Column headers can also be reordered directly.
 
 ## Column width modes
 
@@ -58,12 +59,55 @@ stretched result, so repeated container resizing does not accumulate changes.
 grid.setOptions({ columnWidthMode: "stretch-all" });
 ```
 
-Manual resizing updates a column's base width. In `stretch-auto`, this removes it
-from the automatic pool; in `stretch-all`, it continues participating in the
-proportional distribution. `getColumn().width` stores the configured base width,
-which may differ from the currently stretched width shown on screen. Returning
-to `fixed` restores base widths. Use `autoSizeColumn(name)` to return a manually
-sized column to content measurement.
+`getColumn().width` stores a base width, which may differ from the stretched width
+shown on screen. Returning to `fixed` restores base widths. Use
+`autoSizeColumn(name)` to return a manually sized column to content measurement.
+
+## Manual column resizing
+
+`columnResizeMode` controls dragging a header separator independently of
+`columnWidthMode`:
+
+| Resize mode | Behavior |
+| --- | --- |
+| `next-column` | Exchanges width with the next visible data column. All other columns stay still and the pair's total width is unchanged. |
+| `independent` | Changes only the dragged column. The inner table can grow or shrink; the outer grid container keeps its width. Horizontal scrolling appears when needed. |
+
+When omitted, `columnResizeMode` follows the width mode: `next-column` for
+`stretch-auto` and `stretch-all`, and `independent` for `fixed`. An explicit resize
+mode overrides that choice. Set it to `undefined` to restore the automatic choice.
+The choice depends on the configured width mode, not CSS percentages or whether
+a horizontal scrollbar is currently visible.
+
+```ts
+grid.setOptions({ columnResizeMode: "independent" });
+grid.setOptions({ columnResizeMode: undefined }); // follow columnWidthMode again
+```
+
+The next column is the next **visible data column**, including pinned columns;
+hidden columns and the row header do not participate. The last visible column
+resizes independently because it has no neighbor. Interactive widths are bounded
+by 40–800 CSS pixels; a pair stops when either column reaches its bound. Existing
+widths outside those bounds do not jump into range when a drag starts.
+
+Dragging changes only the affected columns' base widths and removes them from the
+automatic pool in `stretch-auto`. In `stretch-all`, their proportional weights
+are updated. Other columns retain their configured widths and auto eligibility.
+Rendered widths remain stable during dragging, after release and on repaint;
+shrinking independently does not immediately refill the freed space.
+
+An actual viewport-width change or an explicit layout rebuild (for example,
+changing column widths, visibility, pinning or width mode) resumes normal
+`columnWidthMode` distribution from the base widths. Escape, window blur and
+touch cancellation restore the layout from before the gesture. Clicking a
+separator without moving it does not configure a width or disable auto sizing.
+
+The vertical scrollbar starts below the entire fixed table header, including
+the filter row and sticky group/tree rows, keeping the last column's right-hand
+resize handle accessible even while the scrollbar is expanded.
+
+API: [ColumnResizeMode](?!=/api-reference/ColumnResizeMode),
+[DataGridOptions.columnResizeMode](?!=/api-reference/DataGridOptions#columnResizeMode).
 
 ```js
 const grid = new DataGrid({

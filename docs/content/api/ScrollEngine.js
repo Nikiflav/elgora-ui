@@ -121,6 +121,26 @@ export default {
       "kind": "property"
     },
     {
+      "name": "verticalScrollbarTop",
+      "type": "number",
+      "description": "Requested top inset of the vertical track in CSS pixels, clamped to viewport height when rendered.\nMoves the track below fixed content without scrolling or notifying onScroll. Must be finite and non-negative.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "kind": "property"
+    },
+    {
+      "name": "verticalScrollbarTop",
+      "type": "number",
+      "description": "Requested top inset of the vertical track in CSS pixels, clamped to viewport height when rendered.\nMoves the track below fixed content without scrolling or notifying onScroll. Must be finite and non-negative.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/scrollbar/scroll-engine.ts",
+      "kind": "property"
+    },
+    {
       "name": "scrollbarMode",
       "type": "ScrollbarMode",
       "description": "Current scrollbar presentation, independent of overflow and scroll coordinates.\nChanges presentation immediately without rebuilding content or moving the viewport.",

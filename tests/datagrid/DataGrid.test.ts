@@ -34,6 +34,31 @@ function settle(): Promise<void> {
 }
 
 describe("DataGrid data contracts", () => {
+  it("positions the vertical scrollbar below the entire shared header, including dynamic sticky rows", () => {
+    const grid = new DataGrid({ data: rows, columns: [{ name: "name" }], showFilterRow: true, stickyGroupRows: true });
+    const internal = grid as any;
+    try {
+      const head = internal._contentTable.tHead as HTMLTableSectionElement;
+      Object.defineProperty(head, "offsetHeight", { get: () => [...head.rows].filter(row => row.style.display !== "none").length * 30 });
+      internal.renderHeaderAndFooter();
+      expect(internal._scrollEngine.verticalScrollbarTop).toBe(60);
+      const ancestors = [{ type: "group", visibleIndex: 0, level: 0, cells: { name: "A" } },
+        { type: "group", visibleIndex: 1, level: 1, cells: { name: "X" } }];
+      const sticky = vi.spyOn(internal, "getStickyGroupRows").mockReturnValue(ancestors);
+      internal.renderStickyGroupRows({ rows: [] });
+      expect(internal._scrollEngine.verticalScrollbarTop).toBe(120);
+      sticky.mockReturnValue(ancestors.slice(0, 1));
+      internal.renderStickyGroupRows({ rows: [] });
+      expect(internal._scrollEngine.verticalScrollbarTop).toBe(90);
+      grid.setOptions({ stickyGroupRows: false });
+      internal.renderStickyGroupRows({ rows: [] });
+      expect(internal._scrollEngine.verticalScrollbarTop).toBe(60);
+      grid.setOptions({ showColumnHeaders: false, showFilterRow: false });
+      internal.renderHeaderAndFooter(); internal.renderStickyGroupRows({ rows: [] });
+      expect(internal._scrollEngine.verticalScrollbarTop).toBe(0);
+      sticky.mockRestore();
+    } finally { grid.dispose(); }
+  });
   it("aborts old source queries on a filter change and cancels replacement queries on disposal", async () => {
     const requests: QueryArgs[] = [];
     const source: DataSource<Row> = { loadData: args => {

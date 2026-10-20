@@ -854,6 +854,19 @@
       ]
     },
     {
+      "name": "ColumnResizeMode",
+      "kind": "type",
+      "type": "any",
+      "description": "Manual column resizing: change only this column or exchange width with the next visible data column.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/ColumnResizeMode",
+      "source": "src/components/datagrid/DataGrid.ts",
+      "definition": "\"independent\" | \"next-column\""
+    },
+    {
       "name": "ColumnWidthMode",
       "kind": "type",
       "type": "any",
@@ -2784,6 +2797,55 @@
           "signature": "(groupIndex?: number) => Promise<void>"
         },
         {
+          "name": "getExpansionState",
+          "type": "() => GridExpansionState",
+          "description": "Returns an independent snapshot of expanded groups, including hidden descendants.\r\nContains opaque group keys, not nodes or rows. Tree expansion is not included.\r\nReuse only with the same source and ordered grouping fields/intervals.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "const state = grid.getExpansionState();"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [],
+          "returns": {
+            "type": "GridExpansionState",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => GridExpansionState"
+        },
+        {
+          "name": "setExpansionState",
+          "type": "(state: GridExpansionState) => Promise<void>",
+          "description": "Replaces group expansion after finishing the active row edit. An empty key list\r\ncollapses all groups; absent groups are ignored. Does not open a key's collapsed\r\nparents implicitly. Loads grouped metadata via loadData, leaving data rows paged.\r\nFailure leaves the previous expansion intact; replacing/disposing the view cancels\r\nrestoration. A nonempty state requires a grouped, non-hierarchical view.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await grid.setExpansionState(savedState);"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [
+            {
+              "name": "state",
+              "type": "GridExpansionState",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(state: GridExpansionState) => Promise<void>"
+        },
+        {
           "name": "getVisibleColumns",
           "type": "() => DataGridColumn<TRow>[]",
           "description": "Returns the currently visible columns",
@@ -3170,7 +3232,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
       "source": "src/components/datagrid/DataGrid.ts",
-      "definition": "{\r\n    /** Enables existing-cell editing when the source supports update. Defaults to false. */\r\n    allowEdit?: boolean;\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    /** Field and presentation definitions, identified by unique column names. */\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: {\r\n        /** Column name whose values are aggregated in each group. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: {\r\n        /** Column name whose values are aggregated over the complete filtered result. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
+      "definition": "{\r\n    /** Enables existing-cell editing when the source supports update. Defaults to false. */\r\n    allowEdit?: boolean;\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    /** Field and presentation definitions, identified by unique column names. */\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: {\r\n        /** Column name whose values are aggregated in each group. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: {\r\n        /** Column name whose values are aggregated over the complete filtered result. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Manual resize behavior. Omit for next-column in stretch modes and independent in fixed mode.\r\n     * The last data column always resizes independently. The outer grid container never changes width. */\r\n    columnResizeMode?: ColumnResizeMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
     },
     {
       "name": "DataList",
@@ -7087,6 +7149,35 @@
       "definition": "DataSource<TRow> | TRow[]"
     },
     {
+      "name": "GridExpansionState",
+      "kind": "interface",
+      "type": "GridExpansionState",
+      "description": "Independent snapshot of group expansion for one source and grouping definition.\nContains no rows or cached query results. Treat keys as opaque identifiers; reuse\nonly with the same source and ordered grouping fields/intervals. Tree mode is not included.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const state = grid.getExpansionState();\nawait grid.setExpansionState(state);"
+        }
+      ],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.DataGrid",
+      "path": "/api-reference/GridExpansionState",
+      "source": "src/components/datagrid/GridExpansionState.ts",
+      "members": [
+        {
+          "name": "expandedGroupKeys",
+          "type": "readonly string[]",
+          "description": "Expanded group keys, including descendants retained beneath collapsed parents.\nAn empty list means all groups are collapsed; missing groups are ignored on restore.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/GridExpansionState.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "GridStandardContextMenuItem",
       "kind": "type",
       "type": "any",
@@ -9662,6 +9753,26 @@
           "kind": "property"
         },
         {
+          "name": "verticalScrollbarTop",
+          "type": "number",
+          "description": "Requested top inset of the vertical track in CSS pixels, clamped to viewport height when rendered.\nMoves the track below fixed content without scrolling or notifying onScroll. Must be finite and non-negative.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "verticalScrollbarTop",
+          "type": "number",
+          "description": "Requested top inset of the vertical track in CSS pixels, clamped to viewport height when rendered.\nMoves the track below fixed content without scrolling or notifying onScroll. Must be finite and non-negative.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
           "name": "scrollbarMode",
           "type": "ScrollbarMode",
           "description": "Current scrollbar presentation, independent of overflow and scroll coordinates.\nChanges presentation immediately without rebuilding content or moving the viewport.",
@@ -9867,6 +9978,16 @@
           "name": "scrollbarHoverDistance",
           "type": "number | undefined",
           "description": "Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scrollbar/scroll-engine.ts",
+          "kind": "property"
+        },
+        {
+          "name": "verticalScrollbarTop",
+          "type": "number | undefined",
+          "description": "Space above the vertical scrollbar track, in CSS pixels, for fixed headers. Defaults to 0.\nAffects track/thumb geometry only; virtual scroll coordinates and range stay unchanged.",
           "tags": [],
           "topics": [],
           "optional": true,
