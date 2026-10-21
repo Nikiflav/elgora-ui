@@ -1,4 +1,5 @@
 import { PopoverEditor } from "./PopoverEditor";
+import { editorButtons } from "./EditorButton";
 import { type ValueEditorOptions } from "./ValueEditor";
 import { DataGrid } from "../datagrid/DataGrid";
 import type { DataGridColumn } from "../datagrid/DataGridColumn";
@@ -73,7 +74,7 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
     constructor(options: LookupEditorOptions<TValue, TItem>) {
         const { columns, loadItems, getItemValue, getItemText, getValueText, pageSize,
             searchDelay, popupWidth, popupHeight, resizable, openOnFocus, ...base } = options;
-        super({ ...base, openOnFocus, triggerIcon: "ri-arrow-down-s-line", triggerLabel: "Open lookup" });
+        super({ ...base, openOnFocus, triggerIcon: editorButtons.lookup.icon, triggerLabel: editorButtons.lookup.label });
         this.lookup = options;
         this.displayValue();
         this.addCleanup(() => {
@@ -85,6 +86,16 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
 
     /** Raw search/display text; typing does not change the typed value. */
     get text(): string { return this.searchText; }
+
+    /** Restores rejected search text without allowing a delayed value label to overwrite it. */
+    override restoreDraft(text: string, error?: string): void {
+        super.restoreDraft(text, error);
+        this.labelVersion++;
+        this.chosen = undefined;
+        this.searching = true;
+        this.searchText = text;
+        (this.control as HTMLInputElement).value = text;
+    }
     /** Includes unconfirmed search text as well as an explicit candidate value. */
     override get modified(): boolean { return this.searching || !this.same(this.draft, this.accepted); }
 

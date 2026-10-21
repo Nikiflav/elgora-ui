@@ -58,6 +58,7 @@ writable field and a source implementing [`update`](?!=/api-reference/DataSource
 | --- | --- | --- |
 | Enter or F2 | Existing editable text, selected for replacement | Controlled by the editor. |
 | Double-click | Existing editable text, selected for replacement | Controlled by the editor. |
+| Alt+ArrowDown or cell picker button | Existing value, with the picker opened | Controlled by the picker while open. |
 | Printable character | That character replaces the existing text | Confirm and move to the adjacent cell. |
 
 Typing while the editor's initial row is loading is retained. Clicking inside an
@@ -66,6 +67,11 @@ For example, text arrows move the caret; the number editor can use Up/Down to st
 the value. An open picker always owns its navigation keys, regardless of how the
 cell edit started. Ctrl/Command/Alt-modified arrows are not used to confirm a typed
 replacement entry.
+
+Alt+ArrowDown is available for picker fields even when
+[`editorButtonVisibility`](?!=/api-reference/DataGridColumn#editorButtonVisibility)
+is `never`. Cell buttons use the same opening path; `always` also supports touch,
+while `hover` is limited to hover-capable pointers.
 
 [`beginEdit`](?!=/api-reference/DataGrid#beginEdit) without initial text uses normal
 editor navigation; supplying text uses replacement-entry navigation:
@@ -84,15 +90,20 @@ traversal as read-only mode. The destination cell is not opened for editing.
 Press Enter again to edit it. Outside editing, Shift+Enter navigates upwards;
 unmodified Enter starts editing when editing is enabled.
 
-Escape discards the unaccepted cell draft without moving the selection. With an
-open picker, the first Escape closes/cancels the picker and the next Escape
-cancels the cell edit. Selecting a picker item or changing a checkbox confirms
+Escape first discards any invalid input/error on the active cell and restores
+its source value, whether the editor is open or closed. It keeps a pending row
+alive in this case. If the cell has no error and belongs to a pending row, Escape
+cancels that entire row. In an existing row, it discards only the current edit.
+With an open picker, the first Escape closes/cancels the picker; the next Escape
+uses this cell/row priority. Selecting a picker item or changing a checkbox confirms
 that value without requesting a move to another cell. Button-based editors retain
 their native Enter activation.
 
-Parsing, validation and source updates may be asynchronous. Movement occurs only
-after successful confirmation. A failed confirmation retains the editor, error,
-active cell and selection. The editor is unavailable while saving; a request
+Parsing, validation and source updates may be asynchronous. Movement waits for
+confirmation to finish, but does not require success. A failed confirmation closes
+the editor and retains the rejected input and error in the cell; reopening it
+restores the input. Selection blocks remain intact while the active cell moves.
+The editor is unavailable while saving; a request
 already in flight cannot be cancelled with Escape. Losing focus attempts to
 confirm the edit but does not request keyboard navigation.
 
@@ -101,9 +112,11 @@ confirm the edit but does not request keyboard navigation.
 When the source supports new rows, the final `*` row is an input placeholder.
 Selecting it creates nothing; starting an edit initializes a source session before
 the editor opens. Tab traverses its cells. Moving away attempts insertion, as do
-Enter at its bottom boundary and Tab at its last column. A failed insertion keeps
-the pending row for correction. Escape outside cell editing discards the whole
-pending row; inside editing it first discards only that cell draft. See
+Enter at its bottom boundary and Tab at its last column. A row with cell errors
+is not inserted. Failed rows remain pending outside the query, without blocking
+navigation or another new-row session. Escape uses the same priority inside and
+outside cell editing: discard active-cell invalid input first; otherwise cancel
+its pending row. Errors in other cells do not change this priority. See
 [Adding rows](?!=/components/datagrid/editing#adding-rows) for the lifecycle and
 explicit insert/cancel methods.
 
@@ -126,7 +139,7 @@ subscription.dispose();
 ```
 
 Cancellation preserves both the active cell and the selection. It does not undo
-the confirmed value: saving has already succeeded and the editor has closed.
+the value or remove rejected input: the editor has already closed.
 The grid still handles the key, so cancelling Tab does not transfer browser focus.
 
 Redirect Tab from a particular column to another column in the same row:
@@ -148,8 +161,9 @@ selected range retains it; redirecting outside it selects the destination accord
 to `selectionMode`.
 
 The event applies to grid-handled arrows, Enter and Tab, including moves after
-successful edits. It does not fire for Enter that starts editing, editor-owned
-keys, pointer/programmatic selection, picker acceptance, Escape, or failed edits.
+completed edits, including those retaining errors. It does not fire for Enter
+that starts editing, editor-owned keys, pointer/programmatic selection, picker
+acceptance or Escape.
 It can fire at a boundary even when the proposed cell equals the current cell.
 Handlers must update the event synchronously; asynchronous subscriptions are not
 awaited. Prefer changing `targetCell` over directly changing selection in a handler.

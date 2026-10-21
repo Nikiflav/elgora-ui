@@ -14,22 +14,29 @@ export class GridCellEditor<TRow> {
     private finishing?: Promise<boolean>;
     private disposed = false;
     private typingEntry = false;
+    private retainedInput = false;
+    private inputChanged = false;
+    private readonly inputSubscription: { dispose(): void };
     private readonly pointerDown = () => { this.typingEntry = false; };
     private readonly keyDown: (event: KeyboardEvent) => void;
     private readonly focusOut: (event: FocusEvent) => void;
     private readonly committed: { dispose(): void };
 
     /** Mounts one editor and delegates successful completion/navigation to its grid. */
-    constructor(host: HTMLElement, context: FieldEditorContext<TRow>,
-        private readonly finished: (key?: CellEditNavigationKey, backwards?: boolean, restoreFocus?: boolean) => void) {
+    constructor(host: HTMLElement, private readonly context: FieldEditorContext<TRow>,
+        private readonly finished: (key?: CellEditNavigationKey, backwards?: boolean, restoreFocus?: boolean) => void,
+        private readonly failed?: (input: { text: string; error: string }) => void,
+        private readonly accepted?: () => void,
+        private readonly cancelled?: () => void) {
         this.element = host.ownerDocument.createElement("div");
         this.element.className = "elg-data-grid-editor";
         host.append(this.element);
         try { this.editor = createFieldEditor(context); }
         catch (error) { this.element.remove(); throw error; }
         this.editor.mount(this.element);
+        this.inputSubscription = this.editor.input.subscribe(() => { this.inputChanged = true; });
         this.committed = this.editor.committed.subscribe(() => {
-            if (!this.finishing && !this.disposed) this.finished();
+            if (!this.finishing && !this.disposed) { this.accepted?.(); this.finished(); }
         });
         this.keyDown = event => {
             if (event.isComposing) return;
@@ -48,7 +55,8 @@ export class GridCellEditor<TRow> {
                 void this.finish(event.key as CellEditNavigationKey, event.shiftKey);
             } else if (event.key === "Escape") {
                 event.preventDefault(); event.stopImmediatePropagation();
-                if (this.editor.cancel()) this.finished();
+                if (this.cancelled) this.cancelled();
+                else if (this.editor.cancel()) this.finished();
             }
         };
         this.element.addEventListener("keydown", this.keyDown, true);
@@ -67,6 +75,14 @@ export class GridCellEditor<TRow> {
         this.element.addEventListener("focusout", this.focusOut);
     }
 
+    /** Restores raw text only in text controls; other editors retain their accepted value. */
+    restoreDraft(text: string, error: string): void {
+        this.retainedInput = true;
+        this.inputChanged = false;
+        if (this.editor instanceof TextEditor) this.editor.restoreDraft(text, error);
+        else this.editor.reportError(`${error}\nInput: ${JSON.stringify(text)}`);
+    }
+
     /** Focuses the input; typing to begin an edit replaces the initial text. */
     focus(initialText?: string): void {
         this.typingEntry = initialText !== undefined;
@@ -80,17 +96,34 @@ export class GridCellEditor<TRow> {
         }
     }
 
-    /** Coalesces navigation requests and retains validation failures for correction. */
+    /** Coalesces navigation and lets the host retain rejected input after the editor closes. */
     finish(key?: CellEditNavigationKey, backwards = false, restoreFocus = true): Promise<boolean> {
         if (this.finishing) return this.finishing;
+        // Merely focusing a checkbox must not replace an invalid clipboard token.
+        if (this.retainedInput && !this.inputChanged && !(this.editor instanceof TextEditor)) {
+            this.finished(key, backwards, restoreFocus);
+            return Promise.resolve(true);
+        }
         this.finishing = this.editor.commit().then(success => {
             if (!this.disposed) {
+                if (success) this.accepted?.();
                 if (success) this.finished(key, backwards, restoreFocus);
-                else this.editor.focus();
+                else if (this.failed) {
+                    this.failed({
+                        text: this.editor instanceof TextEditor ? this.editor.text
+                            : this.context.field.formatValue?.(this.editor.value, this.context) ?? String(this.editor.value ?? ""),
+                        error: this.editor.error ?? "Failed to accept cell input." });
+                    this.finished(key, backwards, restoreFocus);
+                } else this.editor.focus();
             }
-            return success;
+            return success || !!this.failed;
         }).finally(() => { this.finishing = undefined; });
         return this.finishing;
+    }
+
+    /** Explicitly opens a popover editor's picker after the cell has been mounted and positioned. */
+    async openPicker(): Promise<void> {
+        if (!this.disposed && this.editor instanceof PopoverEditor) await this.editor.open();
     }
 
     /** Places the stable overlay over the currently rendered cell. */
@@ -114,6 +147,7 @@ export class GridCellEditor<TRow> {
         if (this.disposed) return;
         this.disposed = true;
         this.committed.dispose();
+        this.inputSubscription.dispose();
         this.element.removeEventListener("keydown", this.keyDown, true);
         this.element.removeEventListener("pointerdown", this.pointerDown, true);
         this.element.removeEventListener("focusout", this.focusOut);

@@ -98,7 +98,7 @@ describe("DataGrid cell editing", () => {
         const saved = grid.getExpansionState();
         expect(await grid.beginEdit((grid as any)._gridRows.count() - 1, "name")).toBe(true);
         type(grid, "Gamma");
-        expect(await grid.endRowEdit()).toBe(true);
+        expect(await grid.insertNewRow(grid.newRowSessions[0])).toBe(true);
         await (grid as any)._gridRows.load(0, 1);
         expect(rows).toHaveLength(3);
         expect(grid.getExpansionState()).toEqual(saved);
@@ -155,15 +155,16 @@ describe("DataGrid cell editing", () => {
         expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 1 });
         expect(grid.getSelectedRanges()).toEqual([{ anchor: { rowIndex: 0, colIndex: 1 }, focus: { rowIndex: 0, colIndex: 1 } }]);
     });
-    it("does not raise navigation for starting an edit, failed parsing, cancellation or programmatic selection", async () => {
+    it("raises navigation after failed parsing while retaining the rejected input", async () => {
         const { grid } = create(); const handler = vi.fn(); grid.cellNavigating.subscribe(handler);
         grid.getSelectionManager().selectSingleCell(0, 1);
         grid.dom.querySelector(".elg-data-grid-viewport")!
             .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
         await vi.waitFor(() => expect(grid.dom.querySelector(".elg-data-grid-editor input")).not.toBeNull());
         type(grid, "invalid").dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
-        await vi.waitFor(() => expect((grid as any)._cellEditor.editor.error).toBeTruthy());
-        grid.cancelEdit(); expect(handler).not.toHaveBeenCalled();
+        await vi.waitFor(() => expect(grid.editing).toBe(false));
+        expect(grid.hasValidationErrors).toBe(true);
+        expect(handler).toHaveBeenCalledTimes(1);
     });
     it.each([
         { rowIndex: -1, colIndex: 0 }, { rowIndex: 2, colIndex: 0 },
@@ -236,13 +237,15 @@ describe("DataGrid cell editing", () => {
         expect(col === 0 ? rows[row].name : rows[row].amount).toBe(col === 0 ? "7" : 7);
         expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: nextRow, colIndex: nextCol });
     });
-    it("keeps a failed replacement entry in its cell when an arrow tries to confirm", async () => {
+    it("retains a failed replacement while an arrow leaves its cell", async () => {
         const { grid, rows } = create(); await grid.beginEdit(0, "amount", "invalid");
         const input = grid.dom.querySelector<HTMLInputElement>(".elg-data-grid-editor input")!;
         input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }));
-        await vi.waitFor(() => expect((grid as any)._cellEditor.editor.error).toBeTruthy());
-        expect(grid.editing).toBe(true); expect(input.value).toBe("invalid");
-        expect(rows[0].amount).toBe(10); expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 1 });
+        await vi.waitFor(() => expect(grid.editing).toBe(false));
+        expect(grid.hasValidationErrors).toBe(true);
+        expect(rows[0].amount).toBe(10); expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 1, colIndex: 1 });
+        await grid.beginEdit(0, "amount");
+        expect(grid.dom.querySelector<HTMLInputElement>(".elg-data-grid-editor input")!.value).toBe("invalid");
     });
     it("switches replacement entry to caret navigation after clicking inside the input", async () => {
         const { grid, rows } = create(); await grid.beginEdit(0, "name", "New");
@@ -273,16 +276,17 @@ describe("DataGrid cell editing", () => {
             expect(grid.getSelectedRanges()).toEqual(ranges);
         }
     });
-    it("preserves the block and active cell after validation fails or editing is cancelled", async () => {
+    it("preserves the block and navigates after validation fails", async () => {
         const { grid, rows } = create(); const manager = grid.getSelectionManager();
         manager.selectSingleCell(0, 0); manager.extendSelection(1, 1); manager.setActiveCell(0, 1);
         const ranges = grid.getSelectedRanges();
         await grid.beginEdit(); const input = type(grid, "invalid");
         input.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
-        await vi.waitFor(() => expect((grid as any)._cellEditor.editor.error).toBeTruthy());
-        expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 1 });
+        await vi.waitFor(() => expect(grid.editing).toBe(false));
+        expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 1, colIndex: 0 });
         expect(grid.getSelectedRanges()).toEqual(ranges); expect(rows[0].amount).toBe(10);
-        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+        await grid.beginEdit(0, "amount");
+        type(grid, "Cancelled").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
         expect(grid.editing).toBe(false); expect(grid.getSelectedRanges()).toEqual(ranges);
     });
     it("collapses the block on grid arrow navigation, but not on input arrows", async () => {
@@ -366,11 +370,15 @@ describe("DataGrid cell editing", () => {
     it("retains parsing, field validation and server validation failures", async () => {
         const { grid, rows } = create({ columns: [{ name: "amount", dataType: "number", validate: (value: number) => value > 0 ? undefined : "Must be positive" }] });
         await grid.beginEdit(0, "amount"); type(grid, "invalid");
-        expect(await grid.endEdit()).toBe(false); expect(grid.editing).toBe(true);
-        type(grid, "-1"); expect(await grid.endEdit()).toBe(false);
+        expect(await grid.endEdit()).toBe(true); expect(grid.editing).toBe(false);
+        expect(grid.hasValidationErrors).toBe(true);
+        await grid.beginEdit(0, "amount");
+        type(grid, "-1"); expect(await grid.endEdit()).toBe(true);
+        await grid.beginEdit(0, "amount");
         expect((grid as any)._cellEditor.editor.error).toBe("Must be positive");
         expect(rows[0].amount).toBe(10);
         type(grid, "12"); expect(await grid.endEdit()).toBe(true);
+        expect(grid.hasValidationErrors).toBe(false);
     });
     it("waits for asynchronous save, blocks concurrent editing and coalesces confirmations", async () => {
         let resolve!: (result: MutationResult) => void;
@@ -392,12 +400,13 @@ describe("DataGrid cell editing", () => {
         await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1));
         expect(update.mock.calls[0][0]).toBe(row);
         resolve({ success: false, error: "Rejected", fieldErrors: { amount: "Too large" } });
-        expect(await first).toBe(false); expect(await second).toBe(false);
-        expect(grid.editing).toBe(true); expect(input.disabled).toBe(false);
-        expect((grid as any)._cellEditor.editor.error).toBe("Too large");
+        expect(await first).toBe(true); expect(await second).toBe(true);
+        expect(grid.editing).toBe(false); expect(grid.hasValidationErrors).toBe(true);
         expect(grid.getSelectedRanges()).toEqual(ranges);
-        expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 1 });
-        expect(navigating).not.toHaveBeenCalled();
+        expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 0 });
+        expect(navigating).toHaveBeenCalledTimes(1);
+        await grid.beginEdit(0, "amount");
+        expect((grid as any)._cellEditor.editor.error).toBe("Too large");
     });
     it("lets number input arrows reach the editor and keeps grid selection still", async () => {
         const { grid } = create(); await grid.beginEdit(0, "amount");

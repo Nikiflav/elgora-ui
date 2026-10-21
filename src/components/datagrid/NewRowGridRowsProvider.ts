@@ -2,19 +2,24 @@ import type { GridRow, GridRowsProvider, GridViewportArgs } from "./GridRow";
 import { throwIfRowQueryAborted } from "./RowQuery";
 import type { GridExpansionState } from "./GridExpansionState";
 
-/** Appends one input row outside the source query, sort order and summaries. */
+/** Appends pending domain rows and one empty input row outside source queries and summaries. */
 export class NewRowGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
     constructor(private readonly source: GridRowsProvider<TRow>,
-        private readonly getNewRow: (index: number) => Promise<GridRow>) {}
+        private readonly getNewRow: (index: number, offset: number) => Promise<GridRow>,
+        private readonly pendingCount: () => number = () => 0) {}
 
     /** Includes the input row even when the source is empty or a page ends at its boundary. */
     async load(args: GridViewportArgs) {
         const result = await this.source.load(args);
         throwIfRowQueryAborted(args.signal);
-        const index = result.totalCount;
-        const rows = index >= args.skip && index < args.skip + args.top
-            ? [...result.rows, await this.getNewRow(index)] : result.rows;
-        return { ...result, rows, totalCount: index + 1 };
+        const count = this.pendingCount() + 1;
+        const rows = [...result.rows];
+        for (let offset = Math.max(0, args.skip - result.totalCount);
+            offset < count && result.totalCount + offset < args.skip + args.top; offset++) {
+            rows.push(await this.getNewRow(result.totalCount + offset, offset));
+            throwIfRowQueryAborted(args.signal);
+        }
+        return { ...result, rows, totalCount: result.totalCount + count };
     }
 
     /** Expansion remains owned by the original query provider. */

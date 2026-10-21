@@ -3,6 +3,17 @@ import { CheckboxEditor, NumberEditor, TextEditor, type ValueEditorOptions, type
 import { LookupEditor } from "./LookupEditor";
 import { DateEditor } from "./DateEditor";
 import { DateTimeEditor } from "./DateTimeEditor";
+import { editorButtons, type EditorButton } from "./EditorButton";
+import type { DataViewField } from "../../data/DataViewField";
+
+/** Returns picker trigger metadata without creating an editor. Custom factories opt in via editorButton. */
+export function getFieldEditorButton(field: DataViewField<any>): EditorButton | undefined {
+    if (field.editorButton) return field.editorButton;
+    if (field.createEditor) return undefined;
+    if (field.lookup) return editorButtons.lookup;
+    const type = DataViewFieldUtils.getDataType(field);
+    return type === "date" || type === "datetime" ? editorButtons[type] : undefined;
+}
 
 /**
  * Creates a value-only editor for a field; shared by grids, forms and cards.

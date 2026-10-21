@@ -151,6 +151,13 @@ export class DataTable implements DataSource<DataRow> {
     /** Finds a confirmed row by current ID. Pending rows are owned by their session handles. */
     getRow(key: RowIdentity): DataRow | undefined { return this._rows.get(key); }
 
+    /** Reports a field's difference from accepted values, using the table's configured equality.
+     * Added rows report every present field as new until successful save/acceptChanges. */
+    isCellModified(row: DataRow, fieldName: string): boolean {
+        if (row.table !== this) throw new Error("Failed to check cell modification. Row belongs to another table.");
+        return row.isModified(fieldName);
+    }
+
     /** Stable/current row ID for the DataSource contract. Mapping preserves the row reference. */
     getRowId(row: DataRow): RowIdentity {
         if (row.table !== this) throw new Error("Failed to get row identity. Row belongs to another table.");

@@ -2296,9 +2296,32 @@
       "source": "src/components/datagrid/DataGrid.ts",
       "members": [
         {
+          "name": "pasteText",
+          "type": "(text: string) => Promise<void>",
+          "description": "Pastes TSV at the active cell, without repeating it to fill the selection.\r\nCell failures retain their input and processing continues. New-row creation\r\nfailures stop the operation; earlier successful mutations are not rolled back.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string) => Promise<void>"
+        },
+        {
           "name": "cellNavigating",
           "type": "ObservableEvent<DataGridCellNavigatingEvent>",
-          "description": "Raised before keyboard navigation changes selection, after a cell edit has\r\nsuccessfully saved. Does not fire for pointer/programmatic selection or\r\nfailed edits. Handlers run synchronously; cancel prevents movement only.",
+          "description": "Raised before keyboard navigation changes selection, after cell editing\r\nfinishes, including when rejected input is retained. Does not fire for\r\npointer/programmatic selection. Handlers run synchronously; cancel prevents movement only.",
           "tags": [
             {
               "name": "example",
@@ -2357,7 +2380,7 @@
         {
           "name": "endEdit",
           "type": "() => Promise<boolean>",
-          "description": "Confirms the current cell and closes only after parsing, validation and saving succeed.",
+          "description": "Finishes cell editing. Rejected input remains visible as a cell draft and does not block navigation.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2373,7 +2396,7 @@
         {
           "name": "cancelEdit",
           "type": "() => boolean",
-          "description": "Discards the unaccepted draft. A running source update cannot be cancelled.",
+          "description": "Discards the active cell's editing input and retained error, showing its source value.\r\nNever cancels the whole pending row; use cancelNewRow(session) explicitly.\r\nA running source update cannot be cancelled.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2417,36 +2440,101 @@
           "kind": "property"
         },
         {
-          "name": "endRowEdit",
-          "type": "() => Promise<boolean>",
-          "description": "Confirms the active cell, then inserts the pending row. Failure retains its values for correction.",
+          "name": "hasValidationErrors",
+          "type": "boolean",
+          "description": "True while rejected cell input or a pending-row insertion error still needs correction.",
           "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "newRowSessions",
+          "type": "readonly NewRowSession<TRow>[]",
+          "description": "Snapshot of source-owned pending sessions created through this grid; safe to iterate while completing them.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "createNewRow",
+          "type": "() => Promise<NewRowSession<TRow>>",
+          "description": "Creates and displays a source-owned pending row, outside sorting, grouping and summaries.\r\nRejects while another row operation/paste is running or editing is unavailable.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "const session = await grid.createNewRow();"
+            }
+          ],
           "topics": [],
           "optional": false,
           "source": "src/components/datagrid/DataGrid.ts",
           "parameters": [],
           "returns": {
+            "type": "Promise<NewRowSession<TRow>>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<NewRowSession<TRow>>"
+        },
+        {
+          "name": "insertNewRow",
+          "type": "(session: NewRowSession<TRow>) => Promise<boolean>",
+          "description": "Finishes this session's cell editor, checks its rejected inputs and inserts its domain row.\r\nReturns false on validation/source failure or a conflicting operation. A foreign/completed\r\nsession rejects. Does not finish an editor on another row. Direct session.insert() bypasses UI checks.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await grid.insertNewRow(session);"
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "parameters": [
+            {
+              "name": "session",
+              "type": "NewRowSession<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
             "type": "Promise<boolean>",
             "description": ""
           },
           "kind": "method",
-          "signature": "() => Promise<boolean>"
+          "signature": "(session: NewRowSession<TRow>) => Promise<boolean>"
         },
         {
           "name": "cancelNewRow",
-          "type": "() => Promise<boolean>",
-          "description": "Discards the whole pending row, not just the current cell draft. Cannot interrupt an in-flight command.",
-          "tags": [],
+          "type": "(session: NewRowSession<TRow>) => Promise<boolean>",
+          "description": "Cancels the specified pending session and its own editor, rejected inputs and errors.\r\nOther rows' editors are not cancelled. Returns false while a conflicting operation runs\r\nor source cancellation fails; a foreign/completed session rejects.",
+          "tags": [
+            {
+              "name": "example",
+              "text": "await grid.cancelNewRow(session);"
+            }
+          ],
           "topics": [],
           "optional": false,
           "source": "src/components/datagrid/DataGrid.ts",
-          "parameters": [],
+          "parameters": [
+            {
+              "name": "session",
+              "type": "NewRowSession<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
           "returns": {
             "type": "Promise<boolean>",
             "description": ""
           },
           "kind": "method",
-          "signature": "() => Promise<boolean>"
+          "signature": "(session: NewRowSession<TRow>) => Promise<boolean>"
         },
         {
           "name": "copySelection",
@@ -2983,6 +3071,16 @@
       "path": "/api-reference/DataGridColumn",
       "source": "src/components/datagrid/DataGridColumn.ts",
       "members": [
+        {
+          "name": "editorButtonVisibility",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "description": "Cell picker trigger visibility outside editing. Defaults to hover; always also supports touch.\nnever hides only the cell trigger, not the editor's own button or keyboard access.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
         {
           "name": "width",
           "type": "number | undefined",
@@ -4409,6 +4507,35 @@
           "kind": "property"
         },
         {
+          "name": "isCellModified",
+          "type": "((row: TRow, fieldName: string) => boolean) | undefined",
+          "description": "Reports whether a field differs from the last accepted/persisted baseline.\nOptional, synchronous and side-effect-free; omit when modification tracking is unavailable.\nNotify through changed after edits, undo/redo, or accepting a successful save so views repaint.\nNewly inserted, unsaved rows may report all present fields as modified.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataSource.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "fieldName",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((row: TRow, fieldName: string) => boolean) | undefined"
+        },
+        {
           "name": "undoCoordinator",
           "type": "UndoCoordinator | undefined",
           "description": "Optional shared history. Execute undo/redo only through this coordinator.",
@@ -4727,6 +4854,35 @@
           },
           "kind": "method",
           "signature": "(key: RowIdentity) => DataRow | undefined"
+        },
+        {
+          "name": "isCellModified",
+          "type": "(row: DataRow, fieldName: string) => boolean",
+          "description": "Reports a field's difference from accepted values, using the table's configured equality.\nAdded rows report every present field as new until successful save/acceptChanges.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/dataset/DataTable.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DataRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "fieldName",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: DataRow, fieldName: string) => boolean"
         },
         {
           "name": "getRowId",
@@ -6062,6 +6218,16 @@
           "kind": "property"
         },
         {
+          "name": "editorButton",
+          "type": "EditorButton | undefined",
+          "description": "Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
           "name": "createEditor",
           "type": "((context: FieldEditorContext<TRow>) => ValueEditor<any>) | undefined",
           "description": "Creates a specialized editor. Example: ctx => new ToggleEditor({ value: ctx.value, onCommit: ctx.onCommit }).",
@@ -6463,6 +6629,40 @@
         "type": "HTMLElementTagNameMap[K]",
         "description": ""
       }
+    },
+    {
+      "name": "EditorButton",
+      "kind": "interface",
+      "type": "EditorButton",
+      "description": "Picker trigger presentation shared by field hosts and popover editors.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/EditorButton",
+      "source": "src/components/editors/EditorButton.ts",
+      "members": [
+        {
+          "name": "icon",
+          "type": "string",
+          "description": "CSS icon class displayed inside the trigger.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/EditorButton.ts",
+          "kind": "property"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Accessible name and tooltip for the trigger.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/EditorButton.ts",
+          "kind": "property"
+        }
+      ]
     },
     {
       "name": "ElgoraUI",
@@ -7188,7 +7388,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/GridStandardContextMenuItem",
       "source": "src/components/datagrid/DataGridContextMenu.ts",
-      "definition": "| \"copy\"\n    | \"copyWithHeaders\"\n    | \"selectRow\"\n    | \"clearSelection\"\n    | \"sortAscending\"\n    | \"sortDescending\"\n    | \"clearSort\"\n    | \"pinColumn\"\n    | \"autosizeColumn\"\n    | \"autosizeAllColumns\"\n    | \"groupColumn\"\n    /** Opens this grouping level and all its parent levels. Only available on grouped headers/chips. */\n    | \"expandGroupsToLevel\"\n    /** Closes this grouping level while retaining parent and descendant expansion states. */\n    | \"collapseGroupsAtLevel\""
+      "definition": "| \"cancelNewRow\"\n    | \"copy\"\n    | \"copyWithHeaders\"\n    /** Reads clipboard text and pastes it at the active cell in an editable grid. */\n    | \"paste\"\n    | \"selectRow\"\n    | \"clearSelection\"\n    | \"sortAscending\"\n    | \"sortDescending\"\n    | \"clearSort\"\n    | \"pinColumn\"\n    | \"autosizeColumn\"\n    | \"autosizeAllColumns\"\n    | \"groupColumn\"\n    /** Opens this grouping level and all its parent levels. Only available on grouped headers/chips. */\n    | \"expandGroupsToLevel\"\n    /** Closes this grouping level while retaining parent and descendant expansion states. */\n    | \"collapseGroupsAtLevel\""
     },
     {
       "name": "GroupByField",
@@ -7350,6 +7550,16 @@
           "kind": "property"
         },
         {
+          "name": "isCellModified",
+          "type": "((row: TRow, fieldName: string) => boolean) | undefined",
+          "description": "Delegates modification checks only when supported by the original source.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/LocalGroupingDataSource.ts",
+          "kind": "property"
+        },
+        {
           "name": "hasChildren",
           "type": "((row: TRow) => Promise<boolean>) | undefined",
           "description": "Presence marks this source as hierarchical (parent/child) and disables groupColumns; answers per-row expandability.",
@@ -7425,6 +7635,35 @@
           "optional": false,
           "source": "src/components/editors/LookupEditor.ts",
           "kind": "property"
+        },
+        {
+          "name": "restoreDraft",
+          "type": "(text: string, error?: string) => void",
+          "description": "Restores rejected search text without allowing a delayed value label to overwrite it.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "error",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string, error?: string) => void"
         },
         {
           "name": "modified",
@@ -11140,6 +11379,35 @@
           "kind": "property"
         },
         {
+          "name": "restoreDraft",
+          "type": "(text: string, error?: string) => void",
+          "description": "Restores raw input, including text which cannot yet be converted to a value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "error",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(text: string, error?: string) => void"
+        },
+        {
           "name": "modified",
           "type": "boolean",
           "description": "Includes differences in unparsed text as well as typed values.",
@@ -12314,6 +12582,29 @@
           "kind": "property"
         },
         {
+          "name": "reportError",
+          "type": "(error: unknown) => void",
+          "description": "Displays an asynchronous editor error without accepting or saving a value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "error",
+              "type": "unknown",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(error: unknown) => void"
+        },
+        {
           "name": "resolveText",
           "type": "(text: string) => T | Promise<T>",
           "description": "Converts text into a typed value, or throws/rejects when it cannot be resolved.\nDoes not modify draft, error, busy or confirmation state, invoke validation,\nemit events or save. Hosts can use this independently for clipboard paste.",
@@ -12340,6 +12631,29 @@
           },
           "kind": "method",
           "signature": "(text: string) => T | Promise<T>"
+        },
+        {
+          "name": "validateValue",
+          "type": "(value: T) => Promise<string | undefined>",
+          "description": "Validates an external candidate without accepting it or changing editor state.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<string | undefined>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: T) => Promise<string | undefined>"
         },
         {
           "name": "setValue",

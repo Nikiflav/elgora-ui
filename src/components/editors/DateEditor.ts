@@ -1,4 +1,5 @@
 import { PopoverEditor } from "./PopoverEditor";
+import { editorButtons } from "./EditorButton";
 import { type TextEditorOptions } from "./ValueEditor";
 import { Calendar } from "../calendar/Calendar";
 import { parseCalendarDate } from "../calendar/CalendarDate";
@@ -54,7 +55,7 @@ export class DateEditor extends PopoverEditor<string | null> {
         if (firstDayOfWeek !== undefined && (!Number.isInteger(firstDayOfWeek) || firstDayOfWeek < 0 || firstDayOfWeek > 6))
             throw new Error("Failed to create date editor. firstDayOfWeek must be an integer from 0 to 6.");
         checkValue(options.value, min, max);
-        super({ ...textOptions, openOnFocus, triggerIcon: "ri-calendar-line", triggerLabel: "Open calendar", commitOnBlur: options.commitOnBlur ?? true, format: formatDate,
+        super({ ...textOptions, openOnFocus, triggerIcon: editorButtons.date.icon, triggerLabel: editorButtons.date.label, commitOnBlur: options.commitOnBlur ?? true, format: formatDate,
             parse: options.parse ?? (text => text.trim() ? formatter.parse(text) : null) });
         this.dateOptions = options;
         this.formatDate = formatDate;

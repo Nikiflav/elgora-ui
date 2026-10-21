@@ -2,6 +2,7 @@ import { getFieldDataType, type DataField, type DataType } from "./DataField";
 import type { GroupInterval } from "./grouping";
 import { Utils } from "../core/Utils";
 import type { ValueEditor } from "../components/editors/ValueEditor";
+import type { EditorButton } from "../components/editors/EditorButton";
 import type { LookupEditorOptions, LookupQuery, LookupResult } from "../components/editors/LookupEditor";
 
 /** Original source row and field supplied to value conversion and validation. */
@@ -101,6 +102,8 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     formatValue?(value: any, context: FieldEditContext<TRow>): string;
     /** Lookup data, labels and optional multiple result columns. */
     lookup?: FieldLookup<TRow>;
+    /** Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults. */
+    editorButton?: EditorButton;
     /** Creates a specialized editor. Example: ctx => new ToggleEditor({ value: ctx.value, onCommit: ctx.onCommit }). */
     createEditor?(context: FieldEditorContext<TRow>): ValueEditor<any>;
 }

@@ -21,6 +21,35 @@ export default {
       "kind": "property"
     },
     {
+      "name": "restoreDraft",
+      "type": "(text: string, error?: string) => void",
+      "description": "Restores rejected search text without allowing a delayed value label to overwrite it.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/LookupEditor.ts",
+      "parameters": [
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "error",
+          "type": "string | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(text: string, error?: string) => void"
+    },
+    {
       "name": "modified",
       "type": "boolean",
       "description": "Includes unconfirmed search text as well as an explicit candidate value.",

@@ -11,9 +11,32 @@ export default {
   "source": "src/components/datagrid/DataGrid.ts",
   "members": [
     {
+      "name": "pasteText",
+      "type": "(text: string) => Promise<void>",
+      "description": "Pastes TSV at the active cell, without repeating it to fill the selection.\r\nCell failures retain their input and processing continues. New-row creation\r\nfailures stop the operation; earlier successful mutations are not rolled back.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<void>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(text: string) => Promise<void>"
+    },
+    {
       "name": "cellNavigating",
       "type": "ObservableEvent<DataGridCellNavigatingEvent>",
-      "description": "Raised before keyboard navigation changes selection, after a cell edit has\r\nsuccessfully saved. Does not fire for pointer/programmatic selection or\r\nfailed edits. Handlers run synchronously; cancel prevents movement only.",
+      "description": "Raised before keyboard navigation changes selection, after cell editing\r\nfinishes, including when rejected input is retained. Does not fire for\r\npointer/programmatic selection. Handlers run synchronously; cancel prevents movement only.",
       "tags": [
         {
           "name": "example",
@@ -72,7 +95,7 @@ export default {
     {
       "name": "endEdit",
       "type": "() => Promise<boolean>",
-      "description": "Confirms the current cell and closes only after parsing, validation and saving succeed.",
+      "description": "Finishes cell editing. Rejected input remains visible as a cell draft and does not block navigation.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -88,7 +111,7 @@ export default {
     {
       "name": "cancelEdit",
       "type": "() => boolean",
-      "description": "Discards the unaccepted draft. A running source update cannot be cancelled.",
+      "description": "Discards the active cell's editing input and retained error, showing its source value.\r\nNever cancels the whole pending row; use cancelNewRow(session) explicitly.\r\nA running source update cannot be cancelled.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -132,36 +155,101 @@ export default {
       "kind": "property"
     },
     {
-      "name": "endRowEdit",
-      "type": "() => Promise<boolean>",
-      "description": "Confirms the active cell, then inserts the pending row. Failure retains its values for correction.",
+      "name": "hasValidationErrors",
+      "type": "boolean",
+      "description": "True while rejected cell input or a pending-row insertion error still needs correction.",
       "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "newRowSessions",
+      "type": "readonly NewRowSession<TRow>[]",
+      "description": "Snapshot of source-owned pending sessions created through this grid; safe to iterate while completing them.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "createNewRow",
+      "type": "() => Promise<NewRowSession<TRow>>",
+      "description": "Creates and displays a source-owned pending row, outside sorting, grouping and summaries.\r\nRejects while another row operation/paste is running or editing is unavailable.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const session = await grid.createNewRow();"
+        }
+      ],
       "topics": [],
       "optional": false,
       "source": "src/components/datagrid/DataGrid.ts",
       "parameters": [],
       "returns": {
+        "type": "Promise<NewRowSession<TRow>>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => Promise<NewRowSession<TRow>>"
+    },
+    {
+      "name": "insertNewRow",
+      "type": "(session: NewRowSession<TRow>) => Promise<boolean>",
+      "description": "Finishes this session's cell editor, checks its rejected inputs and inserts its domain row.\r\nReturns false on validation/source failure or a conflicting operation. A foreign/completed\r\nsession rejects. Does not finish an editor on another row. Direct session.insert() bypasses UI checks.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "await grid.insertNewRow(session);"
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "parameters": [
+        {
+          "name": "session",
+          "type": "NewRowSession<TRow>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
         "type": "Promise<boolean>",
         "description": ""
       },
       "kind": "method",
-      "signature": "() => Promise<boolean>"
+      "signature": "(session: NewRowSession<TRow>) => Promise<boolean>"
     },
     {
       "name": "cancelNewRow",
-      "type": "() => Promise<boolean>",
-      "description": "Discards the whole pending row, not just the current cell draft. Cannot interrupt an in-flight command.",
-      "tags": [],
+      "type": "(session: NewRowSession<TRow>) => Promise<boolean>",
+      "description": "Cancels the specified pending session and its own editor, rejected inputs and errors.\r\nOther rows' editors are not cancelled. Returns false while a conflicting operation runs\r\nor source cancellation fails; a foreign/completed session rejects.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "await grid.cancelNewRow(session);"
+        }
+      ],
       "topics": [],
       "optional": false,
       "source": "src/components/datagrid/DataGrid.ts",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "session",
+          "type": "NewRowSession<TRow>",
+          "optional": false,
+          "description": ""
+        }
+      ],
       "returns": {
         "type": "Promise<boolean>",
         "description": ""
       },
       "kind": "method",
-      "signature": "() => Promise<boolean>"
+      "signature": "(session: NewRowSession<TRow>) => Promise<boolean>"
     },
     {
       "name": "copySelection",

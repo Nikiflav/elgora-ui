@@ -149,6 +149,35 @@ export default {
       "signature": "(key: RowIdentity) => DataRow | undefined"
     },
     {
+      "name": "isCellModified",
+      "type": "(row: DataRow, fieldName: string) => boolean",
+      "description": "Reports a field's difference from accepted values, using the table's configured equality.\nAdded rows report every present field as new until successful save/acceptChanges.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/data/dataset/DataTable.ts",
+      "parameters": [
+        {
+          "name": "row",
+          "type": "DataRow",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "fieldName",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(row: DataRow, fieldName: string) => boolean"
+    },
+    {
       "name": "getRowId",
       "type": "(row: DataRow) => RowIdentity",
       "description": "Stable/current row ID for the DataSource contract. Mapping preserves the row reference.",

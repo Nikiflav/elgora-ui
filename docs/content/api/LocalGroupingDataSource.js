@@ -51,6 +51,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "isCellModified",
+      "type": "((row: TRow, fieldName: string) => boolean) | undefined",
+      "description": "Delegates modification checks only when supported by the original source.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/LocalGroupingDataSource.ts",
+      "kind": "property"
+    },
+    {
       "name": "hasChildren",
       "type": "((row: TRow) => Promise<boolean>) | undefined",
       "description": "Presence marks this source as hierarchical (parent/child) and disables groupColumns; answers per-row expandability.",

@@ -53,6 +53,35 @@ export default {
       "kind": "property"
     },
     {
+      "name": "isCellModified",
+      "type": "((row: TRow, fieldName: string) => boolean) | undefined",
+      "description": "Reports whether a field differs from the last accepted/persisted baseline.\nOptional, synchronous and side-effect-free; omit when modification tracking is unavailable.\nNotify through changed after edits, undo/redo, or accepting a successful save so views repaint.\nNewly inserted, unsaved rows may report all present fields as modified.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataSource.ts",
+      "parameters": [
+        {
+          "name": "row",
+          "type": "TRow",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "fieldName",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "((row: TRow, fieldName: string) => boolean) | undefined"
+    },
+    {
       "name": "undoCoordinator",
       "type": "UndoCoordinator | undefined",
       "description": "Optional shared history. Execute undo/redo only through this coordinator.",

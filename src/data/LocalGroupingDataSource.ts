@@ -25,6 +25,8 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
     readonly delete?: DataSource<TRow>["delete"];
     /** Delegated row identity and hierarchy capabilities, without inventing unsupported ones. */
     readonly getRowId?: DataSource<TRow>["getRowId"];
+    /** Delegates modification checks only when supported by the original source. */
+    readonly isCellModified?: DataSource<TRow>["isCellModified"];
     readonly hasChildren?: DataSource<TRow>["hasChildren"];
     /** The original event, including pending-row notifications; no second event or subscription. */
     get changed(): DataSource<TRow>["changed"] { return this.ds.changed; }
@@ -46,6 +48,7 @@ export class LocalGroupingDataSource<TRow> implements DataSource<TRow> {
         this.update = ds.update?.bind(ds);
         this.delete = ds.delete?.bind(ds);
         this.getRowId = ds.getRowId?.bind(ds);
+        this.isCellModified = ds.isCellModified?.bind(ds);
         this.hasChildren = ds.hasChildren?.bind(ds);
     }
 

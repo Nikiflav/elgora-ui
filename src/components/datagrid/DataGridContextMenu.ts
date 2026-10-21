@@ -12,8 +12,12 @@ export type GridContextMenuTarget =
 
 /** Identifiers for the grid's built-in context-menu actions. */
 export type GridStandardContextMenuItem =
+    /** Cancels the specific pending session under the pointer. */
+    | "cancelNewRow"
     | "copy"
     | "copyWithHeaders"
+    /** Reads clipboard text and pastes it at the active cell in an editable grid. */
+    | "paste"
     | "selectRow"
     | "clearSelection"
     | "sortAscending"

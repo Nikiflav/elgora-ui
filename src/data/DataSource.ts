@@ -199,6 +199,13 @@ export interface DataSource<TRow> {
 
     /** Optional notifications; consumers dispose their subscription, never the source's event. */
     readonly changed?: Observable<DataSourceChanged<TRow>>;
+    /**
+     * Reports whether a field differs from the last accepted/persisted baseline.
+     * Optional, synchronous and side-effect-free; omit when modification tracking is unavailable.
+     * Notify through changed after edits, undo/redo, or accepting a successful save so views repaint.
+     * Newly inserted, unsaved rows may report all present fields as modified.
+     */
+    isCellModified?(row: TRow, fieldName: string): boolean;
     /** Optional shared history. Execute undo/redo only through this coordinator. */
     readonly undoCoordinator?: UndoCoordinator;
     /**

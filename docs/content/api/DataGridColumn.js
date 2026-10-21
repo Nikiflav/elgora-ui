@@ -11,6 +11,16 @@ export default {
   "source": "src/components/datagrid/DataGridColumn.ts",
   "members": [
     {
+      "name": "editorButtonVisibility",
+      "type": "\"hover\" | \"always\" | \"never\" | undefined",
+      "description": "Cell picker trigger visibility outside editing. Defaults to hover; always also supports touch.\nnever hides only the cell trigger, not the editor's own button or keyboard access.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/datagrid/DataGridColumn.ts",
+      "kind": "property"
+    },
+    {
       "name": "width",
       "type": "number | undefined",
       "description": "Column width in pixels. Omit to let the grid measure it.",

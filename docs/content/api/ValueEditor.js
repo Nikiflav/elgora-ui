@@ -91,6 +91,29 @@ export default {
       "kind": "property"
     },
     {
+      "name": "reportError",
+      "type": "(error: unknown) => void",
+      "description": "Displays an asynchronous editor error without accepting or saving a value.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/ValueEditor.ts",
+      "parameters": [
+        {
+          "name": "error",
+          "type": "unknown",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(error: unknown) => void"
+    },
+    {
       "name": "resolveText",
       "type": "(text: string) => T | Promise<T>",
       "description": "Converts text into a typed value, or throws/rejects when it cannot be resolved.\nDoes not modify draft, error, busy or confirmation state, invoke validation,\nemit events or save. Hosts can use this independently for clipboard paste.",
@@ -117,6 +140,29 @@ export default {
       },
       "kind": "method",
       "signature": "(text: string) => T | Promise<T>"
+    },
+    {
+      "name": "validateValue",
+      "type": "(value: T) => Promise<string | undefined>",
+      "description": "Validates an external candidate without accepting it or changing editor state.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/ValueEditor.ts",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "T",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<string | undefined>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(value: T) => Promise<string | undefined>"
     },
     {
       "name": "setValue",

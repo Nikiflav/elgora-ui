@@ -19,6 +19,7 @@ export { Scrollbars, type ScrollbarsOptions, type ScrollbarsHandle, type Scrollb
 export { DataGrid, type DataGridOptions, type DataGridCellNavigatingEvent, type ColumnWidthMode, type ColumnResizeMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
 export { type DataCell, type DataViewField, type DisplayValue, type FieldLookup, type FieldEditContext, type FieldEditorContext } from './data/DataViewField';
 export { createFieldEditor } from './components/editors/createFieldEditor';
+export type { EditorButton } from './components/editors/EditorButton';
 export { type DataType, type DataField } from './data/DataField';
 export { type GroupInterval, type GroupIntervalDefinition, type OrderByToken } from './data/grouping';
 export { type SummaryDefinition, type SummaryContext, type SummaryType, type SummaryRequest, type SummaryResult } from './data/summary';

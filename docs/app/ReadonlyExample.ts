@@ -15,6 +15,7 @@ export class ReadonlyExample extends Component {
         if (demo.height) preview.style.height = demo.height;
         preview.title = demo.id + " live preview";
         preview.setAttribute("sandbox", "allow-scripts allow-same-origin");
+        preview.setAttribute("allow", "clipboard-read; clipboard-write");
         preview.src = SANDBOX_URL;
 
         const status = e("div", { ui: ["elg", "text-muted", "fs-80"] }, "Loading preview…");

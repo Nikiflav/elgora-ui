@@ -36,6 +36,45 @@
     padding: 0;
 }
 
+.elg-data-grid-cell-invalid {
+    box-shadow: inset 0 0 0 1px var(--elg-danger-color);
+}
+
+.elg-data-grid-cell-picker {
+    position: relative;
+}
+
+.elg-data-grid-cell-editor-button {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    padding: 0;
+    border-radius: 4px;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    visibility: hidden;
+}
+
+.elg-data-grid-cell-editor-button-always {
+    visibility: visible;
+}
+
+@media (hover: hover) {
+    .elg-data-grid-cell-picker:hover > .elg-data-grid-cell-editor-button-hover {
+        visibility: visible;
+    }
+}
+
+.elg-data-grid-cell-editing > .elg-data-grid-cell-editor-button {
+    visibility: hidden;
+}
+
 .elg-data-grid-editor > div,
 .elg-data-grid-editor > div > .elg-input-frame,
 .elg-data-grid-editor > div > input:not([type="checkbox"]),
@@ -54,6 +93,13 @@
     text-align: inherit;
 }
 
+/* Keep the focus ring inside the measured cell box, including popup editors. */
+.elg-data-grid-editor > div > .elg-field:focus-visible,
+.elg-data-grid-editor > div > .elg-input-frame > .elg-field:focus-visible {
+    outline: 1px solid var(--elg-data-grid-selection-border);
+    outline-offset: -1px;
+}
+
 .elg-data-grid-editor > div > input:not([type="checkbox"]),
 .elg-data-grid-editor > div > .elg-input-frame > input:not([type="checkbox"]) {
     display: block;
@@ -66,6 +112,8 @@
     --elg-data-grid-cell-bg: var(--elg-bg-color);
     --elg-data-grid-cell-text: var(--elg-text-color);
     --elg-data-grid-cell-border: var(--elg-border-color);
+    --elg-data-grid-sticky-border: var(--elg-data-grid-cell-border);
+    --elg-data-grid-pending-row-border-color: color-mix(in srgb, var(--elg-success-color) 30%, transparent);
     --elg-data-grid-header-bg: var(--elg-surface-color);
     --elg-data-grid-header-border: var(--elg-border-color);
     --elg-data-grid-resizer-color: var(--elg-surface-color-3);
@@ -93,18 +141,19 @@
 }
 
 .elg-data-grid.elg-data-grid-no-border {
-    border: 0;
+    border-color: transparent;
 }
 
-.elg-data-grid.elg-data-grid-no-cell-borders .elg-data-grid-cell,
-.elg-data-grid.elg-data-grid-no-cell-borders .elg-data-grid-row-footer .elg-data-grid-cell,
-.elg-data-grid.elg-data-grid-no-cell-borders .elg-data-grid-row-header .elg-data-grid-cell {
-    border-bottom: 0;
-    border-top: 0;
+.elg-data-grid.elg-data-grid-no-cell-borders {
+    --elg-data-grid-sticky-border: transparent;
 }
 
-.elg-data-grid.elg-data-grid-all-cell-borders .elg-data-grid-cell {
-    border: 1px solid var(--elg-data-grid-cell-border);
+.elg-data-grid.elg-data-grid-no-cell-borders td.elg-data-grid-cell {
+    border-bottom-color: transparent;
+}
+
+.elg-data-grid.elg-data-grid-all-cell-borders td.elg-data-grid-cell:not(:last-child) {
+    border-right-color: var(--elg-data-grid-cell-border);
 }
 
 .elg-data-grid.elg-data-grid-no-selection .elg-selected-cell {
@@ -151,13 +200,16 @@
 }
 
 .elg-data-grid-cell {
+    --elg-data-grid-cell-base-bg: var(--elg-data-grid-cell-bg);
+    --elg-data-grid-cell-render-bg: var(--elg-data-grid-cell-base-bg);
     padding: 4px 6px;
     height: var(--elg-data-grid-row-height);
     min-height: var(--elg-data-grid-row-height);
     border-bottom: 1px solid var(--elg-data-grid-cell-border);
-    /* border-right: 1px solid var(--elg-data-grid-cell-border); */
+    /* Each shared edge has one owner. Reserve the same space in every mode. */
+    border-right: 1px solid transparent;
     background-color: var(--elg-data-grid-cell-bg);
-    background-color: color-mix(in srgb, var(--elg-data-grid-state-color) var(--elg-data-grid-bg-tint), var(--elg-data-grid-cell-bg));
+    background-color: color-mix(in srgb, var(--elg-data-grid-state-color) var(--elg-data-grid-bg-tint), var(--elg-data-grid-cell-render-bg));
     color: var(--elg-data-grid-cell-text);
     box-sizing: border-box;
     overflow: hidden;
@@ -168,7 +220,21 @@
 }
 
 .elg-data-grid.elg-data-grid-hover-row .elg-data-grid-row-data:hover .elg-data-grid-cell {
-    background-color: var(--elg-hover-bg);
+    --elg-data-grid-cell-base-bg: var(--elg-hover-bg);
+}
+
+/* Resolve the default on the cell so custom base colors participate. A token
+   override can be inherited from the grid or applied directly to a cell.
+   The normal selection tint is composed over this resolved background. */
+.elg-data-grid-cell-modified {
+    --elg-data-grid-cell-render-bg: var(--elg-data-grid-modified-cell-bg,
+        color-mix(in srgb, var(--elg-success-color) 10%, var(--elg-data-grid-cell-base-bg)));
+}
+
+/* Pending status changes only the existing edge's color, even in none mode.
+   Selection and error shadows remain independent, inside the cell border. */
+.elg-data-grid .elg-data-grid-row-pending > td.elg-data-grid-cell-data {
+    border-bottom-color: var(--elg-data-grid-pending-row-border-color);
 }
 
 .elg-data-grid-row-loading .elg-data-grid-cell-data {
@@ -183,10 +249,6 @@
     right: var(--elg-empty-right, 5px);
     bottom: 20%;
     background-color: var(--elg-data-grid-cell-border);
-}
-
-.elg-data-grid-row-footer .elg-data-grid-cell {
-     border-top: 1px solid var(--elg-data-grid-cell-border);
 }
 
 .elg-data-grid .elg-data-grid-row-header .elg-data-grid-cell {

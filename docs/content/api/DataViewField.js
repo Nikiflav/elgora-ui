@@ -219,6 +219,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "editorButton",
+      "type": "EditorButton | undefined",
+      "description": "Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
       "name": "createEditor",
       "type": "((context: FieldEditorContext<TRow>) => ValueEditor<any>) | undefined",
       "description": "Creates a specialized editor. Example: ctx => new ToggleEditor({ value: ctx.value, onCommit: ctx.onCommit }).",

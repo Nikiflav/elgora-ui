@@ -95,11 +95,16 @@ export default function demo(): void {
     grid.dom.style.height = "444px";
     grid.dom.style.setProperty("--elg-data-grid-row-height", "44px");
     const status = e("span", { ui: ["text-muted", "fs-80"], role: "status" }, "100 orders · editable local data");
+    const finishRows = async () => {
+        if (!await grid.endEdit() || grid.hasValidationErrors) return false;
+        for (const session of grid.newRowSessions) if (!await grid.insertNewRow(session)) return false;
+        return true;
+    };
     const reset = cbutton({ type: "button", ui: ["elg", "btn", "neutral"], onclick: async () => {
-        if (await grid.endRowEdit()) grid.setOptions({ groupColumns: [], filter: undefined, orderBy: [] });
+        if (await finishRows()) grid.setOptions({ groupColumns: [], filter: undefined, orderBy: [] });
     } }, "Reset view");
     const group = cbutton({ type: "button", ui: ["elg", "btn", "neutral"], onclick: async () => {
-        if (await grid.endRowEdit()) grid.setOptions({ groupColumns: ["destination"] });
+        if (await finishRows()) grid.setOptions({ groupColumns: ["destination"] });
     } }, "Group by destination");
     const root = cdiv({ ui: ["d-flex", "flex-col", "gap-2", "min-w-0"] },
         cdiv({ ui: ["d-flex", "items-center", "justify-between", "gap-2", "flex-wrap"] },

@@ -165,7 +165,7 @@ export abstract class ValueEditor<T> extends Component {
     }
 
     /** Displays an asynchronous editor error without accepting or saving a value. */
-    protected reportError(error: unknown): void {
+    public reportError(error: unknown): void {
         this.message = error instanceof Error ? error.message : String(error);
         this.syncControl();
     }
@@ -180,6 +180,9 @@ export abstract class ValueEditor<T> extends Component {
      * @example const value = await editor.resolveText(clipboardText);
      */
     abstract resolveText(text: string): T | Promise<T>;
+
+    /** Validates an external candidate without accepting it or changing editor state. */
+    async validateValue(value: T): Promise<string | undefined> { return this.editorOptions.validate?.(value); }
 
     /** Restores the control's visual representation from the current typed value. */
     protected abstract displayValue(): void;
@@ -212,7 +215,7 @@ export abstract class ValueEditor<T> extends Component {
         this.pending = Promise.resolve().then(async () => {
             try {
                 const value = await this.candidate();
-                const error = await this.editorOptions.validate?.(value);
+                const error = await this.validateValue(value);
                 if (error) throw new Error(error);
                 this.draft = value;
                 if (!this.same(value, this.accepted)) await this.editorOptions.onCommit?.(value, this);
@@ -299,6 +302,13 @@ export class TextEditor<T = string> extends ValueEditor<T> {
 
     /** Current raw input, which may not yet be a valid typed value. */
     get text(): string { return this.draftText; }
+    /** Restores raw input, including text which cannot yet be converted to a value. */
+    restoreDraft(text: string, error?: string): void {
+        if (this.busy) throw new Error("Failed to restore editor input. Confirmation is still in progress.");
+        this.draftText = text;
+        (this.control as HTMLInputElement).value = text;
+        this.reportError(error ?? "");
+    }
     /** Includes differences in unparsed text as well as typed values. */
     override get modified(): boolean { return this.draftText !== this.acceptedText || super.modified; }
     /** Parses input without changing the last accepted value. */

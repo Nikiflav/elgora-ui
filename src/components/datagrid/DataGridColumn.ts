@@ -17,6 +17,9 @@ export type GridCell<TRow> = Omit<DataCell<TRow>, "column" | "rowData"> & {
 
 /** Presentation and interaction of a field as a column in DataGrid. */
 export interface DataGridColumn<TRow> extends DataViewField<TRow> {
+    /** Cell picker trigger visibility outside editing. Defaults to hover; always also supports touch.
+     * never hides only the cell trigger, not the editor's own button or keyboard access. */
+    editorButtonVisibility?: "always" | "hover" | "never";
     /** Column width in pixels. Omit to let the grid measure it. */
     width?: number;
     /** Alignment of the grid cell content. */

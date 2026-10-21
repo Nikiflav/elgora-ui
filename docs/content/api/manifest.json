@@ -560,6 +560,15 @@
       "module": "./content/api/e.js"
     },
     {
+      "name": "EditorButton",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/EditorButton",
+      "description": "Picker trigger presentation shared by field hosts and popover editors.",
+      "module": "./content/api/EditorButton.js"
+    },
+    {
       "name": "ElgoraUI",
       "kind": "variable",
       "group": "core",

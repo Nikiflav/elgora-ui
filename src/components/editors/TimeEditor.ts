@@ -1,4 +1,5 @@
 import { PopoverEditor } from "./PopoverEditor";
+import { editorButtons } from "./EditorButton";
 import { type TextEditorOptions } from "./ValueEditor";
 import { TimeFormatter } from "../../formatting/TimeFormatter";
 import { TimePicker } from "../time-picker/TimePicker";
@@ -25,7 +26,7 @@ export class TimeEditor extends PopoverEditor<string | null> {
     constructor(options: TimeEditorOptions) {
         const { timeFormat = "HH:mm", minuteStep = 15, openOnFocus, ...textOptions } = options;
         const formatter = new TimeFormatter(timeFormat);
-        super({ ...textOptions, openOnFocus, triggerIcon: "ri-time-line", triggerLabel: "Open time picker", commitOnBlur: false, parse: options.parse ?? (text => {
+        super({ ...textOptions, openOnFocus, triggerIcon: editorButtons.time.icon, triggerLabel: editorButtons.time.label, commitOnBlur: false, parse: options.parse ?? (text => {
             const value = text.trim();
             return value ? formatter.parse(value) : null;
         }), format: options.format ?? (value => value ?? "") });

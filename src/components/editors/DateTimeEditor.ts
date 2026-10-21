@@ -1,4 +1,5 @@
 import { PopoverEditor } from "./PopoverEditor";
+import { editorButtons } from "./EditorButton";
 import { type TextEditorOptions } from "./ValueEditor";
 import { DateFormatter } from "../../formatting/DateFormatter";
 import { TimeFormatter } from "../../formatting/TimeFormatter";
@@ -40,7 +41,7 @@ export class DateTimeEditor extends PopoverEditor<string | null> {
         const { dateFormat = "yyyy-MM-dd", timeFormat = "HH:mm", locale, firstDayOfWeek, minuteStep = 15, openOnFocus, ...textOptions } = options;
         const dateFormatter = new DateFormatter(dateFormat, locale);
         const timeFormatter = new TimeFormatter(timeFormat);
-        super({ ...textOptions, openOnFocus, triggerIcon: "ri-calendar-line", triggerLabel: "Open date and time picker", commitOnBlur: false, format: options.format ?? (value => value === null ? "" : `${dateFormatter.format(value.slice(0, 10))} ${value.slice(11)}`), parse: options.parse ?? (text => {
+        super({ ...textOptions, openOnFocus, triggerIcon: editorButtons.datetime.icon, triggerLabel: editorButtons.datetime.label, commitOnBlur: false, format: options.format ?? (value => value === null ? "" : `${dateFormatter.format(value.slice(0, 10))} ${value.slice(11)}`), parse: options.parse ?? (text => {
             const value = text.trim();
             if (!value) return null;
             const match = /^(.*)\s+(\d{2}:\d{2}(?::\d{2})?)$/.exec(value);

@@ -1,4 +1,4 @@
-import { DataGrid, DataSet, cdiv, cbutton, type DataRow } from "../../../../src/index";
+import { DataGrid, DataSet, cdiv, cbutton, e, type DataRow } from "../../../../src/index";
 
 export default function demo(): void {
     const dataset = new DataSet();
@@ -24,9 +24,24 @@ export default function demo(): void {
             { name: "total", caption: "Total", dataType: "number", readonly: true, getValue: async row => row.getValue("total") }
         ] });
     grid.dom.style.height = "240px";
+    const status = e("p", { ui: ["m-0", "text-muted", "fs-80"], role: "status" },
+        "Edit Quantity or Price: edited and calculated cells turn pale green. Undo/Redo restores their modification state. Save simulates successful persistence and clears the marks.");
     root.append([cdiv({ ui: ["d-flex", "gap-2"] },
         cbutton({ ui: ["elg", "btn", "neutral"], onclick: async () => { if (await grid.endEdit()) await dataset.undoCoordinator.undo(); } }, "Undo"),
-        cbutton({ ui: ["elg", "btn", "neutral"], onclick: async () => { if (await grid.endEdit()) await dataset.undoCoordinator.redo(); } }, "Redo")
-    ), grid]);
+        cbutton({ ui: ["elg", "btn", "neutral"], onclick: async () => { if (await grid.endEdit()) await dataset.undoCoordinator.redo(); } }, "Redo"),
+        cbutton({ ui: ["elg", "btn", "primary"], onclick: async () => {
+            try {
+                if (!await grid.endEdit() || grid.hasValidationErrors) {
+                    status.textContent = "Correct invalid cells before saving."; return;
+                }
+                for (const session of grid.newRowSessions) {
+                    if (!await grid.insertNewRow(session)) { status.textContent = "Correct or cancel the pending row before saving."; return; }
+                }
+                // Replace this callback with the application's server request.
+                const result = await dataset.saveChanges(async () => ({ success: true }));
+                status.textContent = result.success ? "Simulated save succeeded. Changes are accepted; no server request was made." : result.error;
+            } catch (error) { status.textContent = error instanceof Error ? error.message : String(error); }
+        } }, "Save (simulated)")
+    ), grid, status]);
     root.mount(document.body);
 }
