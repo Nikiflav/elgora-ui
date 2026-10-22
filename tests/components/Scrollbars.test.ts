@@ -99,6 +99,46 @@ describe("Scrollbars native attachment", () => {
         element.remove(); handle.refresh(); expect(overlays()[0].style.display).toBe("none");
         handle.dispose(); element.append(document.createElement("p")); await frame(); expect(overlays()).toHaveLength(0);
     });
+    it("throttles repeated resize invalidations, retains the final geometry and stops after disposal", async () => {
+        vi.useFakeTimers();
+        try {
+            const element = panel(), handle = attach(element);
+            await vi.advanceTimersByTimeAsync(100);
+            const measure = vi.fn(element.getBoundingClientRect.bind(element));
+            Object.defineProperty(element, "getBoundingClientRect", { configurable: true, value: measure });
+            const resize = resizeCallbacks[0];
+            for (let i = 0; i < 20; i++) {
+                if (i === 19) Object.defineProperty(element, "scrollWidth", { configurable: true, value: 200 });
+                resize([], {} as ResizeObserver);
+                await vi.advanceTimersByTimeAsync(5);
+            }
+            await vi.advanceTimersByTimeAsync(100);
+            expect(measure.mock.calls.length).toBeGreaterThan(0);
+            // getClientRects() in this fixture also reads the mocked bounds:
+            // two bounds reads per refresh, at most five refreshes including trailing work.
+            expect(measure.mock.calls.length).toBeLessThanOrEqual(10);
+            expect(overlays()[0].querySelector<HTMLElement>(".elg-scrollbar-x")!.style.display).toBe("none");
+            handle.dispose(); const count = measure.mock.calls.length;
+            resize([], {} as ResizeObserver); await vi.advanceTimersByTimeAsync(100);
+            expect(measure).toHaveBeenCalledTimes(count);
+        } finally {
+            disposables.forEach(handle => handle.dispose());
+            await vi.advanceTimersByTimeAsync(100);
+            vi.useRealTimers();
+        }
+    });
+    it("uses visual thumb dimensions for track clicks inside a scaled popup", () => {
+        const element = panel(); attach(element);
+        const track = overlays()[0].querySelector<HTMLElement>(".elg-scrollbar-y")!;
+        const thumb = track.firstElementChild as HTMLElement;
+        geometry(track, 12, 100); geometry(thumb, 12, 20);
+        Object.defineProperty(track, "getBoundingClientRect", { configurable: true,
+            value: () => ({ left: 20, top: 30, width: 6, height: 50 }) });
+        Object.defineProperty(thumb, "getBoundingClientRect", { configurable: true,
+            value: () => ({ left: 20, top: 30, width: 6, height: 10 }) });
+        track.dispatchEvent(new MouseEvent("pointerdown", { clientY: 70, button: 0, bubbles: true, cancelable: true }));
+        expect(element.scrollTop).toBe(350);
+    });
     it("supports Window by adapting its document scrolling element", () => {
         geometry(document.documentElement, 1024, 768, 1024, 2000);
         const handle = attach(window);
@@ -106,6 +146,76 @@ describe("Scrollbars native attachment", () => {
         expect(overlays()[0].style.top).toBe("0px");
         expect(overlays()[0].style.left).toBe("0px");
         expect(overlays()[0].querySelector<HTMLElement>(".elg-scrollbar-y")!.style.display).toBe("block");
+    });
+    it("keeps an animated popover's overlay in local coordinates without phantom overflow", () => {
+        const element = panel();
+        element.setAttribute("popover", "auto");
+        element.style.position = "fixed";
+        element.style.transform = "scale(.98) translateY(-2px)";
+        geometry(element, 200, 100, 200, 100);
+        Object.defineProperties(element, {
+            offsetWidth: { configurable: true, value: 200 }, offsetHeight: { configurable: true, value: 100 },
+            getBoundingClientRect: { configurable: true, value: () => ({ left: 80, top: 50, right: 276, bottom: 148, width: 196, height: 98 }) }
+        });
+        attach(element);
+        const overlay = overlays()[0];
+        expect(overlay.parentElement).toBe(element);
+        expect(overlay.style.position).toBe("absolute");
+        expect(parseFloat(overlay.style.left)).toBeCloseTo(0);
+        expect(parseFloat(overlay.style.top)).toBeCloseTo(0);
+        expect(overlay.style.width).toBe("200px");
+        expect(overlay.style.height).toBe("100px");
+        expect([...overlay.children].every(bar => (bar as HTMLElement).style.display === "none")).toBe(true);
+    });
+    it("refreshes hidden and reopened popovers on native toggle without a resize", async () => {
+        const element = panel(); element.setAttribute("popover", "auto");
+        Object.defineProperty(element, "getClientRects", { configurable: true, value: () => [] });
+        attach(element); const overlay = overlays()[0];
+        expect(overlay.style.display).toBe("none");
+        geometry(element, 200, 100, 200, 100);
+        element.dispatchEvent(new Event("toggle")); await frame();
+        expect(overlay.style.display).toBe("block");
+        expect([...overlay.children].every(bar => (bar as HTMLElement).style.display === "none")).toBe(true);
+        Object.defineProperty(element, "getClientRects", { configurable: true, value: () => [] });
+        element.dispatchEvent(new Event("toggle")); await frame();
+        expect(overlay.style.display).toBe("none");
+    });
+    it.each(["animationend", "animationcancel", "transitionend", "transitioncancel"])("settles moved geometry after %s without a resize", async type => {
+        const ancestor = document.createElement("section"), element = panel();
+        document.body.append(ancestor); ancestor.append(element);
+        attach(element);
+        Object.defineProperty(element, "getBoundingClientRect", { configurable: true,
+            value: () => ({ left: 240, top: 120, right: 440, bottom: 220, width: 200, height: 100 }) });
+        ancestor.dispatchEvent(new Event(type)); await frame();
+        expect(overlays()[0].style.left).toBe("240px");
+        expect(overlays()[0].style.top).toBe("120px");
+    });
+    it("follows active geometric animation at the refresh rate and performs a final measurement", async () => {
+        vi.useFakeTimers();
+        try {
+            const element = panel(); let left = 20;
+            const animation = { playState: "running", pending: false,
+                effect: { getKeyframes: () => [{ transform: "translateX(0)" }, { transform: "translateX(100px)" }] } };
+            Object.defineProperty(element, "getAnimations", { configurable: true, value: () => [animation] });
+            const measure = vi.fn(() => ({ left, top: 30, right: left + 200, bottom: 130, width: 200, height: 100 }));
+            Object.defineProperty(element, "getBoundingClientRect", { configurable: true, value: measure });
+            const handle = attach(element);
+            await vi.advanceTimersByTimeAsync(100); measure.mockClear();
+            left = 120; await vi.advanceTimersByTimeAsync(100);
+            expect(overlays()[0].style.left).toBe("120px");
+            expect(measure.mock.calls.length).toBeLessThanOrEqual(10);
+            animation.playState = "finished"; left = 220;
+            await vi.advanceTimersByTimeAsync(100);
+            expect(overlays()[0].style.left).toBe("220px");
+            const count = measure.mock.calls.length;
+            await vi.advanceTimersByTimeAsync(100);
+            expect(measure).toHaveBeenCalledTimes(count);
+            handle.dispose();
+        } finally {
+            disposables.forEach(handle => handle.dispose());
+            await vi.advanceTimersByTimeAsync(100);
+            vi.useRealTimers();
+        }
     });
     it("rejects a virtual ScrollEngine viewport instead of adding another set of controls", () => {
         const element = panel(); const engine = new ScrollEngine(element); disposables.push(engine);

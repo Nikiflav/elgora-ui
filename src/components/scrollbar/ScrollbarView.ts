@@ -110,7 +110,8 @@ export class ScrollbarView implements Disposable {
         const thumb = axis === "x" ? this.horizontalThumb : this.verticalThumb;
         if (event.target !== thumb) {
             const track = (axis === "x" ? this.horizontal : this.vertical).getBoundingClientRect();
-            const size = axis === "x" ? thumb.clientWidth : thumb.clientHeight;
+            const thumbRect = thumb.getBoundingClientRect();
+            const size = axis === "x" ? thumbRect.width || thumb.clientWidth : thumbRect.height || thumb.clientHeight;
             const length = (axis === "x" ? track.width : track.height) - size;
             const position = axis === "x" ? event.clientX - track.left : event.clientY - track.top;
             this.scroll(axis, length > 0 ? Math.max(0, Math.min((position - size / 2) / length, 1)) : 0);
@@ -131,7 +132,8 @@ export class ScrollbarView implements Disposable {
         const horizontal = this.axis === "x";
         const track = (horizontal ? this.horizontal : this.vertical).getBoundingClientRect();
         const thumb = horizontal ? this.horizontalThumb : this.verticalThumb;
-        const available = (horizontal ? track.width : track.height) - (horizontal ? thumb.clientWidth : thumb.clientHeight);
+        const thumbRect = thumb.getBoundingClientRect();
+        const available = (horizontal ? track.width : track.height) - (horizontal ? thumbRect.width || thumb.clientWidth : thumbRect.height || thumb.clientHeight);
         const position = (horizontal ? event.clientX - track.left : event.clientY - track.top) - this.offset;
         this.scroll(this.axis, available > 0 ? Math.max(0, Math.min(position / available, 1)) : 0);
     };

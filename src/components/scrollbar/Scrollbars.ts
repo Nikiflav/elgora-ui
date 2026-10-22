@@ -1,4 +1,5 @@
 import { ElgoraUI, type Disposable } from "../../core/ElgoraUI";
+import { Throttle } from "../../core/Throttle";
 import { ScrollbarView } from "./ScrollbarView";
 import type { ScrollbarMode } from "./ScrollbarMode";
 
@@ -18,7 +19,7 @@ export interface ScrollbarsHandle extends Disposable {
     scrollbarMode: ScrollbarMode;
     /** Mouse proximity threshold in CSS pixels; zero enables direct scrollbar hover only. */
     scrollbarHoverDistance: number;
-    /** Rechecks dimensions and position immediately, for application-specific layout changes. */
+    /** Rechecks dimensions and position immediately, bypassing the automatic 30 Hz throttle. */
     refresh(): void;
 }
 
@@ -28,7 +29,7 @@ export interface ScrollbarsInstallation extends Disposable {
     scrollbarMode: ScrollbarMode;
     /** Mouse proximity threshold for every attachment owned by this installation. Defaults to 50. */
     scrollbarHoverDistance: number;
-    /** Discovers new viewports and updates existing ones immediately. */
+    /** Discovers new viewports and updates existing ones immediately, bypassing automatic throttling. */
     refresh(): void;
 }
 
@@ -37,6 +38,8 @@ const installed = new WeakMap<HTMLElement | Window, NativeScrollbarsInstallation
 const windowInstallations = new WeakMap<Window, Set<NativeScrollbarsInstallation>>();
 const overlaySelector = "[data-elg-scrollbars-overlay]";
 const excludedSelector = `${overlaySelector}, [data-elg-scroll-engine]`;
+const refreshInterval = 1000 / 30;
+const motionEvents = ["animationstart", "animationend", "animationcancel", "transitionrun", "transitionend", "transitioncancel"] as const;
 function isWindow(target: HTMLElement | Window): target is Window { return (target as Window).window === target; }
 function isOverlay(node: Node): boolean {
     return !!(node.nodeType === 1 ? node as Element : node.parentElement)?.closest(overlaySelector);
@@ -128,6 +131,9 @@ class NativeScrollbars implements ScrollbarsHandle {
     private disposed = false;
     private mode: ScrollbarMode;
     private readonly observedChildren = new Set<Element>();
+    private readonly refreshThrottle = new Throttle(() => ElgoraUI.scheduler.schedule(this.refresh), refreshInterval);
+    private readonly animations = new Set<Animation>();
+    private animationTimer?: number;
 
     constructor(readonly element: HTMLElement, private readonly win: Window, private readonly page: boolean, options: ScrollbarsOptions) {
         this.mode = options.scrollbarMode ?? "thin";
@@ -149,11 +155,15 @@ class NativeScrollbars implements ScrollbarsHandle {
         this.mutations = new MutationObserver(records => { if (records.some(record => !isOverlay(record.target))) this.schedule(); });
         this.mutations.observe(element, { subtree: true, childList: true, characterData: true, attributes: true });
         element.ownerDocument.addEventListener("scroll", this.scrolled, true);
+        element.ownerDocument.addEventListener("toggle", this.settled, true);
+        for (const event of motionEvents) element.ownerDocument.addEventListener(event, this.motionChanged, true);
         win.addEventListener("resize", this.schedule);
         element.addEventListener("load", this.schedule, true);
         element.addEventListener("input", this.schedule);
         this.overlay.addEventListener("wheel", this.wheel, { passive: false });
         this.refresh();
+        // An automatic installation may discover a viewport after animationstart.
+        for (let node: HTMLElement | null = element; node; node = node.parentElement) this.watchMotion(node);
     }
 
     get scrollbarMode(): ScrollbarMode { return this.mode; }
@@ -162,7 +172,44 @@ class NativeScrollbars implements ScrollbarsHandle {
     set scrollbarHoverDistance(value: number) { if (!this.disposed) this.bars.hoverDistance = value; }
     private get width(): number { return this.page ? this.win.document.documentElement.clientWidth : this.element.clientWidth; }
     private get height(): number { return this.page ? this.win.document.documentElement.clientHeight : this.element.clientHeight; }
-    private schedule = (): void => { if (!this.disposed) ElgoraUI.scheduler.schedule(this.refresh); };
+    private schedule = (): void => { if (!this.disposed) this.refreshThrottle.call(); };
+    private settled = (event: Event): void => {
+        const target = event.target as Element | null;
+        if (this.disposed || !target?.contains(this.element)) return;
+        this.refreshThrottle.cancel();
+        ElgoraUI.scheduler.schedule(this.refresh);
+    };
+    private motionChanged = (event: Event): void => {
+        const target = event.target as HTMLElement | null;
+        if (!target || isOverlay(target) || (!target.contains(this.element) && !this.element.contains(target))) return;
+        if (event.type === "animationstart" || event.type === "transitionrun") this.watchMotion(target);
+        // End/cancel can change a fixed containing block without resizing anything.
+        this.refreshThrottle.cancel();
+        ElgoraUI.scheduler.schedule(this.refresh);
+    };
+    private watchMotion(target: HTMLElement): void {
+        if (this.disposed || typeof target.getAnimations !== "function") return;
+        const root = this.element.closest("[popover], dialog");
+        // Both viewport and overlay inherit this ancestor's transform. Layout
+        // size changes are already covered by ResizeObserver; no frame loop needed.
+        if (root && target.contains(root)) return;
+        for (const animation of target.getAnimations()) {
+            const effect = animation.effect;
+            if (!(effect && "getKeyframes" in effect) || (animation.playState !== "running" && !animation.pending)) continue;
+            const geometric = (effect as KeyframeEffect).getKeyframes().some(frame => Object.keys(frame)
+                .some(key => /^(transform|translate|rotate|scale|perspective|width|height|minWidth|maxWidth|minHeight|maxHeight|inset|top|right|bottom|left|margin|padding|border(?:Top|Right|Bottom|Left)?Width|fontSize|fontFamily|fontWeight|lineHeight|gap|flex|grid)/.test(key)));
+            if (geometric) this.animations.add(animation);
+        }
+        if (this.animations.size && this.animationTimer === undefined) this.followMotion();
+    }
+    private followMotion = (): void => {
+        this.animationTimer = undefined;
+        if (this.disposed) return;
+        for (const animation of this.animations)
+            if (animation.playState !== "running" && !animation.pending) this.animations.delete(animation);
+        this.schedule(); // Only this attachment is refreshed, never document discovery.
+        if (this.animations.size) this.animationTimer = this.win.setTimeout(this.followMotion, refreshInterval);
+    };
     private scrolled = (event: Event): void => {
         if (event.target === this.element || (this.page && event.target === this.element.ownerDocument)) this.bars.flash();
         this.schedule(); // Ancestor scrolling also changes overlay position and clipping.
@@ -184,41 +231,63 @@ class NativeScrollbars implements ScrollbarsHandle {
         }
         const style = this.win.getComputedStyle(element);
         const rect = element.getBoundingClientRect();
-        const left = this.page ? 0 : rect.left + element.clientLeft;
-        const top = this.page ? 0 : rect.top + element.clientTop;
-        Object.assign(this.overlay.style, { display: "block", left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` });
-        for (const name of ["--elg-text-h", "--elg-text-s", "--elg-text-l"]) this.overlay.style.setProperty(name, style.getPropertyValue(name));
-        // Crop controls to ancestor scroll/clip areas without moving their coordinate system.
+        const root = element.closest<HTMLElement>("[popover], dialog");
+        const host = root ?? element.ownerDocument.body ?? element.ownerDocument.documentElement;
+        if (this.overlay.parentElement !== host) host.append(this.overlay);
+        // A fixed child of a transformed popover uses the popover as its
+        // containing block. Viewport coordinates then create phantom overflow.
+        // Absolute coordinates within that same root follow scale/translation
+        // naturally, including during entry animation, without per-frame work.
+        const scaleX = this.page ? 1 : rect.width / (element.offsetWidth || rect.width) || 1;
+        const scaleY = this.page ? 1 : rect.height / (element.offsetHeight || rect.height) || 1;
+        const rootRect = root?.getBoundingClientRect();
+        const rootScaleX = root && rootRect ? rootRect.width / (root.offsetWidth || rootRect.width) || 1 : 1;
+        const rootScaleY = root && rootRect ? rootRect.height / (root.offsetHeight || rootRect.height) || 1 : 1;
+        const left = this.page ? 0 : rect.left + element.clientLeft * scaleX;
+        const top = this.page ? 0 : rect.top + element.clientTop * scaleY;
+        const visualWidth = width * scaleX, visualHeight = height * scaleY;
+        const overlayLeft = root && rootRect ? (left - rootRect.left) / rootScaleX - root.clientLeft + root.scrollLeft : left;
+        const overlayTop = root && rootRect ? (top - rootRect.top) / rootScaleY - root.clientTop + root.scrollTop : top;
+        const overlayWidth = visualWidth / rootScaleX, overlayHeight = visualHeight / rootScaleY;
+        // Read real content extents before writing overlay styles. The overlay
+        // must fit the viewport so it never becomes part of those extents.
+        const scrollWidth = element.scrollWidth, scrollHeight = element.scrollHeight;
         let clipLeft = Math.max(0, -left), clipTop = Math.max(0, -top);
-        let clipRight = Math.max(0, left + width - this.win.innerWidth), clipBottom = Math.max(0, top + height - this.win.innerHeight);
-        for (let ancestor = this.page ? null : element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        let clipRight = Math.max(0, left + visualWidth - this.win.innerWidth), clipBottom = Math.max(0, top + visualHeight - this.win.innerHeight);
+        for (let ancestor = this.page || root === element ? null : element.parentElement; ancestor; ancestor = ancestor.parentElement) {
             const overflow = this.win.getComputedStyle(ancestor);
             const bounds = ancestor.getBoundingClientRect();
+            const sx = bounds.width / (ancestor.offsetWidth || bounds.width) || 1;
+            const sy = bounds.height / (ancestor.offsetHeight || bounds.height) || 1;
             if (/auto|scroll|hidden|clip/.test(overflow.overflowX)) {
-                clipLeft = Math.max(clipLeft, bounds.left + ancestor.clientLeft - left);
-                clipRight = Math.max(clipRight, left + width - bounds.left - ancestor.clientLeft - ancestor.clientWidth);
+                clipLeft = Math.max(clipLeft, bounds.left + ancestor.clientLeft * sx - left);
+                clipRight = Math.max(clipRight, left + visualWidth - bounds.left - (ancestor.clientLeft + ancestor.clientWidth) * sx);
             }
             if (/auto|scroll|hidden|clip/.test(overflow.overflowY)) {
-                clipTop = Math.max(clipTop, bounds.top + ancestor.clientTop - top);
-                clipBottom = Math.max(clipBottom, top + height - bounds.top - ancestor.clientTop - ancestor.clientHeight);
+                clipTop = Math.max(clipTop, bounds.top + ancestor.clientTop * sy - top);
+                clipBottom = Math.max(clipBottom, top + visualHeight - bounds.top - (ancestor.clientTop + ancestor.clientHeight) * sy);
             }
+            if (ancestor === root) break; // Top-layer content escapes outer ancestor clips.
         }
-        this.overlay.style.clipPath = `inset(${clipTop}px ${clipRight}px ${clipBottom}px ${clipLeft}px)`;
         const canScroll = (overflow: string) => this.page ? !/hidden|clip/.test(overflow) : /auto|scroll/.test(overflow);
-        const showX = canScroll(style.overflowX || style.overflow) && element.scrollWidth > width + 0.5;
-        const showY = canScroll(style.overflowY || style.overflow) && element.scrollHeight > height + 0.5;
+        const showX = canScroll(style.overflowX || style.overflow) && scrollWidth > width + 0.5;
+        const showY = canScroll(style.overflowY || style.overflow) && scrollHeight > height + 0.5;
+        Object.assign(this.overlay.style, { display: "block", position: root ? "absolute" : "fixed",
+            left: `${overlayLeft}px`, top: `${overlayTop}px`, width: `${overlayWidth}px`, height: `${overlayHeight}px`,
+            clipPath: `inset(${clipTop / rootScaleY}px ${clipRight / rootScaleX}px ${clipBottom / rootScaleY}px ${clipLeft / rootScaleX}px)` });
+        for (const name of ["--elg-text-h", "--elg-text-s", "--elg-text-l"]) this.overlay.style.setProperty(name, style.getPropertyValue(name));
         this.bars.horizontal.style.display = showX ? "block" : "none";
         this.bars.vertical.style.display = showY ? "block" : "none";
         this.overlay.classList.toggle("elg-scrollbar-both", showX && showY);
-        const trackWidth = Math.max(0, width - (showY ? 12 : 0));
-        const trackHeight = Math.max(0, height - (showX ? 12 : 0));
-        const thumbWidth = Math.min(trackWidth, Math.max(20, width / Math.max(width, element.scrollWidth) * trackWidth));
-        const thumbHeight = Math.min(trackHeight, Math.max(20, height / Math.max(height, element.scrollHeight) * trackHeight));
+        const trackWidth = Math.max(0, overlayWidth - (showY ? 12 : 0));
+        const trackHeight = Math.max(0, overlayHeight - (showX ? 12 : 0));
+        const thumbWidth = Math.min(trackWidth, Math.max(20, width / Math.max(width, scrollWidth) * trackWidth));
+        const thumbHeight = Math.min(trackHeight, Math.max(20, height / Math.max(height, scrollHeight) * trackHeight));
         this.bars.horizontalThumb.style.width = `${thumbWidth}px`;
         this.bars.verticalThumb.style.height = `${thumbHeight}px`;
-        const ratioX = Math.min(1, Math.abs(element.scrollLeft) / Math.max(1, element.scrollWidth - width));
+        const ratioX = Math.min(1, Math.abs(element.scrollLeft) / Math.max(1, scrollWidth - width));
         this.bars.horizontalThumb.style.transform = `translateX(${(style.direction === "rtl" ? 1 - ratioX : ratioX) * (trackWidth - thumbWidth)}px)`;
-        this.bars.verticalThumb.style.transform = `translateY(${Math.max(0, element.scrollTop) / Math.max(1, element.scrollHeight - height) * (trackHeight - thumbHeight)}px)`;
+        this.bars.verticalThumb.style.transform = `translateY(${Math.max(0, element.scrollTop) / Math.max(1, scrollHeight - height) * (trackHeight - thumbHeight)}px)`;
         for (const child of [...this.observedChildren]) if (child.parentElement !== element) { this.resize.unobserve(child); this.observedChildren.delete(child); }
         for (const child of element.children) if (!isOverlay(child) && !this.observedChildren.has(child)) { this.resize.observe(child); this.observedChildren.add(child); }
         this.bars.refreshHover();
@@ -230,7 +299,11 @@ class NativeScrollbars implements ScrollbarsHandle {
         this.owner?.release(this);
         this.disposed = true;
         this.resize.disconnect(); this.mutations.disconnect(); this.observedChildren.clear();
+        this.refreshThrottle.cancel(); this.animations.clear();
+        if (this.animationTimer !== undefined) this.win.clearTimeout(this.animationTimer);
         this.element.ownerDocument.removeEventListener("scroll", this.scrolled, true);
+        this.element.ownerDocument.removeEventListener("toggle", this.settled, true);
+        for (const event of motionEvents) this.element.ownerDocument.removeEventListener(event, this.motionChanged, true);
         this.win.removeEventListener("resize", this.schedule);
         this.element.removeEventListener("load", this.schedule, true);
         this.element.removeEventListener("input", this.schedule);
@@ -252,6 +325,7 @@ class NativeScrollbarsInstallation implements ScrollbarsInstallation {
     private mode: ScrollbarMode;
     private hoverDistance: number;
     private readonly root: HTMLElement;
+    private readonly refreshThrottle = new Throttle(() => ElgoraUI.scheduler.schedule(this.refresh), refreshInterval);
 
     constructor(private readonly target: HTMLElement | Window, private readonly win: Window, options: ScrollbarsOptions) {
         this.root = isWindow(target) ? win.document.documentElement : target;
@@ -317,7 +391,7 @@ class NativeScrollbarsInstallation implements ScrollbarsInstallation {
         return /auto|scroll/.test(style.overflowX + style.overflowY + style.overflow);
     }
 
-    readonly schedule = (): void => { if (!this.disposed) ElgoraUI.scheduler.schedule(this.refresh); };
+    readonly schedule = (): void => { if (!this.disposed) this.refreshThrottle.call(); };
 
     /** Reconciles this scope with the nearest installation and explicit attachment ownership. */
     readonly refresh = (): void => {
@@ -358,6 +432,7 @@ class NativeScrollbarsInstallation implements ScrollbarsInstallation {
         scopes?.delete(this);
         if (!scopes?.size) windowInstallations.delete(this.win);
         this.mutations.disconnect(); this.resize.disconnect(); this.observed.clear();
+        this.refreshThrottle.cancel();
         this.win.removeEventListener("resize", this.schedule);
         this.root.removeEventListener("load", this.schedule, true);
         this.win.document.fonts?.removeEventListener("loadingdone", this.schedule);

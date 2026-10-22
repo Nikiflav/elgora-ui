@@ -10417,7 +10417,7 @@
         {
           "name": "refresh",
           "type": "() => void",
-          "description": "Rechecks dimensions and position immediately, for application-specific layout changes.",
+          "description": "Rechecks dimensions and position immediately, bypassing the automatic 30 Hz throttle.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10467,7 +10467,7 @@
         {
           "name": "refresh",
           "type": "() => void",
-          "description": "Discovers new viewports and updates existing ones immediately.",
+          "description": "Discovers new viewports and updates existing ones immediately, bypassing automatic throttling.",
           "tags": [],
           "topics": [],
           "optional": false,

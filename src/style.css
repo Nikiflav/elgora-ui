@@ -297,6 +297,15 @@ body {
   resize: vertical;
 }
 
+/* Single-line selects share button geometry; keep room for the native arrow. */
+:is(.elg, .elg-field):where(select:not([multiple]):is(:not([size]), [size="0"], [size="1"])) {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--elg-btn-padding);
+  padding-inline-end: 1.5em;
+  border-radius: var(--elg-btn-radius);
+}
+
 .elg-btn {
   --elg-btn-neutral-state-bg: var(--elg-btn-neutral-bg);
   padding: var(--elg-btn-padding);

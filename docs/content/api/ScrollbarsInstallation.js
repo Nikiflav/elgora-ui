@@ -33,7 +33,7 @@ export default {
     {
       "name": "refresh",
       "type": "() => void",
-      "description": "Discovers new viewports and updates existing ones immediately.",
+      "description": "Discovers new viewports and updates existing ones immediately, bypassing automatic throttling.",
       "tags": [],
       "topics": [],
       "optional": false,

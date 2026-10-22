@@ -43,7 +43,7 @@ export default {
     {
       "name": "refresh",
       "type": "() => void",
-      "description": "Rechecks dimensions and position immediately, for application-specific layout changes.",
+      "description": "Rechecks dimensions and position immediately, bypassing the automatic 30 Hz throttle.",
       "tags": [],
       "topics": [],
       "optional": false,
