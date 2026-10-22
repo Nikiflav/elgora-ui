@@ -3,6 +3,7 @@ import type { GroupInterval } from "./grouping";
 import { Utils } from "../core/Utils";
 import { NumberFormatter } from "../formatting/NumberFormatter";
 import { DateFormatter } from "../formatting/DateFormatter";
+import { Localization } from "../localization/Localization";
 import type { ValueEditor } from "../components/editors/ValueEditor";
 import type { EditorButton } from "../components/editors/EditorButton";
 import type { LookupEditorOptions, LookupQuery, LookupResult } from "../components/editors/LookupEditor";
@@ -15,6 +16,10 @@ export interface FieldEditContext<TRow> {
     field: DataViewField<TRow>;
     /** Current field value at the time the context was created. */
     value: any;
+    /** Resolved locale supplied by the host; conversion callbacks may use it explicitly. */
+    locale?: string;
+    /** Host message context, forwarded to built-in/custom editors. Omission uses Localization.default. */
+    localization?: Localization;
 }
 
 /** Context for custom editor creation. Pass onCommit to the editor to retain source-controlled saving. */
@@ -104,8 +109,8 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     formatValue?(value: any, context: FieldEditContext<TRow>): string;
     /** Display-only pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. Does not alter editor text or stored values. */
     displayFormat?: string;
-    /** Locale for displayFormat; defaults to the runtime locale. Independent of editor conversion callbacks. */
-    displayLocale?: string;
+    /** Regional override for display and editor context. Falls back to the host locale, then Localization.default. Does not select a parser. */
+    locale?: string;
     /** Lookup data, labels and optional multiple result columns. */
     lookup?: FieldLookup<TRow>;
     /** Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults. */
@@ -121,17 +126,18 @@ export class DataViewFieldUtils {
     }>();
 
     /** Formats a raw display value without row-dependent labels. Null/undefined become empty text. */
-    static formatDisplayValue<TRow>(field: DataViewField<TRow>, value: any): string {
+    static formatDisplayValue<TRow>(field: DataViewField<TRow>, value: any, inheritedLocale?: string): string {
         if (value == null) return "";
         if (field.displayFormat === undefined) return String(value);
         const type = DataViewFieldUtils.getDataType(field);
+        const locale = Localization.resolveLocale({ locale: field.locale ?? inheritedLocale });
         if (type !== "number" && type !== "date")
             throw new Error("displayFormat supports number and date fields. Use getText for other types.");
         let cached = this.displayFormatters.get(field);
-        if (!cached || cached.pattern !== field.displayFormat || cached.locale !== field.displayLocale || cached.type !== type) {
-            cached = { pattern: field.displayFormat, locale: field.displayLocale, type,
-                formatter: type === "number" ? new NumberFormatter(field.displayFormat, field.displayLocale)
-                    : new DateFormatter(field.displayFormat, field.displayLocale) };
+        if (!cached || cached.pattern !== field.displayFormat || cached.locale !== locale || cached.type !== type) {
+            cached = { pattern: field.displayFormat, locale, type,
+                formatter: type === "number" ? new NumberFormatter(field.displayFormat, locale)
+                    : new DateFormatter(field.displayFormat, locale) };
             this.displayFormatters.set(field, cached);
         }
         return type === "number" ? (cached.formatter as NumberFormatter).format(value)
@@ -139,11 +145,11 @@ export class DataViewFieldUtils {
     }
 
     /** Reuses field formatting for aggregates; counts/distinct counts remain plain integer quantities, never currency/percent/date labels. */
-    static formatSummaryValue<TRow>(field: DataViewField<TRow>, value: any, summaryType: string): string {
+    static formatSummaryValue<TRow>(field: DataViewField<TRow>, value: any, summaryType: string, inheritedLocale?: string): string {
         if (summaryType === "count" || summaryType === "distinct") return String(value ?? "");
         // Custom aggregates may return labels or structured results instead of the field's numeric type.
         if (field.dataType === "number" && value != null && typeof value !== "number") return String(value);
-        return this.formatDisplayValue(field, value);
+        return this.formatDisplayValue(field, value, inheritedLocale);
     }
 
     /** Returns the semantic data type; unspecified fields default to string. */
@@ -179,15 +185,15 @@ export class DataViewFieldUtils {
         return Utils.getMember(row as Record<string, any>, col.name);
     }
 
-    static async getText<TRow>(col: DataViewField<TRow>, row: TRow): Promise<string> {
+    static async getText<TRow>(col: DataViewField<TRow>, row: TRow, inheritedLocale?: string): Promise<string> {
 
         try {
             if (col.getText)
                 return await col.getText(row);
             const value = await DataViewFieldUtils.getValue(col, row);
-            const context = { row, field: col, value };
+            const context = { row, field: col, value, locale: Localization.resolveLocale({ locale: col.locale ?? inheritedLocale }) };
             if (col.lookup) return await col.lookup.getValueText(value, context);
-            if (col.displayFormat !== undefined) return this.formatDisplayValue(col, value);
+            if (col.displayFormat !== undefined) return this.formatDisplayValue(col, value, context.locale);
             return col.formatValue?.(value, context) ?? String(value ?? "");
         }
         catch (ex) {
@@ -196,9 +202,9 @@ export class DataViewFieldUtils {
         }
     }
 
-    static async getDataCell<TRow>(col: DataViewField<TRow>, row: TRow): Promise<DataCell<TRow>> {
+    static async getDataCell<TRow>(col: DataViewField<TRow>, row: TRow, inheritedLocale?: string): Promise<DataCell<TRow>> {
         const value = await DataViewFieldUtils.getValue(col, row);
-        const text = await DataViewFieldUtils.getText(col, row);
+        const text = await DataViewFieldUtils.getText(col, row, inheritedLocale);
 
         return {
             column: col,
@@ -208,16 +214,16 @@ export class DataViewFieldUtils {
         };
     }
 
-    static async getDataCells<TRow>(columns: DataViewField<TRow>[], row: TRow): Promise<Record<string, DataCell<TRow>>> {
+    static async getDataCells<TRow>(columns: DataViewField<TRow>[], row: TRow, inheritedLocale?: string): Promise<Record<string, DataCell<TRow>>> {
         const cells: Record<string, DataCell<TRow>> = {};
         for (let col of columns) {
-            cells[col.name] = await DataViewFieldUtils.getDataCell(col, row);
+            cells[col.name] = await DataViewFieldUtils.getDataCell(col, row, inheritedLocale);
         }
         return cells;
     }
 
     /** Waits until all values and display texts are loaded for the specified columns */
-    static async loadRowValues<TRow>(data: any[], columns: DataViewField<TRow>[]): Promise<Map<any, Map<string, { value: any, text: string }>>> {
+    static async loadRowValues<TRow>(data: any[], columns: DataViewField<TRow>[], inheritedLocale?: string): Promise<Map<any, Map<string, { value: any, text: string }>>> {
         const map = new Map();
         if (columns.length == 0)
             return map;
@@ -229,7 +235,7 @@ export class DataViewFieldUtils {
                     col.name,
                     {
                         value: await DataViewFieldUtils.getValue(col, dr),
-                        text: await DataViewFieldUtils.getText(col, dr)
+                        text: await DataViewFieldUtils.getText(col, dr, inheritedLocale)
                     });
             }
             map.set(dr, values);

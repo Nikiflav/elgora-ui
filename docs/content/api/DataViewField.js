@@ -219,9 +219,9 @@ export default {
       "kind": "property"
     },
     {
-      "name": "displayLocale",
+      "name": "locale",
       "type": "string | undefined",
-      "description": "Locale for displayFormat; defaults to the runtime locale. Independent of editor conversion callbacks.",
+      "description": "Regional override for display and editor context. Falls back to the host locale, then Localization.default. Does not select a parser.",
       "tags": [],
       "topics": [],
       "optional": true,

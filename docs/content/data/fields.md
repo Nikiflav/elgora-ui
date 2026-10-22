@@ -59,7 +59,7 @@ const amountView: DataViewField<OrderLine> = {
     description: "Quantity multiplied by unit price",
     readonly: true,
     displayFormat: "C2€",
-    displayLocale: "bg-BG"
+    locale: "bg-BG"
 };
 ```
 

@@ -34,7 +34,7 @@ function setup(options: Record<string, unknown> = {}) {
 
 describe("automatic column measurement", () => {
     it("measures the formatted total including grouping and a currency suffix", () => {
-        const test = setup({ columns: [{ name: "a", dataType: "number", displayFormat: "C2€", displayLocale: "en-US" }, { name: "fixed", width: 50 }] });
+        const test = setup({ columns: [{ name: "a", dataType: "number", displayFormat: "C2€", locale: "en-US" }, { name: "fixed", width: 50 }] });
         test.totals(1234567.5); test.read("1.00\u00a0€");
         expect(measure).toHaveBeenCalledWith("1,234,567.50\u00a0€");
         expect(test.column.naturalWidth).toBe("1,234,567.50\u00a0€".length * 10 + 24);

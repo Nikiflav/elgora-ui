@@ -36,11 +36,11 @@ the accepted value, and checkbox/toggle changes confirm immediately.
 - [Checkbox](?!=/components/value-editors/checkbox): native boolean control.
 - [Toggle](?!=/components/value-editors/toggle): compact switch control.
 - [Lookup](?!=/components/lookup-editor): search and select an item from a virtualized list.
-- [Date](?!=/components/date-editor): formatted date-only input and Calendar picker.
+- [Date](?!=/components/date-editor): formatted date-only input and DatePicker picker.
 - [Time and DateTime](?!=/components/time-editors): time slots and a combined calendar/time picker.
 
 Each sub-topic contains an editable demo, configuration examples, keyboard
-behavior and links to its API reference. [Calendar](?!=/components/calendar)
+behavior and links to its API reference. [DatePicker](?!=/components/date-picker)
 remains a standalone component and can be used without DateEditor.
 
 ## Related topics

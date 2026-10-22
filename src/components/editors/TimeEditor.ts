@@ -26,7 +26,7 @@ export class TimeEditor extends PopoverEditor<string | null> {
     constructor(options: TimeEditorOptions) {
         const { timeFormat = "HH:mm", minuteStep = 15, openOnFocus, ...textOptions } = options;
         const formatter = new TimeFormatter(timeFormat);
-        super({ ...textOptions, openOnFocus, triggerIcon: editorButtons.time.icon, triggerLabel: editorButtons.time.label, commitOnBlur: false, parse: options.parse ?? (text => {
+        super({ ...textOptions, openOnFocus, triggerIcon: editorButtons.time.icon, triggerLabel: editorButtons.time.label, triggerMessage: "timeEditor.open", commitOnBlur: false, parse: options.parse ?? (text => {
             const value = text.trim();
             return value ? formatter.parse(value) : null;
         }), format: options.format ?? (value => value ?? "") });
@@ -51,11 +51,11 @@ export class TimeEditor extends PopoverEditor<string | null> {
     protected override focusPopup(): void { this.picker?.setValue(this.browsingValue); this.picker?.focus(); }
 
     protected override createPopup(): Popover {
-        this.picker = new TimePicker({ value: this.value, timeFormat: this.timeOptions.timeFormat, minuteStep: this.timeOptions.minuteStep, defaultTime: this.timeOptions.defaultTime,
+        this.picker = new TimePicker({ value: this.value, locale: this.locale, localization: this.timeOptions.localization, timeFormat: this.timeOptions.timeFormat, minuteStep: this.timeOptions.minuteStep, defaultTime: this.timeOptions.defaultTime,
             onSelect: value => this.acceptPickerText(value) });
         const fieldset = e("fieldset", { ui: ["border-0", "p-0", "m-0"] });
         this.picker.mount(fieldset);
-        const popup = new Popover({ anchorElement: this.control, bindAnchorTarget: false, closeMode: "manual", role: "dialog", ariaLabel: `${this.timeOptions.label ?? "Time"} picker`, children: fieldset });
+        const popup = new Popover({ anchorElement: this.control, bindAnchorTarget: false, closeMode: "manual", role: "dialog", ariaLabel: this.messages.text("timeEditor.popup", { label: this.timeOptions.label ?? this.messages.text("timeEditor.label") }), children: fieldset });
         popup.addCleanup(this.picker);
         return popup;
     }

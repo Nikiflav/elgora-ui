@@ -2,6 +2,7 @@ import { PopoverEditor } from "./PopoverEditor";
 import { editorButtons } from "./EditorButton";
 import { type ValueEditorOptions } from "./ValueEditor";
 import { DataGrid } from "../datagrid/DataGrid";
+import { LocalizedError } from "../../localization/Messages";
 import type { DataGridColumn } from "../datagrid/DataGridColumn";
 import type { DataSource, QueryArgs } from "../../data/DataSource";
 import { Popover } from "../popup/popover";
@@ -74,7 +75,7 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
     constructor(options: LookupEditorOptions<TValue, TItem>) {
         const { columns, loadItems, getItemValue, getItemText, getValueText, pageSize,
             searchDelay, popupWidth, popupHeight, resizable, openOnFocus, ...base } = options;
-        super({ ...base, openOnFocus, triggerIcon: editorButtons.lookup.icon, triggerLabel: editorButtons.lookup.label });
+        super({ ...base, openOnFocus, triggerIcon: editorButtons.lookup.icon, triggerLabel: editorButtons.lookup.label, triggerMessage: "lookupEditor.open" });
         this.lookup = options;
         this.displayValue();
         this.addCleanup(() => {
@@ -127,9 +128,9 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
     /** Requests at most two items and checks the accurate complete-result count. */
     private async resolveItem(text: string): Promise<TItem> {
         const result = await this.lookup.loadItems({ search: text, skip: 0, top: 2 });
-        if (result.totalCount === 0) throw new Error("Failed to resolve lookup text. No matching item was found.");
-        if (result.totalCount !== 1) throw new Error("Failed to resolve lookup text. More than one item matches.");
-        if (result.items.length !== 1) throw new Error("Failed to resolve lookup text. The matching item was not returned.");
+        if (result.totalCount === 0) throw new LocalizedError("lookupEditor.notFound");
+        if (result.totalCount !== 1) throw new LocalizedError("lookupEditor.ambiguous");
+        if (result.items.length !== 1) throw new LocalizedError("lookupEditor.missingItem");
         return result.items[0];
     }
 
@@ -191,7 +192,7 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
     /** Builds a read-only picker grid and a reusable resize grip inside the popover. */
     protected override createPopup(): Popover {
         this.status = e("div", { ui: ["text-muted", "px-2", "py-1"], role: "status" });
-        this.grid = new DataGrid<TItem>({ columns: this.lookup.columns, data: [], selectionMode: "single-row",
+        this.grid = new DataGrid<TItem>({ columns: this.lookup.columns, data: [], locale: this.locale, localization: this.lookup.localization, selectionMode: "single-row",
             showGroupPanel: false, showRowHeader: false, showColumnHeaders: this.lookup.columns.length > 1,
             showColumnFooters: false, showFilterRow: false, showRowHover: true, showBorder: false,
             cellBorders: this.lookup.columns.length > 1 ? "rows" : "none", showSelection: true, cursor: "default",
@@ -200,7 +201,7 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
         this.grid.dom.classList.toggle("elg-lookup-grid-single-column", this.lookup.columns.length === 1);
         Object.assign(this.grid.dom.style, { flex: "1", minHeight: "0", width: "100%" });
         const popup = new Popover({ anchorElement: this.control, bindAnchorTarget: false, closeMode: "manual", role: "dialog",
-            ariaLabel: `${this.lookup.label ?? "Lookup"} results`,
+            ariaLabel: this.messages.text("lookupEditor.popup", { label: this.lookup.label ?? this.messages.text("lookupEditor.label") }),
             children: [this.grid, this.status] });
         Object.assign(popup.dom.style, { width: `${this.lookup.popupWidth ?? 200}px`, boxSizing: "border-box",
             height: `${this.lookup.popupHeight ?? 300}px`, padding: "4px 4px 16px", overflow: "hidden" });
@@ -260,7 +261,9 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
                     throw new DOMException("Search superseded", "AbortError");
                 this.count = result.totalCount;
                 result.items.forEach((item, index) => this.items.set(skip + index, item));
-                this.status!.textContent = result.totalCount ? `${result.totalCount} matches` : "No matching items";
+                this.status!.textContent = result.totalCount ? (new Intl.PluralRules(this.locale).select(result.totalCount) === "one"
+                    ? this.messages.text("lookupEditor.matches.one", { count: result.totalCount })
+                    : this.messages.text("lookupEditor.matches.other", { count: result.totalCount })) : this.messages.text("lookupEditor.noResults");
                 return result;
             }).catch(error => { pages.delete(key); throw error; });
             pages.set(key, pending);
@@ -278,12 +281,12 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
             } catch (error) {
                 if (controller.signal.aborted || version !== this.searchVersion || this.disposed.Value)
                     throw new DOMException("Search superseded", "AbortError");
-                this.status!.textContent = "Failed to load lookup items.";
+                this.status!.textContent = this.messages.text("lookupEditor.loadFailed");
                 this.reportError(error);
                 return { args, dataItems: [], totalCount: 0 };
             }
         } };
-        this.status!.textContent = "Loading…";
+        this.status!.textContent = this.messages.text("lookupEditor.loading");
         this.grid!.setOptions({ data: source });
     }
 

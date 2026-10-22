@@ -7,7 +7,7 @@ export default {
   "order": 19,
   "description": "Edit local time and date-time values with strict parsing and asynchronous confirmation.",
   "prev": "/components/date-editor",
-  "next": "/components/calendar",
+  "next": "/components/date-picker",
   "toc": true,
   "api": [
     "TimeEditor",

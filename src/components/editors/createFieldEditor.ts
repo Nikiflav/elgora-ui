@@ -5,14 +5,17 @@ import { DateEditor } from "./DateEditor";
 import { DateTimeEditor } from "./DateTimeEditor";
 import { editorButtons, type EditorButton } from "./EditorButton";
 import type { DataViewField } from "../../data/DataViewField";
+import { Localization, type LocaleOptions } from "../../localization/Localization";
 
 /** Returns picker trigger metadata without creating an editor. Custom factories opt in via editorButton. */
-export function getFieldEditorButton(field: DataViewField<any>): EditorButton | undefined {
+export function getFieldEditorButton(field: DataViewField<any>, options: LocaleOptions = {}): EditorButton | undefined {
     if (field.editorButton) return field.editorButton;
     if (field.createEditor) return undefined;
-    if (field.lookup) return editorButtons.lookup;
     const type = DataViewFieldUtils.getDataType(field);
-    return type === "date" || type === "datetime" ? editorButtons[type] : undefined;
+    const messages = Localization.resolveMessages({ ...options, locale: field.locale ?? options.locale });
+    if (field.lookup) return { ...editorButtons.lookup, label: messages.text("lookupEditor.open") };
+    return type === "date" ? { ...editorButtons.date, label: messages.text("dateEditor.open") }
+        : type === "datetime" ? { ...editorButtons.datetime, label: messages.text("dateTimeEditor.open") } : undefined;
 }
 
 /**
@@ -21,13 +24,16 @@ export function getFieldEditorButton(field: DataViewField<any>): EditorButton | 
  * @example const editor = createFieldEditor({ row, field, value, onCommit: saveValue });
  */
 export function createFieldEditor<TRow>(context: FieldEditorContext<TRow>): ValueEditor<any> {
+    // One resolved snapshot for factories, conversion/validation callbacks and nested pickers.
+    context = { ...context, locale: Localization.resolveLocale({ locale: context.field.locale ?? context.locale }) };
     const { field, value } = context;
+    const messages = Localization.resolveMessages(context, context.locale);
     const options: ValueEditorOptions<any> = {
-        value, label: field.caption ?? field.name, readOnly: field.readonly,
+        value, label: field.caption ?? field.name, readOnly: field.readonly, locale: context.locale, localization: context.localization,
         resolveText: field.resolveText ? text => field.resolveText!(text, context) : undefined,
         validate: async candidate => {
             if (field.required && (candidate === null || candidate === undefined || candidate === ""))
-                return "A value is required.";
+                return messages.text("valueEditor.required");
             return field.validate?.(candidate, context);
         },
         onCommit: context.onCommit

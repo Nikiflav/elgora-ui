@@ -25,7 +25,7 @@ describe("DefaultGridRowsProvider async safety", () => {
         const provider = new DefaultGridRowsProvider(state(load, {
             columns: new Map([
                 ["country", { name: "country" }],
-                ["amount", { name: "amount", dataType: "number", displayFormat: "C2€", displayLocale: "en-US" }],
+                ["amount", { name: "amount", dataType: "number", displayFormat: "C2€", locale: "en-US" }],
                 ["quantity", { name: "quantity", dataType: "number" }]
             ]), visibleColumns: ["country", "amount", "quantity"],
             groupSummary: [{ field: "amount", summaryType: "sum" }, { field: "quantity", summaryType: "count" }]

@@ -3,6 +3,7 @@ import type { PopoverEditorOptions } from "./PopoverEditorOptions";
 import { Popover } from "../popup/popover";
 import { assignElementProps, setElementProps, v } from "../../core/e";
 import { createInputAdornment, inputAdornmentProps } from "./InputAdornment";
+import type { MessageKey } from "../../localization/Messages";
 
 /** Input, inset trigger and picker lifecycle shared by concrete popover editors. */
 export interface PopoverTextEditorOptions<T> extends TextEditorOptions<T>, PopoverEditorOptions {
@@ -10,6 +11,8 @@ export interface PopoverTextEditorOptions<T> extends TextEditorOptions<T>, Popov
     triggerIcon: string;
     /** Accessible name and tooltip for the picker trigger button. */
     triggerLabel: string;
+    /** Optional built-in message key; custom triggerLabel is otherwise retained verbatim. */
+    triggerMessage?: MessageKey;
 }
 
 /**
@@ -38,7 +41,7 @@ export abstract class PopoverEditor<T> extends TextEditor<T> {
 
     /** Creates a stable input and keyed trigger; picker content is created on first open. */
     constructor(options: PopoverTextEditorOptions<T>) {
-        const { triggerIcon, triggerLabel, openOnFocus, ...textOptions } = options;
+        const { triggerIcon, triggerLabel, triggerMessage, openOnFocus, ...textOptions } = options;
         super({ ...textOptions, commitOnBlur: false });
         this.popoverOptions = options;
         this.auxiliary = createInputAdornment(this.control as HTMLInputElement);
@@ -178,7 +181,9 @@ export abstract class PopoverEditor<T> extends TextEditor<T> {
         setElementProps(this.auxiliary, { ...inputAdornmentProps, vnodes: [v("button", {
             key: "picker-trigger", type: "button", tabIndex: -1,
             ui: ["elg", "btn", "border-0", "p-0"], class: "elg-editor-trigger",
-            ariaLabel: this.popoverOptions.triggerLabel, ariaExpanded: String(this.isOpen), disabled: !this.canEdit(),
+            ariaLabel: this.popoverOptions.triggerMessage
+                ? (this.messages.text as (key: MessageKey) => string)(this.popoverOptions.triggerMessage)
+                : this.popoverOptions.triggerLabel, ariaExpanded: String(this.isOpen), disabled: !this.canEdit(),
             onmousedown: event => event.preventDefault(),
             onclick: () => { if (this.isOpen) this.close(); else void this.open(); }
         }, v("i", { class: this.popoverOptions.triggerIcon, ariaHidden: "true" }))] });

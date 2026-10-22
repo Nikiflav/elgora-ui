@@ -39,6 +39,26 @@ export default {
       "optional": false,
       "source": "src/data/DataViewField.ts",
       "kind": "property"
+    },
+    {
+      "name": "locale",
+      "type": "string | undefined",
+      "description": "Resolved locale supplied by the host; conversion callbacks may use it explicitly.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
+      "name": "localization",
+      "type": "Localization | undefined",
+      "description": "Host message context, forwarded to built-in/custom editors. Omission uses Localization.default.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
     }
   ]
 };

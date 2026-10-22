@@ -6,6 +6,8 @@ import type { DataViewField } from "../../data/DataViewField";
 import type { DataType } from "../../data/DataField";
 import type { DataFilter, FilterSelector } from "../../data/filter";
 import { PopupMenu, type MenuItem } from "../popup/PopupMenu";
+import { Localization, type LocaleOptions } from "../../localization/Localization";
+import type { LocalizedMessages } from "../../localization/Messages";
 
 /** Field identity, caption and semantic type offered by the filter builder. */
 export type FilterEditorColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | "caption" | "dataType">;
@@ -13,7 +15,7 @@ export type FilterEditorColumn<TRow = any> = Pick<DataViewField<TRow>, "name" | 
 export type FilterEditorOperator = "=" | "<>" | ">" | ">=" | "<" | "<=" | "contains" | "notcontains" | "startswith" | "endswith";
 
 /** Filter-builder fields, initial expression and explicit apply/cancel callbacks. */
-export interface FilterEditorOptions<TRow = any> extends Omit<ComponentOptions, "children" | "tag"> {
+export interface FilterEditorOptions<TRow = any> extends Omit<ComponentOptions, "children" | "tag">, LocaleOptions {
     /** Fields users can choose when creating conditions. */
     columns: FilterEditorColumn<TRow>[];
     /** Initial expression. Omit to start without a filter. */
@@ -142,6 +144,8 @@ function sameFilter(left: DataFilter | undefined, right: DataFilter | undefined)
 
 /** A reusable builder for structured DataFilter expressions. */
 export class FilterEditor<TRow = any> extends Component {
+    private readonly messages: LocalizedMessages;
+    private clearButton!: HTMLButtonElement;
     private readonly columns: FilterEditorColumn<TRow>[];
     private readonly onApplyCallback?: FilterEditorOptions<TRow>["onApply"];
     private readonly onCancelCallback?: FilterEditorOptions<TRow>["onCancel"];
@@ -155,6 +159,7 @@ export class FilterEditor<TRow = any> extends Component {
     /** Creates a filter builder from the supplied field metadata and optional initial expression. */
     constructor(options: FilterEditorOptions<TRow>) {
         super({ tag: "div", ui: options.ui ?? ["elg", "box", "p-3"] });
+        this.messages = Localization.resolveMessages(options);
         this.columns = options.columns;
         this.onApplyCallback = options.onApply;
         this.onCancelCallback = options.onCancel;
@@ -172,7 +177,7 @@ export class FilterEditor<TRow = any> extends Component {
             this.rowsElement,
             this.previewElement,
             e("div", { ui: ["elg", "d-flex", "justify-end", "items-center", "gap-2", "mt-3"] },
-                e("button", {
+                this.clearButton = e("button", {
                     ui: ["elg", "btn", "d-inline-flex", "items-center", "gap-1", "text-muted"],
                     type: "button",
                     ariaLabel: "Clear",
@@ -180,13 +185,47 @@ export class FilterEditor<TRow = any> extends Component {
                     onclick: () => this.clear()
                 },
                     e("i", { class: "elg-icon ri-filter-off-line", ui: ["elg"] }),
-                    "Clear"
+                    e("span", {}, "Clear")
                 ),
                 this.applyButton
             ),
             this.menu.dom
         );
         this.renderEditor();
+        const repaint = () => this.render(this.renderLocale);
+        const context = options.localization ?? Localization.default;
+        if (options.locale === undefined) this.subscribe(context.changed, repaint);
+        this.subscribe(context.messagesChanged, repaint);
+        if (context !== Localization.default) this.subscribe(Localization.default.messagesChanged, repaint);
+        this.renderLocale();
+    }
+
+    private readonly renderLocale = (): void => {
+        this.applyButton.textContent = this.messages.text("filterEditor.apply");
+        this.clearButton.setAttribute("aria-label", this.messages.text("filterEditor.clear"));
+        this.clearButton.title = this.messages.text("filterEditor.clear");
+        this.clearButton.querySelector("span")!.textContent = this.messages.text("filterEditor.clear");
+        const inputs = [...this.rowsElement.querySelectorAll("input")];
+        const active = this.dom.ownerDocument.activeElement as HTMLInputElement | null;
+        const index = inputs.indexOf(active!);
+        const start = active?.selectionStart, end = active?.selectionEnd;
+        this.renderEditor();
+        if (index >= 0) {
+            const next = this.rowsElement.querySelectorAll("input")[index];
+            next?.focus();
+            if (next?.type === "text" && start != null && end != null) next.setSelectionRange(start, end);
+        }
+        this.menu.hide();
+    };
+
+    private operatorLabel(operator: FilterEditorOperator): string {
+        switch (operator) {
+            case "contains": return this.messages.text("filterEditor.operator.contains");
+            case "notcontains": return this.messages.text("filterEditor.operator.notcontains");
+            case "startswith": return this.messages.text("filterEditor.operator.startswith");
+            case "endswith": return this.messages.text("filterEditor.operator.endswith");
+            default: return operator;
+        }
     }
 
     /** Returns the currently edited filter, or undefined when no condition exists. */
@@ -249,7 +288,7 @@ export class FilterEditor<TRow = any> extends Component {
     private renderEditor(): void {
         this.rowsElement.replaceChildren();
         this.renderGroup(this.root, this.rowsElement, undefined, 0);
-        this.previewElement.textContent = toExpression(this.root) || "(empty)";
+        this.previewElement.textContent = toExpression(this.root) || this.messages.text("filterEditor.empty");
         this.updateApplyAppearance();
     }
 
@@ -268,21 +307,21 @@ export class FilterEditor<TRow = any> extends Component {
         });
 
         const groupToolbar = e("div", { ui: ["elg", "d-flex", "items-center", "flex-wrap", "gap-1", "mb-1"] },
-            this.createChip(group.operator === "and" ? "And" : "Or", ["surface-3", "text-danger"], anchor => this.showMenu(anchor, [
-                { key: "and", text: "And", checked: () => group.operator === "and", action: () => {
+            this.createChip(group.operator === "and" ? this.messages.text("filterEditor.and") : this.messages.text("filterEditor.or"), ["surface-3", "text-danger"], anchor => this.showMenu(anchor, [
+                { key: "and", text: this.messages.text("filterEditor.and"), checked: () => group.operator === "and", action: () => {
                     group.operator = "and";
                     this.renderEditor();
                 } },
-                { key: "or", text: "Or", checked: () => group.operator === "or", action: () => {
+                { key: "or", text: this.messages.text("filterEditor.or"), checked: () => group.operator === "or", action: () => {
                     group.operator = "or";
                     this.renderEditor();
                 } }
             ])),
             this.createChip("+", ["text-success", "fs-120"], anchor => this.showMenu(anchor, [
-                { key: "condition", text: "Add condition", action: () => this.addCondition(group) },
-                { key: "group", text: "Add group", action: () => this.addGroup(group) }
-            ])),
-            depth ? this.createChip("×", ["text-danger"], () => this.removeNode(parent!, parent!.children.indexOf(group))) : undefined
+                { key: "condition", text: this.messages.text("filterEditor.addCondition"), action: () => this.addCondition(group) },
+                { key: "group", text: this.messages.text("filterEditor.addGroup"), action: () => this.addGroup(group) }
+            ]), this.messages.text("filterEditor.addCondition")),
+            depth ? this.createChip("×", ["text-danger"], () => this.removeNode(parent!, parent!.children.indexOf(group)), this.messages.text("filterEditor.removeGroup")) : undefined
         );
         groupElement.append(groupToolbar);
 
@@ -313,10 +352,10 @@ export class FilterEditor<TRow = any> extends Component {
                     }
                 }))
             )),
-            this.createChip(condition.operator, ["surface-3", "text-success"], anchor => this.showMenu(anchor,
+            this.createChip(this.operatorLabel(condition.operator), ["surface-3", "text-success"], anchor => this.showMenu(anchor,
                 operators.map(value => ({
                     key: value,
-                    text: value,
+                    text: this.operatorLabel(value),
                     checked: () => condition.operator === value,
                     action: () => {
                         condition.operator = value;
@@ -332,7 +371,8 @@ export class FilterEditor<TRow = any> extends Component {
             type: dataType === "number" ? "number" : "text",
             value: condition.value == null ? "" : String(condition.value),
             size: Math.max(1, String(condition.value ?? "").length + 1),
-            placeholder: column?.caption ?? condition.field
+            placeholder: column?.caption ?? condition.field,
+            ariaLabel: this.messages.text("filterEditor.value")
         });
         valueInput.addEventListener("input", () => {
             condition.value = dataType === "number" && valueInput.value !== ""
@@ -342,7 +382,7 @@ export class FilterEditor<TRow = any> extends Component {
         });
         row.append(
             valueInput,
-            this.createChip("×", ["text-danger"], () => this.removeNode(parent, index))
+            this.createChip("×", ["text-danger"], () => this.removeNode(parent, index), this.messages.text("filterEditor.removeCondition"))
         );
         return row;
     }
@@ -350,9 +390,11 @@ export class FilterEditor<TRow = any> extends Component {
     private createChip(
         text: string,
         styles: UiStyle[],
-        onClick: (anchor: HTMLButtonElement) => void
+        onClick: (anchor: HTMLButtonElement) => void,
+        label = text
     ): HTMLButtonElement {
         const chip = e("button", {
+            ariaLabel: label, title: label,
             ui: ["elg", "btn", "d-inline-block", "px-1", "py-0", ...styles],
             type: "button",
             onclick: (event: MouseEvent) => {

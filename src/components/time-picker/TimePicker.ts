@@ -1,9 +1,10 @@
 import { Component, type ComponentOptions } from "../../core/Component";
 import { e, v, setElementProps, type VNode } from "../../core/e";
 import { TimeFormatter } from "../../formatting/TimeFormatter";
+import { Localization, type LocaleOptions } from "../../localization/Localization";
 
 /** Time-slot list configuration using strict 24-hour strings without timezone conversion. */
-export interface TimePickerOptions extends Omit<ComponentOptions, "tag" | "children"> {
+export interface TimePickerOptions extends Omit<ComponentOptions, "tag" | "children">, LocaleOptions {
     /** Initially selected time matching timeFormat; null or omission means no selection. */
     value?: string | null;
     /** Slot label and value format. Defaults to HH:mm; second-bearing slots use :00 seconds. */
@@ -20,6 +21,8 @@ export interface TimePickerOptions extends Omit<ComponentOptions, "tag" | "child
 
 /** Compact button-based time picker for mouse and touch input. */
 export class TimePicker extends Component {
+    /** Inherited regional context. Slot values/labels remain explicitly configured HH:mm[:ss] strings. */
+    readonly locale: string;
     private readonly pickerOptions: TimePickerOptions;
     private readonly formatter: TimeFormatter;
     private readonly format: "HH:mm" | "HH:mm:ss";
@@ -31,7 +34,7 @@ export class TimePicker extends Component {
 
     /** Creates a slot list, validating the configured time strings and minute interval. */
     constructor(options: TimePickerOptions = {}) {
-        const { value, timeFormat = "HH:mm", minuteStep = 15, defaultTime = "10:00", maxHeight = "240px", onSelect, ...domOptions } = options;
+        const { value, timeFormat = "HH:mm", minuteStep = 15, defaultTime = "10:00", maxHeight = "240px", onSelect, locale, localization, ...domOptions } = options;
         if (!Number.isInteger(minuteStep) || minuteStep < 1 || minuteStep > 60 || 60 % minuteStep !== 0)
             throw new Error("Failed to create time picker. minuteStep must divide 60 evenly.");
         const formatter = new TimeFormatter(timeFormat);
@@ -40,6 +43,7 @@ export class TimePicker extends Component {
         if (value !== undefined && value !== null) formatter.parse(value);
         super({ ...domOptions, tag: "div", ui: ["elg", "surface", "p-2", "rounded-2", "d-flex", "flex-col", ...(Array.isArray(options.ui) ? options.ui : options.ui ? [options.ui] : [])] });
         this.pickerOptions = options;
+        this.locale = Localization.resolveLocale({ locale, localization });
         this.formatter = formatter;
         this.format = timeFormat;
         this.step = minuteStep;

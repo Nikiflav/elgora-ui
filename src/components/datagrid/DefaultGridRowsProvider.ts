@@ -229,6 +229,8 @@ class Paginator {
 
 /** Snapshot of everything that shapes the row tree: data, visible/grouped columns, filter and order. */
 export type DataGridState<TRow> = {
+    /** Resolved host locale for cell and summary presentation; not part of the data-source query. */
+    locale?: string;
     /** Underlying data access layer queried for each page/level of the tree. */
     dataSource: DataSource<TRow>,
     /** Page size used when querying the DataSource. */
@@ -411,7 +413,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
         for (let node of nodes) {
             let cells = undefined;
             if (node.type === "data" || node.type === "node") {
-                cells = await DataViewFieldUtils.getDataCells(visibleColumns, node.data);
+                cells = await DataViewFieldUtils.getDataCells(visibleColumns, node.data, this._state.locale);
                 check();
             } else if (node.type === "group") {
                 let group = <GroupItem>node.data;
@@ -421,7 +423,7 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
                     const summary = this._state.groupSummary?.find(item => item.field === field.name);
                     if (field.displayFormat !== undefined && summary && Object.prototype.hasOwnProperty.call(group.summaryValues ?? {}, field.name)) {
                         const value = group.summaryValues![field.name];
-                        cells[field.name] = { value, text: DataViewFieldUtils.formatSummaryValue(field, value, summary.summaryType) };
+                        cells[field.name] = { value, text: DataViewFieldUtils.formatSummaryValue(field, value, summary.summaryType, this._state.locale) };
                     }
                 }
                 cells[group.groupField] = node.text;

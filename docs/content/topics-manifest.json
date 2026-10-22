@@ -623,7 +623,7 @@
       "order": 19,
       "description": "Edit local time and date-time values with strict parsing and asynchronous confirmation.",
       "prev": "/components/date-editor",
-      "next": "/components/calendar",
+      "next": "/components/date-picker",
       "toc": true,
       "api": [
         "TimeEditor",
@@ -653,43 +653,6 @@
         }
       ],
       "module": "./content/topics/time-editors.js"
-    },
-    {
-      "id": "calendar",
-      "title": "Calendar",
-      "path": "/components/calendar",
-      "group": "components",
-      "order": 20,
-      "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
-      "prev": "/components/time-editors",
-      "next": "/components/filter-editor",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "sectionRedirects": [],
-      "headings": [
-        {
-          "id": "pick-a-date",
-          "title": "Pick a date"
-        },
-        {
-          "id": "date-only-values",
-          "title": "Date-only values"
-        },
-        {
-          "id": "navigation",
-          "title": "Navigation"
-        },
-        {
-          "id": "bounds-and-locale",
-          "title": "Bounds and locale"
-        },
-        {
-          "id": "api-reference",
-          "title": "API reference"
-        }
-      ],
-      "module": "./content/topics/calendar.js"
     },
     {
       "id": "semantic-colors",
@@ -775,6 +738,43 @@
       "module": "./content/topics/datagrid-data-sources.js"
     },
     {
+      "id": "date-picker",
+      "title": "DatePicker",
+      "path": "/components/date-picker",
+      "group": "components",
+      "order": 20,
+      "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
+      "prev": "/components/time-editors",
+      "next": "/components/filter-editor",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "pick-a-date",
+          "title": "Pick a date"
+        },
+        {
+          "id": "date-only-values",
+          "title": "Date-only values"
+        },
+        {
+          "id": "navigation",
+          "title": "Navigation"
+        },
+        {
+          "id": "bounds-and-locale",
+          "title": "Bounds and locale"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/date-picker.js"
+    },
+    {
       "id": "data-fields",
       "title": "Fields and presentation",
       "path": "/data/fields",
@@ -843,7 +843,7 @@
       "group": "components",
       "order": 21,
       "description": "Build visual AND/OR filters independently of DataGrid and distinguish editor drafts from applied queries.",
-      "prev": "/components/calendar",
+      "prev": "/components/date-picker",
       "next": "/popover",
       "toc": true,
       "api": [
@@ -1721,6 +1721,7 @@
       "order": 50,
       "description": "Combine data and view actions into one chronological undo journal with separate history scopes.",
       "prev": "/components",
+      "next": "/fundamentals/localization",
       "toc": true,
       "api": [
         "UndoCoordinator",
@@ -2180,6 +2181,51 @@
         }
       ],
       "module": "./content/topics/datagrid-clipboard.js"
+    },
+    {
+      "id": "localization",
+      "title": "Localization",
+      "path": "/fundamentals/localization",
+      "group": "fundamentals",
+      "order": 70,
+      "description": "Inherited regional settings, an optional global context and stable editor locales.",
+      "prev": "/core/undo-coordinator",
+      "toc": true,
+      "api": [
+        "Localization",
+        "LocaleOptions",
+        "LocalizationOptions"
+      ],
+      "keywords": [
+        "locale",
+        "localization",
+        "regional settings",
+        "global locale"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "priority-and-inheritance",
+          "title": "Priority and inheritance"
+        },
+        {
+          "id": "global-or-application-local-settings",
+          "title": "Global or application-local settings"
+        },
+        {
+          "id": "try-regional-presentation",
+          "title": "Try regional presentation"
+        },
+        {
+          "id": "grid-editor-context",
+          "title": "Grid editor context"
+        },
+        {
+          "id": "display-data-and-input-stay-separate",
+          "title": "Display, data and input stay separate"
+        }
+      ],
+      "module": "./content/topics/localization.js"
     },
     {
       "id": "html-elements",

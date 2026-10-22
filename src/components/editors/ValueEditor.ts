@@ -3,9 +3,11 @@ import { ObservableEvent } from "../../core/ElgoraUI";
 import { assignElementProps, e, setElementProps, v } from "../../core/e";
 import { Tooltip } from "../popup/Tooltip";
 import { createInputErrorAdornment } from "./InputAdornment";
+import { Localization, type LocaleOptions } from "../../localization/Localization";
+import { LocalizedError, type LocalizedMessages } from "../../localization/Messages";
 
 /** Configuration shared by editors in forms, grids and standalone controls. */
-export interface ValueEditorOptions<T> extends Omit<ComponentOptions, "tag" | "children"> {
+export interface ValueEditorOptions<T> extends Omit<ComponentOptions, "tag" | "children">, LocaleOptions {
     /** Initial accepted value, retained by reference rather than cloned. */
     value: T;
     /** Prevents user edits while retaining focus/read access where the native control permits it. */
@@ -36,6 +38,10 @@ export interface BooleanEditorOptions extends ValueEditorOptions<boolean> {
  * updates a local model or saves it elsewhere.
  */
 export abstract class ValueEditor<T> extends Component {
+    /** Locale captured at creation, stable throughout this editor's lifetime. Does not select a numeric/boolean parser. */
+    readonly locale: string;
+    /** Locale-pinned message view; application/server strings are not translated. */
+    protected readonly messages: LocalizedMessages;
     /** Notifies about user input, before validation or confirmation. */
     readonly input = new ObservableEvent<void>();
     /** Notifies after successful external acceptance. */
@@ -55,15 +61,20 @@ export abstract class ValueEditor<T> extends Component {
 
     /** Creates the lifecycle and an inline validation-message container. */
     constructor(options: ValueEditorOptions<T>) {
-        const { value, readOnly, disabled, label, equals, resolveText, validate, onCommit, ...domOptions } = options;
+        const { value, readOnly, disabled, label, equals, resolveText, validate, onCommit, locale, localization, ...domOptions } = options;
         super({ ...domOptions, tag: "div" });
         this.editorOptions = options;
+        this.locale = Localization.resolveLocale({ locale, localization });
+        this.messages = Localization.resolveMessages({ localization }, this.locale);
         this.draft = this.accepted = value;
         this.errorElement = e("div", { class: "elg-editor-error-message", role: "alert", hidden: true });
         this.append(this.errorElement);
         this.addCleanup(this.input);
         this.addCleanup(this.committed);
         this.addCleanup(this.cancelled);
+        const repaint = () => { this.syncControl(); this.renderTasks.forEach(task => this.render(task)); };
+        this.subscribe((localization ?? Localization.default).messagesChanged, repaint);
+        if (localization && localization !== Localization.default) this.subscribe(Localization.default.messagesChanged, repaint);
     }
 
     /** Current typed value. Text editors may additionally contain unparsed text. */
@@ -140,7 +151,7 @@ export abstract class ValueEditor<T> extends Component {
             // text controls and inline layout is retained for boolean controls.
             assignElementProps(this.errorAdornment, {
                 hidden: !this.message,
-                ariaLabel: this.message ? `Validation error: ${this.message}` : undefined,
+                ariaLabel: this.message ? this.messages.text("valueEditor.validationError", { message: this.message }) : undefined,
                 vnodes: this.message ? [v("i", {
                     class: "ri-error-warning-line",
                     // Keep the icon transparent; the input supplies the background.
@@ -166,7 +177,7 @@ export abstract class ValueEditor<T> extends Component {
 
     /** Displays an asynchronous editor error without accepting or saving a value. */
     public reportError(error: unknown): void {
-        this.message = error instanceof Error ? error.message : String(error);
+        this.message = this.messages.describe(error);
         this.syncControl();
     }
 
@@ -222,7 +233,7 @@ export abstract class ValueEditor<T> extends Component {
                 this.accepted = value;
                 this.displayValue();
             } catch (error) {
-                this.message = error instanceof Error ? error.message : String(error);
+                this.message = this.messages.describe(error);
                 return false;
             } finally {
                 this.working = false;
@@ -365,9 +376,9 @@ export class NumberEditor extends TextEditor<number | null> {
             const normalized = text.trim().replace(",", ".");
             if (!normalized) return null;
             if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(normalized))
-                throw new Error("Failed to confirm number. Enter a valid number.");
+                throw new LocalizedError("numberEditor.invalidNumber");
             const value = Number(normalized);
-            if (!Number.isFinite(value)) throw new Error("Failed to confirm number. Enter a finite number.");
+            if (!Number.isFinite(value)) throw new LocalizedError("numberEditor.finiteNumber");
             return value;
         }) });
         this.numberOptions = { step, min, max, format: options.format };
@@ -441,7 +452,7 @@ export class ToggleEditor extends ValueEditor<boolean> {
         super(options);
         this.installControl(e("button", {
             type: "button", role: "switch", class: "elg-switch", ui: ["elg"],
-            ariaLabel: options.label ?? "Toggle"
+            ariaLabel: options.label ?? this.messages.text("toggleEditor.label")
         }));
         if (options.label && options.labelClickable === true) this.makeLabelClickable(options.label);
         this.displayValue();
@@ -464,6 +475,6 @@ function resolveBooleanText(text: string): boolean {
     switch (text.trim().toLowerCase()) {
         case "true": case "yes": case "1": return true;
         case "false": case "no": case "0": return false;
-        default: throw new Error("Failed to resolve boolean text. Enter true/false, yes/no or 1/0.");
+        default: throw new LocalizedError("booleanEditor.invalidBoolean");
     }
 }

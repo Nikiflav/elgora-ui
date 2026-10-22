@@ -73,7 +73,7 @@ describe("DateEditor", () => {
     it("rejects an unsupported dateFormat even with custom callbacks", () => {
         expect(() => create({ dateFormat: "dd.MMM.yyyy", format: () => "custom" })).toThrow("Failed to create date formatter.");
     });
-    it("opens on focus, focuses Calendar, and Escape returns to typing without reopening", async () => {
+    it("opens on focus, focuses DatePicker, and Escape returns to typing without reopening", async () => {
         const editor = create({ openOnFocus: true });
         const input = editor.dom.querySelector("input")!;
         input.focus();
@@ -117,7 +117,7 @@ describe("DateEditor", () => {
         expect(input.getAttribute("aria-expanded")).toBe("true");
         expect(editor.dom.querySelector("button[data-date='2026-11-14']")).not.toBeNull();
     });
-    it("keeps Calendar closed after accepting a date and restoring input focus", async () => {
+    it("keeps DatePicker closed after accepting a date and restoring input focus", async () => {
         const editor = create({ openOnFocus: true });
         const input = editor.dom.querySelector("input")!;
         input.focus();
@@ -160,7 +160,7 @@ describe("DateEditor", () => {
     it("insets the trigger without a Tab stop and preserves native input arrow keys", () => {
         const editor = create();
         const input = editor.dom.querySelector("input")!;
-        const trigger = editor.dom.querySelector<HTMLButtonElement>("button[aria-label='Open calendar']")!;
+        const trigger = editor.dom.querySelector<HTMLButtonElement>("button[aria-label='Open date picker']")!;
         expect(trigger.tabIndex).toBe(-1);
         expect(input.style.paddingRight).toBe("2rem");
         expect(input.parentElement!.contains(trigger)).toBe(true);
@@ -171,7 +171,7 @@ describe("DateEditor", () => {
         expect(document.activeElement).toBe(input);
         expect(editor.dom.querySelector("[popover]")).toBeNull();
     });
-    it("Alt+Down opens and focuses Calendar without saving; Escape returns to the input", async () => {
+    it("Alt+Down opens and focuses DatePicker without saving; Escape returns to the input", async () => {
         const onCommit = vi.fn();
         const editor = create({ onCommit });
         const input = type(editor, "2026-10-20");
@@ -263,7 +263,7 @@ describe("DateEditor", () => {
         editor.cancel();
         expect(editor.text).toBe("2026-10-14");
     });
-    it("opens Calendar to typed text without committing and still opens for invalid input", async () => {
+    it("opens DatePicker to typed text without committing and still opens for invalid input", async () => {
         const onCommit = vi.fn();
         const editor = create({ onCommit });
         type(editor, "2026-11-10");
@@ -286,7 +286,7 @@ describe("DateEditor", () => {
         await frame();
         expect(editor.dom.querySelector("input")!.getAttribute("aria-expanded")).toBe("false");
     });
-    it("does not commit when focus moves into Calendar", async () => {
+    it("does not commit when focus moves into DatePicker", async () => {
         const onCommit = vi.fn();
         const editor = create({ onCommit });
         const input = type(editor, "2026-10-20");
@@ -323,7 +323,7 @@ describe("DateEditor", () => {
         const editor = create({ [key]: true });
         await editor.open();
         expect(editor.dom.querySelector("[popover]")).toBeNull();
-        expect(editor.dom.querySelector("button[aria-label='Open calendar']")!.hasAttribute("disabled")).toBe(true);
+        expect(editor.dom.querySelector("button[aria-label='Open date picker']")!.hasAttribute("disabled")).toBe(true);
     });
     it("does not open after cancellation of an outstanding async resolver", async () => {
         let resolve!: (value: string) => void;
@@ -335,9 +335,9 @@ describe("DateEditor", () => {
     });
     it("preserves the keyed calendar trigger across busy/state updates", async () => {
         const editor = create();
-        const trigger = editor.dom.querySelector("button[aria-label='Open calendar']");
+        const trigger = editor.dom.querySelector("button[aria-label='Open date picker']");
         type(editor, "2026-10-20"); await editor.commit(); await frame();
-        expect(editor.dom.querySelector("button[aria-label='Open calendar']")).toBe(trigger);
+        expect(editor.dom.querySelector("button[aria-label='Open date picker']")).toBe(trigger);
         expect(trigger!.parentElement!.classList.contains("elg-position-absolute")).toBe(true);
         expect(trigger!.parentElement!.style.top).toBe("50%");
         expect(trigger!.parentElement!.parentElement).toBe(editor.dom.querySelector("input")!.parentElement);

@@ -1,4 +1,5 @@
 import type { ValueFormatter } from "./ValueFormatter";
+import { LocalizedError } from "../localization/Messages";
 
 type DatePart = { token: "d" | "dd" | "M" | "MM" | "yyyy" } | { literal: string };
 
@@ -56,7 +57,7 @@ export class DateFormatter implements ValueFormatter<string> {
 
     /** Formats a valid ISO date. Invalid dates are rejected rather than normalized. */
     format(value: string): string {
-        if (!this.isValidDate(value)) throw new Error("Failed to format date. Use a valid YYYY-MM-DD value.");
+        if (!this.isValidDate(value)) throw new LocalizedError("dateFormatter.invalidValue");
         const [year, month, day] = value.split("-");
         return this.parts.map(part => {
             if ("literal" in part) return part.literal;
@@ -83,7 +84,7 @@ export class DateFormatter implements ValueFormatter<string> {
         }
         const value = `${year}-${month}-${day}`;
         if (!match || !this.isValidDate(value))
-            throw new Error(`Failed to parse date. Use a valid ${this.pattern === "yyyy-MM-dd" ? "YYYY-MM-DD" : this.pattern} date.`);
+            throw new LocalizedError("dateFormatter.invalidDate", { pattern: this.pattern === "yyyy-MM-dd" ? "YYYY-MM-DD" : this.pattern });
         return value;
     }
 

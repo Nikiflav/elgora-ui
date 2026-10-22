@@ -5,6 +5,7 @@ import { LookupEditor } from "../../src/components/editors/LookupEditor";
 import { DateEditor } from "../../src/components/editors/DateEditor";
 import { DateTimeEditor } from "../../src/components/editors/DateTimeEditor";
 import { DataViewFieldUtils, type DataViewField } from "../../src/data/DataViewField";
+import { Localization } from "../../src/localization/Localization";
 
 const editors: ValueEditor<any>[] = [];
 afterEach(() => { editors.splice(0).forEach(editor => editor.dispose()); document.body.replaceChildren(); });
@@ -18,9 +19,35 @@ function type(editor: ValueEditor<any>, text: string) {
     input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 describe("field editor adapter", () => {
+    it("passes the resolved locale to custom factories and conversion/validation contexts", async () => {
+        const received: string[] = [];
+        const field: DataViewField<typeof row> = { name: "value", dataType: "number", locale: "bg-BG",
+            resolveText: (text, context) => { received.push(context.locale!); return Number(text); },
+            validate: (_value, context) => { received.push(context.locale!); return undefined; } };
+        const editor = createFieldEditor({ row, field, value: 1, locale: "en-US", onCommit: async () => {} });
+        editors.push(editor);
+        expect(editor.locale).toBe("bg-BG");
+        await editor.resolveText("2"); await editor.validateValue(2);
+        expect(received).toEqual(["bg-BG", "bg-BG"]);
+        field.createEditor = context => {
+            expect(context.locale).toBe("bg-BG");
+            return new NumberEditor({ value: context.value, locale: context.locale });
+        };
+        const custom = createFieldEditor({ row, field, value: 1, locale: "en-US", onCommit: async () => {} });
+        editors.push(custom); expect(custom.locale).toBe("bg-BG");
+    });
+    it("captures standalone editor locale without changing numeric resolution", async () => {
+        const localization = new Localization({ locale: "en-US" });
+        const editor = new NumberEditor({ value: 1, localization }); editors.push(editor);
+        localization.setLocale("bg-BG");
+        expect(editor.locale).toBe("en-US");
+        expect(await editor.resolveText("12.5")).toBe(12.5);
+        expect(await editor.resolveText("12,5")).toBe(12.5);
+        expect(() => editor.resolveText("1 234,5")).toThrow();
+    });
     it("keeps the raw precision in the editor independently of numeric displayFormat", async () => {
         const save = vi.fn();
-        const editor = create({ name: "value", dataType: "number", displayFormat: "C2€", displayLocale: "bg-BG" }, 1234.56789, save);
+        const editor = create({ name: "value", dataType: "number", displayFormat: "C2€", locale: "bg-BG" }, 1234.56789, save);
         expect(editor.dom.querySelector("input")!.value).toBe("1234.56789");
         type(editor, "1234.567891");
         expect(await editor.commit()).toBe(true);

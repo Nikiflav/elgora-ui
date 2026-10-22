@@ -31,16 +31,6 @@ export default {
       "kind": "property"
     },
     {
-      "name": "locale",
-      "type": "string | undefined",
-      "description": "Calendar-label locale and locale used by standard date formats. Defaults to the browser locale.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/components/editors/DateTimeEditor.ts",
-      "kind": "property"
-    },
-    {
       "name": "firstDayOfWeek",
       "type": "number | undefined",
       "description": "First calendar weekday: 0 = Sunday through 6 = Saturday. Defaults to 1 (Monday).",

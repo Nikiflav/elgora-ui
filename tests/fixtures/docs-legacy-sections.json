@@ -164,7 +164,7 @@
     "programmatic-scrolling scrollbar-appearance fixed-header-space"
   ],
   [
-    "/components/calendar",
+    "/components/date-picker",
     "pick-a-date date-only-values navigation bounds-and-locale api-reference"
   ],
   [

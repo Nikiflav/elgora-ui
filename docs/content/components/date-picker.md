@@ -1,17 +1,20 @@
 ---
-id: calendar
-title: Calendar
+id: date-picker
+title: DatePicker
 group: components
-path: /components/calendar
+path: /components/date-picker
 order: 20
 description: A standalone date-only calendar with month/year navigation and keyboard support.
 ---
 
-# Calendar
+# DatePicker
 
-Calendar is a standalone date picker, suitable for a form, panel or editor popup.
+DatePicker is a standalone date picker, suitable for a form, panel or editor popup.
 It uses the standard UI styles, inherits theme colors and does not depend on a
 data source or perform any save operation.
+
+DatePicker selects a date; it is not an event or scheduling calendar. Use
+[DateEditor](?!=/components/date-editor) for a text input with DatePicker in a popover.
 
 The view is described with keyed `v()` nodes. Dates, weeks and toolbar controls
 retain their DOM identity when patched. Initial rendering is immediate; subsequent
@@ -26,12 +29,12 @@ The selected date uses primary color; today's date has a subtle border. Muted
 dates belong to adjacent months and remain selectable unless excluded by bounds.
 Change the locale or first weekday, and try the optional booking-date restriction.
 
-<live-demo id="calendar" height="465px" src="calendar.md.ts"></live-demo>
+<live-demo id="date-picker" height="465px" src="date-picker.md.ts"></live-demo>
 
 ## Date-only values
 
 ```ts
-const calendar = new Calendar({
+const calendar = new DatePicker({
     value: "2026-10-13",
     locale: "en-GB",
     firstDayOfWeek: 1,
@@ -81,7 +84,7 @@ or make a demonstration reproducible.
 ## Bounds and locale
 
 ```ts
-const delivery = new Calendar({
+const delivery = new DatePicker({
     min: "2026-10-01",
     max: "2026-11-30",
     locale: "bg-BG",
@@ -96,9 +99,9 @@ Supported years are 0001 through 9999.
 
 Locale controls month names, weekday names and accessible full-date labels.
 The first weekday is explicit: 0 = Sunday through 6 = Saturday, defaulting to
-Monday. Calendar includes a six-week grid, one keyboard tab stop for days,
+Monday. DatePicker includes a six-week grid, one keyboard tab stop for days,
 selection semantics and accessible labels for each date.
 
 ## API reference
 
-[Calendar](?!=/api-reference/Calendar), [CalendarOptions](?!=/api-reference/CalendarOptions).
+[DatePicker](?!=/api-reference/DatePicker), [DatePickerOptions](?!=/api-reference/DatePickerOptions).

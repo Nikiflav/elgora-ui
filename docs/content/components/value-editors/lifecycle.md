@@ -50,9 +50,9 @@ Text and number editors accept Enter or leaving the field by default; use
 IME Enter does not confirm. Native text-navigation keys remain available.
 
 Popup trigger buttons do not add a Tab stop. Alt+Down opens a picker.
-`openOnFocus` defaults to false. When enabled, DateEditor focuses Calendar;
+`openOnFocus` defaults to false. When enabled, DateEditor focuses DatePicker;
 LookupEditor retains input focus for searching. Escape returns to text editing
-without reopening Calendar. See each editor's topic for picker navigation.
+without reopening DatePicker. See each editor's topic for picker navigation.
 
 ## Resolve external text
 

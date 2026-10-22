@@ -1,30 +1,49 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Calendar } from "../../src/components/calendar/Calendar";
+import { DatePicker } from "../../src/components/date-picker/DatePicker";
 import { ElgoraUI } from "../../src/core/ElgoraUI";
+import { Localization } from "../../src/localization/Localization";
+import * as publicApi from "../../src/index";
 
 // Behavioral cases render deterministically; frame batching is tested separately below.
 beforeEach(() => { vi.spyOn(ElgoraUI.scheduler, "schedule").mockImplementation(task => task()); });
 
-const calendars: Calendar[] = [];
-function create(options: ConstructorParameters<typeof Calendar>[0] = {}) {
-    const calendar = new Calendar({ today: "2026-10-13", locale: "en-GB", ...options });
+const calendars: DatePicker[] = [];
+function create(options: ConstructorParameters<typeof DatePicker>[0] = {}) {
+    const calendar = new DatePicker({ today: "2026-10-13", locale: "en-GB", ...options });
     calendars.push(calendar);
     calendar.mount(document.body);
     return calendar;
 }
-function day(calendar: Calendar, date: string): HTMLButtonElement {
+function day(calendar: DatePicker, date: string): HTMLButtonElement {
     return calendar.dom.querySelector<HTMLButtonElement>(`button[data-date='${date}']`)!;
 }
-function button(calendar: Calendar, label: string): HTMLButtonElement {
+function button(calendar: DatePicker, label: string): HTMLButtonElement {
     return calendar.dom.querySelector<HTMLButtonElement>(`button[aria-label='${label}']`)!;
 }
-function key(calendar: Calendar, key: string, shiftKey = false): void {
+function key(calendar: DatePicker, key: string, shiftKey = false): void {
     const focused = calendar.dom.querySelector("button[tabindex='0']")!;
     focused.dispatchEvent(new KeyboardEvent("keydown", { key, shiftKey, bubbles: true, cancelable: true }));
 }
 afterEach(() => { calendars.splice(0).forEach(calendar => calendar.dispose()); document.body.replaceChildren(); vi.restoreAllMocks(); });
 
-describe("Calendar", () => {
+describe("DatePicker", () => {
+    it("exports DatePicker without a legacy Calendar alias", () => {
+        expect(publicApi.DatePicker).toBe(DatePicker);
+        expect(publicApi).not.toHaveProperty("Calendar");
+    });
+    it("updates localized labels with keyed DOM identity and disposes its context subscription", () => {
+        const localization = new Localization({ locale: "en-US" });
+        const calendar = create({ locale: undefined, localization, value: "2026-10-13" });
+        const retained = day(calendar, "2026-10-20"); retained.focus();
+        expect(button(calendar, "Choose month").textContent).toBe("October");
+        localization.setLocale("bg-BG");
+        expect(button(calendar, "Choose month").textContent).toBe("октомври");
+        expect(day(calendar, "2026-10-20")).toBe(retained);
+        expect(document.activeElement).toBe(retained);
+        const render = vi.spyOn(calendar as any, "updateLocale");
+        calendar.dispose(); localization.setLocale("de-DE");
+        expect(render).not.toHaveBeenCalled();
+    });
     it("preserves keyed days, headers and native focus during a same-month patch", () => {
         const calendar = create({ value: "2026-10-13" });
         const retained = day(calendar, "2026-10-20");

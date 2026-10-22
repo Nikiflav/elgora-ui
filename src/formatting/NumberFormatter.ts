@@ -1,4 +1,5 @@
 import type { ValueFormatter } from "./ValueFormatter";
+import { LocalizedError } from "../localization/Messages";
 
 /**
  * Locale-aware, .NET-inspired numeric formats: G, N/F/P[0–20], C[0–20]suffix.
@@ -55,7 +56,7 @@ export class NumberFormatter implements ValueFormatter<number> {
     parse(text: string): number {
         const spaces = (value: string) => value.replace(/[\u00a0\u202f]/g, " ");
         let input = spaces(text).trim();
-        const fail = (): never => { throw new Error(`Failed to parse number. Use the '${this.pattern}' format.`); };
+        const fail = (): never => { throw new LocalizedError("numberFormatter.invalidNumber", { pattern: this.pattern }); };
         if (this.currency) {
             const suffix = ` ${this.currency}`;
             if (!input.endsWith(suffix)) return fail();

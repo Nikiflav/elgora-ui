@@ -65,24 +65,6 @@
       "module": "./content/api/c.js"
     },
     {
-      "name": "Calendar",
-      "kind": "class",
-      "group": "components",
-      "namespace": "Components.Calendar",
-      "path": "/api-reference/Calendar",
-      "description": "Compact date picker with day, month and year views, using standard UI utilities.\nSelection is independent of keyboard focus. No data source or save operation is involved.",
-      "module": "./content/api/Calendar.js"
-    },
-    {
-      "name": "CalendarOptions",
-      "kind": "interface",
-      "group": "types",
-      "namespace": "Components.Calendar",
-      "path": "/api-reference/CalendarOptions",
-      "description": "Standalone date-only calendar options. Dates use strict YYYY-MM-DD strings.",
-      "module": "./content/api/CalendarOptions.js"
-    },
-    {
       "name": "cbutton",
       "kind": "variable",
       "group": "core",
@@ -502,7 +484,7 @@
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/DateEditor",
-      "description": "Date-only editor with a keyed Calendar picker. Text and selected calendar days\nuse the shared asynchronous validation/commit lifecycle; the host performs saving.",
+      "description": "Date-only editor with a keyed DatePicker picker. Text and selected calendar days\nuse the shared asynchronous validation/commit lifecycle; the host performs saving.",
       "module": "./content/api/DateEditor.js"
     },
     {
@@ -524,12 +506,30 @@
       "module": "./content/api/DateFormatter.js"
     },
     {
+      "name": "DatePicker",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Date Picker",
+      "path": "/api-reference/DatePicker",
+      "description": "Compact date picker with day, month and year views, using standard UI utilities.\nSelection is independent of keyboard focus. No data source or save operation is involved.",
+      "module": "./content/api/DatePicker.js"
+    },
+    {
+      "name": "DatePickerOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Date Picker",
+      "path": "/api-reference/DatePickerOptions",
+      "description": "Standalone date-picker options. Dates use strict YYYY-MM-DD strings.",
+      "module": "./content/api/DatePickerOptions.js"
+    },
+    {
       "name": "DateTimeEditor",
       "kind": "class",
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/DateTimeEditor",
-      "description": "Local date-time editor combining Calendar and TimePicker in one popover.",
+      "description": "Local date-time editor combining DatePicker and TimePicker in one popover.",
       "module": "./content/api/DateTimeEditor.js"
     },
     {
@@ -576,6 +576,15 @@
       "path": "/api-reference/ElgoraUI",
       "description": "Global UI runtime instance.\r\nUsed to invalidate components and manage scheduling.",
       "module": "./content/api/ElgoraUI.js"
+    },
+    {
+      "name": "enMessages",
+      "kind": "variable",
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/enMessages",
+      "description": "Canonical English messages; the source of key and named-parameter types.",
+      "module": "./content/api/enMessages.js"
     },
     {
       "name": "evalFilter",
@@ -794,6 +803,15 @@
       "module": "./content/api/KeyMapping.js"
     },
     {
+      "name": "LocaleOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/LocaleOptions",
+      "description": "Common locale override and optional application-local context.",
+      "module": "./content/api/LocaleOptions.js"
+    },
+    {
       "name": "LocalGroupingDataSource",
       "kind": "class",
       "group": "core",
@@ -801,6 +819,42 @@
       "path": "/api-reference/LocalGroupingDataSource",
       "description": "Delegates supported queries to its source and supplies local grouping/summary fallback.\nComplete local group/summary results are cached for ArrayDataSource and DataTable,\nfollowing its revision. Each adapter retains up to eight query results; field\nmetadata and callback identities participate in the keys. Changes to captured\nexternal data require source.invalidateCache(). Remote results are not cached.",
       "module": "./content/api/LocalGroupingDataSource.js"
+    },
+    {
+      "name": "Localization",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/Localization",
+      "description": "Shared regional settings, usable independently or through the optional default singleton.\nChanging the locale emits synchronously; components own and dispose their subscriptions.\nUI dictionaries use locale → parent language → English fallback. No currency, timezone or input rules are inferred.",
+      "module": "./content/api/Localization.js"
+    },
+    {
+      "name": "LocalizationOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/LocalizationOptions",
+      "description": "Initial regional settings for an independent application context. Register optional dictionaries with addMessages.",
+      "module": "./content/api/LocalizationOptions.js"
+    },
+    {
+      "name": "LocalizedError",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/LocalizedError",
+      "description": "Library-owned message error. Retains a key/parameters instead of reverse-translating English strings.\nIts default message stays English for non-UI callers; a component's message view localizes it.",
+      "module": "./content/api/LocalizedError.js"
+    },
+    {
+      "name": "LocalizedMessages",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/LocalizedMessages",
+      "description": "Message view that may follow a component's locale or retain an editor's locale snapshot.",
+      "module": "./content/api/LocalizedMessages.js"
     },
     {
       "name": "LookupEditor",
@@ -846,6 +900,69 @@
       "path": "/api-reference/MenuItem",
       "description": "A declarative action, link, divider, or nested submenu entry.",
       "module": "./content/api/MenuItem.js"
+    },
+    {
+      "name": "MessageArguments",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageArguments",
+      "description": "Typed argument list: messages without parameters do not require an argument object.",
+      "module": "./content/api/MessageArguments.js"
+    },
+    {
+      "name": "MessageKey",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageKey",
+      "description": "All built-in functional message keys, derived from the canonical English catalog.",
+      "module": "./content/api/MessageKey.js"
+    },
+    {
+      "name": "MessageNamespace",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageNamespace",
+      "description": "Functional namespace; independent of physical files and class names.",
+      "module": "./content/api/MessageNamespace.js"
+    },
+    {
+      "name": "MessageOverrides",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageOverrides",
+      "description": "Partial, type-checked application overrides. Unspecified messages use fallback.",
+      "module": "./content/api/MessageOverrides.js"
+    },
+    {
+      "name": "MessageParameters",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageParameters",
+      "description": "Named parameters required by a message; parameter names are inferred from the English template.",
+      "module": "./content/api/MessageParameters.js"
+    },
+    {
+      "name": "Messages",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/Messages",
+      "description": "Complete language dictionary. Values are strings, not English string literals.",
+      "module": "./content/api/Messages.js"
+    },
+    {
+      "name": "MessageScope",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageScope",
+      "description": "Type-safe message access limited to a functional namespace.",
+      "module": "./content/api/MessageScope.js"
     },
     {
       "name": "MutationResult",
@@ -1116,6 +1233,15 @@
       "path": "/api-reference/Scheduler",
       "description": "Frame-batched task scheduler that deduplicates the same task reference.",
       "module": "./content/api/Scheduler.js"
+    },
+    {
+      "name": "ScopedMessageKey",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/ScopedMessageKey",
+      "description": "Local keys available within one functional namespace.",
+      "module": "./content/api/ScopedMessageKey.js"
     },
     {
       "name": "ScrollbarMode",

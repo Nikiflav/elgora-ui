@@ -70,15 +70,15 @@ the configured number of fraction digits.
 ### Display formats on fields and columns
 
 Set `displayFormat` on a `DataViewField` or `DataGridColumn`, together with an
-optional `displayLocale`. This currently supports `dataType: "number"` and
+optional `locale`. This currently supports `dataType: "number"` and
 `dataType: "date"` (using DateFormatter patterns). Use `getText` for other types,
 including combined datetime labels.
 
 ```ts
 const columns = [
-    { name: "quantity", dataType: "number", displayFormat: "N0", displayLocale: "bg-BG" },
-    { name: "unitPrice", dataType: "number", displayFormat: "N2", displayLocale: "bg-BG" },
-    { name: "totalAmount", dataType: "number", displayFormat: "C2€", displayLocale: "bg-BG" },
+    { name: "quantity", dataType: "number", displayFormat: "N0", locale: "bg-BG" },
+    { name: "unitPrice", dataType: "number", displayFormat: "N2", locale: "bg-BG" },
+    { name: "totalAmount", dataType: "number", displayFormat: "C2€", locale: "bg-BG" },
     { name: "orderDate", dataType: "date", displayFormat: "dd.MM.yyyy" }
 ];
 ```
@@ -86,8 +86,13 @@ const columns = [
 Normal cell label precedence is `getText` → `lookup.getValueText` →
 `displayFormat` → `formatValue` → string conversion. Null/undefined display as
 empty text when formatted. Field formatters are cached per field and recreated
-when its pattern, locale or data type changes. Reload/refresh the hosting grid's
-data after changing display metadata so preloaded cell labels are recomputed.
+when its pattern, locale or data type changes. The grid resolves locale in this
+order: column → grid → the grid's application context or `Localization.default`
+→ runtime locale. A locale change repaints built-in formatted labels and summaries
+without re-querying data. Explicit column/grid locales remain overrides.
+Use `setColumnOptions` to change column metadata. `getText` and lookup labels
+remain application-owned; custom callbacks are not automatically rerun when the
+locale changes. See [Localization](?!=/fundamentals/localization).
 
 The grid applies the same display format to group and total aggregate values,
 without changing raw source results. `count` and `distinct` remain plain counts,
@@ -204,7 +209,7 @@ const localized = new DateEditor({
 ```
 
 The input and calendar trigger retain their DOM identity. The trigger uses keyed
-VNodes and frame-batched rendering, while Calendar owns and patches its own view.
+VNodes and frame-batched rendering, while DatePicker owns and patches its own view.
 
 ## Time formats
 

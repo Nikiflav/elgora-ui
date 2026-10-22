@@ -32,6 +32,6 @@ export default function demo(): void {
         cdiv({ ui: ["col-12", "col-sm-6", "d-flex", "flex-col", "gap-1"] }, e("span", {}, "Booking date (weekday only)"), booking)
     ]);
     root.append([fields, e("label", { ui: ["d-flex", "items-center", "gap-1"] }, fail, "Simulate save failure"), status,
-        e("p", { ui: ["text-muted", "m-0"] }, "Booking focuses Calendar automatically. Escape returns to typing; Alt+Down opens Calendar again.")]);
+        e("p", { ui: ["text-muted", "m-0"] }, "Booking focuses DatePicker automatically. Escape returns to typing; Alt+Down opens DatePicker again.")]);
     root.mount(document.body);
 }

@@ -55,7 +55,7 @@ describe("documentation information architecture", () => {
         expect(sectionDestination(html, "#%E0%A4%A")).toBeUndefined();
     });
 
-    it("keeps all 193 pre-reorganization section links reachable", () => {
+    it("keeps pre-reorganization section anchors reachable under current component names", () => {
         const legacy = JSON.parse(readFileSync("tests/fixtures/docs-legacy-sections.json", "utf8")) as [string, string][];
         for (const [path, anchors] of legacy) {
             const topic = byPath.get(path)!;
@@ -64,6 +64,15 @@ describe("documentation information architecture", () => {
                 expect(!!topic.headings?.some(h => h.id === anchor) || !!sectionDestination(topic, "#" + anchor), path + "#" + anchor).toBe(true);
             }
         }
+    });
+
+    it("uses DatePicker guide and API names without a legacy Calendar topic", () => {
+        expect(byPath.get("/components/date-picker")?.title).toBe("DatePicker");
+        expect(byPath.has("/components/calendar")).toBe(false);
+        expect(api.some(entry => entry.path === "/api-reference/DatePicker")).toBe(true);
+        expect(api.some(entry => entry.path === "/api-reference/DatePickerOptions")).toBe(true);
+        expect(api.some(entry => entry.path === "/api-reference/Calendar")).toBe(false);
+        expect(api.some(entry => entry.path === "/api-reference/CalendarOptions")).toBe(false);
     });
 
     it("ranks task titles first and locates prose inside a contextual section", () => {

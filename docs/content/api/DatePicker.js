@@ -1,19 +1,19 @@
 export default {
-  "name": "Calendar",
+  "name": "DatePicker",
   "kind": "class",
-  "type": "Calendar",
+  "type": "DatePicker",
   "description": "Compact date picker with day, month and year views, using standard UI utilities.\nSelection is independent of keyboard focus. No data source or save operation is involved.",
   "tags": [
     {
       "name": "example",
-      "text": "new Calendar({ value: \"2026-10-13\", onSelect: date => console.log(date) });"
+      "text": "new DatePicker({ value: \"2026-10-13\", onSelect: date => console.log(date) });"
     }
   ],
   "topics": [],
   "group": "components",
-  "namespace": "Components.Calendar",
-  "path": "/api-reference/Calendar",
-  "source": "src/components/calendar/Calendar.ts",
+  "namespace": "Components.Date Picker",
+  "path": "/api-reference/DatePicker",
+  "source": "src/components/date-picker/DatePicker.ts",
   "members": [
     {
       "name": "selected",
@@ -22,7 +22,17 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
+      "kind": "property"
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "description": "Resolved regional locale; explicit overrides are not affected by context changes.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
@@ -32,7 +42,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
@@ -42,7 +52,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
@@ -52,7 +62,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "parameters": [
         {
           "name": "value",
@@ -75,7 +85,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "parameters": [
         {
           "name": "date",
@@ -98,7 +108,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": false,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "parameters": [],
       "returns": {
         "type": "void",

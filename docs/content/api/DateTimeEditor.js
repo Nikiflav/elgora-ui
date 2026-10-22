@@ -2,7 +2,7 @@ export default {
   "name": "DateTimeEditor",
   "kind": "class",
   "type": "DateTimeEditor",
-  "description": "Local date-time editor combining Calendar and TimePicker in one popover.",
+  "description": "Local date-time editor combining DatePicker and TimePicker in one popover.",
   "tags": [],
   "topics": [],
   "group": "components",

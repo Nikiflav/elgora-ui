@@ -36,7 +36,7 @@ in the total footer across the complete filtered result, and within each group
 when grouping is applied.
 
 Quantity uses `displayFormat: "N0"`, Unit price uses `"N2"`, and Total amount
-uses `"C2€"`, with `displayLocale: "bg-BG"`: thousands are separated, decimals
+uses `"C2€"`, inheriting the grid's `locale: "bg-BG"`: thousands are separated, decimals
 use a comma, and euro amounts have two fraction digits. Group summaries and
 the total footer reuse these formats. IDs remain unformatted. See
 [Numbers, dates and formatting](?!=/data/formatting) for the supported patterns.

@@ -11,6 +11,16 @@ export default {
   "source": "src/components/editors/ValueEditor.ts",
   "members": [
     {
+      "name": "locale",
+      "type": "string",
+      "description": "Locale captured at creation, stable throughout this editor's lifetime. Does not select a numeric/boolean parser.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/ValueEditor.ts",
+      "kind": "property"
+    },
+    {
       "name": "input",
       "type": "ObservableEvent<void>",
       "description": "Notifies about user input, before validation or confirmation.",

@@ -39,7 +39,7 @@ describe("DataGrid cell picker buttons", () => {
         const grid = await create();
         expect(buttons(grid)).toHaveLength(2);
         expect(buttons(grid).every(button => button.classList.contains("elg-data-grid-cell-editor-button-hover"))).toBe(true);
-        expect(buttons(grid)[0].getAttribute("aria-label")).toBe("Open calendar");
+        expect(buttons(grid)[0].getAttribute("aria-label")).toBe("Open date picker");
         expect(grid.editing).toBe(false);
     });
 

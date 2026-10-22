@@ -46,7 +46,7 @@ items.Value = [{ id: "second", name: "New item" }, ...items.Value];
 // Later: list.dispose() releases the subscription and its DOM.
 ```
 
-DataGrid.renderCell accepts a VNode: the grid owns the cell wrapper and patches the returned content. See [custom rendering](?!=/components/datagrid/custom-cell-rendering) for a working example. [Calendar](?!=/components/calendar) and [Forma](?!=/styles/websites) demonstrate larger stateful components.
+DataGrid.renderCell accepts a VNode: the grid owns the cell wrapper and patches the returned content. See [custom rendering](?!=/components/datagrid/custom-cell-rendering) for a working example. [DatePicker](?!=/components/date-picker) and [Forma](?!=/styles/websites) demonstrate larger stateful components.
 
 ## Ownership and patching boundaries
 

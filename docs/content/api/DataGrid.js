@@ -11,6 +11,16 @@ export default {
   "source": "src/components/datagrid/DataGrid.ts",
   "members": [
     {
+      "name": "locale",
+      "type": "string",
+      "description": "Resolved grid locale, before a column's own override. No default is copied into options.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
       "name": "pasteText",
       "type": "(text: string) => Promise<void>",
       "description": "Pastes TSV at the active cell, without repeating it to fill the selection.\r\nCell failures retain their input and processing continues. New-row creation\r\nfailures stop the operation; earlier successful mutations are not rolled back.",
@@ -322,7 +332,7 @@ export default {
     {
       "name": "setOptions",
       "type": "(options: Partial<DataGridOptions<TRow>>) => void",
-      "description": "Sets (patches) the grid's options. Only the provided keys are changed; everything else is\r\nleft as-is. This is the single path for both the constructor's initial options and every\r\nlater change - fires an \"optionChanged\" DOM event on this.dom with the applied patch as detail.",
+      "description": "Patches only provided options and emits optionChanged. Locale changes repaint\r\nbuilt-in formatting without re-querying data or changing an active editor's locale.",
       "tags": [],
       "topics": [],
       "optional": false,

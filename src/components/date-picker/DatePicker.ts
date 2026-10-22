@@ -2,42 +2,43 @@ import { Component, type ComponentOptions } from "../../core/Component";
 import { ObservableEvent } from "../../core/ElgoraUI";
 import { e, v, setElementProps, type VNode, type ElementProps } from "../../core/e";
 import type { UiStyle } from "../../core/UiStyle";
-import { parseCalendarDate as parseDate, formatCalendarDate as formatDate, localCalendarToday as localToday } from "./CalendarDate";
+import { Localization, type LocaleOptions } from "../../localization/Localization";
+import { LocalizedError, type LocalizedMessages } from "../../localization/Messages";
+import { parseDatePickerDate as parseDate, formatDatePickerDate as formatDate, localDatePickerToday as localToday } from "./DatePickerDate";
 
-/** Standalone date-only calendar options. Dates use strict YYYY-MM-DD strings. */
-export interface CalendarOptions extends Omit<ComponentOptions, "tag" | "children"> {
+/** Standalone date-picker options. Dates use strict YYYY-MM-DD strings. */
+export interface DatePickerOptions extends Omit<ComponentOptions, "tag" | "children">, LocaleOptions {
     /** Initially selected date, or null for no selection. Does not emit onSelect during construction. */
     value?: string | null;
     /** Inclusive earliest selectable date in YYYY-MM-DD form. */
     min?: string;
     /** Inclusive latest selectable date in YYYY-MM-DD form. */
     max?: string;
-    /** Formatting locale; defaults to the browser language. */
-    locale?: string;
     /** 0 = Sunday, 1 = Monday, ... 6 = Saturday. Defaults to Monday. */
     firstDayOfWeek?: number;
     /** Overrides the local current date, for reproducible demos or an application clock. */
     today?: string;
     /** Receives an explicit user selection, including choosing the already selected date. */
-    onSelect?: (date: string, calendar: Calendar) => void;
+    onSelect?: (date: string, datePicker: DatePicker) => void;
 }
 
 /**
  * Compact date picker with day, month and year views, using standard UI utilities.
  * Selection is independent of keyboard focus. No data source or save operation is involved.
- * @example new Calendar({ value: "2026-10-13", onSelect: date => console.log(date) });
+ * @example new DatePicker({ value: "2026-10-13", onSelect: date => console.log(date) });
  */
-export class Calendar extends Component {
+export class DatePicker extends Component {
+    private readonly messages: LocalizedMessages;
     /** User-selection notification; external setValue() never emits this event. */
     readonly selected = new ObservableEvent<string>();
-    private readonly calendarOptions: CalendarOptions;
+    private readonly datePickerOptions: DatePickerOptions;
     private readonly min: string;
     private readonly max: string;
     private readonly today: string;
     private readonly firstDay: number;
-    private readonly formatter: Intl.DateTimeFormat;
-    private readonly monthFormatter: Intl.DateTimeFormat;
-    private readonly weekdayFormatter: Intl.DateTimeFormat;
+    private formatter!: Intl.DateTimeFormat;
+    private monthFormatter!: Intl.DateTimeFormat;
+    private weekdayFormatter!: Intl.DateTimeFormat;
     private currentValue: string | null;
     private focusedDate: string;
     private visibleMonth: string;
@@ -47,10 +48,11 @@ export class Calendar extends Component {
     private pendingFocus?: string;
 
     /** Validates dates and bounds, then creates the default monthly view. */
-    constructor(options: CalendarOptions = {}) {
-        const { value, min, max, locale, firstDayOfWeek, today, onSelect, ...domOptions } = options;
+    constructor(options: DatePickerOptions = {}) {
+        const { value, min, max, locale, localization, firstDayOfWeek, today, onSelect, ...domOptions } = options;
         super({ ...domOptions, tag: "div", ui: ["elg", "surface", "p-2", "rounded-2", ...(Array.isArray(options.ui) ? options.ui : options.ui ? [options.ui] : [])] });
-        this.calendarOptions = options;
+        this.datePickerOptions = options;
+        this.messages = Localization.resolveMessages(options);
         this.min = min ?? "0001-01-01";
         this.max = max ?? "9999-12-31";
         parseDate(this.min); parseDate(this.max);
@@ -60,10 +62,7 @@ export class Calendar extends Component {
         this.firstDay = firstDayOfWeek ?? 1;
         if (!Number.isInteger(this.firstDay) || this.firstDay < 0 || this.firstDay > 6)
             throw new Error("Failed to create calendar. firstDayOfWeek must be an integer from 0 to 6.");
-        const language = locale ?? navigator.language;
-        this.formatter = new Intl.DateTimeFormat(language, { dateStyle: "full", timeZone: "UTC" });
-        this.monthFormatter = new Intl.DateTimeFormat(language, { month: "long", timeZone: "UTC" });
-        this.weekdayFormatter = new Intl.DateTimeFormat(language, { weekday: "short", timeZone: "UTC" });
+        this.updateLocale();
         this.currentValue = value ?? null;
         if (this.currentValue !== null) this.validateValue(this.currentValue);
         this.focusedDate = this.currentValue ?? this.clamp(this.today);
@@ -80,9 +79,26 @@ export class Calendar extends Component {
                 this.requestRender();
             }
         });
-        this.renderTasks.push(this.renderCalendar);
+        this.renderTasks.push(this.renderDatePicker);
         // First paint is immediate; subsequent updates share one frame-batched task.
-        this.renderCalendar();
+        this.renderDatePicker();
+        this.subscribe((localization ?? Localization.default).messagesChanged, () => this.requestRender());
+        if (localization && localization !== Localization.default)
+            this.subscribe(Localization.default.messagesChanged, () => this.requestRender());
+        if (locale === undefined) this.subscribe((localization ?? Localization.default).changed, () => {
+            this.updateLocale();
+            this.requestRender();
+        });
+    }
+
+    /** Resolved regional locale; explicit overrides are not affected by context changes. */
+    get locale(): string { return Localization.resolveLocale(this.datePickerOptions); }
+
+    private updateLocale(): void {
+        const language = this.locale;
+        this.formatter = new Intl.DateTimeFormat(language, { dateStyle: "full", timeZone: "UTC" });
+        this.monthFormatter = new Intl.DateTimeFormat(language, { month: "long", timeZone: "UTC" });
+        this.weekdayFormatter = new Intl.DateTimeFormat(language, { weekday: "short", timeZone: "UTC" });
     }
 
     /** Selected date or null. Keyboard browsing does not change this value. */
@@ -120,7 +136,7 @@ export class Calendar extends Component {
     private validateValue(value: string): void {
         parseDate(value);
         if (value < this.min || value > this.max)
-            throw new Error("Failed to set calendar date. The date is outside the allowed range.");
+            throw new LocalizedError("datePicker.outOfRange");
     }
 
     /** Limits browsing to the inclusive date bounds. */
@@ -142,11 +158,11 @@ export class Calendar extends Component {
     /** Coalesces changes; explicit navigation focuses its target only after patching. */
     private requestRender(focusSelector?: string): void {
         this.pendingFocus = focusSelector;
-        this.render(this.renderCalendar);
+        this.render(this.renderDatePicker);
     }
 
     /** Patches keyed views using one stable scheduler task; disposed tasks do nothing. */
-    private readonly renderCalendar = (): void => {
+    private readonly renderDatePicker = (): void => {
         if (this.disposed.Value) return;
         const date = parseDate(this.visibleMonth + "-01");
         const year = date.getUTCFullYear();
@@ -154,25 +170,25 @@ export class Calendar extends Component {
         if (this.view === "years") {
             heading.push(v("span", { key: "year-range", ui: ["fw-600"] }, `${this.yearStart} – ${Math.min(9999, this.yearStart + 11)}`));
         } else {
-            if (this.view === "days") heading.push(this.button(this.monthFormatter.format(date), "Choose month", () => {
-                this.view = "months"; this.requestRender("[data-calendar-body] button:not(:disabled)");
+            if (this.view === "days") heading.push(this.button(this.monthFormatter.format(date), this.messages.text("datePicker.chooseMonth"), () => {
+                this.view = "months"; this.requestRender("[data-date-picker-body] button:not(:disabled)");
             }, ["fw-600"]));
-            heading.push(this.button(String(year), "Choose year", () => {
+            heading.push(this.button(String(year), this.messages.text("datePicker.chooseYear"), () => {
                 this.yearStart = Math.floor((year - 1) / 12) * 12 + 1;
-                this.view = "years"; this.requestRender(`[data-calendar-body] button[aria-label='${year}']:not(:disabled)`);
+                this.view = "years"; this.requestRender(`[data-date-picker-body] button[aria-label='${year}']:not(:disabled)`);
             }, ["fw-600"]));
         }
-        const bodyProps: ElementProps<HTMLDivElement> & { "data-calendar-body": string } = {
-            key: "body", ui: ["mt-2"], "data-calendar-body": ""
+        const bodyProps: ElementProps<HTMLDivElement> & { "data-date-picker-body": string } = {
+            key: "body", ui: ["mt-2"], "data-date-picker-body": ""
         };
         setElementProps(this.content, { vnodes: [
             v("div", { key: "toolbar", ui: ["d-flex", "items-center", "gap-1"] },
-                this.button("‹", "Previous period", () => this.navigatePeriod(-1), [], { disabled: !this.periodTarget(-1) }),
+                this.button("‹", this.messages.text("datePicker.previousPeriod"), () => this.navigatePeriod(-1), [], { disabled: !this.periodTarget(-1), "data-picker-period": "previous" }),
                 v("div", { key: "heading", ui: ["d-flex", "gap-1", "items-center", "justify-center", "flex-1"], ariaLive: "polite" }, ...heading),
-                this.button("›", "Next period", () => this.navigatePeriod(1), [], { disabled: !this.periodTarget(1) })),
+                this.button("›", this.messages.text("datePicker.nextPeriod"), () => this.navigatePeriod(1), [], { disabled: !this.periodTarget(1), "data-picker-period": "next" })),
             v("div", bodyProps,
                 ...(this.view === "days" ? this.renderDays(date) : [this.renderPeriods(year)])),
-            this.button("Today", "Select today", () => { this.view = "days"; this.choose(this.today); }, [],
+            this.button(this.messages.text("datePicker.today"), this.messages.text("datePicker.selectToday"), () => { this.view = "days"; this.choose(this.today); }, [],
                 { disabled: this.today < this.min || this.today > this.max })
         ] });
         const selector = this.pendingFocus;
@@ -214,7 +230,7 @@ export class Calendar extends Component {
             rows.push(this.tracks(7, formatDate(week), cells, "row"));
         }
         return [this.tracks(7, "weekdays", weekdays),
-            v("div", { key: "days", role: "grid", ariaLabel: "Choose date", ui: ["d-flex", "flex-col", "gap-1"] }, ...rows)];
+            v("div", { key: "days", role: "grid", ariaLabel: this.messages.text("datePicker.chooseDate"), ui: ["d-flex", "flex-col", "gap-1"] }, ...rows)];
     }
 
     /** Renders twelve month/year choices; periods outside bounds cannot be selected. */
@@ -233,7 +249,7 @@ export class Calendar extends Component {
                 this.visibleMonth = this.focusedDate.slice(0, 7);
                 this.view = this.view === "years" ? "months" : "days";
                 this.requestRender(this.view === "days" ? `button[data-date='${this.focusedDate}']`
-                    : "[data-calendar-body] button:not(:disabled)");
+                    : "[data-date-picker-body] button:not(:disabled)");
             }, [], { key: this.view === "years" ? selectedYear : month,
                 disabled: last < this.min || first > this.max, style: { minHeight: "48px" } });
             choices.push(button);
@@ -272,8 +288,8 @@ export class Calendar extends Component {
             this.visibleMonth = this.clamp(target).slice(0, 7);
             this.focusedDate = this.clamp(this.visibleMonth + "-01");
         }
-        const preferred = direction === 1 ? ["Next", "Previous"] : ["Previous", "Next"];
-        this.requestRender(`button[aria-label='${preferred[0]} period']:not(:disabled), button[aria-label='${preferred[1]} period']:not(:disabled)`);
+        const preferred = direction === 1 ? ["next", "previous"] : ["previous", "next"];
+        this.requestRender(`button[data-picker-period='${preferred[0]}']:not(:disabled), button[data-picker-period='${preferred[1]}']:not(:disabled)`);
     }
 
     /** Updates selection immediately, schedules patching and emits user notifications. */
@@ -283,7 +299,7 @@ export class Calendar extends Component {
         this.visibleMonth = value.slice(0, 7);
         this.requestRender(`button[data-date='${this.focusedDate}']`);
         this.selected.invoke(value);
-        this.calendarOptions.onSelect?.(value, this);
+        this.datePickerOptions.onSelect?.(value, this);
     }
 
     /** Moves focus across month boundaries while leaving the selected value unchanged. */

@@ -6,6 +6,7 @@ export default {
   "order": 50,
   "description": "Combine data and view actions into one chronological undo journal with separate history scopes.",
   "prev": "/components",
+  "next": "/fundamentals/localization",
   "toc": true,
   "api": [
     "UndoCoordinator",

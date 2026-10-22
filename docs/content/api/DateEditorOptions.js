@@ -31,16 +31,6 @@ export default {
       "kind": "property"
     },
     {
-      "name": "locale",
-      "type": "string | undefined",
-      "description": "Controls calendar labels and the locale-dependent standard dateFormat \"d\".",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/components/editors/DateEditor.ts",
-      "kind": "property"
-    },
-    {
       "name": "dateFormat",
       "type": "string | undefined",
       "description": "Display and input pattern; defaults to yyyy-MM-dd. Custom converters override their respective direction.",
@@ -53,7 +43,7 @@ export default {
     {
       "name": "firstDayOfWeek",
       "type": "number | undefined",
-      "description": "Calendar first weekday, 0 = Sunday through 6 = Saturday; defaults to Monday.",
+      "description": "DatePicker first weekday, 0 = Sunday through 6 = Saturday; defaults to Monday.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -63,7 +53,7 @@ export default {
     {
       "name": "today",
       "type": "string | undefined",
-      "description": "Optional application-local current date, forwarded to Calendar.",
+      "description": "Optional application-local current date, forwarded to DatePicker.",
       "tags": [],
       "topics": [],
       "optional": true,

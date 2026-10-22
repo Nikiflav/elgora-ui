@@ -1,14 +1,14 @@
 export default {
-  "name": "CalendarOptions",
+  "name": "DatePickerOptions",
   "kind": "interface",
-  "type": "CalendarOptions",
-  "description": "Standalone date-only calendar options. Dates use strict YYYY-MM-DD strings.",
+  "type": "DatePickerOptions",
+  "description": "Standalone date-picker options. Dates use strict YYYY-MM-DD strings.",
   "tags": [],
   "topics": [],
   "group": "types",
-  "namespace": "Components.Calendar",
-  "path": "/api-reference/CalendarOptions",
-  "source": "src/components/calendar/Calendar.ts",
+  "namespace": "Components.Date Picker",
+  "path": "/api-reference/DatePickerOptions",
+  "source": "src/components/date-picker/DatePicker.ts",
   "members": [
     {
       "name": "value",
@@ -17,7 +17,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
@@ -27,7 +27,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
@@ -37,17 +37,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/calendar/Calendar.ts",
-      "kind": "property"
-    },
-    {
-      "name": "locale",
-      "type": "string | undefined",
-      "description": "Formatting locale; defaults to the browser language.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
@@ -57,7 +47,7 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
@@ -67,17 +57,17 @@ export default {
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     },
     {
       "name": "onSelect",
-      "type": "((date: string, calendar: Calendar) => void) | undefined",
+      "type": "((date: string, datePicker: DatePicker) => void) | undefined",
       "description": "Receives an explicit user selection, including choosing the already selected date.",
       "tags": [],
       "topics": [],
       "optional": true,
-      "source": "src/components/calendar/Calendar.ts",
+      "source": "src/components/date-picker/DatePicker.ts",
       "kind": "property"
     }
   ]

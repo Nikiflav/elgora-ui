@@ -2,7 +2,7 @@ export default {
   "name": "DateEditor",
   "kind": "class",
   "type": "DateEditor",
-  "description": "Date-only editor with a keyed Calendar picker. Text and selected calendar days\nuse the shared asynchronous validation/commit lifecycle; the host performs saving.",
+  "description": "Date-only editor with a keyed DatePicker picker. Text and selected calendar days\nuse the shared asynchronous validation/commit lifecycle; the host performs saving.",
   "tags": [
     {
       "name": "example",

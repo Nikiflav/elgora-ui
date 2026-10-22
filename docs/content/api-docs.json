@@ -551,201 +551,6 @@
       }
     },
     {
-      "name": "Calendar",
-      "kind": "class",
-      "type": "Calendar",
-      "description": "Compact date picker with day, month and year views, using standard UI utilities.\nSelection is independent of keyboard focus. No data source or save operation is involved.",
-      "tags": [
-        {
-          "name": "example",
-          "text": "new Calendar({ value: \"2026-10-13\", onSelect: date => console.log(date) });"
-        }
-      ],
-      "topics": [],
-      "group": "components",
-      "namespace": "Components.Calendar",
-      "path": "/api-reference/Calendar",
-      "source": "src/components/calendar/Calendar.ts",
-      "members": [
-        {
-          "name": "selected",
-          "type": "ObservableEvent<string>",
-          "description": "User-selection notification; external setValue() never emits this event.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "value",
-          "type": "string | null",
-          "description": "Selected date or null. Keyboard browsing does not change this value.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "month",
-          "type": "string",
-          "description": "Currently displayed month as YYYY-MM, even in month/year selection views.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "setValue",
-          "type": "(value: string | null) => void",
-          "description": "Loads a date silently and shows its month; null clears selection and shows today.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/calendar/Calendar.ts",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "string | null",
-              "optional": false,
-              "description": ""
-            }
-          ],
-          "returns": {
-            "type": "void",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "(value: string | null) => void"
-        },
-        {
-          "name": "showMonth",
-          "type": "(date: string) => void",
-          "description": "Shows the month containing a valid date without selecting it.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/calendar/Calendar.ts",
-          "parameters": [
-            {
-              "name": "date",
-              "type": "string",
-              "optional": false,
-              "description": ""
-            }
-          ],
-          "returns": {
-            "type": "void",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "(date: string) => void"
-        },
-        {
-          "name": "focus",
-          "type": "() => void",
-          "description": "Moves native focus to the browsed day in the calendar.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/calendar/Calendar.ts",
-          "parameters": [],
-          "returns": {
-            "type": "void",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => void"
-        }
-      ]
-    },
-    {
-      "name": "CalendarOptions",
-      "kind": "interface",
-      "type": "CalendarOptions",
-      "description": "Standalone date-only calendar options. Dates use strict YYYY-MM-DD strings.",
-      "tags": [],
-      "topics": [],
-      "group": "types",
-      "namespace": "Components.Calendar",
-      "path": "/api-reference/CalendarOptions",
-      "source": "src/components/calendar/Calendar.ts",
-      "members": [
-        {
-          "name": "value",
-          "type": "string | null | undefined",
-          "description": "Initially selected date, or null for no selection. Does not emit onSelect during construction.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "min",
-          "type": "string | undefined",
-          "description": "Inclusive earliest selectable date in YYYY-MM-DD form.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "max",
-          "type": "string | undefined",
-          "description": "Inclusive latest selectable date in YYYY-MM-DD form.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "locale",
-          "type": "string | undefined",
-          "description": "Formatting locale; defaults to the browser language.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "firstDayOfWeek",
-          "type": "number | undefined",
-          "description": "0 = Sunday, 1 = Monday, ... 6 = Saturday. Defaults to Monday.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "today",
-          "type": "string | undefined",
-          "description": "Overrides the local current date, for reproducible demos or an application clock.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        },
-        {
-          "name": "onSelect",
-          "type": "((date: string, calendar: Calendar) => void) | undefined",
-          "description": "Receives an explicit user selection, including choosing the already selected date.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/calendar/Calendar.ts",
-          "kind": "property"
-        }
-      ]
-    },
-    {
       "name": "cbutton",
       "kind": "variable",
       "type": "ComponentFactory<\"button\">",
@@ -2296,6 +2101,16 @@
       "source": "src/components/datagrid/DataGrid.ts",
       "members": [
         {
+          "name": "locale",
+          "type": "string",
+          "description": "Resolved grid locale, before a column's own override. No default is copied into options.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
           "name": "pasteText",
           "type": "(text: string) => Promise<void>",
           "description": "Pastes TSV at the active cell, without repeating it to fill the selection.\r\nCell failures retain their input and processing continues. New-row creation\r\nfailures stop the operation; earlier successful mutations are not rolled back.",
@@ -2607,7 +2422,7 @@
         {
           "name": "setOptions",
           "type": "(options: Partial<DataGridOptions<TRow>>) => void",
-          "description": "Sets (patches) the grid's options. Only the provided keys are changed; everything else is\r\nleft as-is. This is the single path for both the constructor's initial options and every\r\nlater change - fires an \"optionChanged\" DOM event on this.dom with the applied patch as detail.",
+          "description": "Patches only provided options and emits optionChanged. Locale changes repaint\r\nbuilt-in formatting without re-querying data or changing an active editor's locale.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -3330,7 +3145,7 @@
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridOptions",
       "source": "src/components/datagrid/DataGrid.ts",
-      "definition": "{\r\n    /** Enables existing-cell editing when the source supports update. Defaults to false. */\r\n    allowEdit?: boolean;\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    /** Field and presentation definitions, identified by unique column names. */\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: {\r\n        /** Column name whose values are aggregated in each group. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: {\r\n        /** Column name whose values are aggregated over the complete filtered result. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Manual resize behavior. Omit for next-column in stretch modes and independent in fixed mode.\r\n     * The last data column always resizes independently. The outer grid container never changes width. */\r\n    columnResizeMode?: ColumnResizeMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
+      "definition": "LocaleOptions & {\r\n    /** Enables existing-cell editing when the source supports update. Defaults to false. */\r\n    allowEdit?: boolean;\r\n    /** Row data; defaults to an empty array if omitted. */\r\n    data?: GridDataSource<TRow>,\r\n    /** Field and presentation definitions, identified by unique column names. */\r\n    columns: DataGridColumn<TRow>[],\r\n    /** Number of leading columns kept sticky, in addition to the row-header column. */\r\n    fixedLeftColumns?: number,\r\n    /** Number of trailing columns kept sticky. */\r\n    fixedRightColumns?: number,\r\n    /** Row page size used when querying the DataSource. Defaults to 100. */\r\n    pageSize?: number,\r\n    /** Names of columns to show as data columns; defaults to all `columns`. */\r\n    visibleColumns?: string[],\r\n    /** The sort order for the data rows. */\r\n    orderBy?: OrderByToken[],\r\n    /** Sort a data column when its header is clicked. Defaults to true. */\r\n    sortOnHeaderClick?: boolean,\r\n    /** Filter applied to the data rows. */\r\n    filter?: DataFilter,\r\n    /** Ordered column names to group by (outermost first). Ignored when the data source is hierarchical. */\r\n    groupColumns?: string[],\r\n    /** The aggregation summary for group rows. */\r\n    groupSummary?: {\r\n        /** Column name whose values are aggregated in each group. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Aggregations for the complete filtered result, independently of paging and grouping. */\r\n    totalSummary?: {\r\n        /** Column name whose values are aggregated over the complete filtered result. */\r\n        field: string;\r\n        /** Built-in or registered custom aggregation. */\r\n        summaryType: SummaryType;\r\n    }[],\r\n    /** Custom group intervals available in the Group by context-menu submenu. */\r\n    groupIntervals?: GroupIntervalDefinition<TRow>[],\r\n    /** Custom summary accumulators available for locally grouped data. */\r\n    customSummaries?: SummaryDefinition<TRow, any, any>[],\r\n    /** Whether group rows participate in cell/row selection (treated as data cells). Defaults to true. */\r\n    selectableGroupRows?: boolean,\r\n    /** Whether hierarchical tree node rows participate in cell/row selection (treated as data cells). Defaults to false. */\r\n    selectableHierarchyNodes?: boolean,\r\n    /** Selection behavior for mouse, keyboard and programmatic operations. Defaults to multiple-cells. */\r\n    selectionMode?: SelectionMode,\r\n    /** Value passed as parentId for the root-level query, when the data source is hierarchical. Defaults to null. */\r\n    hierarchyRootId?: any,\r\n    /** Pins active group/tree ancestors below the static table header. Defaults to false. */\r\n    stickyGroupRows?: boolean,\r\n    /** Caps how many ancestor levels are pinned at once, keeping the innermost (closest) ones. Defaults to unlimited. */\r\n    stickyGroupRowsMaxLevels?: number,\r\n    /** Overrides for user-facing strings; unset ones fall back to DEFAULT_GRID_TEXTS. */\r\n    texts?: Partial<DataGridTexts>,\r\n\r\n    /** Enables the grid context menu. Defaults to true. */\r\n    contextMenu?: boolean,\r\n    /** Built-in context-menu items; null means all standard items, [] means none. */\r\n    standardContextMenuItems?: GridStandardContextMenuItem[] | null,\r\n\r\n    /** Produces context-menu items for data, group, and hierarchy rows. */\r\n    rowContextMenuItems?: GridContextMenuItems<TRow>,\r\n    /** Produces context-menu items for row headers. */\r\n    rowHeaderContextMenuItems?: GridContextMenuItems<TRow>,\r\n\r\n    /** Uses base widths, stretches auto columns, or stretches all data columns proportionally. Defaults to stretch-auto. */\r\n    columnWidthMode?: ColumnWidthMode,\r\n    /** Manual resize behavior. Omit for next-column in stretch modes and independent in fixed mode.\r\n     * The last data column always resizes independently. The outer grid container never changes width. */\r\n    columnResizeMode?: ColumnResizeMode,\r\n    /** Whether to show the row header column. Defaults to true. */\r\n    showRowHeader?: boolean,\r\n    /** Whether to show the column header row. Defaults to true. */\r\n    showColumnHeaders?: boolean,\r\n    /** Whether to show the grouping panel above the table. Defaults to true. */\r\n    showGroupPanel?: boolean,\r\n    /** Whether to show the filter row below the column headers. Defaults to false. */\r\n    showFilterRow?: boolean,\r\n    /** Whether to show the column footer row. Defaults to true. */\r\n    showColumnFooters?: boolean,\r\n    /** Whether data rows receive the grid hover background. Defaults to false. */\r\n    showRowHover?: boolean,\r\n    /** Whether the outer grid border is rendered. Defaults to true. */\r\n    showBorder?: boolean,\r\n    /** Cell separator style: no separators, horizontal row separators, or full cell borders. Defaults to rows. */\r\n    cellBorders?: DataGridCellBorders,\r\n    /** Whether the current selection is visually highlighted. Defaults to true. */\r\n    showSelection?: boolean,\r\n    /** Cursor used over the grid body. Defaults to the browser default cursor. */\r\n    cursor?: DataGridCursor,\r\n    /** Scrollbar presentation: thin at rest, auto-hidden, or always full-width. Defaults to thin. */\r\n    scrollbarMode?: ScrollbarMode,\r\n    /** Mouse proximity in CSS pixels that expands each scrollbar independently. Defaults to 50. */\r\n    scrollbarHoverDistance?: number,\r\n    /** The default options for each column. Can be specified to provide default column behavior. */\r\n    defaultColumnOptions?: Partial<DataGridColumn<TRow>>\r\n}"
     },
     {
       "name": "DataList",
@@ -6218,9 +6033,9 @@
           "kind": "property"
         },
         {
-          "name": "displayLocale",
+          "name": "locale",
           "type": "string | undefined",
-          "description": "Locale for displayFormat; defaults to the runtime locale. Independent of editor conversion callbacks.",
+          "description": "Regional override for display and editor context. Falls back to the host locale, then Localization.default. Does not select a parser.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6276,7 +6091,7 @@
       "name": "DateEditor",
       "kind": "class",
       "type": "DateEditor",
-      "description": "Date-only editor with a keyed Calendar picker. Text and selected calendar days\nuse the shared asynchronous validation/commit lifecycle; the host performs saving.",
+      "description": "Date-only editor with a keyed DatePicker picker. Text and selected calendar days\nuse the shared asynchronous validation/commit lifecycle; the host performs saving.",
       "tags": [
         {
           "name": "example",
@@ -6375,16 +6190,6 @@
           "kind": "property"
         },
         {
-          "name": "locale",
-          "type": "string | undefined",
-          "description": "Controls calendar labels and the locale-dependent standard dateFormat \"d\".",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/editors/DateEditor.ts",
-          "kind": "property"
-        },
-        {
           "name": "dateFormat",
           "type": "string | undefined",
           "description": "Display and input pattern; defaults to yyyy-MM-dd. Custom converters override their respective direction.",
@@ -6397,7 +6202,7 @@
         {
           "name": "firstDayOfWeek",
           "type": "number | undefined",
-          "description": "Calendar first weekday, 0 = Sunday through 6 = Saturday; defaults to Monday.",
+          "description": "DatePicker first weekday, 0 = Sunday through 6 = Saturday; defaults to Monday.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6407,7 +6212,7 @@
         {
           "name": "today",
           "type": "string | undefined",
-          "description": "Optional application-local current date, forwarded to Calendar.",
+          "description": "Optional application-local current date, forwarded to DatePicker.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6492,10 +6297,205 @@
       ]
     },
     {
+      "name": "DatePicker",
+      "kind": "class",
+      "type": "DatePicker",
+      "description": "Compact date picker with day, month and year views, using standard UI utilities.\nSelection is independent of keyboard focus. No data source or save operation is involved.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "new DatePicker({ value: \"2026-10-13\", onSelect: date => console.log(date) });"
+        }
+      ],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Date Picker",
+      "path": "/api-reference/DatePicker",
+      "source": "src/components/date-picker/DatePicker.ts",
+      "members": [
+        {
+          "name": "selected",
+          "type": "ObservableEvent<string>",
+          "description": "User-selection notification; external setValue() never emits this event.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "description": "Resolved regional locale; explicit overrides are not affected by context changes.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "value",
+          "type": "string | null",
+          "description": "Selected date or null. Keyboard browsing does not change this value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "month",
+          "type": "string",
+          "description": "Currently displayed month as YYYY-MM, even in month/year selection views.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "setValue",
+          "type": "(value: string | null) => void",
+          "description": "Loads a date silently and shows its month; null clears selection and shows today.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "string | null",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: string | null) => void"
+        },
+        {
+          "name": "showMonth",
+          "type": "(date: string) => void",
+          "description": "Shows the month containing a valid date without selecting it.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "parameters": [
+            {
+              "name": "date",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(date: string) => void"
+        },
+        {
+          "name": "focus",
+          "type": "() => void",
+          "description": "Moves native focus to the browsed day in the calendar.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "DatePickerOptions",
+      "kind": "interface",
+      "type": "DatePickerOptions",
+      "description": "Standalone date-picker options. Dates use strict YYYY-MM-DD strings.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Date Picker",
+      "path": "/api-reference/DatePickerOptions",
+      "source": "src/components/date-picker/DatePicker.ts",
+      "members": [
+        {
+          "name": "value",
+          "type": "string | null | undefined",
+          "description": "Initially selected date, or null for no selection. Does not emit onSelect during construction.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "min",
+          "type": "string | undefined",
+          "description": "Inclusive earliest selectable date in YYYY-MM-DD form.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "max",
+          "type": "string | undefined",
+          "description": "Inclusive latest selectable date in YYYY-MM-DD form.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "firstDayOfWeek",
+          "type": "number | undefined",
+          "description": "0 = Sunday, 1 = Monday, ... 6 = Saturday. Defaults to Monday.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "today",
+          "type": "string | undefined",
+          "description": "Overrides the local current date, for reproducible demos or an application clock.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onSelect",
+          "type": "((date: string, datePicker: DatePicker) => void) | undefined",
+          "description": "Receives an explicit user selection, including choosing the already selected date.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/date-picker/DatePicker.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "DateTimeEditor",
       "kind": "class",
       "type": "DateTimeEditor",
-      "description": "Local date-time editor combining Calendar and TimePicker in one popover.",
+      "description": "Local date-time editor combining DatePicker and TimePicker in one popover.",
       "tags": [],
       "topics": [],
       "group": "components",
@@ -6554,16 +6554,6 @@
           "name": "timeFormat",
           "type": "\"HH:mm\" | \"HH:mm:ss\" | undefined",
           "description": "Strict 24-hour format for the time portion. Defaults to HH:mm.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/editors/DateTimeEditor.ts",
-          "kind": "property"
-        },
-        {
-          "name": "locale",
-          "type": "string | undefined",
-          "description": "Calendar-label locale and locale used by standard date formats. Defaults to the browser locale.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -6697,6 +6687,18 @@
       "source": "src/core/ElgoraUI.ts"
     },
     {
+      "name": "enMessages",
+      "kind": "variable",
+      "type": "{ readonly \"datePicker.today\": \"Today\"; readonly \"datePicker.selectToday\": \"Select today\"; readonly \"datePicker.chooseMonth\": \"Choose month\"; readonly \"datePicker.chooseYear\": \"Choose year\"; readonly \"datePicker.previousPeriod\": \"Previous period\"; readonly \"datePicker.nextPeriod\": \"Next period\"; readonly \"datePicker.chooseDate\": \"Choose date\"; readonly \"datePicker.invalidDate\": \"Failed to read calendar date. Use a valid YYYY-MM-DD date.\"; readonly \"datePicker.outOfRange\": \"Failed to set calendar date. The date is outside the allowed range.\"; readonly \"valueEditor.required\": \"A value is required.\"; readonly \"valueEditor.validationError\": \"Validation error: {message}\"; readonly \"numberEditor.invalidNumber\": \"Failed to confirm number. Enter a valid number.\"; readonly \"numberEditor.finiteNumber\": \"Failed to confirm number. Enter a finite number.\"; readonly \"booleanEditor.invalidBoolean\": \"Failed to resolve boolean text. Enter true/false, yes/no or 1/0.\"; readonly \"toggleEditor.label\": \"Toggle\"; readonly \"dateEditor.open\": \"Open date picker\"; readonly \"dateEditor.popup\": \"{label} calendar\"; readonly \"dateEditor.label\": \"Date\"; readonly \"dateEditor.outOfRange\": \"Failed to resolve date. The date is outside the allowed range.\"; readonly \"dateFormatter.invalidDate\": \"Failed to parse date. Use a valid {pattern} date.\"; readonly \"dateFormatter.invalidValue\": \"Failed to format date. Use a valid YYYY-MM-DD value.\"; readonly \"timeEditor.open\": \"Open time picker\"; readonly \"timeEditor.label\": \"Time\"; readonly \"timeEditor.popup\": \"{label} picker\"; readonly \"timeFormatter.invalidTime\": \"Failed to parse time. Use a valid {pattern} value.\"; readonly \"timeFormatter.invalidValue\": \"Failed to format time. Use a valid HH:mm or HH:mm:ss value.\"; readonly \"dateTimeEditor.open\": \"Open date and time picker\"; readonly \"dateTimeEditor.label\": \"Date and time\"; readonly \"dateTimeEditor.popup\": \"{label} picker\"; readonly \"dateTimeEditor.invalidInput\": \"Failed to parse date-time. Use {pattern}.\"; readonly \"dateTimeEditor.invalidValue\": \"Failed to resolve date-time. Use a canonical date-time value.\"; readonly \"lookupEditor.open\": \"Open lookup\"; readonly \"lookupEditor.label\": \"Lookup\"; readonly \"lookupEditor.popup\": \"{label} results\"; readonly \"lookupEditor.loading\": \"Loading…\"; readonly \"lookupEditor.noResults\": \"No matching items\"; readonly \"lookupEditor.matches.one\": \"{count} match\"; readonly \"lookupEditor.matches.other\": \"{count} matches\"; readonly \"lookupEditor.loadFailed\": \"Failed to load lookup items.\"; readonly \"lookupEditor.notFound\": \"Failed to resolve lookup text. No matching item was found.\"; readonly \"lookupEditor.ambiguous\": \"Failed to resolve lookup text. More than one item matches.\"; readonly \"lookupEditor.missingItem\": \"Failed to resolve lookup text. The matching item was not returned.\"; readonly \"dataGrid.newRow\": \"New row\"; readonly \"dataGrid.groupPanelEmpty\": \"Drag a column here to group\"; readonly \"dataGrid.sortAscending\": \"Sort Ascending\"; readonly \"dataGrid.sortDescending\": \"Sort Descending\"; readonly \"dataGrid.clearSorting\": \"Clear sorting\"; readonly \"dataGrid.pinColumn\": \"Pin Column\"; readonly \"dataGrid.noPin\": \"No Pin\"; readonly \"dataGrid.pinLeft\": \"Pin Left\"; readonly \"dataGrid.pinRight\": \"Pin Right\"; readonly \"dataGrid.autosizeColumn\": \"Autosize This Column\"; readonly \"dataGrid.autosizeAll\": \"Autosize All Columns\"; readonly \"dataGrid.groupBy\": \"Group by {column}\"; readonly \"dataGrid.ungroup\": \"Ungroup {column}\"; readonly \"dataGrid.grouping\": \"Grouping\"; readonly \"dataGrid.interval\": \"Interval\"; readonly \"dataGrid.exactValue\": \"Exact value\"; readonly \"dataGrid.expandToLevel\": \"Expand to this level\"; readonly \"dataGrid.collapseLevel\": \"Collapse this level\"; readonly \"dataGrid.summary\": \"Summary\"; readonly \"dataGrid.summary.none\": \"None\"; readonly \"dataGrid.summary.count\": \"Count\"; readonly \"dataGrid.summary.sum\": \"Sum\"; readonly \"dataGrid.summary.avg\": \"Average\"; readonly \"dataGrid.summary.min\": \"Minimum\"; readonly \"dataGrid.summary.max\": \"Maximum\"; readonly \"dataGrid.summary.distinct\": \"Distinct\"; readonly \"dataGrid.cancelNewRow\": \"Cancel new row\"; readonly \"dataGrid.copy\": \"Copy selected cells\"; readonly \"dataGrid.copyWithHeaders\": \"Copy selected cells with headers\"; readonly \"dataGrid.paste\": \"Paste\"; readonly \"dataGrid.selectRow\": \"Select row\"; readonly \"dataGrid.clearSelection\": \"Clear selection\"; readonly \"dataGrid.sortPriority\": \"Sort priority {priority}\"; readonly \"dataGrid.sortedAscending\": \"Sorted ascending\"; readonly \"dataGrid.sortedDescending\": \"Sorted descending\"; readonly \"dataGrid.editFilter\": \"Edit filter\"; readonly \"dataGrid.addFilter\": \"Add filter\"; readonly \"dataGrid.editFilterExpression\": \"Edit filter: {filter}\"; readonly \"dataGrid.filterColumn\": \"Filter {column}\"; readonly \"dataGrid.clearColumnFilter\": \"Clear filter {column}\"; readonly \"dataGrid.acceptFailed\": \"Failed to accept cell input.\"; readonly \"dataGrid.clipboardUnavailable\": \"Clipboard reading is unavailable.\"; readonly \"dataGrid.clipboardFailed\": \"Failed to read clipboard. {message}\"; readonly \"dataGrid.pastePrompt\": \"Paste text below, then choose Paste.\"; readonly \"dataGrid.pasteText\": \"Paste tabular text\"; readonly \"dataGrid.cancel\": \"Cancel\"; readonly \"dataGrid.interval.year\": \"Year\"; readonly \"dataGrid.interval.yearQuarter\": \"Year-quarter\"; readonly \"dataGrid.interval.quarter\": \"Quarter\"; readonly \"dataGrid.interval.yearMonth\": \"Year-month\"; readonly \"dataGrid.interval.month\": \"Month\"; readonly \"dataGrid.interval.week\": \"ISO week\"; readonly \"dataGrid.interval.day\": \"Day\"; readonly \"dataGrid.interval.dayOfWeek\": \"Day of week\"; readonly \"dataGrid.interval.hour\": \"Hour\"; readonly \"dataGrid.interval.minute\": \"Minute\"; readonly \"dataGrid.interval.second\": \"Second\"; readonly \"dataGrid.interval.firstChar\": \"First character\"; readonly \"filterEditor.apply\": \"Apply Filter\"; readonly \"filterEditor.clear\": \"Clear\"; readonly \"filterEditor.and\": \"And\"; readonly \"filterEditor.or\": \"Or\"; readonly \"filterEditor.addCondition\": \"Add condition\"; readonly \"filterEditor.addGroup\": \"Add group\"; readonly \"filterEditor.removeCondition\": \"Remove condition\"; readonly \"filterEditor.removeGroup\": \"Remove group\"; readonly \"filterEditor.empty\": \"(empty)\"; readonly \"filterEditor.value\": \"Value\"; readonly \"filterEditor.operator.contains\": \"contains\"; readonly \"filterEditor.operator.notcontains\": \"notcontains\"; readonly \"filterEditor.operator.startswith\": \"startswith\"; readonly \"filterEditor.operator.endswith\": \"endswith\"; readonly \"numberFormatter.invalidNumber\": \"Failed to parse number. Use the '{pattern}' format.\"; readonly \"dataGrid.clipboardHint\": \"Return to grid and press Ctrl+V / Command+V\"; readonly \"dataGrid.pasteRowFailed\": \"Failed to create pasted row {row}. {message}\"; readonly \"dataGrid.summaryLabel.count\": \"count\"; readonly \"dataGrid.summaryLabel.sum\": \"sum\"; readonly \"dataGrid.summaryLabel.avg\": \"avg\"; readonly \"dataGrid.summaryLabel.min\": \"min\"; readonly \"dataGrid.summaryLabel.max\": \"max\"; readonly \"dataGrid.summaryLabel.distinct\": \"distinct\"; }",
+      "description": "Canonical English messages; the source of key and named-parameter types.",
+      "tags": [],
+      "topics": [],
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/enMessages",
+      "source": "src/localization/enMessages.ts"
+    },
+    {
       "name": "evalFilter",
       "kind": "function",
       "type": "(item: Record<string, any>, filter: DataFilter, functions?: FilterFunctionRegistry) => boolean",
@@ -6776,6 +6778,26 @@
           "tags": [],
           "topics": [],
           "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "locale",
+          "type": "string | undefined",
+          "description": "Resolved locale supplied by the host; conversion callbacks may use it explicitly.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "localization",
+          "type": "Localization | undefined",
+          "description": "Host message context, forwarded to built-in/custom editors. Omission uses Localization.default.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
           "source": "src/data/DataViewField.ts",
           "kind": "property"
         }
@@ -7518,6 +7540,30 @@
       ]
     },
     {
+      "name": "LocaleOptions",
+      "kind": "interface",
+      "type": "LocaleOptions",
+      "description": "Common locale override and optional application-local context.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/LocaleOptions",
+      "source": "src/localization/Localization.ts",
+      "members": [
+        {
+          "name": "localization",
+          "type": "Localization | undefined",
+          "description": "Shared application context. Omission uses Localization.default; an explicit locale takes priority.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/localization/Localization.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "LocalGroupingDataSource",
       "kind": "class",
       "type": "LocalGroupingDataSource<TRow>",
@@ -7631,6 +7677,364 @@
           },
           "kind": "method",
           "signature": "(args: QueryArgs) => Promise<DataResult<TRow>>"
+        }
+      ]
+    },
+    {
+      "name": "Localization",
+      "kind": "class",
+      "type": "Localization",
+      "description": "Shared regional settings, usable independently or through the optional default singleton.\nChanging the locale emits synchronously; components own and dispose their subscriptions.\nUI dictionaries use locale → parent language → English fallback. No currency, timezone or input rules are inferred.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "Localization.default.setLocale(\"bg-BG\");"
+        },
+        {
+          "name": "example",
+          "text": "const application = new Localization({ locale: \"en-US\" });"
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/Localization",
+      "source": "src/localization/Localization.ts",
+      "members": [
+        {
+          "name": "default",
+          "type": "Localization",
+          "description": "Default context used only when a component has neither its own locale nor an application context.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "kind": "property"
+        },
+        {
+          "name": "changed",
+          "type": "ObservableEvent<string>",
+          "description": "Emits the new locale after an actual change. Does not emit on subscription.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "kind": "property"
+        },
+        {
+          "name": "messagesChanged",
+          "type": "ObservableEvent<void>",
+          "description": "Emits after messages are registered or overridden, independently of locale changes.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "kind": "property"
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "description": "Current canonical BCP 47 identifier.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "kind": "property"
+        },
+        {
+          "name": "setLocale",
+          "type": "(locale: string | undefined) => void",
+          "description": "Changes the locale, or resets to the runtime locale with undefined. Invalid identifiers leave state unchanged.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "parameters": [
+            {
+              "name": "locale",
+              "type": "string | undefined",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(locale: string | undefined) => void"
+        },
+        {
+          "name": "resolveLocale",
+          "type": "(options?: LocaleOptions) => string",
+          "description": "Resolves an explicit override, then an application context, then the singleton. No DOM lookup or option mutation.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "parameters": [
+            {
+              "name": "options",
+              "type": "LocaleOptions",
+              "optional": true,
+              "defaultValue": "{}",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(options?: LocaleOptions) => string"
+        },
+        {
+          "name": "addMessages",
+          "type": "(locale: string, messages: MessageOverrides) => void",
+          "description": "Merges a complete or partial dictionary for a BCP 47 language/locale. Later values override earlier ones.\nRejects unknown keys, non-string values and changed parameter names before mutating the dictionary.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "parameters": [
+            {
+              "name": "locale",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "messages",
+              "type": "Partial<import(\"D:/Dev/github/elgora-ui/src/index\").Messages>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(locale: string, messages: MessageOverrides) => void"
+        },
+        {
+          "name": "text",
+          "type": "<K extends MessageKey>(key: K, ...args: MessageArguments<K>) => string",
+          "description": "Resolves a typed key using this context's active locale.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "K",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "args",
+              "type": "MessageArguments<K>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "<K extends MessageKey>(key: K, ...args: MessageArguments<K>) => string"
+        },
+        {
+          "name": "scope",
+          "type": "<N extends MessageNamespace>(namespace: N) => MessageScope<N>",
+          "description": "Creates a typed functional scope that follows this context's locale.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "parameters": [
+            {
+              "name": "namespace",
+              "type": "N",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "MessageScope<N>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "<N extends MessageNamespace>(namespace: N) => MessageScope<N>"
+        },
+        {
+          "name": "resolveMessages",
+          "type": "(options?: LocaleOptions, snapshotLocale?: string) => LocalizedMessages",
+          "description": "Creates a reusable view; explicit snapshotLocale pins editor interpretation without copying dictionaries.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Localization.ts",
+          "parameters": [
+            {
+              "name": "options",
+              "type": "LocaleOptions",
+              "optional": true,
+              "defaultValue": "{}",
+              "description": ""
+            },
+            {
+              "name": "snapshotLocale",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "LocalizedMessages",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(options?: LocaleOptions, snapshotLocale?: string) => LocalizedMessages"
+        }
+      ]
+    },
+    {
+      "name": "LocalizationOptions",
+      "kind": "interface",
+      "type": "LocalizationOptions",
+      "description": "Initial regional settings for an independent application context. Register optional dictionaries with addMessages.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/LocalizationOptions",
+      "source": "src/localization/Localization.ts",
+      "members": [
+        {
+          "name": "locale",
+          "type": "string | undefined",
+          "description": "BCP 47 locale, e.g. bg-BG or en-US. Omission uses the runtime locale.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/localization/Localization.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "LocalizedError",
+      "kind": "class",
+      "type": "LocalizedError<K>",
+      "description": "Library-owned message error. Retains a key/parameters instead of reverse-translating English strings.\nIts default message stays English for non-UI callers; a component's message view localizes it.",
+      "tags": [],
+      "topics": [],
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/LocalizedError",
+      "source": "src/localization/Messages.ts",
+      "members": [
+        {
+          "name": "parameters",
+          "type": "Record<string, string | number> | undefined",
+          "description": "Named data for the message; not HTML and never evaluated as code.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/localization/Messages.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "LocalizedMessages",
+      "kind": "interface",
+      "type": "LocalizedMessages",
+      "description": "Message view that may follow a component's locale or retain an editor's locale snapshot.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/LocalizedMessages",
+      "source": "src/localization/Messages.ts",
+      "members": [
+        {
+          "name": "text",
+          "type": "<K extends MessageKey>(key: K, ...args: MessageArguments<K>) => string",
+          "description": "Resolves a typed full key. The result is plain text, never HTML.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Messages.ts",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "K",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "args",
+              "type": "MessageArguments<K>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "<K extends MessageKey>(key: K, ...args: MessageArguments<K>) => string"
+        },
+        {
+          "name": "scope",
+          "type": "<N extends MessageNamespace>(namespace: N) => MessageScope<N>",
+          "description": "Returns a typed, prefix-limited message view.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Messages.ts",
+          "parameters": [
+            {
+              "name": "namespace",
+              "type": "N",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "MessageScope<N>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "<N extends MessageNamespace>(namespace: N) => MessageScope<N>"
+        },
+        {
+          "name": "describe",
+          "type": "(error: unknown) => string",
+          "description": "Translates library-owned structured errors; application/server errors remain unchanged.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Messages.ts",
+          "parameters": [
+            {
+              "name": "error",
+              "type": "unknown",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(error: unknown) => string"
         }
       ]
     },
@@ -8094,6 +8498,127 @@
           "optional": true,
           "source": "src/components/popup/PopupMenu.ts",
           "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "MessageArguments",
+      "kind": "type",
+      "type": "any",
+      "description": "Typed argument list: messages without parameters do not require an argument object.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageArguments",
+      "source": "src/localization/Messages.ts",
+      "definition": "ParametersIn<(typeof enMessages)[K]> extends never\n    ? [] : [parameters: MessageParameters<K>]"
+    },
+    {
+      "name": "MessageKey",
+      "kind": "type",
+      "type": "any",
+      "description": "All built-in functional message keys, derived from the canonical English catalog.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageKey",
+      "source": "src/localization/Messages.ts",
+      "definition": "keyof typeof enMessages"
+    },
+    {
+      "name": "MessageNamespace",
+      "kind": "type",
+      "type": "any",
+      "description": "Functional namespace; independent of physical files and class names.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageNamespace",
+      "source": "src/localization/Messages.ts",
+      "definition": "MessageKey extends infer K ? K extends `${infer N}.${string}` ? N : never : never"
+    },
+    {
+      "name": "MessageOverrides",
+      "kind": "type",
+      "type": "any",
+      "description": "Partial, type-checked application overrides. Unspecified messages use fallback.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageOverrides",
+      "source": "src/localization/Messages.ts",
+      "definition": "Partial<Messages>"
+    },
+    {
+      "name": "MessageParameters",
+      "kind": "type",
+      "type": "any",
+      "description": "Named parameters required by a message; parameter names are inferred from the English template.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageParameters",
+      "source": "src/localization/Messages.ts",
+      "definition": "{ [P in ParametersIn<(typeof enMessages)[K]>]: string | number }"
+    },
+    {
+      "name": "Messages",
+      "kind": "type",
+      "type": "any",
+      "description": "Complete language dictionary. Values are strings, not English string literals.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/Messages",
+      "source": "src/localization/Messages.ts",
+      "definition": "{ [K in MessageKey]: string }"
+    },
+    {
+      "name": "MessageScope",
+      "kind": "interface",
+      "type": "MessageScope<N>",
+      "description": "Type-safe message access limited to a functional namespace.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/MessageScope",
+      "source": "src/localization/Messages.ts",
+      "members": [
+        {
+          "name": "text",
+          "type": "<K extends ScopedMessageKey<N>>(key: K, ...args: MessageArguments<Extract<`${N}.${K}`, MessageKey>>) => string",
+          "description": "Resolves a local key and substitutes its required named parameters as plain text.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/localization/Messages.ts",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "K",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "args",
+              "type": "MessageArguments<Extract<`${N}.${K}`, \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\">>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "<K extends ScopedMessageKey<N>>(key: K, ...args: MessageArguments<Extract<`${N}.${K}`, MessageKey>>) => string"
         }
       ]
     },
@@ -8934,7 +9459,7 @@
         {
           "name": "openOnFocus",
           "type": "boolean | undefined",
-          "description": "Opens the picker when the input receives focus. Date editors focus Calendar,\nTimeEditor focuses its time list, and LookupEditor retains search input focus.\nReturning from a picker choice or Escape does not reopen the panel.\nDefaults to false. Explicit button/keyboard opening remains available.",
+          "description": "Opens the picker when the input receives focus. Date editors focus DatePicker,\nTimeEditor focuses its time list, and LookupEditor retains search input focus.\nReturning from a picker choice or Escape does not reopen the panel.\nDefaults to false. Explicit button/keyboard opening remains available.",
           "tags": [
             {
               "name": "example",
@@ -9128,6 +9653,16 @@
           "tags": [],
           "topics": [],
           "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "triggerMessage",
+          "type": "\"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\" | undefined",
+          "description": "Optional built-in message key; custom triggerLabel is otherwise retained verbatim.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
           "source": "src/components/editors/PopoverEditor.ts",
           "kind": "property"
         }
@@ -9713,6 +10248,19 @@
           "signature": "(task: RenderTask) => void"
         }
       ]
+    },
+    {
+      "name": "ScopedMessageKey",
+      "kind": "type",
+      "type": "any",
+      "description": "Local keys available within one functional namespace.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Types",
+      "path": "/api-reference/ScopedMessageKey",
+      "source": "src/localization/Messages.ts",
+      "definition": "MessageKey extends infer K\n    ? K extends `${N}.${infer Rest}` ? Rest : never : never"
     },
     {
       "name": "ScrollbarMode",
@@ -12008,6 +12556,16 @@
       "source": "src/components/time-picker/TimePicker.ts",
       "members": [
         {
+          "name": "locale",
+          "type": "string",
+          "description": "Inherited regional context. Slot values/labels remain explicitly configured HH:mm[:ss] strings.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/time-picker/TimePicker.ts",
+          "kind": "property"
+        },
+        {
           "name": "value",
           "type": "string | null",
           "description": "Current selected canonical time, or null when unselected.",
@@ -12785,6 +13343,16 @@
       "path": "/api-reference/ValueEditor",
       "source": "src/components/editors/ValueEditor.ts",
       "members": [
+        {
+          "name": "locale",
+          "type": "string",
+          "description": "Locale captured at creation, stable throughout this editor's lifetime. Does not select a numeric/boolean parser.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/ValueEditor.ts",
+          "kind": "property"
+        },
         {
           "name": "input",
           "type": "ObservableEvent<void>",

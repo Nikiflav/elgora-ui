@@ -13,7 +13,7 @@ export default {
     {
       "name": "openOnFocus",
       "type": "boolean | undefined",
-      "description": "Opens the picker when the input receives focus. Date editors focus Calendar,\nTimeEditor focuses its time list, and LookupEditor retains search input focus.\nReturning from a picker choice or Escape does not reopen the panel.\nDefaults to false. Explicit button/keyboard opening remains available.",
+      "description": "Opens the picker when the input receives focus. Date editors focus DatePicker,\nTimeEditor focuses its time list, and LookupEditor retains search input focus.\nReturning from a picker choice or Escape does not reopen the panel.\nDefaults to false. Explicit button/keyboard opening remains available.",
       "tags": [
         {
           "name": "example",

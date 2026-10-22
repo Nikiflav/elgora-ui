@@ -9,7 +9,7 @@ export interface EditorButton {
 /** Built-in trigger descriptions; sharing them avoids creating editors just to render a cell button. */
 export const editorButtons = {
     lookup: { icon: "ri-arrow-down-s-line", label: "Open lookup" },
-    date: { icon: "ri-calendar-line", label: "Open calendar" },
+    date: { icon: "ri-calendar-line", label: "Open date picker" },
     time: { icon: "ri-time-line", label: "Open time picker" },
     datetime: { icon: "ri-calendar-line", label: "Open date and time picker" }
 } satisfies Record<string, EditorButton>;

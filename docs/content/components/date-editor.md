@@ -10,7 +10,7 @@ description: Date-only text editing with a calendar popup and asynchronous confi
 
 # Date editor
 
-DateEditor combines a text input with the standalone [Calendar](?!=/components/calendar).
+DateEditor combines a text input with the standalone [DatePicker](?!=/components/date-picker).
 It uses the same validation and asynchronous acceptance contract as other
 [Value editors](?!=/components/value-editors), with no dependency on data sources.
 
@@ -40,7 +40,7 @@ deliveryDate.mount(container);
 ```
 
 The value is a strict date-only `YYYY-MM-DD` string or `null`. No timezone is
-added and no timestamp conversion is performed. `locale` affects Calendar labels
+added and no timestamp conversion is performed. `locale` affects DatePicker labels
 and the standard `dateFormat: "d"`; explicit patterns are independent of locale.
 `min` and `max` are inclusive and apply
 to typed values, calendar choices, external resolution and `setValue()`.
@@ -49,7 +49,7 @@ to typed values, calendar choices, external resolution and `setValue()`.
 
 Enter confirms text; Escape restores the last confirmed value. Leaving the
 compound editor also confirms by default; set `commitOnBlur: false` to defer it.
-Moving focus into Calendar does not confirm pending input.
+Moving focus into DatePicker does not confirm pending input.
 
 `openOnFocus: true` opens and focuses the calendar when the input receives focus.
 Arrow keys navigate dates and Enter chooses the focused date. The default is
@@ -57,11 +57,11 @@ Arrow keys navigate dates and Enter chooses the focused date. The default is
 Returning to the input after choosing a date or pressing Escape does not reopen it.
 Press Escape to return to direct text editing. The booking example enables this option.
 
-The inset calendar button or Alt+Down opens Calendar and focuses the selected day.
+The inset calendar button or Alt+Down opens DatePicker and focuses the selected day.
 The button does not add a Tab stop: Tab reaches the input directly. Arrow keys inside the text input
 remain native caret operations. Opening the picker browses the typed date when
 valid, without saving it; invalid text still permits choosing a replacement.
-Calendar navigation does not change the editor value. Choosing a day or Today
+DatePicker navigation does not change the editor value. Choosing a day or Today
 updates the input and closes the picker immediately, then starts validation and
 confirmation. During asynchronous acceptance, the input and trigger are unavailable
 for another edit. A failure appears on the editor without reopening the picker.
@@ -82,4 +82,4 @@ See [Dates, times and formatting](?!=/data/formatting) for supported tokens, cus
 
 [DateEditor](?!=/api-reference/DateEditor),
 [DateEditorOptions](?!=/api-reference/DateEditorOptions),
-[TextEditor](?!=/api-reference/TextEditor), [Calendar](?!=/api-reference/Calendar).
+[TextEditor](?!=/api-reference/TextEditor), [DatePicker](?!=/api-reference/DatePicker).

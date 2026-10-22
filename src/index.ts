@@ -46,13 +46,17 @@ export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement,
 export { PopupMenu, type PopupMenuOptions, type PopupMenuShowOptions, type MenuItem } from './components/popup/PopupMenu';
 export { Tooltip, type TooltipContent, type TooltipShowOptions } from './components/popup/Tooltip';
 export { ResizeHandle, type ResizeHandleOptions, type ResizeSize } from './components/resize/ResizeHandle';
-export { Calendar, type CalendarOptions } from './components/calendar/Calendar';
+export { DatePicker, type DatePickerOptions } from './components/date-picker/DatePicker';
 export { TimePicker, type TimePickerOptions } from './components/time-picker/TimePicker';
 export { DateEditor, type DateEditorOptions } from './components/editors/DateEditor';
 export { TimeEditor, type TimeEditorOptions } from './components/editors/TimeEditor';
 export { DateTimeEditor, type DateTimeEditorOptions } from './components/editors/DateTimeEditor';
 export { DateFormatter } from './formatting/DateFormatter';
 export { NumberFormatter } from './formatting/NumberFormatter';
+export { Localization, type LocalizationOptions, type LocaleOptions } from './localization/Localization';
+export { enMessages } from './localization/enMessages';
+export { LocalizedError, type Messages, type MessageOverrides, type MessageKey, type MessageParameters,
+    type MessageArguments, type MessageNamespace, type ScopedMessageKey, type MessageScope, type LocalizedMessages } from './localization/Messages';
 export { TimeFormatter } from './formatting/TimeFormatter';
 export type { ValueFormatter } from './formatting/ValueFormatter';
 export type { PopoverEditorOptions } from './components/editors/PopoverEditorOptions';

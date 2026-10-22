@@ -11,6 +11,16 @@ export default {
   "source": "src/components/time-picker/TimePicker.ts",
   "members": [
     {
+      "name": "locale",
+      "type": "string",
+      "description": "Inherited regional context. Slot values/labels remain explicitly configured HH:mm[:ss] strings.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/time-picker/TimePicker.ts",
+      "kind": "property"
+    },
+    {
       "name": "value",
       "type": "string | null",
       "description": "Current selected canonical time, or null when unselected.",

@@ -34,6 +34,7 @@ export default function demo(): void {
   const grid = new DataGrid({
     data: new ArrayDataSource(data, { createRowId: () => nextId++ }),
     columnWidthMode: "fixed",
+    locale: "bg-BG",
     columns: [
       {
         name: "country",
@@ -58,9 +59,9 @@ export default function demo(): void {
       { name: "orderNumber", caption: "Order number", dataType: "string" },
       { name: "product", caption: "Product", dataType: "string" },      
       { name: "status", caption: "Status", dataType: "string" },
-      { name: "quantity", caption: "Quantity", dataType: "number", displayFormat: "N0", displayLocale: "bg-BG" },
-      { name: "unitPrice", caption: "Unit price", dataType: "number", displayFormat: "N2", displayLocale: "bg-BG" },
-      { name: "totalAmount", caption: "Total amount", dataType: "number", displayFormat: "C2€", displayLocale: "bg-BG" },
+      { name: "quantity", caption: "Quantity", dataType: "number", displayFormat: "N0" },
+      { name: "unitPrice", caption: "Unit price", dataType: "number", displayFormat: "N2" },
+      { name: "totalAmount", caption: "Total amount", dataType: "number", displayFormat: "C2€" },
       { name: "orderDate", caption: "Order date", dataType: "date" }
     ],
     groupSummary: [

@@ -1,5 +1,7 @@
 import { Component } from "../../core/Component";
 import { ObservableEvent } from "../../core/ElgoraUI";
+import { Localization, type LocaleOptions } from "../../localization/Localization";
+import type { MessageKey } from "../../localization/Messages";
 import { setElementProps, e, assignElementProps, span, tr, VNode, v, VNodeChild, ElementProps } from "../../core/e";
 import { Utils } from "../../core/Utils";
 import { DataFilter } from "../../data/filter";
@@ -97,7 +99,7 @@ export type DataGridCursor = "default" | "pointer" | "text";
 export type DataGridCellBorders = "none" | "rows" | "all";
 
 /** Data, column, interaction and presentation options for a DataGrid. */
-export type DataGridOptions<TRow> = {
+export type DataGridOptions<TRow> = LocaleOptions & {
     /** Enables existing-cell editing when the source supports update. Defaults to false. */
     allowEdit?: boolean;
     /** Row data; defaults to an empty array if omitted. */
@@ -245,6 +247,13 @@ export class DataGrid<TRow> extends Component {
 
     // Options.
     private _gridOptions: DataGridOptions<TRow> = { columns: [] };
+    private readonly messages = Localization.resolveMessages(this._gridOptions);
+    private _messageSubscriptions: { dispose(): void }[] = [];
+    private _localizationChanged?: { dispose(): void };
+    private _resolvedLocale?: string;
+
+    /** Resolved grid locale, before a column's own override. No default is copied into options. */
+    get locale(): string { return Localization.resolveLocale(this._gridOptions); }
     private _columnsIndex: Map<string, DataGridColumn<TRow>> = new Map();
     private _dataSource!: DataSource<TRow>;
     private _isHierarchicalData: boolean = false;
@@ -380,7 +389,7 @@ export class DataGrid<TRow> extends Component {
                 if (!source.createNewRow) throw new Error("Failed to paste new row. The data source does not support row creation.");
                 try { session = await this.createNewRowCore(); }
                 catch (error) {
-                    this._newRowError = `Failed to create pasted row ${i + 1}. ${Utils.getErrorText(error)}`;
+                    this._newRowError = this.messages.text("dataGrid.pasteRowFailed", { row: i + 1, message: this.messages.describe(error) });
                     throw new Error(this._newRowError);
                 }
                 if (this.disposed.Value) return;
@@ -396,12 +405,12 @@ export class DataGrid<TRow> extends Component {
                 let editor: ReturnType<typeof createFieldEditor<TRow>> | undefined;
                 try {
                     const value = await DataViewFieldUtils.getValue(field, row);
-                    const context = { row, field, value, onCommit: async () => {} };
+                    const context = { row, field, value, locale: field.locale ?? this.locale, localization: this._gridOptions.localization, onCommit: async () => {} };
                     editor = createFieldEditor(context);
                     const candidate = await editor.resolveText(input);
                     const error = field.createEditor
                         ? field.required && (candidate == null || candidate === "")
-                            ? "A value is required." : await field.validate?.(candidate, context)
+                            ? Localization.resolveMessages(context, context.locale).text("valueEditor.required") : await field.validate?.(candidate, context)
                         : undefined;
                     if (error) throw new Error(error);
                     const editorError = await editor.validateValue(candidate);
@@ -680,7 +689,7 @@ export class DataGrid<TRow> extends Component {
             const value = cached && typeof cached === "object" && "value" in cached
                 ? cached.value : await DataViewFieldUtils.getValue(field, row);
             const text = cached && typeof cached.text === "string"
-                ? cached.text : await DataViewFieldUtils.getText(field, row);
+                ? cached.text : await DataViewFieldUtils.getText(field, row, this.locale);
             if (version !== this._editVersion || this.disposed.Value) return false;
             // Editing changes the active cell, not the block being traversed by
             // Tab/Enter. Only an edit outside the selection starts a new range.
@@ -692,7 +701,7 @@ export class DataGrid<TRow> extends Component {
             this._editingRow = row;
             const inputRowKey = this.getInputRowKey(row);
             const invalidInput = this._invalidCellInputs.get(inputRowKey)?.get(field.name);
-            this._cellEditor = new GridCellEditor(this.dom, { row, field, value, text,
+            this._cellEditor = new GridCellEditor(this.dom, { row, field, value, text, locale: field.locale ?? this.locale, localization: this._gridOptions.localization,
                 onCommit: async candidate => {
                     const result = await this._dataSource.update!(row, { [field.name]: candidate });
                     if (!result.success) throw new Error(result.fieldErrors?.[field.name] ?? result.error);
@@ -933,7 +942,7 @@ export class DataGrid<TRow> extends Component {
     private async getNewGridRow(index: number, offset = this._newRowSessions.length): Promise<GridRow> {
         const row = this._newRowSessions[offset]?.row;
         return { key: row ? `pending-row-${offset}` : "new-row", type: "new", visibleIndex: index, level: 0, data: row,
-            cells: row ? await DataViewFieldUtils.getDataCells(this._gridOptions.columns, row) : {} };
+            cells: row ? await DataViewFieldUtils.getDataCells(this._gridOptions.columns, row, this.locale) : {} };
     }
 
     /** Disposes the editor before re-querying; source events never destroy an active draft. */
@@ -1393,21 +1402,21 @@ export class DataGrid<TRow> extends Component {
             if ((!sortDirection || sortDirection === "desc") && hasStandard("sortAscending" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-arrow-up-line",
-                    text: "Sort Ascending",
+                    text: this.messages.text("dataGrid.sortAscending"),
                     action: event => this.setColumnSort(columnName, "asc", preserveExistingSort(event))
                 });
             }
             if ((!sortDirection || sortDirection === "asc") && hasStandard("sortDescending" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-arrow-down-line",
-                    text: "Sort Descending",
+                    text: this.messages.text("dataGrid.sortDescending"),
                     action: event => this.setColumnSort(columnName, "desc", preserveExistingSort(event))
                 });
             }
             if (sortDirection && !isGrouped && hasStandard("clearSort" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-close-line",
-                    text: "Clear sorting",
+                    text: this.messages.text("dataGrid.clearSorting"),
                     action: () => this.clearColumnSort(columnName)
                 });
             }
@@ -1415,21 +1424,21 @@ export class DataGrid<TRow> extends Component {
                 addDivider();
                 items.push({
                     icon: "ri-pushpin-line",
-                    text: "Pin Column",
+                    text: this.messages.text("dataGrid.pinColumn"),
                     subItems: async () => [
                         {
                             icon: "ri-close-line",
-                            text: "No Pin",
+                            text: this.messages.text("dataGrid.noPin"),
                             checked: () => pinPosition === "none",
                             action: () => this.setColumnPinPosition(columnName, "none")
                         },
                         {
-                            text: "Pin Left",
+                            text: this.messages.text("dataGrid.pinLeft"),
                             checked: () => pinPosition === "left",
                             action: () => this.setColumnPinPosition(columnName, "left")
                         },
                         {
-                            text: "Pin Right",
+                            text: this.messages.text("dataGrid.pinRight"),
                             checked: () => pinPosition === "right",
                             action: () => this.setColumnPinPosition(columnName, "right")
                         }
@@ -1440,32 +1449,32 @@ export class DataGrid<TRow> extends Component {
                 addDivider();
                 items.push({
                     icon: "ri-expand-up-down-line",
-                    text: "Autosize This Column",
+                    text: this.messages.text("dataGrid.autosizeColumn"),
                     action: () => this.autoSizeColumn(columnName)
                 });
             }
             if (hasStandard("autosizeAllColumns" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-expand-up-down-line",
-                    text: "Autosize All Columns",
+                    text: this.messages.text("dataGrid.autosizeAll"),
                     action: this.autoSizeAllColumns
                 });
             }
             const groupingItems: MenuItem[] = [];
             if (hasStandard("groupColumn") && !this._isHierarchicalData) {
                 const intervalLabels: Record<string, string> = {
-                    "year": "Year",
-                    "yearQuarter": "Year-quarter",
-                    "quarter": "Quarter",
-                    "yearMonth": "Year-month",
-                    "month": "Month",
-                    "week": "ISO week",
-                    "day": "Day",
-                    "dayOfWeek": "Day of week",
-                    "hour": "Hour",
-                    "minute": "Minute",
-                    "second": "Second",
-                    "firstChar": "First character"
+                    "year": this.messages.text("dataGrid.interval.year"),
+                    "yearQuarter": this.messages.text("dataGrid.interval.yearQuarter"),
+                    "quarter": this.messages.text("dataGrid.interval.quarter"),
+                    "yearMonth": this.messages.text("dataGrid.interval.yearMonth"),
+                    "month": this.messages.text("dataGrid.interval.month"),
+                    "week": this.messages.text("dataGrid.interval.week"),
+                    "day": this.messages.text("dataGrid.interval.day"),
+                    "dayOfWeek": this.messages.text("dataGrid.interval.dayOfWeek"),
+                    "hour": this.messages.text("dataGrid.interval.hour"),
+                    "minute": this.messages.text("dataGrid.interval.minute"),
+                    "second": this.messages.text("dataGrid.interval.second"),
+                    "firstChar": this.messages.text("dataGrid.interval.firstChar")
                 };
                 const supportedIntervals = DataViewFieldUtils.getSupportedGroupIntervals(context.column!);
                 const customIntervals = this._gridOptions.groupIntervals ?? [];
@@ -1477,7 +1486,7 @@ export class DataGrid<TRow> extends Component {
                 ];
                 groupingItems.push({
                     icon: "ri-timeline-view",
-                    text: `${isGrouped ? "Ungroup" : "Group by"} ${context.column.caption ?? context.column.name}`,
+                    text: this.messages.text(isGrouped ? "dataGrid.ungroup" : "dataGrid.groupBy", { column: context.column.caption ?? context.column.name }),
                     action: () => isGrouped
                         ? this.toggleColumnGrouping(columnName)
                         : this.setColumnGroupInterval(columnName, undefined)
@@ -1485,11 +1494,11 @@ export class DataGrid<TRow> extends Component {
                 if (advancedIntervals.length) {
                     groupingItems.push({
                         icon: "ri-settings-3-line",
-                        text: "Interval",
+                        text: this.messages.text("dataGrid.interval"),
                         subItems: async () => {
                             const currentInterval = context.column!.groupInterval;
                             const intervals: Array<{ label: string, value?: GroupInterval }> = [
-                                { label: "Exact value" },
+                                { label: this.messages.text("dataGrid.exactValue") },
                                 ...advancedIntervals
                             ];
                             if (currentInterval && !intervals.some(i => i.value === currentInterval)) {
@@ -1510,14 +1519,14 @@ export class DataGrid<TRow> extends Component {
                 if (hasStandard("expandGroupsToLevel")) {
                     groupingItems.push({
                         icon: "ri-arrow-down-s-line",
-                        text: "Expand to this level",
+                        text: this.messages.text("dataGrid.expandToLevel"),
                         action: () => this.changeColumnGroupExpansion(columnName, true)
                     });
                 }
                 if (hasStandard("collapseGroupsAtLevel")) {
                     groupingItems.push({
                         icon: "ri-arrow-up-s-line",
-                        text: "Collapse this level",
+                        text: this.messages.text("dataGrid.collapseLevel"),
                         action: () => this.changeColumnGroupExpansion(columnName, false)
                     });
                 }
@@ -1526,24 +1535,24 @@ export class DataGrid<TRow> extends Component {
                 addDivider();
                 items.push({
                     icon: "ri-timeline-view",
-                    text: "Grouping",
+                    text: this.messages.text("dataGrid.grouping"),
                     subItems: async () => groupingItems
                 });
             }
             addDivider();
             items.push({
                 icon: "ri-calculator-line",
-                text: "Summary",
+                text: this.messages.text("dataGrid.summary"),
                 disabled: this._isHierarchicalData,
                 subItems: async () => {
                     const summaryTypes: Array<{ label: string, value?: SummaryType }> = [
-                        { label: "None" },
-                        { label: "Count", value: "count" },
-                        { label: "Sum", value: "sum" },
-                        { label: "Average", value: "avg" },
-                        { label: "Minimum", value: "min" },
-                        { label: "Maximum", value: "max" },
-                        { label: "Distinct", value: "distinct" },
+                        { label: this.messages.text("dataGrid.summary.none") },
+                        { label: this.messages.text("dataGrid.summary.count"), value: "count" },
+                        { label: this.messages.text("dataGrid.summary.sum"), value: "sum" },
+                        { label: this.messages.text("dataGrid.summary.avg"), value: "avg" },
+                        { label: this.messages.text("dataGrid.summary.min"), value: "min" },
+                        { label: this.messages.text("dataGrid.summary.max"), value: "max" },
+                        { label: this.messages.text("dataGrid.summary.distinct"), value: "distinct" },
                         ...(this._gridOptions.customSummaries ?? []).map(summary => ({
                             label: summary.text,
                             value: summary.name as SummaryType
@@ -1575,20 +1584,20 @@ export class DataGrid<TRow> extends Component {
             const session = context.row?.type === "new"
                 ? this._newRowSessions.find(item => item.row === context.row!.data) : undefined;
             if (session && hasStandard("cancelNewRow")) items.push({
-                icon: "ri-close-line", text: "Cancel new row",
+                icon: "ri-close-line", text: this.messages.text("dataGrid.cancelNewRow"),
                 action: () => session.state === "pending" && this._newRowSessions.includes(session)
                     ? this.cancelNewRow(session) : Promise.resolve(false)
             });
             if (hasStandard("copy") && this._selection.getRanges().length > 0) {
-                items.push({ icon: "ri-file-copy-line", text: "Copy selected cells", action: () => this.copySelection() });
+                items.push({ icon: "ri-file-copy-line", text: this.messages.text("dataGrid.copy"), action: () => this.copySelection() });
             }
             if (hasStandard("copyWithHeaders") && this._selection.getRanges().length > 0) {
-                items.push({ icon: "ri-file-copy-2-line", text: "Copy selected cells with headers", action: () => this.copySelection(true) });
+                items.push({ icon: "ri-file-copy-2-line", text: this.messages.text("dataGrid.copyWithHeaders"), action: () => this.copySelection(true) });
             }
             const active = this._selection.getActiveCell();
             if (hasStandard("paste") && this._gridOptions.allowEdit && this._dataSource.update && active
                 && context.row && ["data", "node", "new"].includes(context.row.type)) {
-                items.push({ icon: "ri-clipboard-line", text: "Paste", closeOnAction: false,
+                items.push({ icon: "ri-clipboard-line", text: this.messages.text("dataGrid.paste"), closeOnAction: false,
                     disabled: () => !!(this._pasteOperation || this._creatingNewRow || this._openingEdit
                         || this._newRowOperation || this._cellEditor?.editor.busy),
                     action: () => this.pasteFromClipboard(context) });
@@ -1596,7 +1605,7 @@ export class DataGrid<TRow> extends Component {
             if (hasStandard("selectRow") && context.row && this.isSelectableGridRow(context.row)) {
                 items.push({
                     icon: "ri-checkbox-multiple-line",
-                    text: "Select row",
+                    text: this.messages.text("dataGrid.selectRow"),
                     action: () => {
                         this._selection.selectSingleRow(context.row!.visibleIndex);
                         this.refresh();
@@ -1604,7 +1613,7 @@ export class DataGrid<TRow> extends Component {
                 });
             }
             if (hasStandard("clearSelection") && this._selection.getRanges().length > 0) {
-                items.push({ icon: "ri-close-circle-line", text: "Clear selection", action: () => this.clearSelection() });
+                items.push({ icon: "ri-close-circle-line", text: this.messages.text("dataGrid.clearSelection"), action: () => this.clearSelection() });
             }
         }
 
@@ -1640,13 +1649,13 @@ export class DataGrid<TRow> extends Component {
         let text: string;
         try {
             const clipboard = this.dom.ownerDocument.defaultView?.navigator.clipboard;
-            if (!clipboard?.readText) throw new Error("Clipboard reading is unavailable.");
+            if (!clipboard?.readText) throw new Error(this.messages.text("dataGrid.clipboardUnavailable"));
             // Invoke immediately during the user gesture, before any asynchronous work.
             const reading = clipboard.readText();
             this._contextMenu.hide();
             text = await reading;
         } catch (error) {
-            await this.showPasteFailure(context, `Failed to read clipboard. ${Utils.getErrorText(error)}`);
+            await this.showPasteFailure(context, this.messages.text("dataGrid.clipboardFailed", { message: this.messages.describe(error) }));
             return;
         }
         const current = this._selection.getActiveCell();
@@ -1666,7 +1675,7 @@ export class DataGrid<TRow> extends Component {
         if (this.disposed.Value) return;
         await this._contextMenu.show({ point: { x: context.event.clientX, y: context.event.clientY }, items: [
             { text: message, icon: "ri-error-warning-line", disabled: true },
-            { text: "Return to grid and press Ctrl+V / Command+V", action: () => this._tableContainer.focus() }
+            { text: this.messages.text("dataGrid.clipboardHint"), action: () => this._tableContainer.focus() }
         ] });
     }
 
@@ -1788,7 +1797,7 @@ export class DataGrid<TRow> extends Component {
 
     /** Resolved user-facing texts, merging configured overrides onto DEFAULT_GRID_TEXTS. */
     private get texts(): DataGridTexts {
-        return { ...DEFAULT_GRID_TEXTS, ...this._gridOptions.texts };
+        return { newRowText: this.messages.text("dataGrid.newRow"), groupPanelEmptyText: this.messages.text("dataGrid.groupPanelEmpty"), ...this._gridOptions.texts };
     }
 
     /** (Re)builds _dataSource/_isHierarchicalData from _gridOptions.data. */
@@ -1858,10 +1867,39 @@ export class DataGrid<TRow> extends Component {
         }
     }
 
+    private bindLocalization(): boolean {
+        this._messageSubscriptions.forEach(subscription => subscription.dispose());
+        const contexts = new Set([this._gridOptions.localization ?? Localization.default, Localization.default]);
+        this._messageSubscriptions = [...contexts].map(context => context.messagesChanged.subscribe(() => {
+            if (!this.disposed.Value) this.refreshLocale();
+        }));
+        this._localizationChanged?.dispose();
+        this._localizationChanged = undefined;
+        const changed = this._resolvedLocale !== this.locale;
+        this._resolvedLocale = this.locale;
+        if (this._gridOptions.locale === undefined) {
+            this._localizationChanged = (this._gridOptions.localization ?? Localization.default).changed.subscribe(() => {
+                if (this.disposed.Value || this._resolvedLocale === this.locale) return;
+                this._resolvedLocale = this.locale;
+                this.refreshLocale();
+            });
+        }
+        return changed;
+    }
+
+    private refreshLocale(): void {
+        // Reformat loaded values, not the source. Preserve edits, expansion, selection and pending rows.
+        for (const column of this._gridColumns) {
+            if (column.isAutoWidth) column.widthMeasured = false;
+            column.footerWidthVersion = undefined;
+        }
+        this._totalSummaryWidthVersion++;
+        this.refresh();
+    }
+
     /**
-     * Sets (patches) the grid's options. Only the provided keys are changed; everything else is
-     * left as-is. This is the single path for both the constructor's initial options and every
-     * later change - fires an "optionChanged" DOM event on this.dom with the applied patch as detail.
+     * Patches only provided options and emits optionChanged. Locale changes repaint
+     * built-in formatting without re-querying data or changing an active editor's locale.
      */
     public setOptions = (options: Partial<DataGridOptions<TRow>>) => {
         if ("columnResizeMode" in options) this._cancelActiveResize?.();
@@ -1901,6 +1939,8 @@ export class DataGrid<TRow> extends Component {
         if (rest.defaultColumnOptions)
             rest.defaultColumnOptions = { ...this._gridOptions.defaultColumnOptions, ...rest.defaultColumnOptions };
         Object.assign(this._gridOptions, rest);
+        const localeChanged = (!this._initialized || "locale" in options || "localization" in options)
+            ? this.bindLocalization() : false;
 
         // Resolve every optional field to a concrete default, once, so the rest of the grid (and
         // getOptions()) never has to special-case "unset".
@@ -1991,6 +2031,7 @@ export class DataGrid<TRow> extends Component {
             this._totalSummaryLoaded = false;
         }
         if (reloadsRows || footerBecameVisible) this.reloadRows();
+        if (localeChanged) this.refreshLocale();
         if (!changesLayout && !reloadsRows && (visualColumnDefaults || "selectionMode" in options || "texts" in options || "stickyGroupRows" in options || "selectableGroupRows" in options || "selectableHierarchyNodes" in options || "showRowHover" in options || "showBorder" in options || "cellBorders" in options || "showSelection" in options || "cursor" in options || changesStaticRows)) this.refresh();
     }
 
@@ -2024,8 +2065,10 @@ export class DataGrid<TRow> extends Component {
             && this._columnsIndex.get(name)?.groupInterval !== patch.groupInterval;
         this._mergeColumnPatch({ ...patch, name });
         this.dom.dispatchEvent(new CustomEvent("optionChanged", { detail: { columns: [{ ...patch, name }] } }));
+        if ("locale" in patch || "displayFormat" in patch) this.refreshLocale();
         this.layoutChanged();
         if (groupingChanged) this.reloadRows();
+        else if ("displayFormat" in patch) this.reloadRows(true);
     }
 
     /**
@@ -2179,8 +2222,11 @@ export class DataGrid<TRow> extends Component {
     }
 
     private getState(): DataGridState<TRow> {
+        const grid = this;
         return {
             dataSource: this._dataSource,
+            // Cached row providers also resolve newly loaded pages against the current locale.
+            get locale() { return grid.locale; },
             pageSize: this._gridOptions.pageSize!,
             columns: this._columnsIndex,
             visibleColumns: this.getVisibleColumns().map(c => c.name),
@@ -2696,7 +2742,7 @@ export class DataGrid<TRow> extends Component {
             return summaries.map(summary => {
                 const showType = summaries.length > 1
                     || (!!groupSummary && groupSummary.summaryType !== summary.summaryType);
-                const text = DataViewFieldUtils.formatSummaryValue(col.dataColumn!, summary.value, summary.summaryType);
+                const text = DataViewFieldUtils.formatSummaryValue(col.dataColumn!, summary.value, summary.summaryType, this.locale);
                 return showType
                     ? `${summary.summaryType}: ${text}`
                     : text;
@@ -2714,6 +2760,15 @@ export class DataGrid<TRow> extends Component {
             const invalidInput = this.getInvalidCellInput(gridRow, col.dataColumn.name);
             if (invalidInput && DataViewFieldUtils.getDataType(col.dataColumn) !== "boolean") return invalidInput.text;
             const cell = gridRow.cells?.[col.dataColumn.name];
+            if (col.dataColumn.displayFormat !== undefined && cell && typeof cell === "object" && "value" in cell) {
+                if (gridRow.type === "group") {
+                    const summary = this._gridOptions.groupSummary?.find(item => item.field === col.dataColumn!.name);
+                    if (summary) return DataViewFieldUtils.formatSummaryValue(col.dataColumn, cell.value, summary.summaryType, this.locale);
+                } else if (!col.dataColumn.getText && !col.dataColumn.lookup) {
+                    try { return DataViewFieldUtils.formatDisplayValue(col.dataColumn, cell.value, this.locale); }
+                    catch (error) { return `ERROR: ${Utils.getErrorText(error)}`; }
+                }
+            }
             return String(cell?.text ?? cell?.value ?? cell ?? "");
         }
         else if (col.type == "rowheader") {
@@ -2879,7 +2934,7 @@ export class DataGrid<TRow> extends Component {
         if (!field || field.readonly || !this._gridOptions.allowEdit || !this._dataSource.update
             || !["data", "node", "new"].includes(gridRow.type)) return;
         const visibility = field.editorButtonVisibility ?? this._gridOptions.defaultColumnOptions?.editorButtonVisibility ?? "hover";
-        const button = visibility !== "never" ? getFieldEditorButton(field) : undefined;
+        const button = visibility !== "never" ? getFieldEditorButton(field, this._gridOptions) : undefined;
         if (!button) return;
         props.className += " elg-data-grid-cell-picker";
         if (this._editingCell?.rowIndex === gridRow.visibleIndex && this._editingCell.columnName === field.name)
@@ -2958,12 +3013,12 @@ export class DataGrid<TRow> extends Component {
             showSortOrder ? v("span", {
                 textContent: String(sortOrder),
                 ui: ["ms-1", "text-muted", "fs-80"],
-                ariaLabel: `Sort priority ${sortOrder}`
+                ariaLabel: this.messages.text("dataGrid.sortPriority", { priority: sortOrder })
             }) : null,
             sortDirection ? v("i", {
                 class: sortDirection === "asc" ? "ri-arrow-up-line" : "ri-arrow-down-line",
                 ui: ["ms-1", "text-muted"],
-                ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
+                ariaLabel: sortDirection === "asc" ? this.messages.text("dataGrid.sortedAscending") : this.messages.text("dataGrid.sortedDescending")
             }) : null,
             v("em", {
                 class: "elg-data-grid-header-resizer",
@@ -3038,6 +3093,7 @@ export class DataGrid<TRow> extends Component {
         this._filterPopover?.dispose();
 
         const editor = new FilterEditor<TRow>({
+            locale: this.locale, localization: this._gridOptions.localization,
             columns: this.getVisibleColumns(),
             filter: this._gridOptions.filter,
             ui: ["elg", "p-3"],
@@ -3083,7 +3139,7 @@ export class DataGrid<TRow> extends Component {
                 class: "elg-data-grid-filter-button",
                 ui: ["elg", "btn", "text-muted"],
                 type: "button",
-                ariaLabel: "Edit filter",
+                ariaLabel: this.messages.text("dataGrid.editFilter"),
                 onclick: (event: MouseEvent, button: HTMLButtonElement) => {
                     event.preventDefault();
                     event.stopPropagation();
@@ -3106,7 +3162,7 @@ export class DataGrid<TRow> extends Component {
                 ui: ["elg", "w-100"],
                 type: "search",
                 value: inputValue,
-                ariaLabel: `Filter ${column.caption ?? column.name}`,
+                ariaLabel: this.messages.text("dataGrid.filterColumn", { column: column.caption ?? column.name }),
                 onchange: (event: Event) => this.setColumnFilter(column, (event.target as HTMLInputElement).value),
                 onkeydown: (event: KeyboardEvent) => {
                     if (event.key === "Enter") {
@@ -3122,7 +3178,7 @@ export class DataGrid<TRow> extends Component {
                     ui: ["elg", "btn", "text-muted", "p-0"],
                     type: "button",
                     tabIndex: -1,
-                    ariaLabel: `Clear filter ${column.caption ?? column.name}`,
+                    ariaLabel: this.messages.text("dataGrid.clearColumnFilter", { column: column.caption ?? column.name }),
                     onmousedown: (event: MouseEvent) => event.preventDefault(),
                     onclick: (event: MouseEvent) => {
                         event.preventDefault();
@@ -3151,14 +3207,14 @@ export class DataGrid<TRow> extends Component {
             key: "filter-summary",
             ui: ["elg", "d-inline-block", "text-start", "text-primary", "text-ellipsis", "no-underline", "w-100", "px-1", "py-0", "border-0", "bg-transparent"],
             type: "button",
-            ariaLabel: filterText ? `Edit filter: ${filterText}` : "Add filter",
-            title: filterText || "Add filter",
+            ariaLabel: filterText ? this.messages.text("dataGrid.editFilterExpression", { filter: filterText }) : this.messages.text("dataGrid.addFilter"),
+            title: filterText || this.messages.text("dataGrid.addFilter"),
             onclick: (event: MouseEvent, button: HTMLButtonElement) => {
                 event.preventDefault();
                 event.stopPropagation();
                 this.openFilterEditorFromSummary(button);
             }
-        }, filterText || "Add filter")];
+        }, filterText || this.messages.text("dataGrid.addFilter"))];
     };
 
     private applyCellState = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
@@ -3320,6 +3376,8 @@ export class DataGrid<TRow> extends Component {
 
     /** Releases grid-owned interaction controllers and active gestures. */
     public override dispose(): void {
+        this._messageSubscriptions.forEach(subscription => subscription.dispose()); this._messageSubscriptions = [];
+        this._localizationChanged?.dispose(); this._localizationChanged = undefined;
         this.cellNavigating.dispose();
         const cellCompletion = this._cellEditor?.editor.busy ? this._cellEditor.finish() : Promise.resolve();
         this._editVersion++;
@@ -3816,14 +3874,14 @@ export class DataGrid<TRow> extends Component {
                         ? v("span", {
                             textContent: String(sortOrder),
                             ui: ["ms-1", "text-muted", "fs-80"],
-                            ariaLabel: `Sort priority ${sortOrder}`
+                            ariaLabel: this.messages.text("dataGrid.sortPriority", { priority: sortOrder })
                         })
                         : null,
                     sortDirection
                         ? v("i", {
                             class: sortDirection === "asc" ? "ri-arrow-up-line" : "ri-arrow-down-line",
                             ui: ["ms-1", "text-muted"],
-                            ariaLabel: sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"
+                            ariaLabel: sortDirection === "asc" ? this.messages.text("dataGrid.sortedAscending") : this.messages.text("dataGrid.sortedDescending")
                         })
                         : null,
                     v("i", {

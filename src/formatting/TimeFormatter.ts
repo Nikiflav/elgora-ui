@@ -1,4 +1,5 @@
 import type { ValueFormatter } from "./ValueFormatter";
+import { LocalizedError } from "../localization/Messages";
 
 /** Formats and parses strict 24-hour time values without timezone conversion. */
 export class TimeFormatter implements ValueFormatter<string> {
@@ -16,7 +17,7 @@ export class TimeFormatter implements ValueFormatter<string> {
 
     /** Formats a canonical time value. */
     format(value: string): string {
-        if (!this.isValid(value)) throw new Error("Failed to format time. Use a valid HH:mm or HH:mm:ss value.");
+        if (!this.isValid(value)) throw new LocalizedError("timeFormatter.invalidValue");
         return value;
     }
 
@@ -26,7 +27,7 @@ export class TimeFormatter implements ValueFormatter<string> {
         const match = this.expression.exec(value);
         const seconds = this.pattern === "HH:mm" ? "00" : match?.[3];
         if (!match || Number(match[1]) > 23 || Number(match[2]) > 59 || Number(seconds) > 59)
-            throw new Error(`Failed to parse time. Use a valid ${this.pattern} value.`);
+            throw new LocalizedError("timeFormatter.invalidTime", { pattern: this.pattern });
         return this.pattern === "HH:mm" ? value : value;
     }
 

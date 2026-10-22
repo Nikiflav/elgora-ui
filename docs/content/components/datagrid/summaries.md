@@ -42,7 +42,7 @@ meaning of the value is explicit.
 ## Remote data sources
 
 Set a numeric column's `displayFormat` (for example `N0`, `N2` or `C2€`) and
-optional `displayLocale` to format both group and total summaries consistently
+optional `locale` to format both group and total summaries consistently
 with its data cells. Raw aggregate results remain numeric; the source does not
 format them. Counts (`count` and `distinct`) stay plain counts, even on currency
 or percentage columns. Row-dependent `getText`/lookup/`formatValue` callbacks
