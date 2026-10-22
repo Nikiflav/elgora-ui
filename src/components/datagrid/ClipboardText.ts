@@ -1,3 +1,5 @@
+import { LocalizedError } from "../../localization/Messages";
+
 /** Reads quoted TSV, including embedded tabs/newlines and doubled quotation marks. */
 export function parseClipboardText(text: string): string[][] {
     const rows: string[][] = [];
@@ -15,7 +17,7 @@ export function parseClipboardText(text: string): string[][] {
             row.push(cell); rows.push(row); row = []; cell = "";
         } else cell += char;
     }
-    if (quoted) throw new Error("Failed to paste cells. A quoted clipboard value is not terminated.");
+    if (quoted) throw new LocalizedError("dataGrid.clipboardMalformed");
     if (cell || row.length || !rows.length) { row.push(cell); rows.push(row); }
     return rows;
 }

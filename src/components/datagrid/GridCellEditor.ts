@@ -3,6 +3,7 @@ import { TextEditor } from "../editors/ValueEditor";
 import { PopoverEditor } from "../editors/PopoverEditor";
 import { createFieldEditor } from "../editors/createFieldEditor";
 import type { FieldEditorContext } from "../../data/DataViewField";
+import { Localization } from "../../localization/Localization";
 
 /** Keys that confirm a cell before moving the grid's active cell. */
 export type CellEditNavigationKey = "Enter" | "Tab" | "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
@@ -112,7 +113,7 @@ export class GridCellEditor<TRow> {
                     this.failed({
                         text: this.editor instanceof TextEditor ? this.editor.text
                             : this.context.field.formatValue?.(this.editor.value, this.context) ?? String(this.editor.value ?? ""),
-                        error: this.editor.error ?? "Failed to accept cell input." });
+                        error: this.editor.error ?? Localization.resolveMessages(this.context, this.context.locale).text("dataGrid.acceptFailed") });
                     this.finished(key, backwards, restoreFocus);
                 } else this.editor.focus();
             }

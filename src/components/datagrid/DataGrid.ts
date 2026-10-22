@@ -1,7 +1,7 @@
 import { Component } from "../../core/Component";
 import { ObservableEvent } from "../../core/ElgoraUI";
 import { Localization, type LocaleOptions } from "../../localization/Localization";
-import type { MessageKey } from "../../localization/Messages";
+import { LocalizedError, type MessageKey } from "../../localization/Messages";
 import { setElementProps, e, assignElementProps, span, tr, VNode, v, VNodeChild, ElementProps } from "../../core/e";
 import { Utils } from "../../core/Utils";
 import { DataFilter } from "../../data/filter";
@@ -328,6 +328,12 @@ export class DataGrid<TRow> extends Component {
         return this._invalidCellInputs.get(this.getInputRowKey(row))?.get(field);
     }
 
+    private describeError(error: unknown, options: LocaleOptions = this._gridOptions, locale?: string): string {
+        return error instanceof LocalizedError
+            ? Localization.resolveMessages(options, locale).describe(error)
+            : Utils.getErrorText(error);
+    }
+
     private async retainInsertError(session: NewRowSession<TRow>, error: string,
         fieldErrors?: Record<string, string>, inputs?: Map<string, string>): Promise<void> {
         this._newRowError = error;
@@ -347,8 +353,9 @@ export class DataGrid<TRow> extends Component {
      */
     public pasteText(text: string): Promise<void> {
         if (this._pasteOperation) return this._pasteOperation;
-        if (this.disposed.Value || this._creatingNewRow || !this._gridOptions.allowEdit || !this._dataSource.update || this._openingEdit || this._newRowOperation)
-            return Promise.reject(new Error("Failed to paste cells. Grid editing is unavailable or a row command is running."));
+        if (this.disposed.Value) return Promise.reject(new DOMException("Failed to paste cells. The grid was disposed.", "AbortError"));
+        if (this._creatingNewRow || !this._gridOptions.allowEdit || !this._dataSource.update || this._openingEdit || this._newRowOperation)
+            return Promise.reject(new LocalizedError("dataGrid.pasteBlocked"));
         const operation = this.applyClipboardText(text);
         this._pasteOperation = operation.finally(() => {
             this._pasteOperation = undefined;
@@ -359,7 +366,7 @@ export class DataGrid<TRow> extends Component {
     }
 
     private async applyClipboardText(text: string): Promise<void> {
-        if (!await this.endEdit()) throw new Error("Failed to paste cells. Cell editing is still in progress.");
+        if (!await this.endEdit()) throw new LocalizedError("dataGrid.pasteEditInProgress");
         const origin = this._selection.getActiveCell();
         if (!origin) return;
         const source = this._dataSource;
@@ -377,7 +384,7 @@ export class DataGrid<TRow> extends Component {
             await this._gridRows.load(index, 1);
             const item = this._gridRows.getAt(index);
             if (!["data", "node", "new"].includes(item.type))
-                throw new Error("Failed to paste cells. The destination contains a non-editable group or summary row.");
+                throw new LocalizedError("dataGrid.pasteReadOnlyRow");
             targets.push(item.type === "new" ? item.data : item.data?.data ?? item.data);
         }
         for (let i = 0; i < lines.length; i++) {
@@ -386,10 +393,10 @@ export class DataGrid<TRow> extends Component {
             let row = targets[i];
             let session = this._newRowSessions.find(item => item.row === row);
             if (row === undefined) {
-                if (!source.createNewRow) throw new Error("Failed to paste new row. The data source does not support row creation.");
+                if (!source.createNewRow) throw new LocalizedError("dataGrid.pasteCreateUnavailable");
                 try { session = await this.createNewRowCore(); }
                 catch (error) {
-                    this._newRowError = this.messages.text("dataGrid.pasteRowFailed", { row: i + 1, message: this.messages.describe(error) });
+                    this._newRowError = this.messages.text("dataGrid.pasteRowFailed", { row: i + 1, message: this.describeError(error) });
                     throw new Error(this._newRowError);
                 }
                 if (this.disposed.Value) return;
@@ -417,7 +424,9 @@ export class DataGrid<TRow> extends Component {
                     if (editorError) throw new Error(editorError);
                     values[field.name] = candidate;
                 } catch (error) {
-                    this.setInvalidCellInput(row, field.name, { text: input, error: Utils.getErrorText(error) });
+                    const fieldLocale = field.locale ?? this.locale;
+                    const fieldMessages = { locale: fieldLocale, localization: this._gridOptions.localization };
+                    this.setInvalidCellInput(row, field.name, { text: input, error: this.describeError(error, fieldMessages, fieldLocale) });
                 } finally { editor?.dispose(); }
             }
             if (this.disposed.Value) return;
@@ -430,8 +439,10 @@ export class DataGrid<TRow> extends Component {
                                 error: result.fieldErrors?.[field] ?? result.error });
                     } else for (const field of Object.keys(values)) this.clearInvalidCellInput(row, field);
                 } catch (error) {
-                    for (const field of Object.keys(values))
-                        this.setInvalidCellInput(row, field, { text: inputs.get(field)!, error: Utils.getErrorText(error) });
+                    for (const field of Object.keys(values)) {
+                        const fieldContext = { locale: columns.find(column => column.name === field)?.locale, localization: this._gridOptions.localization };
+                        this.setInvalidCellInput(row, field, { text: inputs.get(field)!, error: this.describeError(error, fieldContext, fieldContext.locale ?? this.locale) });
+                    }
                 }
             }
             if (this.disposed.Value) return;
@@ -507,7 +518,7 @@ export class DataGrid<TRow> extends Component {
             const text = (event as ClipboardEvent).clipboardData?.getData("text/plain");
             if (text === undefined) return;
             event.preventDefault();
-            void this.pasteText(text).catch(error => { this._newRowError = Utils.getErrorText(error); this.refresh(); });
+            void this.pasteText(text).catch(error => { this._newRowError = this.describeError(error); this.refresh(); });
         });
         this.listen(this._tableContainer, "mouseup", () => this.endSelectionDrag());
         this.listen(this._tableContainer, "mouseleave", () => this.endSelectionDrag());
@@ -810,15 +821,16 @@ export class DataGrid<TRow> extends Component {
      */
     public createNewRow(): Promise<NewRowSession<TRow>> {
         if (this._pasteOperation || this._openingEdit || this._newRowOperation || this._cellEditor?.editor.busy)
-            return Promise.reject(new Error("Failed to create new row. Another editing operation is in progress."));
+            return Promise.reject(new LocalizedError("dataGrid.newRowOperationInProgress"));
         return this.createNewRowCore();
     }
 
     private createNewRowCore(): Promise<NewRowSession<TRow>> {
-        if (this.disposed.Value || !this._gridOptions.allowEdit || !this._dataSource.update || !this._dataSource.createNewRow)
-            return Promise.reject(new Error("Failed to create new row. Grid editing or source row creation is unavailable."));
+        if (this.disposed.Value) return Promise.reject(new DOMException("Failed to create new row. The grid was disposed.", "AbortError"));
+        if (!this._gridOptions.allowEdit || !this._dataSource.update || !this._dataSource.createNewRow)
+            return Promise.reject(new LocalizedError("dataGrid.newRowUnavailable"));
         if (this._creatingNewRow)
-            return Promise.reject(new Error("Failed to create new row. Row creation is already in progress."));
+            return Promise.reject(new LocalizedError("dataGrid.newRowCreationInProgress"));
         const source = this._dataSource;
         this._creatingNewRow = Promise.resolve().then(() => {
             if (this.disposed.Value) throw new DOMException("Failed to create new row. The grid was disposed.", "AbortError");
@@ -834,7 +846,7 @@ export class DataGrid<TRow> extends Component {
             else this.reloadEditedData();
             return session;
         }).catch(error => {
-            this._newRowError = Utils.getErrorText(error);
+            this._newRowError = this.describeError(error);
             if (!this.disposed.Value) this.refresh();
             throw error;
         }).finally(() => { this._creatingNewRow = undefined; });
@@ -916,8 +928,8 @@ export class DataGrid<TRow> extends Component {
             if (success) this._newRowError = undefined;
             return success;
         }, error => {
-            if (session) this._pendingRowErrors.set(session, Utils.getErrorText(error));
-            this._newRowError = Utils.getErrorText(error); return false;
+            if (session) this._pendingRowErrors.set(session, this.describeError(error));
+            this._newRowError = this.describeError(error); return false;
         }).finally(() => {
             this._newRowOperation = undefined;
             this._newRowCommand = undefined;
@@ -1666,7 +1678,7 @@ export class DataGrid<TRow> extends Component {
             this._tableContainer.focus();
             await this.pasteText(text);
         } catch (error) {
-            await this.showPasteFailure(context, Utils.getErrorText(error));
+            await this.showPasteFailure(context, this.describeError(error));
         }
     }
 
@@ -2766,7 +2778,10 @@ export class DataGrid<TRow> extends Component {
                     if (summary) return DataViewFieldUtils.formatSummaryValue(col.dataColumn, cell.value, summary.summaryType, this.locale);
                 } else if (!col.dataColumn.getText && !col.dataColumn.lookup) {
                     try { return DataViewFieldUtils.formatDisplayValue(col.dataColumn, cell.value, this.locale); }
-                    catch (error) { return `ERROR: ${Utils.getErrorText(error)}`; }
+                    catch (error) {
+                        return Localization.resolveMessages({ locale: col.dataColumn.locale ?? this.locale, localization: this._gridOptions.localization }, col.dataColumn.locale ?? this.locale)
+                            .text("dataGrid.displayValueFailed", { message: this.describeError(error, { locale: col.dataColumn.locale, localization: this._gridOptions.localization }, col.dataColumn.locale ?? this.locale) });
+                    }
                 }
             }
             return String(cell?.text ?? cell?.value ?? cell ?? "");
