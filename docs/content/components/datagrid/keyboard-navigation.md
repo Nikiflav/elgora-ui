@@ -32,6 +32,10 @@ With `allowEdit: false` (the default), navigation never creates a value editor.
 | --- | --- |
 | Arrow keys | Move to the adjacent cell and replace the current cell selection. |
 | Shift + arrow | Extend the selection from its anchor in multiple-cell mode. |
+| Page Up / Page Down | Move the active cell one visible page up or down in the same column. |
+| Home / End | Move to the first or last cell in the current row. |
+| Ctrl+Home / Ctrl+End (Command on Mac) | Move to the first or last selectable cell in the grid. |
+| Shift + Page/Home/End | Extend the current selection to the destination. |
 | Tab / Shift+Tab | Move right / left, continuing on the next / previous row. |
 | Enter / Shift+Enter | Move down / up in the current column. |
 | Ctrl+C / Command+C | Copy the selected data cells. |
@@ -46,7 +50,7 @@ In `single-row` mode, selection remains a single whole row, while the active col
 can still move horizontally. In `multiple-rows` mode, Shift+Up/Down extends the
 whole-row selection. Shift+Left/Right does not extend a row range. Enter and Tab
 use across-grid navigation in both row modes rather than rectangular traversal.
-Rows excluded by the grid's selection rules are skipped during vertical movement.
+Rows excluded by the grid's selection rules are skipped during vertical and page movement.
 
 ## Entering edit mode
 
@@ -123,6 +127,8 @@ Subscribe to [`cellNavigating`](?!=/api-reference/DataGrid#cellNavigating) to in
 the calculated destination before the grid applies it. The synchronous
 [`DataGridCellNavigatingEvent`](?!=/api-reference/DataGridCellNavigatingEvent) contains
 `key`, `shiftKey`, `currentCell`, mutable `targetCell`, and `cancel`.
+It also exposes `ctrlKey` and `metaKey`, so handlers can distinguish row-local
+Home/End from grid-wide navigation.
 Coordinates are zero-based visible row and data-column indices, excluding the row
 header. No row data needs to be loaded by a handler merely to inspect coordinates.
 
@@ -159,8 +165,8 @@ non-selectable destination cancels movement. Redirecting inside an existing
 selected range retains it; redirecting outside it selects the destination according
 to `selectionMode`.
 
-The event applies to grid-handled arrows, Enter and Tab, including moves after
-completed edits, including those retaining errors. It does not fire for Enter
+The event applies to grid-handled arrows, Page Up/Down, Home/End, Enter and Tab,
+including moves after an edit completes with a validation error. It does not fire for Enter
 that starts editing, editor-owned keys, pointer/programmatic selection, picker
 acceptance or Escape.
 It can fire at a boundary even when the proposed cell equals the current cell.

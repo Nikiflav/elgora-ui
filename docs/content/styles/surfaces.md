@@ -19,7 +19,7 @@ choose a background: combine it with a surface and `p-*` for inner padding.
 e("section", { ui: ["elg", "surface-2", "box", "p-3"] }, "Panel content");
 ```
 
-<live-demo id="html-surfaces" mode="readonly" src="html-elements.md.surfaces.ts"></live-demo>
+<live-demo id="html-surfaces" mode="readonly" height="272px" src="html-elements.md.surfaces.ts"></live-demo>
 
 ## Gradients
 

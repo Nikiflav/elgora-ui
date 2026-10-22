@@ -2814,7 +2814,7 @@
       "name": "DataGridCellNavigatingEvent",
       "kind": "interface",
       "type": "DataGridCellNavigatingEvent",
-      "description": "Synchronous keyboard-navigation hook. Coordinates refer to visible data columns, excluding row headers.",
+      "description": "Synchronous callback for keyboard navigation. Coordinates refer to visible data columns, excluding row headers.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -2824,8 +2824,8 @@
       "members": [
         {
           "name": "key",
-          "type": "CellEditNavigationKey",
-          "description": "Navigation key; Enter that starts editing does not raise this event.",
+          "type": "CellEditNavigationKey | \"PageUp\" | \"PageDown\" | \"Home\" | \"End\"",
+          "description": "Grid navigation key; Enter that starts editing does not raise this event.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -2835,7 +2835,27 @@
         {
           "name": "shiftKey",
           "type": "boolean",
-          "description": "True for reverse Tab/Enter traversal or extended arrow selection.",
+          "description": "True for reverse traversal or extended selection.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "ctrlKey",
+          "type": "boolean",
+          "description": "Modifier state, used to distinguish grid-wide Home/End from row-local Home/End.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/DataGrid.ts",
+          "kind": "property"
+        },
+        {
+          "name": "metaKey",
+          "type": "boolean",
+          "description": "Command modifier state on platforms that use Meta instead of Control.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7348,6 +7368,26 @@
           "optional": true,
           "source": "src/components/datagrid/SelectionManager.ts",
           "kind": "property"
+        },
+        {
+          "name": "getPageRow",
+          "type": "((rowIndex: number, direction: 1 | -1) => number) | undefined",
+          "description": "Finds the row reached by moving one viewport page in the given direction.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getEdgeRow",
+          "type": "((direction: 1 | -1) => number) | undefined",
+          "description": "Finds the first or last selectable row in the current flattened view.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "kind": "property"
         }
       ]
     },
@@ -11425,6 +11465,41 @@
           "signature": "(rowIndex: number, colIndex: number) => void"
         },
         {
+          "name": "navigateTo",
+          "type": "(rowIndex: number, colIndex: number, extend: boolean) => void",
+          "description": "Applies a completed keyboard destination, optionally extending the current range.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/datagrid/SelectionManager.ts",
+          "parameters": [
+            {
+              "name": "rowIndex",
+              "type": "number",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "colIndex",
+              "type": "number",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "extend",
+              "type": "boolean",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(rowIndex: number, colIndex: number, extend: boolean) => void"
+        },
+        {
           "name": "handleCellClick",
           "type": "(rowIndex: number, colIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void",
           "description": "Handles MouseDown or Click events on a cell.",
@@ -11526,7 +11601,7 @@
         {
           "name": "handleKeyDown",
           "type": "(event: KeyboardEvent, ctx: GridContext, beforeNavigate?: (current: SelectionCell, target: SelectionCell) => SelectionCell | null) => boolean",
-          "description": "Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).\r\nReturns true if the key event was handled by selection.\r\nbeforeNavigate receives detached snapshots before any live mutation;\nreturn null to cancel, or different coordinates to redirect. Redirects\nretain an existing containing range, otherwise select the destination.",
+          "description": "Handles keyboard navigation (arrows, PageUp/PageDown, Home/End, Tab, Enter).\nReturns true if the key event was handled by selection.\r\nbeforeNavigate receives detached snapshots before any live mutation;\nreturn null to cancel, or different coordinates to redirect. Redirects\nretain an existing containing range, otherwise select the destination.",
           "tags": [
             {
               "name": "example",

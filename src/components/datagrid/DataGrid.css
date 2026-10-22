@@ -167,18 +167,18 @@
     color: inherit;
 }
 
-.elg-data-grid.elg-data-grid-cursor-default .elg-data-grid-cell-data,
-.elg-data-grid.elg-data-grid-cursor-default .elg-data-grid-cell-rowheader {
+.elg-data-grid.elg-data-grid-cursor-default tbody .elg-data-grid-cell-data,
+.elg-data-grid.elg-data-grid-cursor-default tbody .elg-data-grid-cell-rowheader {
     cursor: default;
 }
 
-.elg-data-grid.elg-data-grid-cursor-pointer .elg-data-grid-cell-data,
-.elg-data-grid.elg-data-grid-cursor-pointer .elg-data-grid-cell-rowheader {
+.elg-data-grid.elg-data-grid-cursor-pointer tbody .elg-data-grid-cell-data,
+.elg-data-grid.elg-data-grid-cursor-pointer tbody .elg-data-grid-cell-rowheader {
     cursor: pointer;
 }
 
-.elg-data-grid.elg-data-grid-cursor-text .elg-data-grid-cell-data,
-.elg-data-grid.elg-data-grid-cursor-text .elg-data-grid-cell-rowheader {
+.elg-data-grid.elg-data-grid-cursor-text tbody .elg-data-grid-cell-data,
+.elg-data-grid.elg-data-grid-cursor-text tbody .elg-data-grid-cell-rowheader {
     cursor: text;
 }
 
@@ -405,10 +405,13 @@ thead .elg-data-grid-cell .elg-data-grid-header-resizer::before {
 .elg-data-grid-header .elg-data-grid-cell {
     display: inline-flex;
     align-items: center;
+    /* Chips use button geometry rather than the data cells' fixed row height. */
+    height: auto;
+    min-height: 0;
     border: 1px solid var(--elg-data-grid-header-border);
-    border-radius: 6px;
-    padding: 1px 6px;
-    background-color: var(--elg-surface-color-2);
+    border-radius: var(--elg-btn-radius);
+    padding: var(--elg-btn-padding);
+    background-color: var(--elg-data-grid-header-bg);
     cursor: pointer;
     flex: none;
 }
@@ -435,7 +438,7 @@ thead .elg-data-grid-cell:hover,
     padding: 1px 6px;
     border: 1px solid var(--elg-data-grid-header-border);
     border-radius: 6px;
-    background-color: var(--elg-surface-color-2);
+    background-color: var(--elg-data-grid-header-bg, var(--elg-surface-color));
     color: var(--elg-text-color);
     white-space: nowrap;
     text-overflow: ellipsis;

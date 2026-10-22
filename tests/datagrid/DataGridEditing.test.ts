@@ -305,6 +305,50 @@ describe("DataGrid cell editing", () => {
         viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", shiftKey: true, bubbles: true, cancelable: true }));
         expect(grid.getSelectedRanges()[0].focus).toEqual({ rowIndex: 1, colIndex: 0 });
     });
+    it("selects the destination cell for PageUp/PageDown and Home/End", async () => {
+        const { grid } = create();
+        await (grid as any)._gridRows.load(0, 2);
+        const manager = grid.getSelectionManager();
+        const viewport = grid.dom.querySelector(".elg-data-grid-viewport")!;
+        manager.selectSingleCell(0, 0);
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true, cancelable: true }));
+        expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 1 });
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "PageDown", bubbles: true, cancelable: true }));
+        await vi.waitFor(() => expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 1, colIndex: 1 }));
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", ctrlKey: true, bubbles: true, cancelable: true }));
+        await vi.waitFor(() => expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 0, colIndex: 0 }));
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "End", ctrlKey: true, bubbles: true, cancelable: true }));
+        await vi.waitFor(() => expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 2, colIndex: 1 }));
+    });
+    it("extends selection and raises cellNavigating for page and edge keys", async () => {
+        const { grid } = create();
+        await (grid as any)._gridRows.load(0, 2);
+        const manager = grid.getSelectionManager();
+        const viewport = grid.dom.querySelector(".elg-data-grid-viewport")!;
+        const navigating = vi.fn(); grid.cellNavigating.subscribe(navigating);
+        manager.selectSingleCell(0, 0);
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "PageDown", shiftKey: true, bubbles: true, cancelable: true }));
+        await vi.waitFor(() => expect(grid.getSelectedRanges()[0].focus.rowIndex).toBe(1));
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 1, colIndex: 0 });
+        expect(navigating).toHaveBeenCalledWith(expect.objectContaining({ key: "PageDown", shiftKey: true,
+            currentCell: { rowIndex: 0, colIndex: 0 }, targetCell: { rowIndex: 1, colIndex: 0 } }));
+    });
+    it("loads a remote page before Ctrl+End selects its last cell", async () => {
+        const data = Array.from({ length: 150 }, (_, index) => ({ id: index + 1, name: `Item ${index + 1}`, amount: index }));
+        const skips: number[] = [];
+        const source = { loadData: async (args: any) => {
+            skips.push(args.skip);
+            return { args, dataItems: data.slice(args.skip, args.skip + args.top), totalCount: data.length };
+        } };
+        const { grid } = create({ data: source });
+        await (grid as any)._gridRows.load(0, 1);
+        const manager = grid.getSelectionManager();
+        const viewport = grid.dom.querySelector(".elg-data-grid-viewport")!;
+        manager.selectSingleCell(0, 0);
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "End", ctrlKey: true, bubbles: true, cancelable: true }));
+        await vi.waitFor(() => expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 149, colIndex: 1 }));
+        expect(skips).toContain(100);
+    });
     it("starts a new selection only when an explicit edit targets a cell outside it", async () => {
         const { grid } = create(); const manager = grid.getSelectionManager();
         manager.selectSingleCell(0, 0); manager.extendSelection(1, 0);

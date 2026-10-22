@@ -277,7 +277,7 @@
       "group": "types",
       "namespace": "Components.DataGrid",
       "path": "/api-reference/DataGridCellNavigatingEvent",
-      "description": "Synchronous keyboard-navigation hook. Coordinates refer to visible data columns, excluding row headers.",
+      "description": "Synchronous callback for keyboard navigation. Coordinates refer to visible data columns, excluding row headers.",
       "module": "./content/api/DataGridCellNavigatingEvent.js"
     },
     {

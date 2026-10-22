@@ -110,16 +110,16 @@
     --elg-bg-l: 98;
 
     --elg-surface-h: var(--elg-theme-h);
-    --elg-surface-s: 7;
-    --elg-surface-l: 96;
+    --elg-surface-s: 4;
+    --elg-surface-l: 97;
 
     --elg-surface-2-h: var(--elg-theme-h);
-    --elg-surface-2-s: 8;
-    --elg-surface-2-l: 92;
+    --elg-surface-2-s: 4;
+    --elg-surface-2-l: 94;
 
     --elg-surface-3-h: var(--elg-theme-h);
-    --elg-surface-3-s: 9;
-    --elg-surface-3-l: 87;
+    --elg-surface-3-s: 4;
+    --elg-surface-3-l: 91;
 
     /* ======================================================
      TEXT
@@ -243,14 +243,14 @@
     --elg-bg-s: 10;
     --elg-bg-l: 7;
 
-    --elg-surface-s: 9;
-    --elg-surface-l: 11;
+    --elg-surface-s: 6;
+    --elg-surface-l: 12;
 
-    --elg-surface-2-s: 9;
+    --elg-surface-2-s: 6;
     --elg-surface-2-l: 15;
 
-    --elg-surface-3-s: 8;
-    --elg-surface-3-l: 20;
+    --elg-surface-3-s: 6;
+    --elg-surface-3-l: 18;
 
     --elg-neutral-l: 24;
 

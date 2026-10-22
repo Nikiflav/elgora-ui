@@ -156,6 +156,46 @@ describe("Selection modes", () => {
         expect(manager.getActiveCell()).toBeNull();
     });
 
+    it("supports page navigation and row-local or grid-wide Home/End", () => {
+        const manager = new SelectionManager();
+        const paged = { ...context, getPageRow: (row: number, direction: 1 | -1) => Math.max(0, Math.min(9, row + direction * 4)),
+            getEdgeRow: (direction: 1 | -1) => direction > 0 ? 0 : 9 };
+        manager.selectSingleCell(4, 1);
+        key(manager, "PageDown", false, paged);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 8, colIndex: 1 });
+        key(manager, "Home", false, paged);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 8, colIndex: 0 });
+        key(manager, "End", false, paged);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 8, colIndex: 2 });
+        manager.handleKeyDown(new KeyboardEvent("keydown", { key: "End", ctrlKey: true }), paged);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 9, colIndex: 2 });
+        manager.handleKeyDown(new KeyboardEvent("keydown", { key: "Home", metaKey: true }), paged);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 0, colIndex: 0 });
+    });
+
+    it("extends the active range to page and Home/End destinations with Shift", () => {
+        const manager = new SelectionManager();
+        const paged = { ...context, getPageRow: (row: number, direction: 1 | -1) => row + direction * 3 };
+        manager.selectSingleCell(2, 1);
+        key(manager, "PageDown", true, paged);
+        expect(manager.getRanges()).toEqual([{ anchor: { rowIndex: 2, colIndex: 1 }, focus: { rowIndex: 5, colIndex: 1 } }]);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 5, colIndex: 1 });
+        key(manager, "Home", true, paged);
+        expect(manager.getRanges()[0].focus).toEqual({ rowIndex: 5, colIndex: 0 });
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 5, colIndex: 0 });
+    });
+
+    it("keeps row-selection modes intact when keyboard navigation jumps", () => {
+        const manager = new SelectionManager("multiple-rows");
+        manager.selectSingleCell(2, 0);
+        manager.navigateTo(5, 1, true);
+        expect(rows(manager)).toEqual([2, 3, 4, 5]);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 5, colIndex: 1 });
+        manager.navigateTo(8, 2, false);
+        expect(rows(manager)).toEqual([8]);
+        expect(manager.getActiveCell()).toEqual({ rowIndex: 8, colIndex: 2 });
+    });
+
     it("DataGrid applies initial and changed modes to its exposed manager", () => {
         vi.stubGlobal("ResizeObserver", class {
             observe(): void {}

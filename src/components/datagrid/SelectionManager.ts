@@ -29,6 +29,10 @@ export interface GridContext {
     isRowSelectable?: (rowIndex: number) => boolean;
     /** Finds a selectable row in the given direction; return -1 when no candidate exists. */
     findNextSelectableRow?: (rowIndex: number, direction: 1 | -1) => number;
+    /** Finds the row reached by moving one viewport page in the given direction. */
+    getPageRow?: (rowIndex: number, direction: 1 | -1) => number;
+    /** Finds the first or last selectable row in the current flattened view. */
+    getEdgeRow?: (direction: 1 | -1) => number;
 }
 
 /**
@@ -176,6 +180,18 @@ export class SelectionManager {
         this._activeCell = { rowIndex, colIndex };
     }
 
+    /** Applies a completed keyboard destination, optionally extending the current range. */
+    public navigateTo(rowIndex: number, colIndex: number, extend: boolean): void {
+        if (!extend || this._ranges.length === 0 || this._mode === "single-row") {
+            this.selectSingleCell(rowIndex, colIndex);
+            return;
+        }
+
+        if (this._mode === "multiple-rows") this.extendRowSelection(rowIndex);
+        else this.extendSelection(rowIndex, colIndex);
+        this.setActiveCell(rowIndex, colIndex);
+    }
+
     // =========================================================================
     // EVENT HELPERS (Mouse & Keyboard)
     // =========================================================================
@@ -231,7 +247,7 @@ export class SelectionManager {
     }
 
     /**
-     * Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).
+     * Handles keyboard navigation (arrows, PageUp/PageDown, Home/End, Tab, Enter).
      * Returns true if the key event was handled by selection.
      * beforeNavigate receives detached snapshots before any live mutation;
      * return null to cancel, or different coordinates to redirect. Redirects
@@ -278,6 +294,27 @@ export class SelectionManager {
 
         let targetRow = currentFocus.rowIndex;
         let targetColIdx = colIdx;
+
+        // Page navigation follows the actual viewport height, supplied by the grid.
+        if (key === "PageUp" || key === "PageDown") {
+            const direction = key === "PageUp" ? -1 : 1;
+            const origin = shiftKey ? currentFocus : currentActive;
+            const row = ctx.getPageRow?.(origin.rowIndex, direction)
+                ?? this.findSelectableRow(origin.rowIndex, direction, ctx);
+            this.navigateTo(row, origin.colIndex, shiftKey);
+            return true;
+        }
+
+        if (key === "Home" || key === "End") {
+            const toEnd = key === "End";
+            const global = event.ctrlKey || event.metaKey;
+            const row = global
+                ? (ctx.getEdgeRow?.(toEnd ? -1 : 1) ?? (toEnd ? ctx.totalRows - 1 : 0))
+                : currentActive.rowIndex;
+            const col = toEnd ? ctx.columns.length - 1 : 0;
+            if (ctx.columns.length > 0) this.navigateTo(row, col, shiftKey);
+            return true;
+        }
 
         // 1. Shift + Arrow Navigation (Extends active selection range focus)
         if (shiftKey && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
@@ -342,6 +379,22 @@ export class SelectionManager {
         }
         if (event.key === "Enter") {
             this.navigateEnterAcrossGrid(event.shiftKey, ctx);
+            return true;
+        }
+        if (event.key === "PageUp" || event.key === "PageDown") {
+            const direction = event.key === "PageUp" ? -1 : 1;
+            const row = ctx.getPageRow?.(active.rowIndex, direction)
+                ?? this.findSelectableRow(active.rowIndex, direction, ctx);
+            this.navigateTo(row, active.colIndex, event.shiftKey);
+            return true;
+        }
+        if (event.key === "Home" || event.key === "End") {
+            const toEnd = event.key === "End";
+            const row = event.ctrlKey || event.metaKey
+                ? (ctx.getEdgeRow?.(toEnd ? -1 : 1) ?? (toEnd ? ctx.totalRows - 1 : 0))
+                : active.rowIndex;
+            const col = toEnd ? ctx.columns.length - 1 : 0;
+            if (ctx.columns.length > 0) this.navigateTo(row, col, event.shiftKey);
             return true;
         }
         if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return false;

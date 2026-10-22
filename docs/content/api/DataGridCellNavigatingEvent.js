@@ -2,7 +2,7 @@ export default {
   "name": "DataGridCellNavigatingEvent",
   "kind": "interface",
   "type": "DataGridCellNavigatingEvent",
-  "description": "Synchronous keyboard-navigation hook. Coordinates refer to visible data columns, excluding row headers.",
+  "description": "Synchronous callback for keyboard navigation. Coordinates refer to visible data columns, excluding row headers.",
   "tags": [],
   "topics": [],
   "group": "types",
@@ -12,8 +12,8 @@ export default {
   "members": [
     {
       "name": "key",
-      "type": "CellEditNavigationKey",
-      "description": "Navigation key; Enter that starts editing does not raise this event.",
+      "type": "CellEditNavigationKey | \"PageUp\" | \"PageDown\" | \"Home\" | \"End\"",
+      "description": "Grid navigation key; Enter that starts editing does not raise this event.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -23,7 +23,27 @@ export default {
     {
       "name": "shiftKey",
       "type": "boolean",
-      "description": "True for reverse Tab/Enter traversal or extended arrow selection.",
+      "description": "True for reverse traversal or extended selection.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "ctrlKey",
+      "type": "boolean",
+      "description": "Modifier state, used to distinguish grid-wide Home/End from row-local Home/End.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/DataGrid.ts",
+      "kind": "property"
+    },
+    {
+      "name": "metaKey",
+      "type": "boolean",
+      "description": "Command modifier state on platforms that use Meta instead of Control.",
       "tags": [],
       "topics": [],
       "optional": false,

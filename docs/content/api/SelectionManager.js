@@ -234,6 +234,41 @@ export default {
       "signature": "(rowIndex: number, colIndex: number) => void"
     },
     {
+      "name": "navigateTo",
+      "type": "(rowIndex: number, colIndex: number, extend: boolean) => void",
+      "description": "Applies a completed keyboard destination, optionally extending the current range.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "parameters": [
+        {
+          "name": "rowIndex",
+          "type": "number",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "colIndex",
+          "type": "number",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "extend",
+          "type": "boolean",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(rowIndex: number, colIndex: number, extend: boolean) => void"
+    },
+    {
       "name": "handleCellClick",
       "type": "(rowIndex: number, colIndex: number, event: { shiftKey: boolean; ctrlKey?: boolean; metaKey?: boolean; }) => void",
       "description": "Handles MouseDown or Click events on a cell.",
@@ -335,7 +370,7 @@ export default {
     {
       "name": "handleKeyDown",
       "type": "(event: KeyboardEvent, ctx: GridContext, beforeNavigate?: (current: SelectionCell, target: SelectionCell) => SelectionCell | null) => boolean",
-      "description": "Handles Keyboard Navigation (Arrow Keys, Shift+Arrows, Tab, Enter).\r\nReturns true if the key event was handled by selection.\r\nbeforeNavigate receives detached snapshots before any live mutation;\nreturn null to cancel, or different coordinates to redirect. Redirects\nretain an existing containing range, otherwise select the destination.",
+      "description": "Handles keyboard navigation (arrows, PageUp/PageDown, Home/End, Tab, Enter).\nReturns true if the key event was handled by selection.\r\nbeforeNavigate receives detached snapshots before any live mutation;\nreturn null to cancel, or different coordinates to redirect. Redirects\nretain an existing containing range, otherwise select the destination.",
       "tags": [
         {
           "name": "example",

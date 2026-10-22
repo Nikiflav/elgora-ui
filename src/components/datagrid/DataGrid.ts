@@ -57,14 +57,18 @@ export interface DataGridLayoutInfo {
     groupColumns?: string[]
 }
 
-type SelectionCell = { rowIndex: number, colIndex: number, wholeRow?: true };
+type SelectionCell = { rowIndex: number, colIndex: number, wholeRow?: boolean };
 
-/** Synchronous keyboard-navigation hook. Coordinates refer to visible data columns, excluding row headers. */
+/** Synchronous callback for keyboard navigation. Coordinates refer to visible data columns, excluding row headers. */
 export interface DataGridCellNavigatingEvent {
-    /** Navigation key; Enter that starts editing does not raise this event. */
-    readonly key: CellEditNavigationKey;
-    /** True for reverse Tab/Enter traversal or extended arrow selection. */
+    /** Grid navigation key; Enter that starts editing does not raise this event. */
+    readonly key: CellEditNavigationKey | "PageUp" | "PageDown" | "Home" | "End";
+    /** True for reverse traversal or extended selection. */
     readonly shiftKey: boolean;
+    /** Modifier state, used to distinguish grid-wide Home/End from row-local Home/End. */
+    readonly ctrlKey: boolean;
+    /** Command modifier state on platforms that use Meta instead of Control. */
+    readonly metaKey: boolean;
     /** Active cell before navigation; changing this snapshot has no effect. */
     readonly currentCell: {
         /** Zero-based row in the current flattened view. */
@@ -305,6 +309,7 @@ export class DataGrid<TRow> extends Component {
     // Only rejected UI input is retained here. Accepted values remain source-owned.
     private _invalidCellInputs = new Map<unknown, Map<string, InvalidCellInput>>();
     private _pasteOperation?: Promise<void>;
+    private _selectionNavigationPending = false;
     private _pendingRowErrors = new Map<NewRowSession<TRow>, string>();
 
     private getInputRowKey(row: TRow): unknown { return this._dataSource.getRowId?.(row) ?? row; }
@@ -1023,7 +1028,10 @@ export class DataGrid<TRow> extends Component {
 
     private handleSelectionKeyDown = async (event: KeyboardEvent) => {
         if (this._newRowOperation || (this._creatingNewRow && !this._openingEdit) || this._pasteOperation) { event.preventDefault(); event.stopPropagation(); return; }
-        if (this._cellEditor?.element.contains(event.target as Node)) return;
+        if (this._cellEditor?.element.contains(event.target as Node)) {
+            if (["PageUp", "PageDown", "Home", "End"].includes(event.key)) event.stopPropagation();
+            return;
+        }
         if (this._openingEdit && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey) {
             if (event.key.length === 1) this._pendingEditText = (this._pendingEditText ?? "") + event.key;
             else if (event.key === "Backspace") this._pendingEditText = (this._pendingEditText ?? "").slice(0, -1);
@@ -1040,7 +1048,7 @@ export class DataGrid<TRow> extends Component {
             || target instanceof HTMLTextAreaElement
             || target instanceof HTMLSelectElement
             || target?.closest("[contenteditable='true']")) {
-            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key))
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End"].includes(event.key))
                 event.stopPropagation();
             return;
         }
@@ -1067,6 +1075,11 @@ export class DataGrid<TRow> extends Component {
             event.preventDefault(); event.stopPropagation();
             await this.cancelActiveCell(); return;
         }
+        if (["PageUp", "PageDown", "Home", "End"].includes(event.key)) {
+            event.preventDefault(); event.stopPropagation();
+            void this.navigatePageOrEdge(event);
+            return;
+        }
         if (!event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey
             && (event.key === "F2" || (event.key === "Enter" && !event.shiftKey) || event.key.length === 1) && this._gridOptions.allowEdit) {
             event.preventDefault(); event.stopPropagation();
@@ -1087,44 +1100,110 @@ export class DataGrid<TRow> extends Component {
 
     /** Offers the computed destination before applying keyboard selection changes. */
     private navigateSelection(event: KeyboardEvent): boolean {
-        return this._selection.handleKeyDown(event, this.getSelectionContext(), (currentCell, targetCell) => {
-            const args: DataGridCellNavigatingEvent = {
-                key: event.key as CellEditNavigationKey, shiftKey: event.shiftKey,
-                currentCell, targetCell, cancel: false
-            };
-            this.cellNavigating.invoke(args);
-            if (args.cancel || this.disposed.Value) return null;
-            const target = args.targetCell;
-            const context = this.getSelectionContext();
-            if (!Number.isInteger(target.rowIndex) || !Number.isInteger(target.colIndex)
-                || target.rowIndex < 0 || target.rowIndex >= context.totalRows
-                || target.colIndex < 0 || target.colIndex >= context.columns.length) return null;
-            const newIndex = this._gridRows.count() - 1;
-            const exitsAtEnd = currentCell.rowIndex === newIndex && target.rowIndex === newIndex
-                && !event.shiftKey && (event.key === "Enter"
-                    || (event.key === "Tab" && currentCell.colIndex === context.columns.length - 1));
-            const session = this._newRowSession ?? this.getSelectedNewRowSession();
-            if (session && (target.rowIndex !== currentCell.rowIndex || exitsAtEnd)) {
-                this._newRowSession = session;
-                void this.finishActiveRowEdit().then(async () => {
-                    if (this.disposed.Value) return;
-                    this._newRowSession = undefined;
-                    // Even a rejected row may be left; it remains in the pending tail.
-                    this.reloadEditedData();
-                    await this._gridRows.load(0, 1);
-                    if (this.disposed.Value) return;
-                    const rowIndex = exitsAtEnd ? this._gridRows.count() - 1 : Math.min(target.rowIndex, this._gridRows.count() - 1);
-                    const colIndex = exitsAtEnd && event.key === "Tab" ? 0 : target.colIndex;
-                    this._selection.selectSingleCell(rowIndex, colIndex);
-                    // The new row count is known, but the scroll engine still
-                    // has the old range until rendering and measurement finish.
-                    this._cellToReveal = { rowIndex, colIndex, rowsVersion: this._rowsVersion };
-                    this.refresh();
-                });
-                return null;
+        return this._selection.handleKeyDown(event, this.getSelectionContext(),
+            (currentCell, targetCell) => this.prepareNavigationTarget(event, currentCell, targetCell));
+    }
+
+    /** Resolves a visible selectable row before changing selection; virtual pages load on demand. */
+    private async findSelectableGridRow(start: number, direction: 1 | -1): Promise<number> {
+        const total = this._gridRows.count();
+        const pageSize = Math.max(1, this._gridOptions.pageSize ?? 100);
+        let cursor = Math.max(0, Math.min(start, total - 1));
+        while (!this.disposed.Value && cursor >= 0 && cursor < total) {
+            const pageStart = Math.floor(cursor / pageSize) * pageSize;
+            const count = Math.min(pageSize, total - pageStart);
+            const rows = await this._gridRows.load(pageStart, count);
+            if (this.disposed.Value || !rows.length) return -1;
+            const first = direction > 0 ? cursor : Math.min(cursor, pageStart + rows.length - 1);
+            const last = direction > 0 ? pageStart + rows.length : pageStart - 1;
+            if (direction > 0) {
+                for (let index = first; index < last; index++)
+                    if (this.isSelectableGridRow(rows[index - pageStart])) return index;
+                cursor = pageStart + rows.length;
+            } else {
+                for (let index = first; index >= Math.max(pageStart, last + 1); index--)
+                    if (this.isSelectableGridRow(rows[index - pageStart])) return index;
+                cursor = pageStart - 1;
             }
-            return target;
-        });
+        }
+        return -1;
+    }
+
+    /** Handles viewport-page and row/grid-edge keys without letting the scroll engine consume them. */
+    private async navigatePageOrEdge(event: KeyboardEvent): Promise<void> {
+        if (this._selectionNavigationPending || this._newRowOperation || this._pasteOperation || this._openingEdit) return;
+        const current = this._selection.getActiveCell();
+        const context = this.getSelectionContext();
+        if (!current || !context.columns.length || !context.totalRows) return;
+        this._selectionNavigationPending = true;
+        try {
+            let rowIndex = current.rowIndex;
+            let colIndex = current.colIndex;
+            if (event.key === "PageUp" || event.key === "PageDown") {
+                const direction = event.key === "PageUp" ? -1 : 1;
+                const rowTop = this._sizeManager.getOffset(current.rowIndex);
+                const rowHeight = this._sizeManager.getSize(current.rowIndex);
+                const pageHeight = Math.max(rowHeight, this._viewportHeight - this._headerHeight - this._footerHeight - rowHeight);
+                const maxOffset = Math.max(0, this._sizeManager.getOffset(context.totalRows) - 1);
+                const targetOffset = Math.max(0, Math.min(maxOffset, rowTop + direction * pageHeight));
+                rowIndex = await this.findSelectableGridRow(this._sizeManager.findIndex(targetOffset), direction);
+            } else {
+                const toEnd = event.key === "End";
+                colIndex = toEnd ? context.columns.length - 1 : 0;
+                if (event.ctrlKey || event.metaKey)
+                    rowIndex = await this.findSelectableGridRow(toEnd ? context.totalRows - 1 : 0, toEnd ? -1 : 1);
+            }
+            if (rowIndex < 0 || this.disposed.Value) return;
+            const active = this._selection.getActiveCell();
+            // Ignore a delayed page load if another interaction changed focus meanwhile.
+            if (!active || active.rowIndex !== current.rowIndex || active.colIndex !== current.colIndex) return;
+            const target = this.prepareNavigationTarget(event, current, { rowIndex, colIndex });
+            if (!target || this.disposed.Value) return;
+            this._selection.navigateTo(target.rowIndex, target.colIndex, event.shiftKey);
+            this.refresh();
+            this.ensureCellVisible(target.rowIndex, target.colIndex);
+        } finally {
+            this._selectionNavigationPending = false;
+        }
+    }
+
+    /** Applies the public navigation hook and pending-new-row boundary behavior. */
+    private prepareNavigationTarget(event: KeyboardEvent, currentCell: SelectionCell, targetCell: SelectionCell): SelectionCell | null {
+        const args: DataGridCellNavigatingEvent = {
+            key: event.key as DataGridCellNavigatingEvent["key"], shiftKey: event.shiftKey,
+            ctrlKey: event.ctrlKey, metaKey: event.metaKey,
+            currentCell, targetCell, cancel: false
+        };
+        this.cellNavigating.invoke(args);
+        if (args.cancel || this.disposed.Value) return null;
+        const target = args.targetCell;
+        const context = this.getSelectionContext();
+        if (!Number.isInteger(target.rowIndex) || !Number.isInteger(target.colIndex)
+            || target.rowIndex < 0 || target.rowIndex >= context.totalRows
+            || target.colIndex < 0 || target.colIndex >= context.columns.length
+            || context.isRowSelectable?.(target.rowIndex) === false) return null;
+        const newIndex = this._gridRows.count() - 1;
+        const exitsAtEnd = currentCell.rowIndex === newIndex && target.rowIndex === newIndex
+            && !event.shiftKey && (event.key === "Enter"
+                || (event.key === "Tab" && currentCell.colIndex === context.columns.length - 1));
+        const session = this._newRowSession ?? this.getSelectedNewRowSession();
+        if (session && (target.rowIndex !== currentCell.rowIndex || exitsAtEnd)) {
+            this._newRowSession = session;
+            void this.finishActiveRowEdit().then(async () => {
+                if (this.disposed.Value) return;
+                this._newRowSession = undefined;
+                this.reloadEditedData();
+                await this._gridRows.load(0, 1);
+                if (this.disposed.Value) return;
+                const rowIndex = exitsAtEnd ? this._gridRows.count() - 1 : Math.min(target.rowIndex, this._gridRows.count() - 1);
+                const colIndex = exitsAtEnd && event.key === "Tab" ? 0 : target.colIndex;
+                this._selection.selectSingleCell(rowIndex, colIndex);
+                this._cellToReveal = { rowIndex, colIndex, rowsVersion: this._rowsVersion };
+                this.refresh();
+            });
+            return null;
+        }
+        return target;
     }
 
     /** Copies the currently selected data cells to the system clipboard. */

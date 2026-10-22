@@ -49,6 +49,26 @@ export default {
       "optional": true,
       "source": "src/components/datagrid/SelectionManager.ts",
       "kind": "property"
+    },
+    {
+      "name": "getPageRow",
+      "type": "((rowIndex: number, direction: 1 | -1) => number) | undefined",
+      "description": "Finds the row reached by moving one viewport page in the given direction.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "kind": "property"
+    },
+    {
+      "name": "getEdgeRow",
+      "type": "((direction: 1 | -1) => number) | undefined",
+      "description": "Finds the first or last selectable row in the current flattened view.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/datagrid/SelectionManager.ts",
+      "kind": "property"
     }
   ]
 };
