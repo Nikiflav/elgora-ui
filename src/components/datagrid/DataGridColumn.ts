@@ -20,7 +20,9 @@ export interface DataGridColumn<TRow> extends DataViewField<TRow> {
     /** Cell picker trigger visibility outside editing. Defaults to hover; always also supports touch.
      * never hides only the cell trigger, not the editor's own button or keyboard access. */
     editorButtonVisibility?: "always" | "hover" | "never";
-    /** Column width in pixels. Omit to let the grid measure it. */
+    /** Column width in pixels. Omit for content measurement with an 80px minimum.
+     * Automatic measurement includes loaded body text and visible totals; later totals can grow it.
+     * Explicit widths and manual resizing are not constrained by the auto-width minimum. */
     width?: number;
     /** Alignment of the grid cell content. */
     textAlign?: "start" | "center" | "end";

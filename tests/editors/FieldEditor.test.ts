@@ -18,6 +18,14 @@ function type(editor: ValueEditor<any>, text: string) {
     input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 describe("field editor adapter", () => {
+    it("keeps the raw precision in the editor independently of numeric displayFormat", async () => {
+        const save = vi.fn();
+        const editor = create({ name: "value", dataType: "number", displayFormat: "C2€", displayLocale: "bg-BG" }, 1234.56789, save);
+        expect(editor.dom.querySelector("input")!.value).toBe("1234.56789");
+        type(editor, "1234.567891");
+        expect(await editor.commit()).toBe(true);
+        expect(save).toHaveBeenCalledWith(1234.567891, editor);
+    });
     it.each([
         ["string", "abc", TextEditor], ["number", 12, NumberEditor],
         ["boolean", true, CheckboxEditor], ["date", "2026-10-15", DateEditor],

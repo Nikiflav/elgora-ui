@@ -1,0 +1,19 @@
+{
+  "sections": [
+    { "group": "getting-started", "title": "Getting started" },
+    { "group": "fundamentals", "title": "Fundamentals" },
+    { "group": "styles", "title": "Styling and layout" },
+    { "group": "components", "title": "Components" },
+    { "group": "datagrid", "title": "DataGrid" },
+    { "group": "data", "title": "Data" }
+  ],
+  "categories": [
+    { "id": "editors", "group": "components", "title": "Value editors", "order": 10 },
+    { "id": "menus", "group": "components", "title": "Popovers and menus", "order": 30 },
+    { "id": "navigation", "group": "components", "title": "Navigation", "order": 40 },
+    { "id": "scrolling", "group": "components", "title": "Scrolling and lists", "order": 50 },
+    { "id": "datasource", "group": "data", "title": "Data sources", "order": 30 },
+    { "id": "filters", "group": "data", "title": "Filters", "order": 40 },
+    { "id": "dataset-group", "group": "data", "title": "DataSet", "order": 50 }
+  ]
+}

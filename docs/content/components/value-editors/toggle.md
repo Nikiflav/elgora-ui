@@ -4,7 +4,7 @@ title: Toggle
 group: components
 parent: editors
 path: /components/value-editors/toggle
-order: 49
+order: 16
 description: Compact switch editing for boolean values.
 ---
 
@@ -18,7 +18,7 @@ and boolean conversion of [CheckboxEditor](?!=/components/value-editors/checkbox
 
 Click the switch or use Space/Enter. Its state is accepted asynchronously.
 
-<live-demo id="editor-toggle" height="180px"></live-demo>
+<live-demo id="editor-toggle" height="180px" src="toggle.md.ts"></live-demo>
 
 ## Configure a switch
 

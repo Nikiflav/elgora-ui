@@ -3,8 +3,11 @@ export default {
   "title": "Virtual List",
   "path": "/components/virtual-list",
   "group": "components",
-  "order": 30,
+  "parent": "scrolling",
+  "order": 51,
   "description": "Efficiently render very large collections by keeping only the visible rows in the DOM.",
+  "prev": "/components/scrollbars",
+  "next": "/components/scroll-engine",
   "toc": true,
   "api": [
     "VirtualList",
@@ -21,7 +24,14 @@ export default {
     "large collections",
     "variable height"
   ],
-  "html": "<h1>Virtual List</h1>\n<p><code>VirtualList</code> renders only the rows that are visible in the viewport. This keeps\nthe DOM small even when the underlying collection contains hundreds of\nthousands of items.</p>\n<h2>Variable-height rows</h2>\n<p>The demo below renders 100,000 generated rows. Each row has a different height,\nwhile <code>VirtualList</code> measures and positions only the visible portion of the\ncollection.</p>\n<div data-live-demo=\"virtual-list-overview\"></div>\n<p>The data source provides random access through <code>getAt()</code> and the total number\nof rows through <code>count()</code>. <code>renderRow()</code> receives the row element, data, and\nvisible index so the application can render the row content.</p>\n<p>See the <a href=\"?!=/api-reference/VirtualList\"><code>VirtualList</code> API reference</a>, including\n<a href=\"?!=/api-reference/VirtualListOptions\"><code>VirtualListOptions</code></a>,\n<a href=\"?!=/api-reference/DataList\"><code>DataList</code></a>, and <a href=\"?!=/api-reference/RenderRowArgs\"><code>RenderRowArgs</code></a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>Virtual List</h1>\n<p><code>VirtualList</code> renders only the rows that are visible in the viewport. This keeps\nthe DOM small even when the underlying collection contains hundreds of\nthousands of items.</p>\n<h2 id=\"variable-height-rows\">Variable-height rows</h2>\n<p>The demo below renders 100,000 generated rows. Each row has a different height,\nwhile <code>VirtualList</code> measures and positions only the visible portion of the\ncollection.</p>\n<div data-live-demo=\"virtual-list-overview\"></div>\n<p>The data source provides random access through <code>getAt()</code> and the total number\nof rows through <code>count()</code>. <code>renderRow()</code> receives the row element, data, and\nvisible index so the application can render the row content.</p>\n<p>See the <a href=\"?!=/api-reference/VirtualList\"><code>VirtualList</code> API reference</a>, including\n<a href=\"?!=/api-reference/VirtualListOptions\"><code>VirtualListOptions</code></a>,\n<a href=\"?!=/api-reference/DataList\"><code>DataList</code></a>, and <a href=\"?!=/api-reference/RenderRowArgs\"><code>RenderRowArgs</code></a>.</p>\n",
+  "headings": [
+    {
+      "id": "variable-height-rows",
+      "title": "Variable-height rows"
+    }
+  ],
   "demos": [
     {
       "id": "virtual-list-overview",

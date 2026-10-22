@@ -1,10 +1,10 @@
 ---
 id: html-elements
-title: HTML elements
+title: Native inputs and tables
 group: styles
 path: /styles/html-elements
-order: 20
-description: Explore how ElgoraUI styles native HTML elements, controls, containers, and tables.
+order: 70
+description: Style native inputs, selects, textareas and tables, and choose when to use a value editor.
 toc: true
 keywords:
   - html
@@ -13,80 +13,15 @@ keywords:
   - forms
   - tables
   - surfaces
+sectionRedirects:
+  - ui-styles-and-css-classes|/styles/overview
+  - containers-and-surfaces|/styles/surfaces#containers-and-surfaces
+  - buttons|/styles/buttons#buttons
 ---
 
-# HTML elements
+# Native inputs and tables
 
-ElgoraUI styles native HTML elements through the `elg` marker and the `ui` array. The same `e()` composition API works for a one-off element, while `cbutton()` and other components add reusable behavior.
-
-## UI styles and CSS classes
-
-`ui` accepts typed style names and adds the `elg-` prefix. The special `elg`
-marker stays unchanged:
-
-```ts
-e("div", { ui: ["elg", "surface", "p-3"] }, "Content");
-// Creates: <div class="elg elg-surface elg-p-3">Content</div>
-```
-
-The same classes can be written directly in HTML. Use `class` or `className`
-for literal CSS classes; `ui` is not a space-separated class string.
-
-`elg` enables the base background/text rendering and opt-in native-control
-styles. It is not added automatically by the `ui` property. Layout utilities
-such as `d-flex`, `gap-2`, and `grid` work without it. A parent marked `elg`
-does not automatically add that marker to its children.
-
-See [UiStyle](?!=/api-reference/UiStyle) for supported names and
-[Semantic colors](?!=/styles/semantic-colors) for color roles and themes.
-
-## Containers and surfaces
-
-Use `surface`, `surface-2`, and `surface-3` with `elg` to establish visual layers.
-`box` adds a border, rounded corners, and a shadow. It does not add spacing or
-choose a background: combine it with a surface and `p-*` for inner padding.
-
-```ts
-e("section", { ui: ["elg", "surface-2", "box", "p-3"] }, "Panel content");
-```
-
-<live-demo id="html-surfaces" mode="readonly" demo="surfaces"></live-demo>
-
-## Buttons
-
-`button.elg` keeps the native element predictable and flat. Add `btn` for the component styling, then choose a semantic role such as `primary`, `neutral`, or `danger`.
-
-The demo below includes all six semantic roles: `primary`, `accent`, `neutral`,
-`success`, `warning`, and `danger`, alongside flat and disabled buttons.
-"Anchor as button" is an `<a>` styled as a neutral button; "Text link →" is a
-plain navigation link, using the primary text color and an underline on hover
-or keyboard focus. Both links open an example destination in a new tab.
-
-For a neutral action without a resting fill or visible frame, combine `btn`
-with `btn-ghost`. Unlike a bare `button.elg`, it retains the standard button
-padding, radius, hover/pressed feedback, disabled treatment and keyboard focus
-outline. Its border stays transparent rather than changing the button's size;
-an explicit `selected` state still shows its selection background.
-
-```ts
-cbutton({ ui: ["elg", "btn", "btn-ghost"] }, "Action");
-```
-
-Plain and `neutral` buttons have a faint neutral background, a subtle border and
-neutral hover/pressed fills. Semantic roles such as `primary` and `danger` stay
-filled; explicit surfaces and `selected` keep their own backgrounds. Keyboard
-focus uses the shared outline. Native disabled buttons are dimmed and do not
-receive hover/pressed styling. An `aria-disabled` link is styled the same way,
-but the application must prevent its activation.
-
-The defaults are `--elg-btn-radius: 6px` and `--elg-btn-padding: .15em .5em`.
-Override these on a container or individual button for a denser layout.
-`--elg-btn-neutral-bg`, `--elg-btn-neutral-hover-bg`,
-`--elg-btn-neutral-pressed-bg` and `--elg-btn-neutral-border` control the neutral
-appearance. The resting/hover/pressed defaults mix the theme text color at 3%/6%/10% over
-transparency, so they work on both themes. Reduced motion disables transitions.
-
-<live-demo id="html-buttons" mode="readonly" demo="buttons"></live-demo>
+Use native HTML controls when you need browser behavior and simple styling. For parsing, validation and asynchronous acceptance, use [Value editors](?!=/components/value-editors).
 
 ## Form controls
 
@@ -108,7 +43,7 @@ independently. The stylesheet also defines global body typography, and normal
 CSS inheritance still applies to unmarked elements. For richer controls with
 parsing and validation, see [Value editors](?!=/components/value-editors).
 
-<live-demo id="html-form-controls" mode="readonly" demo="form-controls"></live-demo>
+<live-demo id="html-form-controls" mode="readonly" src="html-elements.md.form-controls.ts"></live-demo>
 
 ## Tables
 
@@ -118,7 +53,7 @@ Apply these styles to the `<table>` element. `table` sets full width, collapsed
 borders, cell padding, and header text styling; border variants add separators
 without changing the data or interaction behavior.
 
-<live-demo id="html-tables" mode="readonly" demo="tables"></live-demo>
+<live-demo id="html-tables" mode="readonly" src="html-elements.md.tables.ts"></live-demo>
 
 To show cell boundaries as well, replace `table-row-borders` with `table-bordered`.
 
@@ -135,3 +70,9 @@ root.append(
     )
 );
 ```
+
+## Related topics
+
+- [Buttons](?!=/styles/buttons)
+- [UI styles and utilities](?!=/styles/overview)
+- [Surfaces and gradients](?!=/styles/surfaces)

@@ -2,10 +2,11 @@ export default {
   "id": "datagrid-sorting",
   "title": "Sorting",
   "path": "/components/datagrid/sorting",
-  "group": "components",
-  "parent": "datagrid",
-  "order": 53,
+  "group": "datagrid",
+  "order": 80,
   "description": "Sort one or more DataGrid columns and control sort state programmatically.",
+  "prev": "/components/datagrid/clipboard",
+  "next": "/components/datagrid/filtering",
   "toc": true,
   "api": [
     "DataGrid",
@@ -17,7 +18,14 @@ export default {
     "order by",
     "multi-column sort"
   ],
-  "html": "<h1>Sorting</h1>\n<p>Sorting can be changed from the column context menu or configured with\n<code>orderBy</code>. Use a string for ascending order or a tuple for an explicit\ndirection.</p>\n<div data-live-demo=\"datagrid-sorting\"></div>\n<p>The example starts with a two-column sort. Try the following interactions:</p>\n<ul>\n<li>Click a column header to cycle through ascending, descending, and clear. This\nbehavior is enabled by <code>sortOnHeaderClick</code> (true by default).</li>\n<li>Hold <code>Shift</code> while clicking a header to add the column to the current sort or\nupdate only that column. The other sort columns and their priorities remain\nunchanged.</li>\n<li>Open a column’s context menu and choose <code>Sort Ascending</code>, <code>Sort Descending</code>,\nor <code>Clear sorting</code>. <code>Clear sorting</code> is not shown for grouped columns because\na grouped column must remain sorted. Holding <code>Shift</code> while choosing an action\napplies it only to the current column; without <code>Shift</code>, the selected column\nbecomes the only sort criterion.</li>\n</ul>\n<p>Dragging a header still reorders the column and does not trigger sorting. When\nmultiple columns are sorted, each header shows its sort priority.</p>\n<pre class=\"shiki shiki-themes github-light github-dark\" style=\"background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">grid.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">setOptions</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">({ orderBy: [[</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"region\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"asc\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">], [</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"total\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"desc\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">]] });</span></span>\n<span class=\"line\"></span></code></pre>\n<h2>API reference</h2>\n<p>See <a href=\"?!=/api-reference/DataGridOptions\"><code>DataGridOptions</code></a> and\n<a href=\"?!=/api-reference/DataGrid\"><code>DataGrid</code></a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>Sorting</h1>\n<p>Sorting can be changed from the column context menu or configured with\n<code>orderBy</code>. Use a string for ascending order or a tuple for an explicit\ndirection.</p>\n<div data-live-demo=\"datagrid-sorting\"></div>\n<p>The example starts with a two-column sort. Try the following interactions:</p>\n<ul>\n<li>Click a column header to cycle through ascending, descending, and clear. This\nbehavior is enabled by <code>sortOnHeaderClick</code> (true by default).</li>\n<li>Hold <code>Shift</code> while clicking a header to add the column to the current sort or\nupdate only that column. The other sort columns and their priorities remain\nunchanged.</li>\n<li>Open a column’s context menu and choose <code>Sort Ascending</code>, <code>Sort Descending</code>,\nor <code>Clear sorting</code>. <code>Clear sorting</code> is not shown for grouped columns because\na grouped column must remain sorted. Holding <code>Shift</code> while choosing an action\napplies it only to the current column; without <code>Shift</code>, the selected column\nbecomes the only sort criterion.</li>\n</ul>\n<p>Dragging a header still reorders the column and does not trigger sorting. When\nmultiple columns are sorted, each header shows its sort priority.</p>\n<pre class=\"shiki shiki-themes github-light github-dark\" style=\"background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">grid.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">setOptions</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">({ orderBy: [[</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"region\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"asc\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">], [</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"total\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"desc\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">]] });</span></span>\n<span class=\"line\"></span></code></pre>\n<h2 id=\"api-reference\">API reference</h2>\n<p>See <a href=\"?!=/api-reference/DataGridOptions\"><code>DataGridOptions</code></a> and\n<a href=\"?!=/api-reference/DataGrid\"><code>DataGrid</code></a>.</p>\n",
+  "headings": [
+    {
+      "id": "api-reference",
+      "title": "API reference"
+    }
+  ],
   "demos": [
     {
       "id": "datagrid-sorting",

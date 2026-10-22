@@ -101,7 +101,7 @@ export default {
     {
       "name": "getText",
       "type": "((row: TRow) => Promise<string>) | undefined",
-      "description": "Overrides the cell label; otherwise lookup.getValueText, formatValue or string conversion is used.",
+      "description": "Overrides the cell label; otherwise lookup.getValueText, displayFormat, formatValue or string conversion is used.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -207,6 +207,26 @@ export default {
       },
       "kind": "method",
       "signature": "((value: any, context: FieldEditContext<TRow>) => string) | undefined"
+    },
+    {
+      "name": "displayFormat",
+      "type": "string | undefined",
+      "description": "Display-only pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. Does not alter editor text or stored values.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
+      "name": "displayLocale",
+      "type": "string | undefined",
+      "description": "Locale for displayFormat; defaults to the runtime locale. Independent of editor conversion callbacks.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
     },
     {
       "name": "lookup",

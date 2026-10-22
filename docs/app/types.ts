@@ -51,6 +51,7 @@ export interface MarkdownTopic {
 export interface TopicManifestEntry {
     id: string;
     title: string;
+    navTitle?: string;
     path: string;
     group: string;
     parent?: string;
@@ -62,6 +63,15 @@ export interface TopicManifestEntry {
     api: string[];
     keywords: string[];
     module: string;
+    /** Legacy section ID followed by | and its replacement route/fragment. */
+    sectionRedirects?: string[];
+    headings?: { id: string; title: string }[];
+}
+
+/** Lightweight, separately loaded guide search data; live demo source is excluded. */
+export interface TopicSearchEntry {
+    path: string;
+    sections: { id: string; title: string; text: string }[];
 }
 
 export interface TopicManifest {

@@ -1,10 +1,10 @@
 ---
 id: datasource-overview
-title: Overview
+title: Contract and capabilities
 group: data
 parent: datasource
 path: /data/data-source/overview
-order: 1
+order: 30
 description: Read and optionally edit data through a storage-independent contract.
 ---
 
@@ -54,8 +54,9 @@ all matching rows or groups **before paging**, not the size of the returned page
 Total summaries similarly cover the complete filtered set. A remote source can
 omit count/summary computation when those values are not requested.
 
-See [DataFilter](?!=/data/filter) for filter structures, local evaluation and an
-interactive FilterEditor example.
+See [DataFilter](?!=/data/filter) for filter structures and local evaluation,
+[FilterEditor](?!=/components/filter-editor) for the visual playground, and
+[Queries, grouping and summaries](?!=/data/data-source/queries) for the complete grouped protocol.
 
 For grouping, a supported query returns `groups` (including an empty array for
 no matches). If grouping is unsupported, return neither `groups` nor `dataItems`

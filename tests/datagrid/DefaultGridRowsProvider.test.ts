@@ -17,6 +17,25 @@ function groups(args: QueryArgs, values: unknown[] = ["A", "B"]): DataResult<any
 const abort = { name: "AbortError" };
 
 describe("DefaultGridRowsProvider async safety", () => {
+    it("formats group summaries while preserving raw source results and group labels", async () => {
+        const load = vi.fn(async (args: QueryArgs): Promise<DataResult<any>> => ({
+            args, totalCount: 1, groups: [{ groupField: "country", groupValue: "A", count: 2,
+                summaryValues: { amount: 1234.5, quantity: 20 } }]
+        }));
+        const provider = new DefaultGridRowsProvider(state(load, {
+            columns: new Map([
+                ["country", { name: "country" }],
+                ["amount", { name: "amount", dataType: "number", displayFormat: "C2€", displayLocale: "en-US" }],
+                ["quantity", { name: "quantity", dataType: "number" }]
+            ]), visibleColumns: ["country", "amount", "quantity"],
+            groupSummary: [{ field: "amount", summaryType: "sum" }, { field: "quantity", summaryType: "count" }]
+        }));
+        try {
+            const { rows } = await provider.load({ skip: 0, top: 2 });
+            expect(rows[0].cells).toMatchObject({ country: "A (2)", amount: { value: 1234.5, text: "1,234.50\u00a0€" }, quantity: 20 });
+            expect(rows[0].data.data.summaryValues.amount).toBe(1234.5);
+        } finally { provider.dispose(); }
+    });
     it("shares root initialization and returns the same rows to concurrent callers", async () => {
         const request = deferred<DataResult<any>>();
         const load = vi.fn((_args: QueryArgs) => request.promise);

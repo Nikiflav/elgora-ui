@@ -136,3 +136,10 @@ a {
   .docs-header, .docs-header[data-sidebar-collapsed] { display: flex; position: static; flex: none; min-height: 60px; align-items: center; padding: .5rem 1rem; gap: .5rem; border-bottom: 1px solid var(--elg-border-color); }
   .docs-header[data-sidebar-collapsed] + .docs-content { padding-inline-start: 0; }
 }
+.docs-sidebar-topics[hidden], .docs-search-results[hidden] { display: none !important; }
+.docs-sidebar-search[data-active] { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+.docs-search-results { overflow-y: auto; min-height: 0; padding: .5rem 0; }
+.docs-search-status { color: var(--elg-text-muted); font-size: .8rem; padding: .25rem .5rem; }
+.docs-search-result { display: flex; flex-direction: column; gap: .15rem; padding: .65rem .5rem; border-radius: 6px; text-decoration: none; color: var(--elg-text-color); }
+.docs-search-result:hover, .docs-search-result:focus-visible { background: color-mix(in srgb, var(--elg-text-color) 6%, transparent); }
+.docs-search-result small, .docs-search-result span { font-size: .78rem; color: var(--elg-text-muted); }

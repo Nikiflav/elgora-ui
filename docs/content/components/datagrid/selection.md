@@ -1,10 +1,9 @@
 ---
 id: datagrid-selection
 title: Selection
-group: components
-parent: datagrid
+group: datagrid
 path: /components/datagrid/selection
-order: 57
+order: 40
 description: Select cells, ranges, and rows with mouse and keyboard interaction.
 toc: true
 api:
@@ -27,7 +26,7 @@ to copy the result.
 See [Keyboard navigation](?!=/components/datagrid/keyboard-navigation) for the full
 key reference, editing behavior and customizable navigation destinations.
 
-<live-demo id="datagrid-selection" height="425px"></live-demo>
+<live-demo id="datagrid-selection" height="425px" src="selection.md.ts"></live-demo>
 
 ## Selection modes
 

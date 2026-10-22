@@ -3,8 +3,11 @@ export default {
   "title": "Tooltip",
   "path": "/tooltip",
   "group": "components",
-  "order": 40,
+  "parent": "menus",
+  "order": 32,
   "description": "Add hover and keyboard-focus descriptions to any element.",
+  "prev": "/popup",
+  "next": "/components/resize-handle",
   "toc": true,
   "api": [
     "Tooltip",
@@ -17,7 +20,18 @@ export default {
     "focus",
     "accessibility"
   ],
-  "html": "<h1>Tooltip</h1>\n<p><code>Tooltip.attach()</code> adds a small description to an anchor. It supports pointer\nhover and keyboard focus, accepts plain text or rich content, and returns a\ncleanup function for temporary UI.</p>\n<h2>Attach a tooltip</h2>\n<p>Attach a tooltip to any suitable native element or Component DOM root. The\nplacement and delay are optional.</p>\n<div data-live-demo=\"tooltip-attach\"></div>\n<h2>Rich content</h2>\n<p>Tooltip content can be a string, an <code>HTMLElement</code>, a Component, or another\nsupported typed content value.</p>\n<pre class=\"shiki shiki-themes github-light github-dark\" style=\"background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49;--shiki-dark:#F97583\">const</span><span style=\"color:#005CC5;--shiki-dark:#79B8FF\"> content</span><span style=\"color:#D73A49;--shiki-dark:#F97583\"> =</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\"> e</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">(</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"span\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, { ui: [</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"elg\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">] }, </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"Rich tooltip\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">);</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">Tooltip.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">attach</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">(anchor, content, { placement: </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"right\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\"> });</span></span>\n<span class=\"line\"></span></code></pre>\n<p>Call the returned cleanup function when the anchor is removed or the tooltip\nis no longer needed.</p>\n<p>See the <a href=\"?!=/api-reference/Tooltip\"><code>Tooltip</code> API reference</a>,\n<a href=\"?!=/api-reference/TooltipContent\"><code>TooltipContent</code></a>, and\n<a href=\"?!=/api-reference/TooltipShowOptions\"><code>TooltipShowOptions</code></a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>Tooltip</h1>\n<p><code>Tooltip.attach()</code> adds a small description to an anchor. It supports pointer\nhover and keyboard focus, accepts plain text or rich content, and returns a\ncleanup function for temporary UI.</p>\n<h2 id=\"attach-a-tooltip\">Attach a tooltip</h2>\n<p>Attach a tooltip to any suitable native element or Component DOM root. The\nplacement and delay are optional.</p>\n<div data-live-demo=\"tooltip-attach\"></div>\n<h2 id=\"rich-content\">Rich content</h2>\n<p>Tooltip content can be a string, an <code>HTMLElement</code>, a Component, or another\nsupported typed content value.</p>\n<pre class=\"shiki shiki-themes github-light github-dark\" style=\"background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49;--shiki-dark:#F97583\">const</span><span style=\"color:#005CC5;--shiki-dark:#79B8FF\"> content</span><span style=\"color:#D73A49;--shiki-dark:#F97583\"> =</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\"> e</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">(</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"span\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, { ui: [</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"elg\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">] }, </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"Rich tooltip\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">);</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">Tooltip.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">attach</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">(anchor, content, { placement: </span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"right\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\"> });</span></span>\n<span class=\"line\"></span></code></pre>\n<p>Call the returned cleanup function when the anchor is removed or the tooltip\nis no longer needed.</p>\n<p>See the <a href=\"?!=/api-reference/Tooltip\"><code>Tooltip</code> API reference</a>,\n<a href=\"?!=/api-reference/TooltipContent\"><code>TooltipContent</code></a>, and\n<a href=\"?!=/api-reference/TooltipShowOptions\"><code>TooltipShowOptions</code></a>.</p>\n",
+  "headings": [
+    {
+      "id": "attach-a-tooltip",
+      "title": "Attach a tooltip"
+    },
+    {
+      "id": "rich-content",
+      "title": "Rich content"
+    }
+  ],
   "demos": [
     {
       "id": "tooltip-attach",

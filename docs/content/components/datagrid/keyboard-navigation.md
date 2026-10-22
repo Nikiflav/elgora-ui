@@ -1,10 +1,9 @@
 ---
 id: datagrid-keyboard-navigation
 title: Keyboard navigation
-group: components
-parent: datagrid
+group: datagrid
 path: /components/datagrid/keyboard-navigation
-order: 59
+order: 50
 description: Navigate selections, edit cells, operate pickers and customize keyboard destinations.
 toc: true
 api:
@@ -117,7 +116,7 @@ is not inserted. Failed rows remain pending outside the query, without blocking
 navigation or another new-row session. Escape uses the same priority inside and
 outside cell editing: discard active-cell invalid input first; otherwise cancel
 its pending row. Errors in other cells do not change this priority. See
-[Adding rows](?!=/components/datagrid/editing#adding-rows) for the lifecycle and
+[Adding rows](?!=/components/datagrid/editing/new-rows#adding-rows) for the lifecycle and
 explicit insert/cancel methods.
 
 Subscribe to [`cellNavigating`](?!=/api-reference/DataGrid#cellNavigating) to inspect

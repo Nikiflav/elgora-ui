@@ -1,10 +1,9 @@
 ---
 id: datagrid-data-sources
-title: Data sources
-group: components
-parent: datagrid
+title: Connecting data
+group: datagrid
 path: /components/datagrid/data-sources
-order: 58
+order: 20
 description: Connect DataGrid to local arrays, asynchronous loaders, and remote data contracts.
 toc: true
 api:
@@ -19,13 +18,13 @@ keywords:
   - remote data
 ---
 
-# Data sources
+# Connecting data
 
 The grid consumes a `DataSource` contract rather than depending on a specific
 storage technology. `ArrayDataSource` is useful for local data; an application
 can implement `loadData()` for an API, database, or service layer.
 
-<live-demo id="datagrid-data-sources" height="376px"></live-demo>
+<live-demo id="datagrid-data-sources" height="376px" src="data-sources.md.ts"></live-demo>
 
 The same grid options work with both local and remote sources. Queries carry
 filtering, sorting, grouping, paging, and an `AbortSignal` for cancelled loads.

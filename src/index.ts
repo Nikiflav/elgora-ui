@@ -52,6 +52,7 @@ export { DateEditor, type DateEditorOptions } from './components/editors/DateEdi
 export { TimeEditor, type TimeEditorOptions } from './components/editors/TimeEditor';
 export { DateTimeEditor, type DateTimeEditorOptions } from './components/editors/DateTimeEditor';
 export { DateFormatter } from './formatting/DateFormatter';
+export { NumberFormatter } from './formatting/NumberFormatter';
 export { TimeFormatter } from './formatting/TimeFormatter';
 export type { ValueFormatter } from './formatting/ValueFormatter';
 export type { PopoverEditorOptions } from './components/editors/PopoverEditorOptions';

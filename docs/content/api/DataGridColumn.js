@@ -23,7 +23,7 @@ export default {
     {
       "name": "width",
       "type": "number | undefined",
-      "description": "Column width in pixels. Omit to let the grid measure it.",
+      "description": "Column width in pixels. Omit for content measurement with an 80px minimum.\nAutomatic measurement includes loaded body text and visible totals; later totals can grow it.\nExplicit widths and manual resizing are not constrained by the auto-width minimum.",
       "tags": [],
       "topics": [],
       "optional": true,

@@ -3,8 +3,11 @@ export default {
   "title": "PopupMenu",
   "path": "/popup",
   "group": "components",
-  "order": 30,
+  "parent": "menus",
+  "order": 31,
   "description": "Build dynamic action menus with nested items and context positioning.",
+  "prev": "/popover",
+  "next": "/tooltip",
   "toc": true,
   "api": [
     "PopupMenu",
@@ -19,7 +22,18 @@ export default {
     "submenu",
     "context menu"
   ],
-  "html": "<h1>PopupMenu</h1>\n<p><code>PopupMenu</code> renders action menus on demand. Items can contain icons, actions,\nlinks, dividers, checked state, and asynchronously loaded nested submenus.</p>\n<h2>Dynamic nested menu</h2>\n<p>Create a menu once and provide its items when the trigger is activated. This\nkeeps menu content close to the action that opens it and allows submenus to be\nloaded only when needed.</p>\n<div data-live-demo=\"popup-menu-dynamic\"></div>\n<h2>Context menu</h2>\n<p>The same menu can be opened at the pointer by passing a <code>point</code> to <code>show()</code>.</p>\n<pre class=\"shiki shiki-themes github-light github-dark\" style=\"background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">target.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">addEventListener</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">(</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"contextmenu\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, </span><span style=\"color:#E36209;--shiki-dark:#FFAB70\">event</span><span style=\"color:#D73A49;--shiki-dark:#F97583\"> =></span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">  event.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">preventDefault</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">();</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">  menu.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">show</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">({</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">    point: { x: event.clientX, y: event.clientY },</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">    items: </span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">createItems</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">  });</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">});</span></span>\n<span class=\"line\"></span></code></pre>\n<p>See the <a href=\"?!=/api-reference/PopupMenu\"><code>PopupMenu</code> API reference</a>,\n<a href=\"?!=/api-reference/PopupMenuOptions\"><code>PopupMenuOptions</code></a>,\n<a href=\"?!=/api-reference/PopupMenuShowOptions\"><code>PopupMenuShowOptions</code></a>,\n<a href=\"?!=/api-reference/MenuItem\"><code>MenuItem</code></a>, and\n<a href=\"?!=/api-reference/RemixIcon\"><code>RemixIcon</code></a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>PopupMenu</h1>\n<p><code>PopupMenu</code> renders action menus on demand. Items can contain icons, actions,\nlinks, dividers, checked state, and asynchronously loaded nested submenus.</p>\n<h2 id=\"dynamic-nested-menu\">Dynamic nested menu</h2>\n<p>Create a menu once and provide its items when the trigger is activated. This\nkeeps menu content close to the action that opens it and allows submenus to be\nloaded only when needed.</p>\n<div data-live-demo=\"popup-menu-dynamic\"></div>\n<h2 id=\"context-menu\">Context menu</h2>\n<p>The same menu can be opened at the pointer by passing a <code>point</code> to <code>show()</code>.</p>\n<pre class=\"shiki shiki-themes github-light github-dark\" style=\"background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">target.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">addEventListener</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">(</span><span style=\"color:#032F62;--shiki-dark:#9ECBFF\">\"contextmenu\"</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">, </span><span style=\"color:#E36209;--shiki-dark:#FFAB70\">event</span><span style=\"color:#D73A49;--shiki-dark:#F97583\"> =></span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">  event.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">preventDefault</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">();</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">  menu.</span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">show</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">({</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">    point: { x: event.clientX, y: event.clientY },</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">    items: </span><span style=\"color:#6F42C1;--shiki-dark:#B392F0\">createItems</span><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">  });</span></span>\n<span class=\"line\"><span style=\"color:#24292E;--shiki-dark:#E1E4E8\">});</span></span>\n<span class=\"line\"></span></code></pre>\n<p>See the <a href=\"?!=/api-reference/PopupMenu\"><code>PopupMenu</code> API reference</a>,\n<a href=\"?!=/api-reference/PopupMenuOptions\"><code>PopupMenuOptions</code></a>,\n<a href=\"?!=/api-reference/PopupMenuShowOptions\"><code>PopupMenuShowOptions</code></a>,\n<a href=\"?!=/api-reference/MenuItem\"><code>MenuItem</code></a>, and\n<a href=\"?!=/api-reference/RemixIcon\"><code>RemixIcon</code></a>.</p>\n",
+  "headings": [
+    {
+      "id": "dynamic-nested-menu",
+      "title": "Dynamic nested menu"
+    },
+    {
+      "id": "context-menu",
+      "title": "Context menu"
+    }
+  ],
   "demos": [
     {
       "id": "popup-menu-dynamic",

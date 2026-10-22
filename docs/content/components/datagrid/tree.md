@@ -1,10 +1,9 @@
 ---
 id: datagrid-tree
-title: DataGrid tree data
-group: components
-parent: datagrid
+title: Tree data
+group: datagrid
 path: /components/datagrid/tree
-order: 60
+order: 120
 description: Render hierarchical parent and child rows in a DataGrid.
 toc: true
 api:
@@ -18,7 +17,7 @@ keywords:
   - parent child
 ---
 
-# DataGrid tree data
+# Tree data
 
 A `DataGrid` can display hierarchical rows when its data source identifies the
 parent of each row. This is useful for file systems, organizational charts,
@@ -29,23 +28,7 @@ categories, and other nested data.
 The demo uses `parentField: "parentId"`. Root rows have a null parent and child
 rows refer to their parent by id.
 
-<live-demo id="datagrid-tree" height="420px"></live-demo>
-
-```js
-const data = new ArrayDataSource(rows, { parentField: "parentId" });
-
-const grid = new DataGrid({
-  data,
-  columns: [
-    { name: "name", dataType: "string" },
-    { name: "type", dataType: "string" },
-    { name: "modified", dataType: "date" }
-  ],
-  stickyGroupRows: true
-});
-
-grid.mount(document.getElementById("app"));
-```
+<live-demo id="datagrid-tree" height="420px" src="tree.md.ts"></live-demo>
 
 See the [`DataGrid` API reference](?!=/api-reference/DataGrid),
 [`ArrayDataSource`](?!=/api-reference/ArrayDataSource), and

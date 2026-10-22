@@ -3,7 +3,7 @@ id: tooltip
 title: Tooltip
 group: components
 path: /tooltip
-order: 40
+order: 32
 description: Add hover and keyboard-focus descriptions to any element.
 toc: true
 api:
@@ -15,6 +15,7 @@ keywords:
   - hover
   - focus
   - accessibility
+parent: menus
 ---
 
 # Tooltip
@@ -28,14 +29,7 @@ cleanup function for temporary UI.
 Attach a tooltip to any suitable native element or Component DOM root. The
 placement and delay are optional.
 
-<live-demo id="tooltip-attach"></live-demo>
-
-```js
-const cleanup = Tooltip.attach(button, "Helpful description", {
-  placement: "top",
-  delay: 300
-});
-```
+<live-demo id="tooltip-attach" src="tooltip.md.ts"></live-demo>
 
 ## Rich content
 

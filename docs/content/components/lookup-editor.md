@@ -4,7 +4,7 @@ title: Lookup
 group: components
 parent: editors
 path: /components/lookup-editor
-order: 50
+order: 17
 description: Search and pick values using a resizable virtualized multi-column popup.
 ---
 
@@ -21,7 +21,7 @@ country. Try `Customer 001` for a unique match and `Customer` for an ambiguous o
 The simulated remote source has 500 items and loads pages on demand. Drag the
 bottom-right grip to resize the popup; reopening retains its dimensions.
 
-<live-demo id="lookup-editor" height="510px"></live-demo>
+<live-demo id="lookup-editor" height="510px" src="lookup-editor.md.ts"></live-demo>
 
 ## Configure value, items and paging
 

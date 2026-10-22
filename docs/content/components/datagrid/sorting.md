@@ -1,10 +1,9 @@
 ---
 id: datagrid-sorting
 title: Sorting
-group: components
-parent: datagrid
+group: datagrid
 path: /components/datagrid/sorting
-order: 53
+order: 80
 description: Sort one or more DataGrid columns and control sort state programmatically.
 toc: true
 api:
@@ -23,7 +22,7 @@ Sorting can be changed from the column context menu or configured with
 `orderBy`. Use a string for ascending order or a tuple for an explicit
 direction.
 
-<live-demo id="datagrid-sorting" height="376px"></live-demo>
+<live-demo id="datagrid-sorting" height="376px" src="sorting.md.ts"></live-demo>
 
 The example starts with a two-column sort. Try the following interactions:
 

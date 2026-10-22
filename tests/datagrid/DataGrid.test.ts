@@ -158,9 +158,11 @@ describe("DataGrid data contracts", () => {
     grid.mount(document.body);
     await settle();
 
-    expect(grid.dom.querySelector("thead")?.textContent).toContain("Name");
-    expect(grid.dom.querySelector("tbody")?.textContent).toContain("Alpha");
-    expect(grid.dom.textContent).toContain("30");
+    await vi.waitFor(() => {
+      expect(grid.dom.querySelector("thead")?.textContent).toContain("Name");
+      expect(grid.dom.querySelector("tbody")?.textContent).toContain("Alpha");
+      expect(grid.dom.textContent).toContain("30");
+    });
   });
 
   it("does not reserve group icon space in a flat grid", async () => {

@@ -3,7 +3,7 @@ id: virtual-list
 title: Virtual List
 group: components
 path: /components/virtual-list
-order: 30
+order: 51
 description: Efficiently render very large collections by keeping only the visible rows in the DOM.
 toc: true
 api:
@@ -19,6 +19,7 @@ keywords:
   - virtualization
   - large collections
   - variable height
+parent: scrolling
 ---
 
 # Virtual List
@@ -33,7 +34,7 @@ The demo below renders 100,000 generated rows. Each row has a different height,
 while `VirtualList` measures and positions only the visible portion of the
 collection.
 
-<live-demo id="virtual-list-overview" height="420px"></live-demo>
+<live-demo id="virtual-list-overview" height="420px" src="virtual-list.md.ts"></live-demo>
 
 The data source provides random access through `getAt()` and the total number
 of rows through `count()`. `renderRow()` receives the row element, data, and

@@ -1,10 +1,9 @@
 ---
 id: datagrid-summaries
 title: Summaries
-group: components
-parent: datagrid
+group: datagrid
 path: /components/datagrid/summaries
-order: 56
+order: 110
 description: Display numeric and custom aggregate values for grouped DataGrid rows.
 toc: true
 api:
@@ -36,53 +35,20 @@ footer can display the value without a label. The second grid uses `sum` for
 groups and `avg` for the total. In that case the footer includes `avg:` so the
 meaning of the value is explicit.
 
+## Configure summaries
+
+<live-demo id="datagrid-summaries" height="660px" src="summaries.md.ts"></live-demo>
+
 ## Remote data sources
 
-`totalSummary` is a demand-driven part of the `loadData(args)` contract. The
-grid includes it only when the total footer needs to be loaded or refreshed.
-When the property is absent, a remote data source should skip the aggregate
-query and omit `DataResult.totalSummary` from its response.
+Set a numeric column's `displayFormat` (for example `N0`, `N2` or `C2€`) and
+optional `displayLocale` to format both group and total summaries consistently
+with its data cells. Raw aggregate results remain numeric; the source does not
+format them. Counts (`count` and `distinct`) stay plain counts, even on currency
+or percentage columns. Row-dependent `getText`/lookup/`formatValue` callbacks
+are not used for summaries. See [Formatting](?!=/data/formatting#display-formats-on-fields-and-columns).
 
-When `args.totalSummary` is present, the returned values must describe the
-complete filtered result, not only the current page or the currently expanded
-group. The request may contain more than one summary, including different
-summary types for the same field:
-
-```js
-async loadData(args) {
-  const response = await api.query({
-    filter: args.filter,
-    orderby: args.orderby,
-    skip: args.skip,
-    top: args.top,
-    totalSummary: args.totalSummary
-  });
-
-  return {
-    args,
-    dataItems: response.items,
-    totalCount: args.requireTotalCount ? response.totalCount : undefined,
-    totalSummary: args.totalSummary?.length
-      ? response.totalSummary
-      : undefined
-  };
-}
-```
-
-This keeps paging and aggregation independent: `dataItems` may be one page,
-while `totalSummary` represents the whole filtered dataset.
-
-<live-demo id="datagrid-summaries" height="660px"></live-demo>
-
-```js
-// Same aggregation for groups and the footer.
-groupSummary: [{ field: "total", summaryType: "sum" }],
-totalSummary: [{ field: "total", summaryType: "sum" }]
-
-// Different aggregations: group totals are sums, the footer is an average.
-groupSummary: [{ field: "total", summaryType: "sum" }],
-totalSummary: [{ field: "total", summaryType: "avg" }]
-```
+The source computes totals across the complete filtered result, before paging. See [Queries, grouping and summaries](?!=/data/data-source/queries#demand-driven-total-summaries) for the shared request/response contract.
 
 ## API reference
 

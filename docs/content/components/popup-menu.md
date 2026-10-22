@@ -3,7 +3,7 @@ id: popup-menu
 title: PopupMenu
 group: components
 path: /popup
-order: 30
+order: 31
 description: Build dynamic action menus with nested items and context positioning.
 toc: true
 api:
@@ -17,6 +17,7 @@ keywords:
   - menu
   - submenu
   - context menu
+parent: menus
 ---
 
 # PopupMenu
@@ -30,25 +31,7 @@ Create a menu once and provide its items when the trigger is activated. This
 keeps menu content close to the action that opens it and allows submenus to be
 loaded only when needed.
 
-<live-demo id="popup-menu-dynamic"></live-demo>
-
-```js
-const menu = new PopupMenu();
-
-button.addEventListener("click", () => {
-  menu.toggle({
-    anchor: button,
-    items: [
-      { text: "Edit", icon: "ri-edit-line", action: edit },
-      {
-        text: "Share",
-        icon: "ri-share-line",
-        subItems: async () => [{ text: "Copy link", action: copyLink }]
-      }
-    ]
-  });
-});
-```
+<live-demo id="popup-menu-dynamic" src="popup-menu.md.ts"></live-demo>
 
 ## Context menu
 

@@ -2,6 +2,36 @@
   "schemaVersion": 1,
   "topics": [
     {
+      "id": "documentation",
+      "title": "Documentation",
+      "path": "/docs",
+      "group": "documentation",
+      "order": 0,
+      "description": "Start with the core concepts or jump to a form, data grid, website or remote source.",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "start",
+        "guides",
+        "home"
+      ],
+      "sectionRedirects": [
+        "choose-a-data-model|/data/overview",
+        "find-a-specific-behavior|/docs#what-are-you-building"
+      ],
+      "headings": [
+        {
+          "id": "start-here",
+          "title": "Start here"
+        },
+        {
+          "id": "what-are-you-building",
+          "title": "What are you building?"
+        }
+      ],
+      "module": "./content/topics/documentation.js"
+    },
+    {
       "id": "docs-home",
       "title": "Elgora UI — Websites and applications, built for the browser",
       "path": "/",
@@ -11,37 +41,107 @@
       "toc": false,
       "api": [],
       "keywords": [],
+      "sectionRedirects": [],
+      "headings": [],
       "module": "./content/topics/docs-home.js"
     },
     {
       "id": "download",
-      "title": "Download and installation",
+      "title": "Installation",
       "path": "/getting-started/download",
       "group": "getting-started",
       "order": 1,
-      "description": "Choose how to include ElgoraUI in a browser application.",
+      "description": "Build and serve the currently supported browser assets; distinguish planned distribution channels.",
+      "prev": "/docs",
       "next": "/getting-started/quick-start",
       "toc": true,
       "api": [],
       "keywords": [
+        "install",
         "download",
-        "installation",
-        "npm",
-        "github",
-        "static",
-        "cdn"
+        "package",
+        "npm"
+      ],
+      "sectionRedirects": [
+        "choose-a-distribution-method|/getting-started/download#current-distribution",
+        "npm-package|/getting-started/download#planned-distribution-channels",
+        "github-release-assets|/getting-started/download#planned-distribution-channels",
+        "cdn|/getting-started/download#planned-distribution-channels",
+        "which-option-should-i-choose|/getting-started/download#current-distribution",
+        "see-also|/getting-started/download#next-step"
+      ],
+      "headings": [
+        {
+          "id": "current-distribution",
+          "title": "Current distribution"
+        },
+        {
+          "id": "static-bundles-from-an-http-server",
+          "title": "Static bundles from an HTTP server"
+        },
+        {
+          "id": "planned-distribution-channels",
+          "title": "Planned distribution channels"
+        },
+        {
+          "id": "next-step",
+          "title": "Next step"
+        }
       ],
       "module": "./content/topics/download.js"
     },
     {
+      "id": "quick-start",
+      "title": "Quick start",
+      "path": "/getting-started/quick-start",
+      "group": "getting-started",
+      "order": 2,
+      "description": "Build a complete interactive panel with native elements, owned state and a reactive button.",
+      "prev": "/getting-started/download",
+      "next": "/getting-started/framework-overview",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [
+        "show-some-data|/components/datagrid/overview"
+      ],
+      "headings": [
+        {
+          "id": "prepare-the-page",
+          "title": "Prepare the page"
+        },
+        {
+          "id": "create-a-component",
+          "title": "Create a component"
+        },
+        {
+          "id": "try-it",
+          "title": "Try it"
+        },
+        {
+          "id": "what-each-part-does",
+          "title": "What each part does"
+        },
+        {
+          "id": "own-the-lifecycle",
+          "title": "Own the lifecycle"
+        },
+        {
+          "id": "where-next",
+          "title": "Where next?"
+        }
+      ],
+      "module": "./content/topics/quick-start.js"
+    },
+    {
       "id": "framework-overview",
-      "title": "ElgoraUI fundamentals",
+      "title": "Elements and components",
       "path": "/getting-started/framework-overview",
       "group": "fundamentals",
-      "order": 1,
-      "description": "Learn the core ElgoraUI concepts, components, reactive state, and UI styles.",
+      "order": 10,
+      "description": "Choose native elements or owned components and compose them with e() and c().",
       "prev": "/getting-started/quick-start",
-      "next": "/components",
+      "next": "/fundamentals/state-and-events",
       "toc": true,
       "api": [
         "Component",
@@ -60,411 +160,42 @@
         "ui styles",
         "css variables"
       ],
+      "sectionRedirects": [
+        "api-reference|/getting-started/framework-overview#related-topics",
+        "see-also|/getting-started/framework-overview#related-topics",
+        "ui-styles|/styles/overview#ui-styles",
+        "the-elg-base-class|/styles/overview#the-elg-base-class",
+        "color-system|/styles/overview#color-system",
+        "css-utilities|/styles/overview#css-utilities",
+        "component-classes-box-btn-and-future-additions|/styles/overview#component-classes-box-btn-and-future-additions",
+        "reactive-values-and-events|/fundamentals/state-and-events#reactive-values-and-events",
+        "binding-observable-state-to-the-dom|/fundamentals/state-and-events#binding-observable-state-to-the-dom"
+      ],
+      "headings": [
+        {
+          "id": "overview",
+          "title": "Overview"
+        },
+        {
+          "id": "elements-and-components",
+          "title": "Elements and components"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
       "module": "./content/topics/framework-overview.js"
-    },
-    {
-      "id": "datasource-overview",
-      "title": "Overview",
-      "path": "/data/data-source/overview",
-      "group": "data",
-      "parent": "datasource",
-      "order": 1,
-      "description": "Read and optionally edit data through a storage-independent contract.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/datasource-overview.js"
-    },
-    {
-      "id": "datasource-array",
-      "title": "ArrayDataSource",
-      "path": "/data/data-source/array",
-      "group": "data",
-      "parent": "datasource",
-      "order": 2,
-      "description": "Edit a local product list with independent new-row sessions and change notifications.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/datasource-array.js"
-    },
-    {
-      "id": "quick-start",
-      "title": "Quick start",
-      "path": "/getting-started/quick-start",
-      "group": "getting-started",
-      "order": 2,
-      "description": "Compose your first component, bind observable state and connect a grid to local data.",
-      "prev": "/getting-started/download",
-      "next": "/getting-started/framework-overview",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/quick-start.js"
-    },
-    {
-      "id": "datasource-remote",
-      "title": "Custom remote source",
-      "path": "/data/data-source/remote",
-      "group": "data",
-      "parent": "datasource",
-      "order": 3,
-      "description": "Implement a read-only remote catalog with filtering, paging, cancellation and request errors.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/datasource-remote.js"
-    },
-    {
-      "id": "data-filter",
-      "title": "DataFilter",
-      "path": "/data/filter",
-      "group": "data",
-      "order": 4,
-      "description": "Build, edit, evaluate and display structured filters independently of DataGrid.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/data-filter.js"
-    },
-    {
-      "id": "data-fields",
-      "title": "Fields and presentation",
-      "path": "/data/fields",
-      "group": "data",
-      "order": 5,
-      "description": "Separate data access, reusable field presentation and grid-column behavior.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/data-fields.js"
-    },
-    {
-      "id": "components-overview",
-      "title": "Components and lifecycle",
-      "path": "/components",
-      "group": "fundamentals",
-      "order": 10,
-      "description": "Learn what an ElgoraUI Component adds to a native HTMLElement.",
-      "toc": true,
-      "api": [],
-      "keywords": [
-        "component",
-        "HTMLElement",
-        "lifecycle",
-        "composition",
-        "observable"
-      ],
-      "module": "./content/topics/components-overview.js"
-    },
-    {
-      "id": "dataset",
-      "title": "DataSet",
-      "path": "/data/dataset",
-      "group": "data",
-      "order": 10,
-      "description": "Edit related tables locally, run business rules in transactions, undo changes and save one batch.",
-      "next": "/core/undo-coordinator",
-      "toc": true,
-      "api": [
-        "DataSet",
-        "DataTable",
-        "DataRow",
-        "DataEditContext",
-        "DataRowChangeEvent"
-      ],
-      "keywords": [],
-      "module": "./content/topics/dataset.js"
-    },
-    {
-      "id": "semantic-colors",
-      "title": "Semantic colors",
-      "path": "/styles/semantic-colors",
-      "group": "styles",
-      "order": 10,
-      "description": "Understand ElgoraUI semantic color roles and their background, text, and border tokens.",
-      "toc": true,
-      "api": [],
-      "keywords": [
-        "colors",
-        "theme",
-        "semantic",
-        "tokens",
-        "light",
-        "dark"
-      ],
-      "module": "./content/topics/semantic-colors.js"
-    },
-    {
-      "id": "undo-coordinator",
-      "title": "UndoCoordinator",
-      "path": "/core/undo-coordinator",
-      "group": "core",
-      "order": 10,
-      "description": "Combine data and view actions into one chronological undo journal with separate history scopes.",
-      "prev": "/data/dataset",
-      "toc": true,
-      "api": [
-        "UndoCoordinator",
-        "UndoHistory",
-        "UndoOperation",
-        "UndoBaselineEvent"
-      ],
-      "keywords": [],
-      "module": "./content/topics/undo-coordinator.js"
-    },
-    {
-      "id": "html-elements",
-      "title": "HTML elements",
-      "path": "/styles/html-elements",
-      "group": "styles",
-      "order": 20,
-      "description": "Explore how ElgoraUI styles native HTML elements, controls, containers, and tables.",
-      "toc": true,
-      "api": [],
-      "keywords": [
-        "html",
-        "elements",
-        "buttons",
-        "forms",
-        "tables",
-        "surfaces"
-      ],
-      "module": "./content/topics/html-elements.js"
-    },
-    {
-      "id": "popover",
-      "title": "Popover",
-      "path": "/popover",
-      "group": "components",
-      "order": 20,
-      "description": "Create anchored and point-positioned floating panels.",
-      "toc": true,
-      "api": [
-        "Popover",
-        "PopoverOptions",
-        "PopoverPoint",
-        "PopoverPlacement",
-        "PopoverCloseMode"
-      ],
-      "keywords": [
-        "popover",
-        "anchor",
-        "context menu",
-        "floating panel"
-      ],
-      "module": "./content/topics/popover.js"
-    },
-    {
-      "id": "layout",
-      "title": "Layout and responsive grid",
-      "path": "/styles/layout",
-      "group": "styles",
-      "order": 30,
-      "description": "Compose twelve-column layouts with container-responsive utilities using e(), c() or v().",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/layout.js"
-    },
-    {
-      "id": "popup-menu",
-      "title": "PopupMenu",
-      "path": "/popup",
-      "group": "components",
-      "order": 30,
-      "description": "Build dynamic action menus with nested items and context positioning.",
-      "toc": true,
-      "api": [
-        "PopupMenu",
-        "PopupMenuOptions",
-        "PopupMenuShowOptions",
-        "MenuItem",
-        "RemixIcon"
-      ],
-      "keywords": [
-        "popup menu",
-        "menu",
-        "submenu",
-        "context menu"
-      ],
-      "module": "./content/topics/popup-menu.js"
-    },
-    {
-      "id": "virtual-list",
-      "title": "Virtual List",
-      "path": "/components/virtual-list",
-      "group": "components",
-      "order": 30,
-      "description": "Efficiently render very large collections by keeping only the visible rows in the DOM.",
-      "toc": true,
-      "api": [
-        "VirtualList",
-        "VirtualListOptions",
-        "DataList",
-        "RenderRowArgs",
-        "SizeManager",
-        "VariableSizeManager",
-        "FixedSizeManager"
-      ],
-      "keywords": [
-        "virtual list",
-        "virtualization",
-        "large collections",
-        "variable height"
-      ],
-      "module": "./content/topics/virtual-list.js"
-    },
-    {
-      "id": "tooltip",
-      "title": "Tooltip",
-      "path": "/tooltip",
-      "group": "components",
-      "order": 40,
-      "description": "Add hover and keyboard-focus descriptions to any element.",
-      "toc": true,
-      "api": [
-        "Tooltip",
-        "TooltipContent",
-        "TooltipShowOptions"
-      ],
-      "keywords": [
-        "tooltip",
-        "hover",
-        "focus",
-        "accessibility"
-      ],
-      "module": "./content/topics/tooltip.js"
-    },
-    {
-      "id": "websites",
-      "title": "Website composition and motion",
-      "path": "/styles/websites",
-      "group": "styles",
-      "order": 40,
-      "description": "Build a fictional product website with composable layouts, gradients and accessible scroll reveals.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/websites.js"
-    },
-    {
-      "id": "value-editors",
-      "title": "Overview",
-      "path": "/components/value-editors",
-      "group": "components",
-      "parent": "editors",
-      "order": 45,
-      "description": "Explore value editors and their shared validation and asynchronous acceptance lifecycle.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/value-editors.js"
-    },
-    {
-      "id": "editor-text",
-      "title": "Text",
-      "path": "/components/value-editors/text",
-      "group": "components",
-      "parent": "editors",
-      "order": 46,
-      "description": "Text input with draft text, validation and custom typed conversion.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/editor-text.js"
-    },
-    {
-      "id": "calendar",
-      "title": "Calendar",
-      "path": "/components/calendar",
-      "group": "components",
-      "order": 47,
-      "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/calendar.js"
-    },
-    {
-      "id": "editor-number",
-      "title": "Number",
-      "path": "/components/value-editors/number",
-      "group": "components",
-      "parent": "editors",
-      "order": 47,
-      "description": "Nullable numbers with text conversion and asynchronous validation.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/editor-number.js"
-    },
-    {
-      "id": "editor-checkbox",
-      "title": "Checkbox",
-      "path": "/components/value-editors/checkbox",
-      "group": "components",
-      "parent": "editors",
-      "order": 48,
-      "description": "Native checkbox editing with boolean conversion and asynchronous acceptance.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/editor-checkbox.js"
-    },
-    {
-      "id": "editor-toggle",
-      "title": "Toggle",
-      "path": "/components/value-editors/toggle",
-      "group": "components",
-      "parent": "editors",
-      "order": 49,
-      "description": "Compact switch editing for boolean values.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/editor-toggle.js"
-    },
-    {
-      "id": "browser-router",
-      "title": "Browser Router",
-      "path": "/components/browser-router",
-      "group": "components",
-      "order": 50,
-      "description": "Navigate between client-side pages without full document reloads.",
-      "toc": true,
-      "api": [
-        "BrowserRouter"
-      ],
-      "keywords": [
-        "browser router",
-        "routing",
-        "navigation",
-        "history api"
-      ],
-      "module": "./content/topics/browser-router.js"
-    },
-    {
-      "id": "lookup-editor",
-      "title": "Lookup",
-      "path": "/components/lookup-editor",
-      "group": "components",
-      "parent": "editors",
-      "order": 50,
-      "description": "Search and pick values using a resizable virtualized multi-column popup.",
-      "toc": true,
-      "api": [],
-      "keywords": [],
-      "module": "./content/topics/lookup-editor.js"
     },
     {
       "id": "datagrid-overview",
       "title": "Overview",
       "path": "/components/datagrid/overview",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 50,
+      "group": "datagrid",
+      "order": 10,
       "description": "Display, group, summarize, and interact with tabular data.",
+      "prev": "/docs",
+      "next": "/components/datagrid/data-sources",
       "toc": true,
       "api": [
         "DataGrid",
@@ -481,7 +212,369 @@
         "grouping",
         "summaries"
       ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "tabular-data",
+          "title": "Tabular data"
+        },
+        {
+          "id": "hierarchical-data",
+          "title": "Hierarchical data"
+        },
+        {
+          "id": "explore-datagrid-features",
+          "title": "Explore DataGrid features"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
       "module": "./content/topics/datagrid-overview.js"
+    },
+    {
+      "id": "data-overview",
+      "title": "Overview — choosing a model",
+      "path": "/data/overview",
+      "group": "data",
+      "order": 10,
+      "description": "Choose an array, remote source or DataSet, and separate fields, input and persistence.",
+      "prev": "/docs",
+      "next": "/data/fields",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "a-small-local-list",
+          "title": "A small local list"
+        },
+        {
+          "id": "backend-owned-data",
+          "title": "Backend-owned data"
+        },
+        {
+          "id": "a-local-editing-workspace",
+          "title": "A local editing workspace"
+        },
+        {
+          "id": "keep-responsibilities-separate",
+          "title": "Keep responsibilities separate"
+        }
+      ],
+      "module": "./content/topics/data-overview.js"
+    },
+    {
+      "id": "styles-overview",
+      "title": "UI styles and utilities",
+      "path": "/styles/overview",
+      "group": "styles",
+      "order": 10,
+      "description": "Compose typed UI styles, literal classes, spacing and semantic building blocks.",
+      "prev": "/docs",
+      "next": "/styles/semantic-colors",
+      "toc": true,
+      "api": [
+        "UiStyle"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "ui-styles",
+          "title": "UI styles"
+        },
+        {
+          "id": "the-elg-base-class",
+          "title": "The elg base class"
+        },
+        {
+          "id": "color-system",
+          "title": "Color system"
+        },
+        {
+          "id": "css-utilities",
+          "title": "CSS utilities"
+        },
+        {
+          "id": "component-classes-box-btn-and-future-additions",
+          "title": "Component classes: box, btn, and future additions"
+        },
+        {
+          "id": "related-topics-and-api",
+          "title": "Related topics and API"
+        }
+      ],
+      "module": "./content/topics/styles-overview.js"
+    },
+    {
+      "id": "value-editors",
+      "title": "Value editors",
+      "navTitle": "Overview",
+      "path": "/components/value-editors",
+      "group": "components",
+      "parent": "editors",
+      "order": 10,
+      "description": "Explore value editors and their shared validation and asynchronous acceptance lifecycle.",
+      "prev": "/docs",
+      "next": "/components/value-editors/lifecycle",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [
+        "shared-contract|/components/value-editors/lifecycle#shared-contract",
+        "keyboard-and-popup-behavior|/components/value-editors/lifecycle#keyboard-and-popup-behavior",
+        "resolve-external-text|/components/value-editors/lifecycle#resolve-external-text",
+        "api-reference|/components/value-editors/lifecycle#api-reference"
+      ],
+      "headings": [
+        {
+          "id": "try-the-editors",
+          "title": "Try the editors"
+        },
+        {
+          "id": "choose-an-editor",
+          "title": "Choose an editor"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
+      "module": "./content/topics/value-editors.js"
+    },
+    {
+      "id": "editor-lifecycle",
+      "title": "Values, confirmation and callbacks",
+      "path": "/components/value-editors/lifecycle",
+      "group": "components",
+      "parent": "editors",
+      "order": 11,
+      "description": "Separate draft input, conversion, validation, asynchronous acceptance and cancellation.",
+      "prev": "/components/value-editors",
+      "next": "/components/value-editors/validation",
+      "toc": true,
+      "api": [
+        "ValueEditor",
+        "ValueEditorOptions",
+        "TextEditorOptions",
+        "PopoverEditorOptions"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "shared-contract",
+          "title": "Shared contract"
+        },
+        {
+          "id": "keyboard-and-popup-behavior",
+          "title": "Keyboard and popup behavior"
+        },
+        {
+          "id": "resolve-external-text",
+          "title": "Resolve external text"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/editor-lifecycle.js"
+    },
+    {
+      "id": "editor-validation",
+      "title": "Validation and errors",
+      "path": "/components/value-editors/validation",
+      "group": "components",
+      "parent": "editors",
+      "order": 12,
+      "description": "Validation feedback shared by all value editors.",
+      "prev": "/components/value-editors/lifecycle",
+      "next": "/components/value-editors/text",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "try-invalid-values",
+          "title": "Try invalid values"
+        },
+        {
+          "id": "shared-contract",
+          "title": "Shared contract"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/editor-validation.js"
+    },
+    {
+      "id": "editor-text",
+      "title": "Text",
+      "path": "/components/value-editors/text",
+      "group": "components",
+      "parent": "editors",
+      "order": 13,
+      "description": "Text input with draft text, validation and custom typed conversion.",
+      "prev": "/components/value-editors/validation",
+      "next": "/components/value-editors/number",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "order-reference",
+          "title": "Order reference"
+        },
+        {
+          "id": "text-and-typed-values",
+          "title": "Text and typed values"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/editor-text.js"
+    },
+    {
+      "id": "editor-number",
+      "title": "Number",
+      "path": "/components/value-editors/number",
+      "group": "components",
+      "parent": "editors",
+      "order": 14,
+      "description": "Nullable numbers with text conversion and asynchronous validation.",
+      "prev": "/components/value-editors/text",
+      "next": "/components/value-editors/checkbox",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "order-quantity",
+          "title": "Order quantity"
+        },
+        {
+          "id": "conversion-and-validation",
+          "title": "Conversion and validation"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/editor-number.js"
+    },
+    {
+      "id": "editor-checkbox",
+      "title": "Checkbox",
+      "path": "/components/value-editors/checkbox",
+      "group": "components",
+      "parent": "editors",
+      "order": 15,
+      "description": "Native checkbox editing with boolean conversion and asynchronous acceptance.",
+      "prev": "/components/value-editors/number",
+      "next": "/components/value-editors/toggle",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "shipping-confirmation",
+          "title": "Shipping confirmation"
+        },
+        {
+          "id": "boolean-values-and-external-text",
+          "title": "Boolean values and external text"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/editor-checkbox.js"
+    },
+    {
+      "id": "editor-toggle",
+      "title": "Toggle",
+      "path": "/components/value-editors/toggle",
+      "group": "components",
+      "parent": "editors",
+      "order": 16,
+      "description": "Compact switch editing for boolean values.",
+      "prev": "/components/value-editors/checkbox",
+      "next": "/components/lookup-editor",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "priority-order",
+          "title": "Priority order"
+        },
+        {
+          "id": "configure-a-switch",
+          "title": "Configure a switch"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/editor-toggle.js"
+    },
+    {
+      "id": "lookup-editor",
+      "title": "Lookup",
+      "path": "/components/lookup-editor",
+      "group": "components",
+      "parent": "editors",
+      "order": 17,
+      "description": "Search and pick values using a resizable virtualized multi-column popup.",
+      "prev": "/components/value-editors/toggle",
+      "next": "/components/date-editor",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "customer-picker",
+          "title": "Customer picker"
+        },
+        {
+          "id": "configure-value-items-and-paging",
+          "title": "Configure value, items and paging"
+        },
+        {
+          "id": "search-choose-and-cancel",
+          "title": "Search, choose and cancel"
+        },
+        {
+          "id": "resolve-pasted-text",
+          "title": "Resolve pasted text"
+        },
+        {
+          "id": "popup-size",
+          "title": "Popup size"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/lookup-editor.js"
     },
     {
       "id": "date-editor",
@@ -489,21 +582,294 @@
       "path": "/components/date-editor",
       "group": "components",
       "parent": "editors",
-      "order": 51,
+      "order": 18,
       "description": "Date-only text editing with a calendar popup and asynchronous confirmation.",
+      "prev": "/components/lookup-editor",
+      "next": "/components/time-editors",
       "toc": true,
       "api": [],
       "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "delivery-and-booking-dates",
+          "title": "Delivery and booking dates"
+        },
+        {
+          "id": "configure-an-editor",
+          "title": "Configure an editor"
+        },
+        {
+          "id": "input-picker-and-focus",
+          "title": "Input, picker and focus"
+        },
+        {
+          "id": "resolve-and-format-text",
+          "title": "Resolve and format text"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
       "module": "./content/topics/date-editor.js"
     },
     {
-      "id": "datagrid-columns",
-      "title": "Columns and layout",
-      "path": "/components/datagrid/columns",
+      "id": "time-editors",
+      "title": "Time and DateTime",
+      "path": "/components/time-editors",
       "group": "components",
-      "parent": "datagrid",
-      "order": 52,
+      "parent": "editors",
+      "order": 19,
+      "description": "Edit local time and date-time values with strict parsing and asynchronous confirmation.",
+      "prev": "/components/date-editor",
+      "next": "/components/calendar",
+      "toc": true,
+      "api": [
+        "TimeEditor",
+        "TimeEditorOptions",
+        "DateTimeEditor",
+        "DateTimeEditorOptions",
+        "TimeFormatter"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "timeeditor",
+          "title": "TimeEditor"
+        },
+        {
+          "id": "datetimeeditor",
+          "title": "DateTimeEditor"
+        },
+        {
+          "id": "confirmation-and-validation",
+          "title": "Confirmation and validation"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/time-editors.js"
+    },
+    {
+      "id": "calendar",
+      "title": "Calendar",
+      "path": "/components/calendar",
+      "group": "components",
+      "order": 20,
+      "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
+      "prev": "/components/time-editors",
+      "next": "/components/filter-editor",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "pick-a-date",
+          "title": "Pick a date"
+        },
+        {
+          "id": "date-only-values",
+          "title": "Date-only values"
+        },
+        {
+          "id": "navigation",
+          "title": "Navigation"
+        },
+        {
+          "id": "bounds-and-locale",
+          "title": "Bounds and locale"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/calendar.js"
+    },
+    {
+      "id": "semantic-colors",
+      "title": "Colors and themes",
+      "path": "/styles/semantic-colors",
+      "group": "styles",
+      "order": 20,
+      "description": "Understand ElgoraUI semantic color roles and their background, text, and border tokens.",
+      "prev": "/styles/overview",
+      "next": "/styles/layout",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "colors",
+        "theme",
+        "semantic",
+        "tokens",
+        "light",
+        "dark"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "color-roles",
+          "title": "Color roles"
+        },
+        {
+          "id": "theme-aware-components",
+          "title": "Theme-aware components"
+        },
+        {
+          "id": "interaction-and-selection",
+          "title": "Interaction and selection"
+        },
+        {
+          "id": "applying-a-theme",
+          "title": "Applying a theme"
+        },
+        {
+          "id": "customizing-colors",
+          "title": "Customizing colors"
+        }
+      ],
+      "module": "./content/topics/semantic-colors.js"
+    },
+    {
+      "id": "datagrid-data-sources",
+      "title": "Connecting data",
+      "path": "/components/datagrid/data-sources",
+      "group": "datagrid",
+      "order": 20,
+      "description": "Connect DataGrid to local arrays, asynchronous loaders, and remote data contracts.",
+      "prev": "/components/datagrid/overview",
+      "next": "/components/datagrid/columns",
+      "toc": true,
+      "api": [
+        "DataSource",
+        "ArrayDataSource",
+        "GridDataSource",
+        "DataGrid"
+      ],
+      "keywords": [
+        "data source",
+        "async",
+        "paging",
+        "remote data"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "editing-an-array-source",
+          "title": "Editing an array source"
+        },
+        {
+          "id": "grouping-adapters-preserve-editing-capabilities",
+          "title": "Grouping adapters preserve editing capabilities"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/datagrid-data-sources.js"
+    },
+    {
+      "id": "data-fields",
+      "title": "Fields and presentation",
+      "path": "/data/fields",
+      "group": "data",
+      "order": 20,
+      "description": "Separate data access, reusable field presentation and grid-column behavior.",
+      "prev": "/data/overview",
+      "next": "/data/data-source/overview",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "data-access",
+          "title": "Data access"
+        },
+        {
+          "id": "reusable-presentation",
+          "title": "Reusable presentation"
+        },
+        {
+          "id": "grid-columns",
+          "title": "Grid columns"
+        }
+      ],
+      "module": "./content/topics/data-fields.js"
+    },
+    {
+      "id": "state-and-events",
+      "title": "State, events and bindings",
+      "path": "/fundamentals/state-and-events",
+      "group": "fundamentals",
+      "order": 20,
+      "description": "Use observable state, explicit events and owned DOM bindings.",
+      "prev": "/getting-started/framework-overview",
+      "next": "/fundamentals/rendering",
+      "toc": true,
+      "api": [
+        "ObservableValue",
+        "ObservableEvent",
+        "Component"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "reactive-values-and-events",
+          "title": "Reactive values and events"
+        },
+        {
+          "id": "binding-observable-state-to-the-dom",
+          "title": "Binding observable state to the DOM"
+        },
+        {
+          "id": "related-topics-and-api",
+          "title": "Related topics and API"
+        }
+      ],
+      "module": "./content/topics/state-and-events.js"
+    },
+    {
+      "id": "filter-editor",
+      "title": "FilterEditor",
+      "path": "/components/filter-editor",
+      "group": "components",
+      "order": 21,
+      "description": "Build visual AND/OR filters independently of DataGrid and distinguish editor drafts from applied queries.",
+      "prev": "/components/calendar",
+      "next": "/popover",
+      "toc": true,
+      "api": [
+        "FilterEditor",
+        "FilterEditorOptions",
+        "DataFilter"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "product-filter-playground",
+          "title": "Product filter playground"
+        }
+      ],
+      "module": "./content/topics/filter-editor.js"
+    },
+    {
+      "id": "datagrid-columns",
+      "title": "Columns and sizing",
+      "path": "/components/datagrid/columns",
+      "group": "datagrid",
+      "order": 30,
       "description": "Configure column captions, widths, alignment, visibility, and layout behavior.",
+      "prev": "/components/datagrid/data-sources",
+      "next": "/components/datagrid/selection",
       "toc": true,
       "api": [
         "DataGrid",
@@ -518,135 +884,579 @@
         "pinning",
         "layout"
       ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "column-width-modes",
+          "title": "Column width modes"
+        },
+        {
+          "id": "manual-column-resizing",
+          "title": "Manual column resizing"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
       "module": "./content/topics/datagrid-columns.js"
     },
     {
-      "id": "time-editors",
-      "title": "Time editors",
-      "path": "/components/time-editors",
-      "group": "components",
-      "parent": "editors",
-      "order": 52,
-      "description": "Edit local time and date-time values with strict parsing and asynchronous confirmation.",
-      "toc": true,
-      "api": [
-        "TimeEditor",
-        "TimeEditorOptions",
-        "DateTimeEditor",
-        "DateTimeEditorOptions",
-        "TimeFormatter"
-      ],
-      "keywords": [],
-      "module": "./content/topics/time-editors.js"
-    },
-    {
-      "id": "editor-validation",
-      "title": "Validation",
-      "path": "/components/value-editors/validation",
-      "group": "components",
-      "parent": "editors",
-      "order": 52,
-      "description": "Validation feedback shared by all value editors.",
+      "id": "datasource-overview",
+      "title": "Contract and capabilities",
+      "path": "/data/data-source/overview",
+      "group": "data",
+      "parent": "datasource",
+      "order": 30,
+      "description": "Read and optionally edit data through a storage-independent contract.",
+      "prev": "/data/fields",
+      "next": "/data/data-source/array",
       "toc": true,
       "api": [],
       "keywords": [],
-      "module": "./content/topics/editor-validation.js"
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "reading-data",
+          "title": "Reading data"
+        },
+        {
+          "id": "optional-capabilities",
+          "title": "Optional capabilities"
+        },
+        {
+          "id": "new-rows",
+          "title": "New rows"
+        },
+        {
+          "id": "notifications-and-persistence",
+          "title": "Notifications and persistence"
+        }
+      ],
+      "module": "./content/topics/datasource-overview.js"
     },
     {
-      "id": "datagrid-sorting",
-      "title": "Sorting",
-      "path": "/components/datagrid/sorting",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 53,
-      "description": "Sort one or more DataGrid columns and control sort state programmatically.",
+      "id": "layout",
+      "title": "Layout and responsive grid",
+      "path": "/styles/layout",
+      "group": "styles",
+      "order": 30,
+      "description": "Compose twelve-column layouts with container-responsive utilities using e(), c() or v().",
+      "prev": "/styles/semantic-colors",
+      "next": "/styles/containers",
       "toc": true,
-      "api": [
-        "DataGrid",
-        "DataGridOptions",
-        "OrderByToken"
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "resize-the-container",
+          "title": "Resize the container"
+        },
+        {
+          "id": "basic-grid",
+          "title": "Basic grid"
+        },
+        {
+          "id": "container-breakpoints",
+          "title": "Container breakpoints"
+        },
+        {
+          "id": "components-and-virtual-nodes",
+          "title": "Components and virtual nodes"
+        },
+        {
+          "id": "nesting-and-sizing",
+          "title": "Nesting and sizing"
+        }
       ],
-      "keywords": [
-        "sorting",
-        "order by",
-        "multi-column sort"
-      ],
-      "module": "./content/topics/datagrid-sorting.js"
+      "module": "./content/topics/layout.js"
     },
     {
-      "id": "datagrid-filtering",
-      "title": "Filtering",
-      "path": "/components/datagrid/filtering",
+      "id": "popover",
+      "title": "Popover",
+      "path": "/popover",
       "group": "components",
-      "parent": "datagrid",
-      "order": 54,
-      "description": "Filter local or remote DataGrid data with structured filter expressions.",
+      "parent": "menus",
+      "order": 30,
+      "description": "Create anchored and point-positioned floating panels.",
+      "prev": "/components/filter-editor",
+      "next": "/popup",
       "toc": true,
       "api": [
-        "DataGrid",
-        "DataFilter",
-        "FilterFunctionRegistry"
+        "Popover",
+        "PopoverOptions",
+        "PopoverPoint",
+        "PopoverPlacement",
+        "PopoverCloseMode"
       ],
       "keywords": [
-        "filtering",
-        "filter row",
-        "data filter"
+        "popover",
+        "anchor",
+        "context menu",
+        "floating panel"
       ],
-      "module": "./content/topics/datagrid-filtering.js"
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "anchored-popover",
+          "title": "Anchored popover"
+        },
+        {
+          "id": "point-based-popover",
+          "title": "Point-based popover"
+        }
+      ],
+      "module": "./content/topics/popover.js"
     },
     {
-      "id": "datagrid-grouping",
-      "title": "Grouping",
-      "path": "/components/datagrid/grouping",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 55,
-      "description": "Group rows by one or more columns, intervals, and interactive group chips.",
+      "id": "rendering",
+      "title": "Rendering and VNodes",
+      "path": "/fundamentals/rendering",
+      "group": "fundamentals",
+      "order": 30,
+      "description": "Batch rendering through the UI scheduler and patch keyed virtual nodes without replacing stable DOM.",
+      "prev": "/fundamentals/state-and-events",
+      "next": "/components",
       "toc": true,
       "api": [
-        "DataGrid",
-        "GroupInterval",
-        "GroupIntervalDefinition"
+        "Component",
+        "v",
+        "ElgoraUI"
       ],
       "keywords": [
-        "grouping",
-        "group rows",
-        "intervals",
-        "group panel"
+        "patch",
+        "scheduler",
+        "virtual DOM",
+        "key"
       ],
-      "module": "./content/topics/datagrid-grouping.js"
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "schedule-a-small-rendering-task",
+          "title": "Schedule a small rendering task"
+        },
+        {
+          "id": "describe-changing-content-with-vnodes",
+          "title": "Describe changing content with VNodes"
+        },
+        {
+          "id": "ownership-and-patching-boundaries",
+          "title": "Ownership and patching boundaries"
+        },
+        {
+          "id": "related-topics-and-api",
+          "title": "Related topics and API"
+        }
+      ],
+      "module": "./content/topics/rendering.js"
     },
     {
-      "id": "datagrid-summaries",
-      "title": "Summaries",
-      "path": "/components/datagrid/summaries",
+      "id": "datasource-array",
+      "title": "ArrayDataSource",
+      "path": "/data/data-source/array",
+      "group": "data",
+      "parent": "datasource",
+      "order": 31,
+      "description": "Edit a local product list with independent new-row sessions and change notifications.",
+      "prev": "/data/data-source/overview",
+      "next": "/data/data-source/remote",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [
+        "query-cache-and-invalidation|/data/data-source/caching#arraydatasource-cache",
+        "observe-changes|/data/data-source/caching#observe-changes"
+      ],
+      "headings": [
+        {
+          "id": "product-list",
+          "title": "Product list"
+        },
+        {
+          "id": "configure-defaults-and-identities",
+          "title": "Configure defaults and identities"
+        },
+        {
+          "id": "read-and-edit",
+          "title": "Read and edit"
+        },
+        {
+          "id": "local-query-processing",
+          "title": "Local query processing"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
+      "module": "./content/topics/datasource-array.js"
+    },
+    {
+      "id": "popup-menu",
+      "title": "PopupMenu",
+      "path": "/popup",
       "group": "components",
-      "parent": "datagrid",
-      "order": 56,
-      "description": "Display numeric and custom aggregate values for grouped DataGrid rows.",
+      "parent": "menus",
+      "order": 31,
+      "description": "Build dynamic action menus with nested items and context positioning.",
+      "prev": "/popover",
+      "next": "/tooltip",
       "toc": true,
       "api": [
-        "DataGrid",
-        "SummaryType",
-        "SummaryDefinition",
-        "SummaryContext"
+        "PopupMenu",
+        "PopupMenuOptions",
+        "PopupMenuShowOptions",
+        "MenuItem",
+        "RemixIcon"
       ],
       "keywords": [
-        "summaries",
-        "aggregates",
-        "sum",
-        "count"
+        "popup menu",
+        "menu",
+        "submenu",
+        "context menu"
       ],
-      "module": "./content/topics/datagrid-summaries.js"
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "dynamic-nested-menu",
+          "title": "Dynamic nested menu"
+        },
+        {
+          "id": "context-menu",
+          "title": "Context menu"
+        }
+      ],
+      "module": "./content/topics/popup-menu.js"
+    },
+    {
+      "id": "datasource-remote",
+      "title": "Custom remote source",
+      "path": "/data/data-source/remote",
+      "group": "data",
+      "parent": "datasource",
+      "order": 32,
+      "description": "Implement a read-only remote catalog with filtering, paging, cancellation and request errors.",
+      "prev": "/data/data-source/array",
+      "next": "/data/data-source/queries",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "paged-product-catalog",
+          "title": "Paged product catalog"
+        },
+        {
+          "id": "replace-the-simulated-endpoint",
+          "title": "Replace the simulated endpoint"
+        },
+        {
+          "id": "cancellation-and-stale-results",
+          "title": "Cancellation and stale results"
+        },
+        {
+          "id": "add-editing-only-when-supported",
+          "title": "Add editing only when supported"
+        }
+      ],
+      "module": "./content/topics/datasource-remote.js"
+    },
+    {
+      "id": "tooltip",
+      "title": "Tooltip",
+      "path": "/tooltip",
+      "group": "components",
+      "parent": "menus",
+      "order": 32,
+      "description": "Add hover and keyboard-focus descriptions to any element.",
+      "prev": "/popup",
+      "next": "/components/resize-handle",
+      "toc": true,
+      "api": [
+        "Tooltip",
+        "TooltipContent",
+        "TooltipShowOptions"
+      ],
+      "keywords": [
+        "tooltip",
+        "hover",
+        "focus",
+        "accessibility"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "attach-a-tooltip",
+          "title": "Attach a tooltip"
+        },
+        {
+          "id": "rich-content",
+          "title": "Rich content"
+        }
+      ],
+      "module": "./content/topics/tooltip.js"
+    },
+    {
+      "id": "resize-handle",
+      "title": "Resizable elements — ResizeHandle",
+      "path": "/components/resize-handle",
+      "group": "components",
+      "parent": "menus",
+      "order": 33,
+      "description": "Add a reusable pointer resize grip, minimum dimensions and viewport constraints.",
+      "prev": "/tooltip",
+      "next": "/components/browser-router",
+      "toc": true,
+      "api": [
+        "ResizeHandle",
+        "ResizeHandleOptions"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "configure-a-resize-handle",
+          "title": "Configure a resize handle"
+        },
+        {
+          "id": "ownership",
+          "title": "Ownership"
+        }
+      ],
+      "module": "./content/topics/resize-handle.js"
+    },
+    {
+      "id": "datasource-queries",
+      "title": "Queries, grouping and summaries",
+      "path": "/data/data-source/queries",
+      "group": "data",
+      "parent": "datasource",
+      "order": 34,
+      "description": "Implement one loadData protocol for filtering, paging, grouped metadata and demand-driven totals.",
+      "prev": "/data/data-source/remote",
+      "next": "/data/data-source/caching",
+      "toc": true,
+      "api": [
+        "QueryArgs",
+        "DataResult",
+        "GroupByField",
+        "GroupItem",
+        "SummaryDefinition"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "grouped-loaddata-queries",
+          "title": "Grouped loadData queries"
+        },
+        {
+          "id": "group-values-and-null-semantics",
+          "title": "Group values and null semantics"
+        },
+        {
+          "id": "demand-driven-total-summaries",
+          "title": "Demand-driven total summaries"
+        }
+      ],
+      "module": "./content/topics/datasource-queries.js"
+    },
+    {
+      "id": "datasource-caching",
+      "title": "Local processing and cache invalidation",
+      "path": "/data/data-source/caching",
+      "group": "data",
+      "parent": "datasource",
+      "order": 35,
+      "description": "Reuse local query work safely and invalidate after mutations or external dependency changes.",
+      "prev": "/data/data-source/queries",
+      "next": "/data/filter",
+      "toc": true,
+      "api": [
+        "ArrayDataSource",
+        "DataTable",
+        "LocalGroupingDataSource"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "arraydatasource-cache",
+          "title": "ArrayDataSource cache"
+        },
+        {
+          "id": "observe-changes",
+          "title": "Observe changes"
+        },
+        {
+          "id": "datatable-cache",
+          "title": "DataTable cache"
+        }
+      ],
+      "module": "./content/topics/datasource-caching.js"
+    },
+    {
+      "id": "browser-router",
+      "title": "Browser Router",
+      "path": "/components/browser-router",
+      "group": "components",
+      "parent": "navigation",
+      "order": 40,
+      "description": "Navigate between client-side pages without full document reloads.",
+      "prev": "/components/resize-handle",
+      "next": "/components/scroll-spy",
+      "toc": true,
+      "api": [
+        "BrowserRouter"
+      ],
+      "keywords": [
+        "browser router",
+        "routing",
+        "navigation",
+        "history api"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "define-routes-and-mount-the-router",
+          "title": "Define routes and mount the router"
+        }
+      ],
+      "module": "./content/topics/browser-router.js"
+    },
+    {
+      "id": "style-containers",
+      "title": "Containers and typography",
+      "path": "/styles/containers",
+      "group": "styles",
+      "order": 40,
+      "description": "Arrange website sections and readable, fluid typography without wrapper components.",
+      "prev": "/styles/layout",
+      "next": "/styles/surfaces",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "containers-sections-and-typography",
+          "title": "Containers, sections and typography"
+        },
+        {
+          "id": "related-topics-and-api",
+          "title": "Related topics and API"
+        }
+      ],
+      "module": "./content/topics/style-containers.js"
+    },
+    {
+      "id": "data-filter",
+      "title": "DataFilter expressions",
+      "path": "/data/filter",
+      "group": "data",
+      "parent": "filters",
+      "order": 40,
+      "description": "Build, edit, evaluate and display structured filters independently of DataGrid.",
+      "prev": "/data/data-source/caching",
+      "next": "/data/filter-text",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [
+        "product-filter-playground|/components/filter-editor#product-filter-playground",
+        "text-expressions-and-ranges|/data/filter-text#text-expressions-and-ranges",
+        "reverse-conversion-and-readable-text|/data/filter-text#reverse-conversion-and-readable-text"
+      ],
+      "headings": [
+        {
+          "id": "conditions-and-operators",
+          "title": "Conditions and operators"
+        },
+        {
+          "id": "and-or-and-not",
+          "title": "AND, OR and NOT"
+        },
+        {
+          "id": "evaluate-locally-or-query-a-source",
+          "title": "Evaluate locally or query a source"
+        },
+        {
+          "id": "transformed-selectors-and-transport",
+          "title": "Transformed selectors and transport"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
+      "module": "./content/topics/data-filter.js"
+    },
+    {
+      "id": "components-overview",
+      "title": "Lifecycle and resource ownership",
+      "path": "/components",
+      "group": "fundamentals",
+      "order": 40,
+      "description": "Learn what an ElgoraUI Component adds to a native HTMLElement.",
+      "prev": "/fundamentals/rendering",
+      "next": "/core/undo-coordinator",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "component",
+        "HTMLElement",
+        "lifecycle",
+        "composition",
+        "observable"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "component-and-htmlelement",
+          "title": "Component and HTMLElement"
+        },
+        {
+          "id": "component-lifecycle",
+          "title": "Component lifecycle"
+        },
+        {
+          "id": "create",
+          "title": "Create"
+        },
+        {
+          "id": "mount-and-unmount",
+          "title": "Mount and unmount"
+        },
+        {
+          "id": "dispose",
+          "title": "Dispose"
+        },
+        {
+          "id": "creating-a-component",
+          "title": "Creating a component"
+        },
+        {
+          "id": "composition-with-e-and-component-factories",
+          "title": "Composition with e() and component factories"
+        },
+        {
+          "id": "ui-styles",
+          "title": "UI Styles"
+        }
+      ],
+      "module": "./content/topics/components-overview.js"
     },
     {
       "id": "datagrid-selection",
       "title": "Selection",
       "path": "/components/datagrid/selection",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 57,
+      "group": "datagrid",
+      "order": 40,
       "description": "Select cells, ranges, and rows with mouse and keyboard interaction.",
+      "prev": "/components/datagrid/columns",
+      "next": "/components/datagrid/keyboard-navigation",
       "toc": true,
       "api": [
         "DataGrid",
@@ -659,16 +1469,548 @@
         "range selection",
         "copy"
       ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "selection-modes",
+          "title": "Selection modes"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
       "module": "./content/topics/datagrid-selection.js"
     },
     {
-      "id": "datagrid-editing",
-      "title": "Cell editing",
-      "path": "/components/datagrid/editing",
+      "id": "scroll-spy",
+      "title": "ScrollSpy",
+      "path": "/components/scroll-spy",
       "group": "components",
-      "parent": "datagrid",
-      "order": 58,
-      "description": "Edit existing cells with value editors, asynchronous sources and DataTable transactions.",
+      "parent": "navigation",
+      "order": 41,
+      "description": "Track the active section in existing in-page navigation.",
+      "prev": "/components/browser-router",
+      "next": "/components/scrollbars",
+      "toc": true,
+      "api": [
+        "ScrollSpy",
+        "ScrollSpyOptions"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "basic-usage",
+          "title": "Basic usage"
+        },
+        {
+          "id": "scroll-containers",
+          "title": "Scroll containers"
+        },
+        {
+          "id": "active-appearance",
+          "title": "Active appearance"
+        },
+        {
+          "id": "refresh-and-disposal",
+          "title": "Refresh and disposal"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/scroll-spy.js"
+    },
+    {
+      "id": "filter-text",
+      "title": "Text expressions and ranges",
+      "path": "/data/filter-text",
+      "group": "data",
+      "parent": "filters",
+      "order": 41,
+      "description": "Parse filter-row expressions, open ranges and literal operator text, and display readable filters.",
+      "prev": "/data/filter",
+      "next": "/data/dataset",
+      "toc": true,
+      "api": [
+        "DataFilterRow",
+        "DataType"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "text-expressions-and-ranges",
+          "title": "Text expressions and ranges"
+        },
+        {
+          "id": "reverse-conversion-and-readable-text",
+          "title": "Reverse conversion and readable text"
+        }
+      ],
+      "module": "./content/topics/filter-text.js"
+    },
+    {
+      "id": "dataset",
+      "title": "DataSet overview",
+      "navTitle": "Overview",
+      "path": "/data/dataset",
+      "group": "data",
+      "parent": "dataset-group",
+      "order": 50,
+      "description": "Edit related tables locally, run business rules in transactions, undo changes and save one batch.",
+      "prev": "/data/filter-text",
+      "next": "/data/dataset/tables",
+      "toc": true,
+      "api": [
+        "DataSet",
+        "DataTable",
+        "DataRow",
+        "DataEditContext",
+        "DataRowChangeEvent"
+      ],
+      "keywords": [],
+      "sectionRedirects": [
+        "api-reference|/data/dataset#related-topics",
+        "create-a-dataset-and-tables|/data/dataset/tables#create-a-dataset-and-tables",
+        "read-values-and-track-edits|/data/dataset/tables#read-values-and-track-edits",
+        "equality-and-object-valued-fields|/data/dataset/tables#equality-and-object-valued-fields",
+        "transactions|/data/dataset/rules#transactions",
+        "validation-and-business-rules|/data/dataset/rules#validation-and-business-rules",
+        "event-kinds|/data/dataset/rules#event-kinds",
+        "asynchronous-rules|/data/dataset/rules#asynchronous-rules",
+        "cyclic-rules|/data/dataset/rules#cyclic-rules",
+        "new-row-sessions|/data/dataset/new-rows#new-row-sessions",
+        "save-accept-and-reject|/data/dataset/saving#save-accept-and-reject",
+        "undo-and-redo|/data/dataset/saving#undo-and-redo",
+        "queries-and-local-caches|/data/data-source/caching#datatable-cache"
+      ],
+      "headings": [
+        {
+          "id": "try-an-order-editor",
+          "title": "Try an order editor"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
+      "module": "./content/topics/dataset.js"
+    },
+    {
+      "id": "datagrid-keyboard-navigation",
+      "title": "Keyboard navigation",
+      "path": "/components/datagrid/keyboard-navigation",
+      "group": "datagrid",
+      "order": 50,
+      "description": "Navigate selections, edit cells, operate pickers and customize keyboard destinations.",
+      "prev": "/components/datagrid/selection",
+      "next": "/components/datagrid/editing",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridCellNavigatingEvent"
+      ],
+      "keywords": [
+        "keyboard",
+        "Enter",
+        "Tab",
+        "cellNavigating"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "read-only-navigation",
+          "title": "Read-only navigation"
+        },
+        {
+          "id": "entering-edit-mode",
+          "title": "Entering edit mode"
+        },
+        {
+          "id": "confirming-and-cancelling",
+          "title": "Confirming and cancelling"
+        },
+        {
+          "id": "customizing-navigation",
+          "title": "Customizing navigation"
+        }
+      ],
+      "module": "./content/topics/datagrid-keyboard-navigation.js"
+    },
+    {
+      "id": "scrollbars",
+      "title": "Native scrollbars",
+      "path": "/components/scrollbars",
+      "group": "components",
+      "parent": "scrolling",
+      "order": 50,
+      "description": "Add Elgora scrollbars to native scroll containers, a container subtree or an entire document.",
+      "prev": "/components/scroll-spy",
+      "next": "/components/virtual-list",
+      "toc": true,
+      "api": [
+        "Scrollbars"
+      ],
+      "keywords": [
+        "native scrollbars",
+        "automatic scrollbars",
+        "overflow"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "automatic-installation",
+          "title": "Automatic installation"
+        },
+        {
+          "id": "container-scopes-and-ownership",
+          "title": "Container scopes and ownership"
+        },
+        {
+          "id": "attach-to-one-container",
+          "title": "Attach to one container"
+        },
+        {
+          "id": "appearance-and-scope",
+          "title": "Appearance and scope"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/scrollbars.js"
+    },
+    {
+      "id": "style-surfaces",
+      "title": "Surfaces and gradients",
+      "path": "/styles/surfaces",
+      "group": "styles",
+      "order": 50,
+      "description": "Layer theme-aware surfaces, boxes and linear, radial or mesh gradients.",
+      "prev": "/styles/containers",
+      "next": "/styles/buttons",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "containers-and-surfaces",
+          "title": "Containers and surfaces"
+        },
+        {
+          "id": "gradients",
+          "title": "Gradients"
+        },
+        {
+          "id": "related-topics-and-api",
+          "title": "Related topics and API"
+        }
+      ],
+      "module": "./content/topics/style-surfaces.js"
+    },
+    {
+      "id": "undo-coordinator",
+      "title": "Undo and redo",
+      "path": "/core/undo-coordinator",
+      "group": "fundamentals",
+      "order": 50,
+      "description": "Combine data and view actions into one chronological undo journal with separate history scopes.",
+      "prev": "/components",
+      "toc": true,
+      "api": [
+        "UndoCoordinator",
+        "UndoHistory",
+        "UndoOperation",
+        "UndoBaselineEvent"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "try-shared-data-and-view-histories",
+          "title": "Try shared data and view histories"
+        },
+        {
+          "id": "create-a-coordinator-and-a-history-scope",
+          "title": "Create a coordinator and a history scope"
+        },
+        {
+          "id": "one-chronological-journal-multiple-scopes",
+          "title": "One chronological journal, multiple scopes"
+        },
+        {
+          "id": "saving-establishes-a-new-baseline",
+          "title": "Saving establishes a new baseline"
+        },
+        {
+          "id": "returning-to-a-scopes-baseline",
+          "title": "Returning to a scope’s baseline"
+        },
+        {
+          "id": "async-operations-and-failure-handling",
+          "title": "Async operations and failure handling"
+        },
+        {
+          "id": "update-toolbar-state",
+          "title": "Update toolbar state"
+        },
+        {
+          "id": "dataset-integration",
+          "title": "DataSet integration"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/undo-coordinator.js"
+    },
+    {
+      "id": "dataset-tables",
+      "title": "Tables, rows and change tracking",
+      "path": "/data/dataset/tables",
+      "group": "data",
+      "parent": "dataset-group",
+      "order": 51,
+      "description": "Create tables, assign identities, read tracked rows and compare accepted values.",
+      "prev": "/data/dataset",
+      "next": "/data/dataset/rules",
+      "toc": true,
+      "api": [
+        "DataTable",
+        "DataRow",
+        "DataTableOptions"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "create-a-dataset-and-tables",
+          "title": "Create a dataset and tables"
+        },
+        {
+          "id": "read-values-and-track-edits",
+          "title": "Read values and track edits"
+        },
+        {
+          "id": "equality-and-object-valued-fields",
+          "title": "Equality and object-valued fields"
+        }
+      ],
+      "module": "./content/topics/dataset-tables.js"
+    },
+    {
+      "id": "virtual-list",
+      "title": "Virtual List",
+      "path": "/components/virtual-list",
+      "group": "components",
+      "parent": "scrolling",
+      "order": 51,
+      "description": "Efficiently render very large collections by keeping only the visible rows in the DOM.",
+      "prev": "/components/scrollbars",
+      "next": "/components/scroll-engine",
+      "toc": true,
+      "api": [
+        "VirtualList",
+        "VirtualListOptions",
+        "DataList",
+        "RenderRowArgs",
+        "SizeManager",
+        "VariableSizeManager",
+        "FixedSizeManager"
+      ],
+      "keywords": [
+        "virtual list",
+        "virtualization",
+        "large collections",
+        "variable height"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "variable-height-rows",
+          "title": "Variable-height rows"
+        }
+      ],
+      "module": "./content/topics/virtual-list.js"
+    },
+    {
+      "id": "scroll-engine",
+      "title": "Scroll Engine",
+      "path": "/components/scroll-engine",
+      "group": "components",
+      "parent": "scrolling",
+      "order": 52,
+      "description": "Scroll virtual dimensions through a bounded viewport with programmatic and pointer input.",
+      "prev": "/components/virtual-list",
+      "toc": true,
+      "api": [
+        "ScrollEngine"
+      ],
+      "keywords": [
+        "scroll engine",
+        "scrolling",
+        "virtual dimensions",
+        "custom scrollbar"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "programmatic-scrolling",
+          "title": "Programmatic scrolling"
+        },
+        {
+          "id": "scrollbar-appearance",
+          "title": "Scrollbar appearance"
+        },
+        {
+          "id": "fixed-header-space",
+          "title": "Fixed header space"
+        }
+      ],
+      "module": "./content/topics/scroll-engine.js"
+    },
+    {
+      "id": "dataset-rules",
+      "title": "Transactions and business rules",
+      "path": "/data/dataset/rules",
+      "group": "data",
+      "parent": "dataset-group",
+      "order": 52,
+      "description": "Validate and calculate related data atomically with awaited business events and rollback.",
+      "prev": "/data/dataset/tables",
+      "next": "/data/dataset/new-rows",
+      "toc": true,
+      "api": [
+        "DataTransaction",
+        "DataEditContext",
+        "DataRowChangeEvent"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "transactions",
+          "title": "Transactions"
+        },
+        {
+          "id": "validation-and-business-rules",
+          "title": "Validation and business rules"
+        },
+        {
+          "id": "event-kinds",
+          "title": "Event kinds"
+        },
+        {
+          "id": "asynchronous-rules",
+          "title": "Asynchronous rules"
+        },
+        {
+          "id": "cyclic-rules",
+          "title": "Cyclic rules"
+        }
+      ],
+      "module": "./content/topics/dataset-rules.js"
+    },
+    {
+      "id": "dataset-sessions",
+      "title": "New-row sessions",
+      "path": "/data/dataset/new-rows",
+      "group": "data",
+      "parent": "dataset-group",
+      "order": 53,
+      "description": "Initialize pending domain rows, then explicitly insert or cancel their sessions.",
+      "prev": "/data/dataset/rules",
+      "next": "/data/dataset/saving",
+      "toc": true,
+      "api": [
+        "NewRowSession",
+        "DataTable"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "new-row-sessions",
+          "title": "New-row sessions"
+        }
+      ],
+      "module": "./content/topics/dataset-sessions.js"
+    },
+    {
+      "id": "dataset-saving",
+      "title": "Saving, accepting and rejecting changes",
+      "path": "/data/dataset/saving",
+      "group": "data",
+      "parent": "dataset-group",
+      "order": 54,
+      "description": "Persist a batch, map server identities and distinguish local acceptance from saving.",
+      "prev": "/data/dataset/new-rows",
+      "next": "/data/formatting",
+      "toc": true,
+      "api": [
+        "DataSet",
+        "DataSetChanges",
+        "DataSetSaveChangesResult"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "save-accept-and-reject",
+          "title": "Save, accept and reject"
+        },
+        {
+          "id": "undo-and-redo",
+          "title": "Undo and redo"
+        }
+      ],
+      "module": "./content/topics/dataset-saving.js"
+    },
+    {
+      "id": "style-buttons",
+      "title": "Buttons",
+      "path": "/styles/buttons",
+      "group": "styles",
+      "order": 60,
+      "description": "Native actions, semantic button variants, ghost buttons, focus and disabled states.",
+      "prev": "/styles/surfaces",
+      "next": "/styles/html-elements",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "buttons",
+          "title": "Buttons"
+        },
+        {
+          "id": "standard-text-links",
+          "title": "Standard text links"
+        },
+        {
+          "id": "related-topics-and-api",
+          "title": "Related topics and API"
+        }
+      ],
+      "module": "./content/topics/style-buttons.js"
+    },
+    {
+      "id": "datagrid-editing",
+      "title": "Cell editing and editors",
+      "navTitle": "Editing",
+      "path": "/components/datagrid/editing",
+      "group": "datagrid",
+      "order": 60,
+      "description": "Configure field editors and begin, confirm or cancel cell editing.",
+      "prev": "/components/datagrid/keyboard-navigation",
+      "next": "/components/datagrid/editing/validation",
       "toc": true,
       "api": [
         "DataGrid",
@@ -682,60 +2024,492 @@
         "validation",
         "lookup"
       ],
+      "sectionRedirects": [
+        "asynchronous-source-and-validation|/components/datagrid/editing/validation#asynchronous-source-and-validation",
+        "rejected-input|/components/datagrid/editing/validation#rejected-input",
+        "datatable-and-business-rules|/components/datagrid/editing/change-tracking#datatable-and-business-rules",
+        "modified-cells|/components/datagrid/editing/change-tracking#modified-cells",
+        "adding-rows|/components/datagrid/editing/new-rows#adding-rows",
+        "managing-new-row-sessions|/components/datagrid/editing/new-rows#managing-new-row-sessions",
+        "direct-source-commands|/components/datagrid/editing/new-rows#direct-source-commands",
+        "completing-several-rows|/components/datagrid/editing/new-rows#completing-several-rows",
+        "pasting-cells|/components/datagrid/clipboard#pasting-cells"
+      ],
+      "headings": [
+        {
+          "id": "array-and-lookup",
+          "title": "Array and lookup"
+        },
+        {
+          "id": "controlling-the-edit",
+          "title": "Controlling the edit"
+        },
+        {
+          "id": "cell-picker-buttons",
+          "title": "Cell picker buttons"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
       "module": "./content/topics/datagrid-editing.js"
     },
     {
-      "id": "datagrid-data-sources",
-      "title": "Data sources",
-      "path": "/components/datagrid/data-sources",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 58,
-      "description": "Connect DataGrid to local arrays, asynchronous loaders, and remote data contracts.",
-      "toc": true,
-      "api": [
-        "DataSource",
-        "ArrayDataSource",
-        "GridDataSource",
-        "DataGrid"
-      ],
-      "keywords": [
-        "data source",
-        "async",
-        "paging",
-        "remote data"
-      ],
-      "module": "./content/topics/datagrid-data-sources.js"
-    },
-    {
-      "id": "datagrid-keyboard-navigation",
-      "title": "Keyboard navigation",
-      "path": "/components/datagrid/keyboard-navigation",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 59,
-      "description": "Navigate selections, edit cells, operate pickers and customize keyboard destinations.",
+      "id": "datagrid-edit-validation",
+      "title": "Validation and rejected input",
+      "path": "/components/datagrid/editing/validation",
+      "group": "datagrid",
+      "parent": "datagrid-editing",
+      "order": 61,
+      "description": "Keep rejected cell text visible without trapping focus, and retry asynchronous validation.",
+      "prev": "/components/datagrid/editing",
+      "next": "/components/datagrid/editing/new-rows",
       "toc": true,
       "api": [
         "DataGrid",
-        "DataGridCellNavigatingEvent"
+        "DataViewField"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "asynchronous-source-and-validation",
+          "title": "Asynchronous source and validation"
+        },
+        {
+          "id": "rejected-input",
+          "title": "Rejected input"
+        }
+      ],
+      "module": "./content/topics/datagrid-edit-validation.js"
+    },
+    {
+      "id": "datagrid-new-rows",
+      "title": "New rows and pending sessions",
+      "path": "/components/datagrid/editing/new-rows",
+      "group": "datagrid",
+      "parent": "datagrid-editing",
+      "order": 62,
+      "description": "Create, insert and cancel explicit new-row sessions, including multiple invalid pending rows.",
+      "prev": "/components/datagrid/editing/validation",
+      "next": "/components/datagrid/editing/change-tracking",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "NewRowSession"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "adding-rows",
+          "title": "Adding rows"
+        },
+        {
+          "id": "managing-new-row-sessions",
+          "title": "Managing new-row sessions"
+        },
+        {
+          "id": "direct-source-commands",
+          "title": "Direct source commands"
+        },
+        {
+          "id": "completing-several-rows",
+          "title": "Completing several rows"
+        }
+      ],
+      "module": "./content/topics/datagrid-new-rows.js"
+    },
+    {
+      "id": "datagrid-change-tracking",
+      "title": "Change tracking and saving",
+      "path": "/components/datagrid/editing/change-tracking",
+      "group": "datagrid",
+      "parent": "datagrid-editing",
+      "order": 63,
+      "description": "Source-owned modification marks, DataTable business rules and explicit persistence.",
+      "prev": "/components/datagrid/editing/new-rows",
+      "next": "/components/datagrid/clipboard",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataTable",
+        "DataSet"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "datatable-and-business-rules",
+          "title": "DataTable and business rules"
+        },
+        {
+          "id": "modified-cells",
+          "title": "Modified cells"
+        }
+      ],
+      "module": "./content/topics/datagrid-change-tracking.js"
+    },
+    {
+      "id": "datagrid-clipboard",
+      "title": "Copy and paste",
+      "path": "/components/datagrid/clipboard",
+      "group": "datagrid",
+      "order": 70,
+      "description": "Copy read-only selections and paste tabular text, retaining cell errors and pending rows.",
+      "prev": "/components/datagrid/editing/change-tracking",
+      "next": "/components/datagrid/sorting",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "ValueEditor"
       ],
       "keywords": [
-        "keyboard",
-        "Enter",
-        "Tab",
-        "cellNavigating"
+        "clipboard",
+        "copy",
+        "paste",
+        "import",
+        "TSV"
       ],
-      "module": "./content/topics/datagrid-keyboard-navigation.js"
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "pasting-cells",
+          "title": "Pasting cells"
+        }
+      ],
+      "module": "./content/topics/datagrid-clipboard.js"
+    },
+    {
+      "id": "html-elements",
+      "title": "Native inputs and tables",
+      "path": "/styles/html-elements",
+      "group": "styles",
+      "order": 70,
+      "description": "Style native inputs, selects, textareas and tables, and choose when to use a value editor.",
+      "prev": "/styles/buttons",
+      "next": "/styles/motion",
+      "toc": true,
+      "api": [],
+      "keywords": [
+        "html",
+        "elements",
+        "buttons",
+        "forms",
+        "tables",
+        "surfaces"
+      ],
+      "sectionRedirects": [
+        "ui-styles-and-css-classes|/styles/overview",
+        "containers-and-surfaces|/styles/surfaces#containers-and-surfaces",
+        "buttons|/styles/buttons#buttons"
+      ],
+      "headings": [
+        {
+          "id": "form-controls",
+          "title": "Form controls"
+        },
+        {
+          "id": "tables",
+          "title": "Tables"
+        },
+        {
+          "id": "composition",
+          "title": "Composition"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
+      "module": "./content/topics/html-elements.js"
+    },
+    {
+      "id": "style-motion",
+      "title": "Motion and scroll reveal",
+      "path": "/styles/motion",
+      "group": "styles",
+      "order": 80,
+      "description": "Reveal content and animate disclosure icons with ownership and reduced-motion fallbacks.",
+      "prev": "/styles/html-elements",
+      "next": "/styles/websites",
+      "toc": true,
+      "api": [
+        "ScrollReveal",
+        "ScrollRevealOptions"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "revealing-content-on-scroll",
+          "title": "Revealing content on scroll"
+        },
+        {
+          "id": "rotating-disclosure-icons",
+          "title": "Rotating disclosure icons"
+        },
+        {
+          "id": "accessibility-and-fallback",
+          "title": "Accessibility and fallback"
+        }
+      ],
+      "module": "./content/topics/style-motion.js"
+    },
+    {
+      "id": "datagrid-sorting",
+      "title": "Sorting",
+      "path": "/components/datagrid/sorting",
+      "group": "datagrid",
+      "order": 80,
+      "description": "Sort one or more DataGrid columns and control sort state programmatically.",
+      "prev": "/components/datagrid/clipboard",
+      "next": "/components/datagrid/filtering",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridOptions",
+        "OrderByToken"
+      ],
+      "keywords": [
+        "sorting",
+        "order by",
+        "multi-column sort"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/datagrid-sorting.js"
+    },
+    {
+      "id": "websites",
+      "title": "Building a website — Forma",
+      "path": "/styles/websites",
+      "group": "styles",
+      "order": 90,
+      "description": "Build a fictional product website with composable layouts, gradients and accessible scroll reveals.",
+      "prev": "/styles/motion",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [
+        "containers-sections-and-typography|/styles/containers#containers-sections-and-typography",
+        "gradients|/styles/surfaces#gradients",
+        "revealing-content-on-scroll|/styles/motion#revealing-content-on-scroll",
+        "rotating-disclosure-icons|/styles/motion#rotating-disclosure-icons",
+        "accessibility-and-fallback|/styles/motion#accessibility-and-fallback"
+      ],
+      "headings": [
+        {
+          "id": "try-the-website",
+          "title": "Try the website"
+        },
+        {
+          "id": "how-it-is-built",
+          "title": "How it is built"
+        },
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        }
+      ],
+      "module": "./content/topics/websites.js"
+    },
+    {
+      "id": "datagrid-filtering",
+      "title": "Filtering",
+      "path": "/components/datagrid/filtering",
+      "group": "datagrid",
+      "order": 90,
+      "description": "Filter local or remote DataGrid data with structured filter expressions.",
+      "prev": "/components/datagrid/sorting",
+      "next": "/components/datagrid/grouping",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataFilter",
+        "FilterFunctionRegistry"
+      ],
+      "keywords": [
+        "filtering",
+        "filter row",
+        "data filter"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/datagrid-filtering.js"
+    },
+    {
+      "id": "data-formatting",
+      "title": "Numbers, dates and formatting",
+      "path": "/data/formatting",
+      "group": "data",
+      "order": 90,
+      "description": "Numeric display formats, literal currencies, canonical dates and times, and explicit parsing.",
+      "prev": "/data/dataset/saving",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "numeric-formats",
+          "title": "Numeric formats"
+        },
+        {
+          "id": "currency-and-locale",
+          "title": "Currency and locale"
+        },
+        {
+          "id": "display-formats-on-fields-and-columns",
+          "title": "Display formats on fields and columns"
+        },
+        {
+          "id": "display-is-not-editing",
+          "title": "Display is not editing"
+        },
+        {
+          "id": "resolve-and-format-text",
+          "title": "Resolve and format text"
+        },
+        {
+          "id": "time-formats",
+          "title": "Time formats"
+        }
+      ],
+      "module": "./content/topics/data-formatting.js"
+    },
+    {
+      "id": "datagrid-grouping",
+      "title": "Grouping and intervals",
+      "navTitle": "Grouping",
+      "path": "/components/datagrid/grouping",
+      "group": "datagrid",
+      "order": 100,
+      "description": "Group rows by one or more columns, intervals, and interactive group chips.",
+      "prev": "/components/datagrid/filtering",
+      "next": "/components/datagrid/grouping/expansion",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "GroupInterval",
+        "GroupIntervalDefinition"
+      ],
+      "keywords": [
+        "grouping",
+        "group rows",
+        "intervals",
+        "group panel"
+      ],
+      "sectionRedirects": [
+        "expand-and-collapse-groups|/components/datagrid/grouping/expansion#expand-and-collapse-groups",
+        "saving-and-restoring-expansion|/components/datagrid/grouping/expansion#saving-and-restoring-expansion",
+        "grouped-loaddata-queries|/data/data-source/queries#grouped-loaddata-queries",
+        "group-values-and-keys|/data/data-source/queries#group-values-and-null-semantics"
+      ],
+      "headings": [
+        {
+          "id": "related-topics",
+          "title": "Related topics"
+        },
+        {
+          "id": "loading-groups",
+          "title": "Loading groups"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/datagrid-grouping.js"
+    },
+    {
+      "id": "datagrid-expansion",
+      "title": "Expansion and restoring state",
+      "path": "/components/datagrid/grouping/expansion",
+      "group": "datagrid",
+      "parent": "datagrid-grouping",
+      "order": 101,
+      "description": "Expand levels, collapse groups and transfer opaque expansion snapshots across refreshes.",
+      "prev": "/components/datagrid/grouping",
+      "next": "/components/datagrid/summaries",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "GridExpansionState"
+      ],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "expand-and-collapse-groups",
+          "title": "Expand and collapse groups"
+        },
+        {
+          "id": "saving-and-restoring-expansion",
+          "title": "Saving and restoring expansion"
+        }
+      ],
+      "module": "./content/topics/datagrid-expansion.js"
+    },
+    {
+      "id": "datagrid-summaries",
+      "title": "Summaries",
+      "path": "/components/datagrid/summaries",
+      "group": "datagrid",
+      "order": 110,
+      "description": "Display numeric and custom aggregate values for grouped DataGrid rows.",
+      "prev": "/components/datagrid/grouping/expansion",
+      "next": "/components/datagrid/tree",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "SummaryType",
+        "SummaryDefinition",
+        "SummaryContext"
+      ],
+      "keywords": [
+        "summaries",
+        "aggregates",
+        "sum",
+        "count"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "configure-summaries",
+          "title": "Configure summaries"
+        },
+        {
+          "id": "remote-data-sources",
+          "title": "Remote data sources"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/datagrid-summaries.js"
     },
     {
       "id": "datagrid-tree",
-      "title": "DataGrid tree data",
+      "title": "Tree data",
       "path": "/components/datagrid/tree",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 60,
+      "group": "datagrid",
+      "order": 120,
       "description": "Render hierarchical parent and child rows in a DataGrid.",
+      "prev": "/components/datagrid/summaries",
+      "next": "/components/datagrid/custom-cell-rendering",
       "toc": true,
       "api": [
         "DataGrid",
@@ -748,113 +2522,24 @@
         "hierarchy",
         "parent child"
       ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "parent-and-child-rows",
+          "title": "Parent and child rows"
+        }
+      ],
       "module": "./content/topics/datagrid-tree.js"
     },
     {
-      "id": "scroll-engine",
-      "title": "Scroll Engine",
-      "path": "/components/scroll-engine",
-      "group": "components",
-      "order": 60,
-      "description": "Scroll virtual dimensions through a bounded viewport with programmatic and pointer input.",
-      "toc": true,
-      "api": [
-        "ScrollEngine"
-      ],
-      "keywords": [
-        "scroll engine",
-        "scrolling",
-        "virtual dimensions",
-        "custom scrollbar"
-      ],
-      "module": "./content/topics/scroll-engine.js"
-    },
-    {
-      "id": "datagrid-context-menus",
-      "title": "Context menus",
-      "path": "/components/datagrid/context-menus",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 61,
-      "description": "Configure column, row, row-header, and cell context-menu actions.",
-      "toc": true,
-      "api": [
-        "DataGrid",
-        "DataGridContextMenuContext",
-        "GridContextMenuItems",
-        "GridStandardContextMenuItem"
-      ],
-      "keywords": [
-        "context menu",
-        "row actions",
-        "column actions",
-        "custom actions"
-      ],
-      "module": "./content/topics/datagrid-context-menus.js"
-    },
-    {
-      "id": "scrollbars",
-      "title": "Native scrollbars",
-      "path": "/components/scrollbars",
-      "group": "components",
-      "order": 61,
-      "description": "Add Elgora scrollbars to native scroll containers, a container subtree or an entire document.",
-      "toc": true,
-      "api": [
-        "Scrollbars"
-      ],
-      "keywords": [
-        "native scrollbars",
-        "automatic scrollbars",
-        "overflow"
-      ],
-      "module": "./content/topics/scrollbars.js"
-    },
-    {
-      "id": "scroll-spy",
-      "title": "ScrollSpy",
-      "path": "/components/scroll-spy",
-      "group": "components",
-      "order": 62,
-      "description": "Track the active section in existing in-page navigation.",
-      "toc": true,
-      "api": [
-        "ScrollSpy",
-        "ScrollSpyOptions"
-      ],
-      "keywords": [],
-      "module": "./content/topics/scroll-spy.js"
-    },
-    {
-      "id": "datagrid-performance",
-      "title": "Virtualization and performance",
-      "path": "/components/datagrid/performance",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 62,
-      "description": "Render large datasets efficiently with virtual rows, paging, and reusable cell content.",
-      "toc": true,
-      "api": [
-        "DataGrid",
-        "VirtualList",
-        "DataSource"
-      ],
-      "keywords": [
-        "virtualization",
-        "performance",
-        "large data",
-        "paging"
-      ],
-      "module": "./content/topics/datagrid-performance.js"
-    },
-    {
       "id": "datagrid-custom-cell-rendering",
-      "title": "Custom cell rendering",
+      "title": "Appearance and custom rendering",
       "path": "/components/datagrid/custom-cell-rendering",
-      "group": "components",
-      "parent": "datagrid",
-      "order": 70,
+      "group": "datagrid",
+      "order": 130,
       "description": "Customize DataGrid cell content and appearance while keeping grid states theme-aware.",
+      "prev": "/components/datagrid/tree",
+      "next": "/components/datagrid/context-menus",
       "toc": true,
       "api": [
         "DataGrid",
@@ -870,7 +2555,86 @@
         "cell style",
         "selection"
       ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "borders-hover-and-cursor",
+          "title": "Borders, hover and cursor"
+        },
+        {
+          "id": "custom-content-and-state-aware-styling",
+          "title": "Custom content and state-aware styling"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
       "module": "./content/topics/datagrid-custom-cell-rendering.js"
+    },
+    {
+      "id": "datagrid-context-menus",
+      "title": "Context menus",
+      "path": "/components/datagrid/context-menus",
+      "group": "datagrid",
+      "order": 140,
+      "description": "Configure column, row, row-header, and cell context-menu actions.",
+      "prev": "/components/datagrid/custom-cell-rendering",
+      "next": "/components/datagrid/performance",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "DataGridContextMenuContext",
+        "GridContextMenuItems",
+        "GridStandardContextMenuItem"
+      ],
+      "keywords": [
+        "context menu",
+        "row actions",
+        "column actions",
+        "custom actions"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/datagrid-context-menus.js"
+    },
+    {
+      "id": "datagrid-performance",
+      "title": "Virtualization and performance",
+      "path": "/components/datagrid/performance",
+      "group": "datagrid",
+      "order": 150,
+      "description": "Render large datasets efficiently with virtual rows, paging, and reusable cell content.",
+      "prev": "/components/datagrid/context-menus",
+      "toc": true,
+      "api": [
+        "DataGrid",
+        "VirtualList",
+        "DataSource"
+      ],
+      "keywords": [
+        "virtualization",
+        "performance",
+        "large data",
+        "paging"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "rendering-is-not-query-processing",
+          "title": "Rendering is not query processing"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/datagrid-performance.js"
     }
   ]
 }

@@ -2,10 +2,11 @@ export default {
   "id": "datagrid-context-menus",
   "title": "Context menus",
   "path": "/components/datagrid/context-menus",
-  "group": "components",
-  "parent": "datagrid",
-  "order": 61,
+  "group": "datagrid",
+  "order": 140,
   "description": "Configure column, row, row-header, and cell context-menu actions.",
+  "prev": "/components/datagrid/custom-cell-rendering",
+  "next": "/components/datagrid/performance",
   "toc": true,
   "api": [
     "DataGrid",
@@ -19,7 +20,14 @@ export default {
     "column actions",
     "custom actions"
   ],
-  "html": "<h1>Context menus</h1>\n<p>DataGrid exposes separate customization points for cells, rows, row headers,\nand column headers. Keep standard actions and add application-specific actions\nwhere they are relevant.</p>\n<div data-live-demo=\"datagrid-context-menus\"></div>\n<p>The demo adds a custom row action while retaining the built-in column menu.\nContext callbacks receive the row, column, selected ranges, and originating\nmouse event.</p>\n<h2>API reference</h2>\n<p>See <a href=\"?!=/api-reference/DataGridContextMenuContext\"><code>DataGridContextMenuContext</code></a>,\n<a href=\"?!=/api-reference/GridContextMenuItems\"><code>GridContextMenuItems</code></a>, and\n<a href=\"?!=/api-reference/GridStandardContextMenuItem\"><code>GridStandardContextMenuItem</code></a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>Context menus</h1>\n<p>DataGrid exposes separate customization points for cells, rows, row headers,\nand column headers. Keep standard actions and add application-specific actions\nwhere they are relevant.</p>\n<div data-live-demo=\"datagrid-context-menus\"></div>\n<p>The demo adds a custom row action while retaining the built-in column menu.\nContext callbacks receive the row, column, selected ranges, and originating\nmouse event.</p>\n<h2 id=\"api-reference\">API reference</h2>\n<p>See <a href=\"?!=/api-reference/DataGridContextMenuContext\"><code>DataGridContextMenuContext</code></a>,\n<a href=\"?!=/api-reference/GridContextMenuItems\"><code>GridContextMenuItems</code></a>, and\n<a href=\"?!=/api-reference/GridStandardContextMenuItem\"><code>GridStandardContextMenuItem</code></a>.</p>\n",
+  "headings": [
+    {
+      "id": "api-reference",
+      "title": "API reference"
+    }
+  ],
   "demos": [
     {
       "id": "datagrid-context-menus",

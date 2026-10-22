@@ -1,0 +1,182 @@
+[
+  [
+    "/getting-started/framework-overview",
+    "overview elements-and-components ui-styles the-elg-base-class color-system css-utilities component-classes-box-btn-and-future-additions reactive-values-and-events binding-observable-state-to-the-dom api-reference see-also"
+  ],
+  [
+    "/components",
+    "component-and-htmlelement component-lifecycle create mount-and-unmount dispose creating-a-component composition-with-e-and-component-factories ui-styles"
+  ],
+  [
+    "/core/undo-coordinator",
+    "try-shared-data-and-view-histories create-a-coordinator-and-a-history-scope one-chronological-journal-multiple-scopes saving-establishes-a-new-baseline returning-to-a-scopes-baseline async-operations-and-failure-handling update-toolbar-state dataset-integration api-reference"
+  ],
+  [
+    "/styles/html-elements",
+    "ui-styles-and-css-classes containers-and-surfaces buttons form-controls tables composition"
+  ],
+  [
+    "/styles/websites",
+    "try-the-website containers-sections-and-typography gradients revealing-content-on-scroll rotating-disclosure-icons accessibility-and-fallback"
+  ],
+  [
+    "/styles/semantic-colors",
+    "color-roles theme-aware-components interaction-and-selection applying-a-theme customizing-colors"
+  ],
+  [
+    "/styles/layout",
+    "resize-the-container basic-grid container-breakpoints components-and-virtual-nodes nesting-and-sizing"
+  ],
+  [
+    "/components/value-editors",
+    "try-the-editors choose-an-editor shared-contract keyboard-and-popup-behavior resolve-external-text api-reference"
+  ],
+  [
+    "/components/value-editors/validation",
+    "try-invalid-values shared-contract api-reference"
+  ],
+  [
+    "/components/value-editors/text",
+    "order-reference text-and-typed-values api-reference"
+  ],
+  [
+    "/components/value-editors/number",
+    "order-quantity conversion-and-validation api-reference"
+  ],
+  [
+    "/components/value-editors/checkbox",
+    "shipping-confirmation boolean-values-and-external-text api-reference"
+  ],
+  [
+    "/components/value-editors/toggle",
+    "priority-order configure-a-switch api-reference"
+  ],
+  [
+    "/components/lookup-editor",
+    "customer-picker configure-value-items-and-paging search-choose-and-cancel resolve-pasted-text popup-size api-reference"
+  ],
+  [
+    "/components/date-editor",
+    "delivery-and-booking-dates configure-an-editor input-picker-and-focus resolve-and-format-text api-reference"
+  ],
+  [
+    "/components/time-editors",
+    "timeeditor datetimeeditor confirmation-and-validation api-reference"
+  ],
+  [
+    "/components/datagrid/editing",
+    "array-and-lookup asynchronous-source-and-validation rejected-input datatable-and-business-rules modified-cells controlling-the-edit adding-rows managing-new-row-sessions direct-source-commands completing-several-rows cell-picker-buttons pasting-cells"
+  ],
+  [
+    "/components/datagrid/grouping",
+    "expand-and-collapse-groups saving-and-restoring-expansion grouped-loaddata-queries group-values-and-keys loading-groups api-reference"
+  ],
+  [
+    "/components/datagrid/summaries",
+    "remote-data-sources api-reference"
+  ],
+  [
+    "/data/dataset",
+    "try-an-order-editor create-a-dataset-and-tables read-values-and-track-edits transactions validation-and-business-rules event-kinds asynchronous-rules cyclic-rules equality-and-object-valued-fields new-row-sessions undo-and-redo save-accept-and-reject queries-and-local-caches api-reference"
+  ],
+  [
+    "/data/data-source/array",
+    "product-list configure-defaults-and-identities read-and-edit local-query-processing query-cache-and-invalidation observe-changes"
+  ],
+  [
+    "/data/filter",
+    "product-filter-playground conditions-and-operators and-or-and-not evaluate-locally-or-query-a-source text-expressions-and-ranges reverse-conversion-and-readable-text transformed-selectors-and-transport"
+  ],
+  [
+    "/popover",
+    "anchored-popover point-based-popover"
+  ],
+  [
+    "/components/datagrid/columns",
+    "column-width-modes manual-column-resizing api-reference"
+  ],
+  [
+    "/components/datagrid/context-menus",
+    "api-reference"
+  ],
+  [
+    "/components/datagrid/custom-cell-rendering",
+    "custom-content-and-state-aware-styling api-reference"
+  ],
+  [
+    "/components/datagrid/data-sources",
+    "editing-an-array-source grouping-adapters-preserve-editing-capabilities api-reference"
+  ],
+  [
+    "/components/datagrid/filtering",
+    "api-reference"
+  ],
+  [
+    "/components/datagrid/keyboard-navigation",
+    "read-only-navigation entering-edit-mode confirming-and-cancelling customizing-navigation"
+  ],
+  [
+    "/components/datagrid/overview",
+    "tabular-data hierarchical-data explore-datagrid-features api-reference"
+  ],
+  [
+    "/components/datagrid/performance",
+    "api-reference"
+  ],
+  [
+    "/components/datagrid/selection",
+    "selection-modes api-reference"
+  ],
+  [
+    "/components/datagrid/sorting",
+    "api-reference"
+  ],
+  [
+    "/components/datagrid/tree",
+    "parent-and-child-rows"
+  ],
+  [
+    "/popup",
+    "dynamic-nested-menu context-menu"
+  ],
+  [
+    "/tooltip",
+    "attach-a-tooltip rich-content"
+  ],
+  [
+    "/components/browser-router",
+    "define-routes-and-mount-the-router"
+  ],
+  [
+    "/components/scroll-spy",
+    "basic-usage scroll-containers active-appearance refresh-and-disposal api-reference"
+  ],
+  [
+    "/components/scrollbars",
+    "automatic-installation container-scopes-and-ownership attach-to-one-container appearance-and-scope api-reference"
+  ],
+  [
+    "/components/virtual-list",
+    "variable-height-rows"
+  ],
+  [
+    "/components/scroll-engine",
+    "programmatic-scrolling scrollbar-appearance fixed-header-space"
+  ],
+  [
+    "/components/calendar",
+    "pick-a-date date-only-values navigation bounds-and-locale api-reference"
+  ],
+  [
+    "/data/data-source/overview",
+    "reading-data optional-capabilities new-rows notifications-and-persistence"
+  ],
+  [
+    "/data/data-source/remote",
+    "paged-product-catalog replace-the-simulated-endpoint cancellation-and-stale-results add-editing-only-when-supported"
+  ],
+  [
+    "/data/fields",
+    "data-access reusable-presentation grid-columns"
+  ]
+]

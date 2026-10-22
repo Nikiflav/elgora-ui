@@ -4,7 +4,7 @@ title: Custom remote source
 group: data
 parent: datasource
 path: /data/data-source/remote
-order: 3
+order: 32
 description: Implement a read-only remote catalog with filtering, paging, cancellation and request errors.
 ---
 
@@ -21,7 +21,7 @@ Enter a product-name filter and press **Enter** or **Search**. Use **Next** and
 response can update the display. **Simulate request error** rejects the next load
 until unchecked; **Retry** repeats the current query.
 
-<live-demo id="datasource-remote-catalog" height="390px"></live-demo>
+<live-demo id="datasource-remote-catalog" height="390px" src="remote.md.ts"></live-demo>
 
 Filtering is performed before count calculation and paging. The count therefore
 describes all matches, even though only three products are displayed at once.

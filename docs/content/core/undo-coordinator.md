@@ -1,11 +1,10 @@
 ---
 id: undo-coordinator
-title: UndoCoordinator
-group: core
+title: Undo and redo
+group: fundamentals
 path: /core/undo-coordinator
-order: 10
+order: 50
 description: Combine data and view actions into one chronological undo journal with separate history scopes.
-prev: /data/dataset
 api:
   - UndoCoordinator
   - UndoHistory
@@ -13,7 +12,7 @@ api:
   - UndoBaselineEvent
 ---
 
-# UndoCoordinator
+# Undo and redo
 
 UndoCoordinator is the single owner of undo/redo execution. Individual history scopes
 record already-applied operations, but cannot independently undo or clear them.
@@ -25,7 +24,7 @@ Edit the amount and leave the field or click Apply amount, then toggle the view.
 Save data clears only the dataset scope; view operations remain undoable. Watch the
 scope flags and the per-scope baseline log.
 
-<live-demo id="undo-shared-history" height="440px"></live-demo>
+<live-demo id="undo-shared-history" height="440px" src="undo-coordinator.md.ts"></live-demo>
 
 ## Create a coordinator and a history scope
 
@@ -193,4 +192,4 @@ Read [DataSet](?!=/data/dataset) for pending new rows, validation, transactions 
 - [UndoBaselineEvent](?!=/api-reference/UndoBaselineEvent) — asynchronous baseline cleanup
 - [DataSet](?!=/api-reference/DataSet) — automatic data history integration
 
-<api-reference entries="UndoCoordinator,UndoHistory,UndoOperation,UndoBaselineEvent"></api-reference>
+[UndoCoordinator API](?!=/api-reference/UndoCoordinator)

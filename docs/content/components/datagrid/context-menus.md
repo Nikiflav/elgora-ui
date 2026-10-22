@@ -1,10 +1,9 @@
 ---
 id: datagrid-context-menus
 title: Context menus
-group: components
-parent: datagrid
+group: datagrid
 path: /components/datagrid/context-menus
-order: 61
+order: 140
 description: Configure column, row, row-header, and cell context-menu actions.
 toc: true
 api:
@@ -25,7 +24,7 @@ DataGrid exposes separate customization points for cells, rows, row headers,
 and column headers. Keep standard actions and add application-specific actions
 where they are relevant.
 
-<live-demo id="datagrid-context-menus" height="376px"></live-demo>
+<live-demo id="datagrid-context-menus" height="376px" src="context-menus.md.ts"></live-demo>
 
 The demo adds a custom row action while retaining the built-in column menu.
 Context callbacks receive the row, column, selected ranges, and originating

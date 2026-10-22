@@ -33,6 +33,7 @@ export default function demo(): void {
   let nextId = data.reduce((max, row) => Math.max(max, row.id), 0) + 1;
   const grid = new DataGrid({
     data: new ArrayDataSource(data, { createRowId: () => nextId++ }),
+    columnWidthMode: "fixed",
     columns: [
       {
         name: "country",
@@ -57,12 +58,16 @@ export default function demo(): void {
       { name: "orderNumber", caption: "Order number", dataType: "string" },
       { name: "product", caption: "Product", dataType: "string" },      
       { name: "status", caption: "Status", dataType: "string" },
-      { name: "quantity", caption: "Quantity", dataType: "number" },
-      { name: "unitPrice", caption: "Unit price", dataType: "number" },
-      { name: "totalAmount", caption: "Total amount", dataType: "number" },
+      { name: "quantity", caption: "Quantity", dataType: "number", displayFormat: "N0", displayLocale: "bg-BG" },
+      { name: "unitPrice", caption: "Unit price", dataType: "number", displayFormat: "N2", displayLocale: "bg-BG" },
+      { name: "totalAmount", caption: "Total amount", dataType: "number", displayFormat: "C2€", displayLocale: "bg-BG" },
       { name: "orderDate", caption: "Order date", dataType: "date" }
     ],
     groupSummary: [
+      { field: "quantity", summaryType: "sum" },
+      { field: "totalAmount", summaryType: "sum" }
+    ],
+    totalSummary: [
       { field: "quantity", summaryType: "sum" },
       { field: "totalAmount", summaryType: "sum" }
     ],

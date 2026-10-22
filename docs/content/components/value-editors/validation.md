@@ -1,10 +1,10 @@
 ---
 id: editor-validation
-title: Validation
+title: Validation and errors
 group: components
 parent: editors
 path: /components/value-editors/validation
-order: 52
+order: 12
 description: Validation feedback shared by all value editors.
 ---
 
@@ -22,7 +22,7 @@ immediately. Correct a value and press Enter, or toggle a boolean back on, to
 clear its error. The lookup demonstrates a failed text resolution, while the
 date editor demonstrates a syntactically invalid calendar date.
 
-<live-demo id="editor-validation" height="520px"></live-demo>
+<live-demo id="editor-validation" height="520px" src="validation.md.ts"></live-demo>
 
 The `validate` option is configured per editor. It may be synchronous or
 asynchronous and returns an error message when the current value is not

@@ -4,7 +4,7 @@ title: Text
 group: components
 parent: editors
 path: /components/value-editors/text
-order: 46
+order: 13
 description: Text input with draft text, validation and custom typed conversion.
 ---
 
@@ -18,7 +18,7 @@ text. See the [overview](?!=/components/value-editors) for the shared lifecycle.
 Enter a reference, press Enter or leave the field to accept it. Empty text fails
 validation; Escape restores the last accepted reference.
 
-<live-demo id="editor-text" height="220px"></live-demo>
+<live-demo id="editor-text" height="220px" src="text.md.ts"></live-demo>
 
 ## Text and typed values
 

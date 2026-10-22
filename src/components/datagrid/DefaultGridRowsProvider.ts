@@ -416,6 +416,14 @@ export class DefaultGridRowsProvider<TRow> implements GridRowsProvider<TRow> {
             } else if (node.type === "group") {
                 let group = <GroupItem>node.data;
                 cells = { ...group.summaryValues };
+                // Presentation only: retain raw aggregate values for custom renderers and data operations.
+                for (const field of visibleColumns) {
+                    const summary = this._state.groupSummary?.find(item => item.field === field.name);
+                    if (field.displayFormat !== undefined && summary && Object.prototype.hasOwnProperty.call(group.summaryValues ?? {}, field.name)) {
+                        const value = group.summaryValues![field.name];
+                        cells[field.name] = { value, text: DataViewFieldUtils.formatSummaryValue(field, value, summary.summaryType) };
+                    }
+                }
                 cells[group.groupField] = node.text;
                 let parent = node.parent;
                 while (parent?.type == "group" && parent.data?.groupField) {

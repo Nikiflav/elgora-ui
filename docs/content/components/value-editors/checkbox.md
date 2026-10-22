@@ -4,7 +4,7 @@ title: Checkbox
 group: components
 parent: editors
 path: /components/value-editors/checkbox
-order: 48
+order: 15
 description: Native checkbox editing with boolean conversion and asynchronous acceptance.
 ---
 
@@ -19,7 +19,7 @@ as text-based editors.
 Click the checkbox or focus it and press Space. Each change is accepted
 asynchronously; the control is unavailable until the callback completes.
 
-<live-demo id="editor-checkbox" height="180px"></live-demo>
+<live-demo id="editor-checkbox" height="180px" src="checkbox.md.ts"></live-demo>
 
 ## Boolean values and external text
 

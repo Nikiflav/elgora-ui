@@ -1,10 +1,9 @@
 ---
 id: datagrid-overview
 title: Overview
-group: components
-parent: datagrid
+group: datagrid
 path: /components/datagrid/overview
-order: 50
+order: 10
 description: Display, group, summarize, and interact with tabular data.
 toc: true
 api:
@@ -32,10 +31,21 @@ menus, and data sources that can load or query rows on demand.
 
 The demo below uses an `ArrayDataSource` with 100,000 generated orders. It starts
 without grouping or sorting. Click a column header to sort, or drag a column
-into the group panel to group the rows. Numeric summaries are configured for
-groups when grouping is applied.
+into the group panel to group the rows. Quantity and Total amount are summed
+in the total footer across the complete filtered result, and within each group
+when grouping is applied.
 
-<live-demo id="datagrid-overview" height="420px"></live-demo>
+Quantity uses `displayFormat: "N0"`, Unit price uses `"N2"`, and Total amount
+uses `"C2€"`, with `displayLocale: "bg-BG"`: thousands are separated, decimals
+use a comma, and euro amounts have two fraction digits. Group summaries and
+the total footer reuse these formats. IDs remain unformatted. See
+[Numbers, dates and formatting](?!=/data/formatting) for the supported patterns.
+
+The demo uses `columnWidthMode: "fixed"`: columns do not stretch to fill spare
+space, and manual resizing changes only the chosen column (`independent` by
+default in this mode). Horizontal scrolling keeps additional columns accessible.
+
+<live-demo id="datagrid-overview" height="420px" src="overview.md.ts"></live-demo>
 
 The minimal configuration specifies a data source and columns:
 

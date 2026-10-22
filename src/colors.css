@@ -154,6 +154,9 @@
 
 /* Resolve derived colors at each theme boundary, not only at the document root. */
 :root, [data-theme] {
+    /* Standard text links follow the foreground accent, including nested dark themes. */
+    --elg-link-color: var(--elg-primary-color);
+    --elg-link-underline-offset: .18em;
     /* =============
         HSL
     ============= */

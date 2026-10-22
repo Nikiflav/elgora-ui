@@ -25,6 +25,32 @@ body {
 }
 
 /* =========================================================
+   TEXT LINKS
+========================================================= */
+/* Low-specificity defaults for ordinary links. Explicit semantic colors, navigation
+   classes and button styles retain ownership of their own appearance. The same
+   color applies to visited links; no separate history-dependent palette is used. */
+:where(a[href]:not(.elg-btn)),
+.elg:where(a[href]:not(.elg-btn)) {
+    color: var(--elg-link-color);
+}
+
+:where(a[href]:not(.elg-btn, .elg-no-underline)) {
+    text-decoration-line: none;
+    text-underline-offset: var(--elg-link-underline-offset);
+    text-decoration-thickness: 1px;
+}
+
+:where(a[href]:not(.elg-btn, .elg-no-underline):is(:hover, :focus-visible)) {
+    text-decoration-line: underline;
+}
+
+:where(a[href]:not(.elg-btn, .elg-no-underline):focus-visible) {
+    outline: 2px solid var(--elg-selection-border);
+    outline-offset: 2px;
+}
+
+/* =========================================================
    SURFACES
 ========================================================= */
 .elg-page {

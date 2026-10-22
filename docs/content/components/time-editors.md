@@ -1,10 +1,10 @@
 ---
 id: time-editors
-title: Time editors
+title: Time and DateTime
 group: components
 parent: editors
 path: /components/time-editors
-order: 52
+order: 19
 description: Edit local time and date-time values with strict parsing and asynchronous confirmation.
 api:
   - TimeEditor
@@ -14,7 +14,7 @@ api:
   - TimeFormatter
 ---
 
-# Time editors
+# Time and DateTime editors
 
 `TimeEditor` and `DateTimeEditor` use the same value, validation and asynchronous
 confirmation lifecycle as the other [Value editors](?!=/components/value-editors).
@@ -26,7 +26,7 @@ vertical list of time slots, every 15 minutes by default. Set `minuteStep` to
 When the value is empty, `defaultTime` controls the initially focused slot and
 defaults to `10:00`.
 
-<live-demo id="time-editors" height="560px"></live-demo>
+<live-demo id="time-editors" height="560px" src="time-editors.md.ts"></live-demo>
 
 ## TimeEditor
 

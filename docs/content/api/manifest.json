@@ -893,6 +893,15 @@
       "module": "./content/api/NumberEditorOptions.js"
     },
     {
+      "name": "NumberFormatter",
+      "kind": "class",
+      "group": "core",
+      "namespace": "Types",
+      "path": "/api-reference/NumberFormatter",
+      "description": "Locale-aware, .NET-inspired numeric formats: G, N/F/P[0–20], C[0–20]suffix.\nN groups digits, F omits grouping, P displays a fraction as a percentage.\nC requires a literal currency symbol/code, placed after the number with a nonbreaking space.\nThis is a subset with a currency extension, not full .NET compatibility.",
+      "module": "./content/api/NumberFormatter.js"
+    },
+    {
       "name": "Observable",
       "kind": "interface",
       "group": "types",

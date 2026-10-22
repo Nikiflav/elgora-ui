@@ -3,8 +3,11 @@ export default {
   "title": "Browser Router",
   "path": "/components/browser-router",
   "group": "components",
-  "order": 50,
+  "parent": "navigation",
+  "order": 40,
   "description": "Navigate between client-side pages without full document reloads.",
+  "prev": "/components/resize-handle",
+  "next": "/components/scroll-spy",
   "toc": true,
   "api": [
     "BrowserRouter"
@@ -15,7 +18,14 @@ export default {
     "navigation",
     "history api"
   ],
-  "html": "<h1>Browser Router</h1>\n<p><code>BrowserRouter</code> maps the current browser URL to a page and replaces only the\nrouter’s content when navigation occurs. It uses the History API, handles\ninternal links, and responds to browser back and forward actions.</p>\n<h2>Define routes and mount the router</h2>\n<p>A route handler provides a path and a page factory. A page contains its DOM\nroot and can optionally provide a title, description, and initialization hook.</p>\n<div data-live-demo=\"browser-router-basic\"></div>\n<p>The router should normally be created once for the application and mounted to\nthe element that owns the page content.</p>\n<p>See the <a href=\"?!=/api-reference/BrowserRouter\"><code>BrowserRouter</code> API reference</a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>Browser Router</h1>\n<p><code>BrowserRouter</code> maps the current browser URL to a page and replaces only the\nrouter’s content when navigation occurs. It uses the History API, handles\ninternal links, and responds to browser back and forward actions.</p>\n<h2 id=\"define-routes-and-mount-the-router\">Define routes and mount the router</h2>\n<p>A route handler provides a path and a page factory. A page contains its DOM\nroot and can optionally provide a title, description, and initialization hook.</p>\n<div data-live-demo=\"browser-router-basic\"></div>\n<p>The router should normally be created once for the application and mounted to\nthe element that owns the page content.</p>\n<p>See the <a href=\"?!=/api-reference/BrowserRouter\"><code>BrowserRouter</code> API reference</a>.</p>\n",
+  "headings": [
+    {
+      "id": "define-routes-and-mount-the-router",
+      "title": "Define routes and mount the router"
+    }
+  ],
   "demos": [
     {
       "id": "browser-router-basic",

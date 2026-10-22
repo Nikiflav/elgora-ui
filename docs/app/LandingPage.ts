@@ -19,7 +19,7 @@ export class LandingPage extends Component {
         super({ className: "landing", ui: ["elg"] });
         const theme = createDocsThemeButton();
         const navigation = e("nav", { ariaLabel: "Main navigation", class: "landing-links" },
-            e("a", { href: "?!=/getting-started/quick-start" }, "Docs"),
+            e("a", { href: "?!=/docs" }, "Docs"),
             e("a", { href: "?!=/components/value-editors" }, "Components"),
             e("a", { href: "#examples" }, "Examples"));
         const header = c("header", { className: "landing-header", ui: ["container"] },
@@ -113,7 +113,7 @@ button.mount(document.body);`;
             e("pre", { class: "landing-code" }, e("code", {}, source)));
         const footer = e("footer", { class: "landing-footer", ui: ["container"] }, createDocsBrand(),
             e("p", {}, "Built with Elgora UI. Including this page."),
-            e("nav", { ariaLabel: "Footer navigation" }, e("a", { href: "?!=/getting-started/download" }, "Installation"), e("a", { href: "?!=/getting-started/quick-start" }, "Documentation")));
+            e("nav", { ariaLabel: "Footer navigation" }, e("a", { href: "?!=/getting-started/download" }, "Installation"), e("a", { href: "?!=/docs" }, "Documentation")));
         this.append([e("a", { href: "#landing-main", class: "landing-skip" }, "Skip to content"), header,
             c("main", { id: "landing-main" }, hero, dataSection, directions, applications, websites, principles, start), footer]);
         // BrowserRouter handles topic links. These local anchors only scroll this page.

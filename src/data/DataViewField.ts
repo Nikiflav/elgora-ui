@@ -1,6 +1,8 @@
 import { getFieldDataType, type DataField, type DataType } from "./DataField";
 import type { GroupInterval } from "./grouping";
 import { Utils } from "../core/Utils";
+import { NumberFormatter } from "../formatting/NumberFormatter";
+import { DateFormatter } from "../formatting/DateFormatter";
 import type { ValueEditor } from "../components/editors/ValueEditor";
 import type { EditorButton } from "../components/editors/EditorButton";
 import type { LookupEditorOptions, LookupQuery, LookupResult } from "../components/editors/LookupEditor";
@@ -92,7 +94,7 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     hideLabel?: boolean,
     /** Whether a card/form consumer should display this field for the row. */
     showInRow?(row: TRow): boolean;
-    /** Overrides the cell label; otherwise lookup.getValueText, formatValue or string conversion is used. */
+    /** Overrides the cell label; otherwise lookup.getValueText, displayFormat, formatValue or string conversion is used. */
     getText?(row: TRow): Promise<string>;
     /** Converts external text without mutating the row. Overrides the editor's default resolver. */
     resolveText?(text: string, context: FieldEditContext<TRow>): any | Promise<any>;
@@ -100,6 +102,10 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     validate?(value: any, context: FieldEditContext<TRow>): string | undefined | Promise<string | undefined>;
     /** Formats a value for editing and, absent getText/lookup, for display. */
     formatValue?(value: any, context: FieldEditContext<TRow>): string;
+    /** Display-only pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. Does not alter editor text or stored values. */
+    displayFormat?: string;
+    /** Locale for displayFormat; defaults to the runtime locale. Independent of editor conversion callbacks. */
+    displayLocale?: string;
     /** Lookup data, labels and optional multiple result columns. */
     lookup?: FieldLookup<TRow>;
     /** Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults. */
@@ -109,6 +115,36 @@ export interface DataViewField<TRow> extends DataField<TRow> {
 }
 
 export class DataViewFieldUtils {
+
+    private static readonly displayFormatters = new WeakMap<object, {
+        pattern: string; locale?: string; type: DataType; formatter: NumberFormatter | DateFormatter;
+    }>();
+
+    /** Formats a raw display value without row-dependent labels. Null/undefined become empty text. */
+    static formatDisplayValue<TRow>(field: DataViewField<TRow>, value: any): string {
+        if (value == null) return "";
+        if (field.displayFormat === undefined) return String(value);
+        const type = DataViewFieldUtils.getDataType(field);
+        if (type !== "number" && type !== "date")
+            throw new Error("displayFormat supports number and date fields. Use getText for other types.");
+        let cached = this.displayFormatters.get(field);
+        if (!cached || cached.pattern !== field.displayFormat || cached.locale !== field.displayLocale || cached.type !== type) {
+            cached = { pattern: field.displayFormat, locale: field.displayLocale, type,
+                formatter: type === "number" ? new NumberFormatter(field.displayFormat, field.displayLocale)
+                    : new DateFormatter(field.displayFormat, field.displayLocale) };
+            this.displayFormatters.set(field, cached);
+        }
+        return type === "number" ? (cached.formatter as NumberFormatter).format(value)
+            : (cached.formatter as DateFormatter).format(value);
+    }
+
+    /** Reuses field formatting for aggregates; counts/distinct counts remain plain integer quantities, never currency/percent/date labels. */
+    static formatSummaryValue<TRow>(field: DataViewField<TRow>, value: any, summaryType: string): string {
+        if (summaryType === "count" || summaryType === "distinct") return String(value ?? "");
+        // Custom aggregates may return labels or structured results instead of the field's numeric type.
+        if (field.dataType === "number" && value != null && typeof value !== "number") return String(value);
+        return this.formatDisplayValue(field, value);
+    }
 
     /** Returns the semantic data type; unspecified fields default to string. */
     static getDataType<TRow>(col: Pick<DataField<TRow>, "dataType">): DataType {
@@ -151,6 +187,7 @@ export class DataViewFieldUtils {
             const value = await DataViewFieldUtils.getValue(col, row);
             const context = { row, field: col, value };
             if (col.lookup) return await col.lookup.getValueText(value, context);
+            if (col.displayFormat !== undefined) return this.formatDisplayValue(col, value);
             return col.formatValue?.(value, context) ?? String(value ?? "");
         }
         catch (ex) {

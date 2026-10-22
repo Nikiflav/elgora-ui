@@ -20,6 +20,35 @@ const highlight = (code, language = "text") => highlighter.codeToHtml(code, {
     themes: { light: "github-light", dark: "github-dark" }
 });
 const md = markdownIt({ html: true, linkify: true, typographer: true, highlight });
+const searchIndex = [];
+
+// Assign anchors at build time so search, legacy links and the TOC share identities.
+// Inline-code/link markup is omitted from the slug, just like heading.textContent.
+function renderTopic(body, topicPath) {
+    const tokens = md.parse(body, {});
+    const used = new Set();
+    const headings = [];
+    const sections = [{ id: "", title: "", text: "" }];
+    let current = sections[0];
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        if (token.type === "heading_open" && ["h2", "h3"].includes(token.tag)) {
+            const inline = tokens[i + 1];
+            const title = (inline.children || []).map(child => child.type === "html_inline" ? "" : child.content).join("");
+            const base = title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") || "section";
+            let id = base, suffix = 2;
+            while (used.has(id)) id = `${base}-${suffix++}`;
+            used.add(id);
+            token.attrSet("id", id);
+            headings.push({ id, title });
+            current = { id, title, text: "" };
+            sections.push(current);
+        }
+        if (token.type === "inline") current.text += " " + (token.children || []).map(child => child.type === "html_inline" ? "" : child.content).join("");
+    }
+    searchIndex.push({ path: topicPath, sections });
+    return { html: md.renderer.render(tokens, md.options, {}), headings };
+}
 function extractDemoBody(source, fileName) {
     const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
     const statement = sourceFile.statements.find(node =>
@@ -147,6 +176,7 @@ function readTopics(directory, relative = "") {
         topics.push({
             id: metadata.id,
             title: metadata.title,
+            navTitle: metadata.navTitle || undefined,
             path: metadata.path,
             group: metadata.group || "general",
             parent: metadata.parent || undefined,
@@ -157,7 +187,8 @@ function readTopics(directory, relative = "") {
             toc: metadata.toc !== false,
             api: metadata.api || [],
             keywords: metadata.keywords || [],
-            html: md.render(renderedBody),
+            sectionRedirects: metadata.sectionRedirects || [],
+            ...renderTopic(renderedBody, metadata.path),
             demos
         });
     }
@@ -179,6 +210,37 @@ const topics = readTopics(contentDir)
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 validateUniqueTopicIds(topics);
 
+const routes = new Map(topics.map(topic => [topic.path, topic]));
+if (routes.size !== topics.length) throw new Error("Duplicate documentation paths.");
+const ids = new Set(topics.map(topic => topic.id));
+const structure = JSON.parse(fs.readFileSync(path.join(root, "docs", "structure.json"), "utf8"));
+const categories = new Set(structure.categories.map(category => category.id));
+for (const topic of topics) {
+    if (topic.parent && !ids.has(topic.parent) && !categories.has(topic.parent)) throw new Error(`Unknown parent ${topic.parent} in ${topic.path}`);
+    const ancestors = new Set([topic.id]);
+    for (let parent = topic.parent; ids.has(parent);) {
+        if (ancestors.has(parent)) throw new Error(`Cyclic documentation hierarchy at ${topic.id}`);
+        ancestors.add(parent);
+        parent = topics.find(t => t.id === parent).parent;
+    }
+    for (const redirect of topic.sectionRedirects) {
+        const [anchor, destination] = redirect.split("|");
+        const [route, target] = (destination || "").split("#");
+        if (!anchor || !routes.has(route) || (target && !routes.get(route).headings.some(h => h.id === target)))
+            throw new Error(`Invalid section redirect ${topic.path}#${redirect}`);
+    }
+    const anchors = topic.sectionRedirects.map(value => value.split("|")[0]);
+    if (new Set(anchors).size !== anchors.length) throw new Error(`Duplicate section redirects in ${topic.path}`);
+}
+// Previous/next follow the guide order within a section, not unrelated global numbers.
+for (const group of new Set(topics.map(t => t.group))) {
+    const guides = topics.filter(t => t.group === group && t.path !== "/" && t.path !== "/docs");
+    guides.forEach((topic, i) => {
+        topic.prev ??= guides[i - 1]?.path || "/docs";
+        topic.next ??= guides[i + 1]?.path;
+    });
+}
+
 fs.mkdirSync(contentDir, { recursive: true });
 fs.mkdirSync(topicsDir, { recursive: true });
 const generatedTopicFiles = new Set(topics.map(topic => topic.id + ".js"));
@@ -197,4 +259,5 @@ const manifestTopics = topics.map(({ html, demos, ...metadata }) => ({
     module: "./content/topics/" + metadata.id + ".js"
 }));
 fs.writeFileSync(manifestFile, JSON.stringify({ schemaVersion: 1, topics: manifestTopics }, null, 2) + "\n", "utf8");
+fs.writeFileSync(path.join(contentDir, "search-index.json"), JSON.stringify(searchIndex) + "\n", "utf8");
 console.log("Generated " + topics.length + " documentation topic modules and manifest.");

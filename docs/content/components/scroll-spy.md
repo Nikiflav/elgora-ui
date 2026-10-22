@@ -3,12 +3,13 @@ id: scroll-spy
 title: ScrollSpy
 group: components
 path: /components/scroll-spy
-order: 62
+order: 41
 description: Track the active section in existing in-page navigation.
 toc: true
 api:
   - ScrollSpy
   - ScrollSpyOptions
+parent: navigation
 ---
 
 # ScrollSpy

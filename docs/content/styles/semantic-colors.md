@@ -1,9 +1,9 @@
 ---
 id: semantic-colors
-title: Semantic colors
+title: Colors and themes
 group: styles
 path: /styles/semantic-colors
-order: 10
+order: 20
 description: Understand ElgoraUI semantic color roles and their background, text, and border tokens.
 toc: true
 keywords:
@@ -39,13 +39,13 @@ Use CSS variables through `var(...)` in style declarations, not as names in
 the `ui` array. For standalone colored text, use the `text-*` styles described
 below.
 
-<live-demo id="semantic-color-swatches" mode="readonly" demo="swatches"></live-demo>
+<live-demo id="semantic-color-swatches" mode="readonly" src="semantic-colors.md.swatches.ts"></live-demo>
 
 ## Theme-aware components
 
 Use semantic classes for controls and containers so a theme switch changes the entire example consistently. The tokens are also available as CSS variables when a component needs a custom rule.
 
-<live-demo id="semantic-theme-preview" mode="readonly" demo="theme-preview"></live-demo>
+<live-demo id="semantic-theme-preview" mode="readonly" src="semantic-colors.md.theme-preview.ts"></live-demo>
 
 Use semantic classes when the background and foreground belong together. For
 custom CSS, consume the corresponding variables explicitly:

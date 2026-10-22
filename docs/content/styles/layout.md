@@ -22,7 +22,7 @@ Change **Container width** below. The surrounding page stays the same width;
 the fields respond to their own grid container. A wide demo can scroll horizontally
 inside the preview so the selected width remains independent of the browser width.
 
-<live-demo id="layout-responsive-grid" height="660px"></live-demo>
+<live-demo id="layout-responsive-grid" height="660px" src="layout.md.ts"></live-demo>
 
 The form uses full-width fields initially, two fields per row from 480px,
 three from 768px and four from 1024px. Address and Notes use different spans.

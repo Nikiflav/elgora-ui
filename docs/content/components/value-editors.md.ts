@@ -1,10 +1,11 @@
-import { cdiv, e, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor, LookupEditor, DateEditor } from "../../../src/index";
+import { cdiv, e, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor, LookupEditor, DateEditor, TimeEditor, DateTimeEditor } from "../../../src/index";
 
 export default function demo(): void {
     const root = cdiv({ ui: ["grid", "gap-2", "p-1"] });
     const status = e("div", { ui: ["text-muted", "col-12"], role: "status" }, "Changes are accepted by external callbacks.");
     const model = { customer: "Northwind Office", quantity: 2, active: true, priority: false,
-        productId: 1, delivery: "2026-10-14" as string | null };
+        productId: 1, delivery: "2026-10-14" as string | null,
+        start: "10:00" as string | null, meeting: "2026-10-14T10:00" as string | null };
     const accept = async (field: keyof typeof model, value: unknown) => {
         status.textContent = "Accepting " + field + "…";
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -28,8 +29,12 @@ export default function demo(): void {
         onCommit: value => accept("productId", value) });
     const delivery = new DateEditor({ value: model.delivery, label: "Delivery date", dateFormat: "dd.MM.yyyy",
         today: "2026-10-14", onCommit: value => accept("delivery", value) });
+    const start = new TimeEditor({ value: model.start, label: "Start time", onCommit: value => accept("start", value) });
+    const meeting = new DateTimeEditor({ value: model.meeting, label: "Meeting", dateFormat: "dd.MM.yyyy",
+        onCommit: value => accept("meeting", value) });
     for (const [label, editor] of [["Customer · Text", customer], ["Quantity · Number", quantity],
         ["Product · Lookup", product], ["Delivery date · Date", delivery],
+        ["Start · Time", start], ["Meeting · DateTime", meeting],
         ["Active · Checkbox", active], ["Priority · Toggle", priority]] as const) {
         const field = cdiv({ ui: ["col-12", "col-sm-6", "d-flex", "flex-col", "gap-1"] }, e("span", {}, label), editor);
         root.append(field);

@@ -1,11 +1,12 @@
 export default {
   "id": "datagrid-tree",
-  "title": "DataGrid tree data",
+  "title": "Tree data",
   "path": "/components/datagrid/tree",
-  "group": "components",
-  "parent": "datagrid",
-  "order": 60,
+  "group": "datagrid",
+  "order": 120,
   "description": "Render hierarchical parent and child rows in a DataGrid.",
+  "prev": "/components/datagrid/summaries",
+  "next": "/components/datagrid/custom-cell-rendering",
   "toc": true,
   "api": [
     "DataGrid",
@@ -18,7 +19,14 @@ export default {
     "hierarchy",
     "parent child"
   ],
-  "html": "<h1>DataGrid tree data</h1>\n<p>A <code>DataGrid</code> can display hierarchical rows when its data source identifies the\nparent of each row. This is useful for file systems, organizational charts,\ncategories, and other nested data.</p>\n<h2>Parent and child rows</h2>\n<p>The demo uses <code>parentField: &quot;parentId&quot;</code>. Root rows have a null parent and child\nrows refer to their parent by id.</p>\n<div data-live-demo=\"datagrid-tree\"></div>\n<p>See the <a href=\"?!=/api-reference/DataGrid\"><code>DataGrid</code> API reference</a>,\n<a href=\"?!=/api-reference/ArrayDataSource\"><code>ArrayDataSource</code></a>, and\n<a href=\"?!=/api-reference/DataSource\"><code>DataSource</code></a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>Tree data</h1>\n<p>A <code>DataGrid</code> can display hierarchical rows when its data source identifies the\nparent of each row. This is useful for file systems, organizational charts,\ncategories, and other nested data.</p>\n<h2 id=\"parent-and-child-rows\">Parent and child rows</h2>\n<p>The demo uses <code>parentField: &quot;parentId&quot;</code>. Root rows have a null parent and child\nrows refer to their parent by id.</p>\n<div data-live-demo=\"datagrid-tree\"></div>\n<p>See the <a href=\"?!=/api-reference/DataGrid\"><code>DataGrid</code> API reference</a>,\n<a href=\"?!=/api-reference/ArrayDataSource\"><code>ArrayDataSource</code></a>, and\n<a href=\"?!=/api-reference/DataSource\"><code>DataSource</code></a>.</p>\n",
+  "headings": [
+    {
+      "id": "parent-and-child-rows",
+      "title": "Parent and child rows"
+    }
+  ],
   "demos": [
     {
       "id": "datagrid-tree",

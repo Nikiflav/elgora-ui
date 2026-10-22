@@ -11,7 +11,31 @@ function emitDocumentationContent() {
     return {
         name: "emit-documentation-content",
         configureServer(server: { watcher: { on: (event: string, callback: (fileName: string) => void) => void }, ws: { send: (message: { type: string }) => void } }) {
-            let pending: Promise<void> = Promise.resolve();
+            // A multi-file edit should cause one rebuild, not one full rebuild per file.
+            // Changes arriving during generation request one follow-up pass.
+            let contentDirty = false;
+            let apiDirty = false;
+            let running = false;
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            const generate = async () => {
+                timer = undefined;
+                if (running || !contentDirty) return;
+                running = true;
+                contentDirty = false;
+                const refreshApi = apiDirty;
+                apiDirty = false;
+                try {
+                    if (refreshApi)
+                        await execFileAsync(process.execPath, [path.join(projectRoot, "tools", "generate-api-docs.mjs")], { cwd: projectRoot });
+                    await execFileAsync(process.execPath, [path.join(projectRoot, "tools", "generate-docs.mjs")], { cwd: projectRoot });
+                    server.ws.send({ type: "full-reload" });
+                } catch (error) {
+                    console.error("Documentation regeneration failed:", error);
+                } finally {
+                    running = false;
+                    if (contentDirty) timer = setTimeout(generate, 150);
+                }
+            };
             const refresh = (fileName: string) => {
                 const normalized = fileName.replaceAll("\\", "/");
                 const isMarkdownChange = normalized.startsWith(docsDirectory.replaceAll("\\", "/") + "/content/")
@@ -20,14 +44,10 @@ function emitDocumentationContent() {
                     && normalized.endsWith(".ts");
                 if (!isMarkdownChange && !isSourceChange) return;
 
-                pending = pending.then(async () => {
-                    if (isSourceChange)
-                        await execFileAsync(process.execPath, [path.join(projectRoot, "tools", "generate-api-docs.mjs")], { cwd: projectRoot });
-                    await execFileAsync(process.execPath, [path.join(projectRoot, "tools", "generate-docs.mjs")], { cwd: projectRoot });
-                    server.ws.send({ type: "full-reload" });
-                }).catch(error => {
-                    console.error("Documentation regeneration failed:", error);
-                });
+                contentDirty = true;
+                apiDirty ||= isSourceChange;
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(generate, 150);
             };
 
             server.watcher.on("change", refresh);
@@ -35,7 +55,7 @@ function emitDocumentationContent() {
             server.watcher.on("unlink", refresh);
         },
         generateBundle() {
-            for (const fileName of ["topics-manifest.json", "api-docs.json", "editor-types.json"]) {
+            for (const fileName of ["topics-manifest.json", "search-index.json", "api-docs.json", "editor-types.json"]) {
                 const filePath = path.join(docsDirectory, "content", fileName);
                 this.emitFile({
                     type: "asset",

@@ -233,6 +233,8 @@ type GridColumn<T> = {
     naturalWidth: number;
     /** True once the one-time content-measurement pass has resolved this auto column's naturalWidth. */
     widthMeasured: boolean;
+    /** Last total-summary result included in this auto column's measurement. */
+    footerWidthVersion?: number;
 }
 
 /*
@@ -282,6 +284,7 @@ export class DataGrid<TRow> extends Component {
     private _footerHeight = 0
     private _totalSummary: SummaryResult[] = []
     private _totalSummaryLoaded = false
+    private _totalSummaryWidthVersion = 0;
     private _groupPadding = 10
     private _draggingColIndex = -1
     private _activeGroupColumn?: string
@@ -2215,6 +2218,7 @@ export class DataGrid<TRow> extends Component {
             if (result.totalSummary) {
                 this._totalSummary = result.totalSummary;
                 this._totalSummaryLoaded = true;
+                this._totalSummaryWidthVersion++;
             }
             this.refresh();
         })
@@ -2554,6 +2558,21 @@ export class DataGrid<TRow> extends Component {
         let canvasContext: CanvasRenderingContext2D | undefined;
 
         const pendingWidthColumns = this._gridColumns.filter(c => c.isAutoWidth && !c.widthMeasured);
+        const minimumAutoWidth = 80;
+
+        const measureText = (col: GridColumn<TRow>, text: string, minimum = minimumAutoWidth, footer = false) => {
+            columnWidths ??= new Map();
+            let width = Math.max(columnWidths.get(col) ?? minimum, minimum);
+            if (text) {
+                if (!canvasContext) {
+                    canvasContext = document.createElement("canvas").getContext("2d")!;
+                    canvasContext.font = "16px Arial";
+                }
+                width = Math.max(width, canvasContext.measureText(text).width + 24
+                    + (!footer && col.groupIndex > -1 ? 100 : 0));
+            }
+            columnWidths.set(col, width);
+        };
 
         for (const row of view.rows) {
 
@@ -2570,48 +2589,41 @@ export class DataGrid<TRow> extends Component {
             }
 
             if (pendingWidthColumns.length) {
-                if (!columnWidths) {
-                    columnWidths = new Map();
-                }
                 // Measure column widths
                 for (let col of pendingWidthColumns) {
                     let txt = this.getCellText(row.gridRow, col);
                     if (!txt)
                         txt = col.dataColumn?.caption ?? col.dataColumn?.name ?? "";
-                    let estimatedWidth = col.width;
-                    if (txt) {
-
-                        if (!canvasContext) {
-                            const canvas = document.createElement('canvas');
-                            canvasContext = canvas.getContext('2d')!;
-                            canvasContext.font = "16px Arial"; // Match your grid's font styling
-                        }
-
-                        const metrics = canvasContext.measureText(txt);
-                        // Add padding (e.g., 24px for cell padding + borders)
-                        estimatedWidth = metrics.width + 24;
-                        if (col.groupIndex > -1)
-                            estimatedWidth += 100;
-                    }
-
-                    let width = columnWidths.get(col) ?? 50;
-                    if (estimatedWidth > width) {
-                        width = estimatedWidth;
-                    }
-                    columnWidths.set(col, width);
+                    measureText(col, txt);
                 }
             }
         }
 
-        if (columnWidths) {
-            for (let [col, width] of columnWidths) {
-                col.width = width;
-                col.naturalWidth = width;
-                col.widthMeasured = true;
+        if (this._gridOptions.showColumnFooters && this._totalSummaryLoaded) {
+            const footer: GridRow = { type: "footer", visibleIndex: 0, level: 0,
+                cells: {}, data: { totalSummary: this._totalSummary } };
+            for (const col of this._gridColumns) {
+                if (!col.isAutoWidth || (col.widthMeasured
+                    && col.footerWidthVersion === this._totalSummaryWidthVersion)) continue;
+                // Use the displayed footer text, including labels for multiple aggregates.
+                // Late/new totals may grow an auto column, but must not shrink its data baseline.
+                measureText(col, this.getCellText(footer, col), col.widthMeasured ? Math.max(minimumAutoWidth, col.naturalWidth) : minimumAutoWidth, true);
+                col.footerWidthVersion = this._totalSummaryWidthVersion;
             }
-            this.redistributeColumnWidths();
-            // Needs refresh
-            this.refresh();
+        }
+
+        if (columnWidths) {
+            let widthsChanged = false;
+            for (let [col, width] of columnWidths) {
+                const measured = col.widthMeasured || view.rows.length > 0;
+                widthsChanged ||= col.naturalWidth !== width || col.widthMeasured !== measured;
+                col.naturalWidth = width;
+                col.widthMeasured = measured;
+            }
+            if (widthsChanged) {
+                this.redistributeColumnWidths();
+                this.refresh();
+            }
         }
 
         const currentWidth = this._contentTable.offsetWidth;
@@ -2684,9 +2696,10 @@ export class DataGrid<TRow> extends Component {
             return summaries.map(summary => {
                 const showType = summaries.length > 1
                     || (!!groupSummary && groupSummary.summaryType !== summary.summaryType);
+                const text = DataViewFieldUtils.formatSummaryValue(col.dataColumn!, summary.value, summary.summaryType);
                 return showType
-                    ? `${summary.summaryType}: ${summary.value ?? ""}`
-                    : String(summary.value ?? "");
+                    ? `${summary.summaryType}: ${text}`
+                    : text;
             })
                 .join(", ");
         }

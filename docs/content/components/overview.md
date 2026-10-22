@@ -1,9 +1,9 @@
 ---
 id: components-overview
-title: Components and lifecycle
+title: Lifecycle and resource ownership
 group: fundamentals
 path: /components
-order: 10
+order: 40
 description: Learn what an ElgoraUI Component adds to a native HTMLElement.
 toc: true
 keywords:
@@ -14,7 +14,7 @@ keywords:
   - observable
 ---
 
-# Components and lifecycle
+# Lifecycle and resource ownership
 
 `Component` is ElgoraUI's small, composable abstraction over a native
 `HTMLElement`. It keeps the browser DOM as the actual rendering target, while
@@ -101,7 +101,7 @@ The following example models a small status panel in an application shell. It
 keeps its own state, listens to the external `window` object only while it is
 mounted, and can be unmounted and mounted again without losing that state.
 
-<live-demo id="component-create" demo="create-component"></live-demo>
+<live-demo id="component-create" src="overview.md.create-component.ts"></live-demo>
 
 The essential shape is:
 

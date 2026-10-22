@@ -3,7 +3,7 @@ id: scrollbars
 title: Native scrollbars
 group: components
 path: /components/scrollbars
-order: 61
+order: 50
 description: Add Elgora scrollbars to native scroll containers, a container subtree or an entire document.
 toc: true
 api:
@@ -12,6 +12,7 @@ keywords:
   - native scrollbars
   - automatic scrollbars
   - overflow
+parent: scrolling
 ---
 
 # Native scrollbars
@@ -30,7 +31,7 @@ continue to affect the page and textarea. Disable Local to resume the global
 settings. Turning Global off disposes only the global installation; an enabled
 local installation continues to work. Scroll positions are preserved.
 
-<live-demo id="native-scrollbars" height="480px"></live-demo>
+<live-demo id="native-scrollbars" height="480px" src="scrollbars.md.ts"></live-demo>
 
 ```ts
 const installation = Scrollbars.install(window, { scrollbarMode: "thin", scrollbarHoverDistance: 50 });
@@ -117,16 +118,18 @@ children. An axis without overflow has no scrollbar.
 ## Appearance and scope
 
 `scrollbarMode` supports `"thin"` (default), `"auto"` and `"always"`, with the same
-3px idle thumb and 12px pointer hit area as ScrollEngine. Pointer proximity, scrolling and
-dragging expand the thumb in thin mode. Both adapters share the painting and
+3px idle thumb and 12px pointer hit area as ScrollEngine. Pointer proximity and
+dragging expand the thumb in thin mode; scrolling alone leaves it thin. In auto
+mode, scrolling also reveals the otherwise hidden scrollbar. Both adapters share the painting and
 pointer interaction implementation.
 
 `scrollbarHoverDistance` defaults to `50` CSS pixels from the viewport's right or
 bottom edge. Each axis expands independently; the middle of the content stays
 visually quiet. `0` means direct scrollbar hover only. The option is available on
 `attach()`, `install()` and their returned handles, and accepts non-negative finite
-numbers. Moving the pointer away restores the idle appearance unless scrolling
-or dragging is still active.
+numbers. Moving the pointer away restores the idle appearance unless dragging
+is still active (or scrolling in auto mode). Proximity changes width only;
+direct hover and dragging make the thumb more opaque.
 
 Each installation handles its scope in one document's ordinary HTML tree. It does not traverse
 iframe documents or shadow roots. Call `Scrollbars.install(iframe.contentWindow)`

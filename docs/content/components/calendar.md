@@ -3,7 +3,7 @@ id: calendar
 title: Calendar
 group: components
 path: /components/calendar
-order: 47
+order: 20
 description: A standalone date-only calendar with month/year navigation and keyboard support.
 ---
 
@@ -26,7 +26,7 @@ The selected date uses primary color; today's date has a subtle border. Muted
 dates belong to adjacent months and remain selectable unless excluded by bounds.
 Change the locale or first weekday, and try the optional booking-date restriction.
 
-<live-demo id="calendar" height="465px"></live-demo>
+<live-demo id="calendar" height="465px" src="calendar.md.ts"></live-demo>
 
 ## Date-only values
 

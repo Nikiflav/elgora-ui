@@ -1,10 +1,9 @@
 ---
 id: datagrid-columns
-title: Columns and layout
-group: components
-parent: datagrid
+title: Columns and sizing
+group: datagrid
 path: /components/datagrid/columns
-order: 52
+order: 30
 description: Configure column captions, widths, alignment, visibility, and layout behavior.
 toc: true
 api:
@@ -20,7 +19,7 @@ keywords:
   - layout
 ---
 
-# Columns and layout
+# Columns and sizing
 
 Columns define how a DataGrid reads, displays, and lays out each field. Use
 captions for user-facing labels and keep field names focused on the data model.
@@ -32,7 +31,7 @@ can be shared with other views; width, alignment, resize/reorder, context menus
 and custom cell rendering belong to the grid column.
 See [Fields and presentation](?!=/data/fields) for the three layers.
 
-<live-demo id="datagrid-columns" height="520px"></live-demo>
+<live-demo id="datagrid-columns" height="520px" src="columns.md.ts"></live-demo>
 
 The demo combines explicitly sized columns with an automatic Product column and
 pinned columns. Switch the width mode and resize the container to compare the
@@ -62,6 +61,15 @@ grid.setOptions({ columnWidthMode: "stretch-all" });
 `getColumn().width` stores a base width, which may differ from the stretched width
 shown on screen. Returning to `fixed` restores base widths. Use
 `autoSizeColumn(name)` to return a manually sized column to content measurement.
+
+Automatic measurement has an 80px minimum and includes the text in loaded body
+rows and the visible total footer. Footer labels for multiple aggregates are
+included too. Totals arriving later, or changing after a query, may grow an auto
+column but do not shrink its measured data baseline. Hidden footers are excluded.
+The grid measures loaded rows, not the entire dataset. A nonempty data cell does
+not force a long caption to fit; the caption remains a fallback for empty cells.
+Explicit widths (including widths below 80px) and manual resizing retain their
+own behavior. Use `autoSizeColumn(name)` to measure again after manual sizing.
 
 ## Manual column resizing
 

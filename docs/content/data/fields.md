@@ -3,7 +3,7 @@ id: data-fields
 title: Fields and presentation
 group: data
 path: /data/fields
-order: 5
+order: 20
 description: Separate data access, reusable field presentation and grid-column behavior.
 ---
 
@@ -58,8 +58,8 @@ const amountView: DataViewField<OrderLine> = {
     caption: "Amount",
     description: "Quantity multiplied by unit price",
     readonly: true,
-    getText: async row =>
-        (row.quantity * row.unitPrice).toFixed(2)
+    displayFormat: "C2€",
+    displayLocale: "bg-BG"
 };
 ```
 
@@ -74,6 +74,12 @@ the semantic type. `resolveText`, `validate`, and `formatValue` describe convers
 validation, and editable formatting. Hosts pass row-bound callbacks to value-only
 editors and save through their data source, never through field setters.
 See [Cell editing](?!=/components/datagrid/editing) for interactive examples.
+
+`displayFormat` is display-only: it preserves the raw value and editor precision.
+For regular labels the priority is `getText`, lookup, `displayFormat`, then
+`formatValue` or string conversion. The grid also applies display formats to
+group and total summaries, except counts. See [Numbers, dates and formatting](?!=/data/formatting)
+for numeric patterns, literal currency suffixes and locale-aware parsing.
 
 ## Grid columns
 

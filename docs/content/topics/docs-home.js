@@ -8,7 +8,9 @@ export default {
   "toc": false,
   "api": [],
   "keywords": [],
+  "sectionRedirects": [],
   "html": "<!-- The / route uses docs/app/LandingPage.ts instead of the topic-reading layout.\n     Keep this demo declaration here so it goes through the same generated module\n     and sandbox pipeline as the documentation examples. -->\n<h1>Elgora UI</h1>\n<p>Expressive websites. Powerful applications. Built for the browser.</p>\n<div data-live-demo=\"home-order-desk\"></div>\n",
+  "headings": [],
   "demos": [
     {
       "id": "home-order-desk",

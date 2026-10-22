@@ -1,10 +1,9 @@
 ---
 id: datagrid-filtering
 title: Filtering
-group: components
-parent: datagrid
+group: datagrid
 path: /components/datagrid/filtering
-order: 54
+order: 90
 description: Filter local or remote DataGrid data with structured filter expressions.
 toc: true
 api:
@@ -34,7 +33,7 @@ range, `500..` for values greater than or equal to `500`, or `..500` for values
 less than or equal to `500`. Date ranges use the same syntax, for example
 `today..` and `..10.12.26`.
 
-<live-demo id="datagrid-filtering" height="376px"></live-demo>
+<live-demo id="datagrid-filtering" height="376px" src="filtering.md.ts"></live-demo>
 
 The example starts with an explicit `contains` filter. Application code can
 change it at any time:

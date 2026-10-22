@@ -2,10 +2,10 @@ export default {
   "id": "datagrid-performance",
   "title": "Virtualization and performance",
   "path": "/components/datagrid/performance",
-  "group": "components",
-  "parent": "datagrid",
-  "order": 62,
+  "group": "datagrid",
+  "order": 150,
   "description": "Render large datasets efficiently with virtual rows, paging, and reusable cell content.",
+  "prev": "/components/datagrid/context-menus",
   "toc": true,
   "api": [
     "DataGrid",
@@ -18,7 +18,18 @@ export default {
     "large data",
     "paging"
   ],
-  "html": "<h1>Virtualization and performance</h1>\n<p>DataGrid virtualizes its body and requests only the rows needed for the\nviewport. This keeps the DOM small even when the logical dataset contains many\nrecords.</p>\n<div data-live-demo=\"datagrid-performance\"></div>\n<p>Use a <code>DataSource</code> for paging or remote loading, keep custom renderers focused,\nand avoid recreating expensive objects during every cell render. The grid also\nsupports abortable data requests through the source query contract.</p>\n<h2>API reference</h2>\n<p>See <a href=\"?!=/api-reference/DataGrid\"><code>DataGrid</code></a>, <a href=\"?!=/api-reference/DataSource\"><code>DataSource</code></a>,\nand <a href=\"?!=/api-reference/VirtualList\"><code>VirtualList</code></a>.</p>\n",
+  "sectionRedirects": [],
+  "html": "<h1>Virtualization and performance</h1>\n<p>DataGrid virtualizes its body and requests only the rows needed for the\nviewport. This keeps the DOM small even when the logical dataset contains many\nrecords.</p>\n<div data-live-demo=\"datagrid-performance\"></div>\n<p>Use a <code>DataSource</code> for paging or remote loading, keep custom renderers focused,\nand avoid recreating expensive objects during every cell render. The grid also\nsupports abortable data requests through the source query contract.</p>\n<h2 id=\"rendering-is-not-query-processing\">Rendering is not query processing</h2>\n<p>Virtualization bounds DOM work; it does not make a full local sort, group or\naggregate free. For large remote data, implement paging and grouped metadata in\nthe source rather than relying on a complete flat-data fallback. Expanding all\ngroups loads metadata, not every rendered leaf row.</p>\n<p>For in-memory sources, reuse the source and its query caches across viewport\nrequests. Use mutation methods or explicit cache invalidation after external\nchanges. Keep value accessors pure and avoid expensive allocations inside cell\nrenderers. Stable VNode keys preserve content identity when cells are patched.</p>\n<p>See <a href=\"?!=/data/data-source/queries\">queries and grouping</a>,\n<a href=\"?!=/data/data-source/caching\">local processing and cache invalidation</a>, and\n<a href=\"?!=/components/datagrid/grouping/expansion\">expansion behavior</a>.</p>\n<h2 id=\"api-reference\">API reference</h2>\n<p>See <a href=\"?!=/api-reference/DataGrid\"><code>DataGrid</code></a>, <a href=\"?!=/api-reference/DataSource\"><code>DataSource</code></a>,\nand <a href=\"?!=/api-reference/VirtualList\"><code>VirtualList</code></a>.</p>\n",
+  "headings": [
+    {
+      "id": "rendering-is-not-query-processing",
+      "title": "Rendering is not query processing"
+    },
+    {
+      "id": "api-reference",
+      "title": "API reference"
+    }
+  ],
   "demos": [
     {
       "id": "datagrid-performance",

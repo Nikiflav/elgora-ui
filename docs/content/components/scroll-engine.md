@@ -3,7 +3,7 @@ id: scroll-engine
 title: Scroll Engine
 group: components
 path: /components/scroll-engine
-order: 60
+order: 52
 description: Scroll virtual dimensions through a bounded viewport with programmatic and pointer input.
 toc: true
 api:
@@ -13,6 +13,7 @@ keywords:
   - scrolling
   - virtual dimensions
   - custom scrollbar
+parent: scrolling
 ---
 
 # Scroll Engine
@@ -31,7 +32,7 @@ Create the viewport first, then pass it to `ScrollEngine`. Call
 `updateDimensions()` with the logical content size and use `scrollTo()` when
 application code needs to change the position.
 
-<live-demo id="scroll-engine-basic" height="400px"></live-demo>
+<live-demo id="scroll-engine-basic" height="400px" src="scroll-engine.md.ts"></live-demo>
 
 The same engine also handles wheel, keyboard, pointer, and touch input. Use
 `onScroll()` to update dependent UI and `onResize()` to recalculate layout.

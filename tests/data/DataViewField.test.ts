@@ -9,6 +9,40 @@ type Row = { quantity: number; price: number; name: string };
 const row: Row = { quantity: 2, price: 15, name: "Keyboard" };
 
 describe("Field contracts", () => {
+    it("formats numeric display without modifying values and recompiles changed formats/locales", async () => {
+        const field: DataViewField<Row> = { name: "price", dataType: "number", displayFormat: "C2€", displayLocale: "en-US" };
+        expect(await DataViewFieldUtils.getDataCell(field, row)).toMatchObject({ value: 15, text: "15.00\u00a0€" });
+        field.displayFormat = "N0";
+        expect(await DataViewFieldUtils.getText(field, row)).toBe("15");
+        field.displayFormat = "N2"; field.displayLocale = "bg-BG";
+        expect(await DataViewFieldUtils.getText(field, row)).toBe("15,00");
+        expect(DataViewFieldUtils.formatDisplayValue(field, null)).toBe("");
+        expect(row.price).toBe(15);
+    });
+    it("prioritizes getText and lookup over displayFormat, and displayFormat over formatValue", async () => {
+        const field: DataViewField<Row> = { name: "price", dataType: "number", displayFormat: "N2", displayLocale: "en-US",
+            formatValue: () => "editor", getText: async () => "label" };
+        expect(await DataViewFieldUtils.getText(field, row)).toBe("label");
+        delete field.getText;
+        field.lookup = { loadItems: async () => ({ items: [], totalCount: 0 }), getValueText: () => "lookup" };
+        expect(await DataViewFieldUtils.getText(field, row)).toBe("lookup");
+        delete field.lookup;
+        expect(await DataViewFieldUtils.getText(field, row)).toBe("15.00");
+        delete field.displayFormat;
+        expect(await DataViewFieldUtils.getText(field, row)).toBe("editor");
+    });
+    it("formats aggregates but never treats a count or custom label as a currency", () => {
+        const field: DataViewField<Row> = { name: "price", dataType: "number", displayFormat: "C2€", displayLocale: "en-US" };
+        expect(DataViewFieldUtils.formatSummaryValue(field, 1234.5, "sum")).toBe("1,234.50\u00a0€");
+        expect(DataViewFieldUtils.formatSummaryValue(field, 1234, "count")).toBe("1234");
+        expect(DataViewFieldUtils.formatSummaryValue(field, 2, "distinct")).toBe("2");
+        expect(DataViewFieldUtils.formatSummaryValue(field, "Label", "custom")).toBe("Label");
+    });
+    it("reuses date-only patterns without timezone conversion", () => {
+        expect(DataViewFieldUtils.formatDisplayValue({ name: "date", dataType: "date", displayFormat: "dd.MM.yyyy" }, "2026-10-22"))
+            .toBe("22.10.2026");
+        expect(() => DataViewFieldUtils.formatDisplayValue({ name: "name", displayFormat: "N2" }, "text")).toThrow();
+    });
     it("reuses value access from data field through view field to grid column", async () => {
         const field: DataField<Row> = {
             name: "amount", dataType: "number", getValue: async item => item.quantity * item.price

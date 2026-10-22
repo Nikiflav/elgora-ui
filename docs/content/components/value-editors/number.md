@@ -4,7 +4,7 @@ title: Number
 group: components
 parent: editors
 path: /components/value-editors/number
-order: 47
+order: 14
 description: Nullable numbers with text conversion and asynchronous validation.
 ---
 
@@ -19,7 +19,7 @@ Try `12,5`, `12.5`, zero or empty text. Use ArrowUp and ArrowDown to change the
 draft by one step. Positive numbers are accepted; failed validation keeps the
 input available for correction.
 
-<live-demo id="editor-number" height="220px"></live-demo>
+<live-demo id="editor-number" height="220px" src="number.md.ts"></live-demo>
 
 ## Conversion and validation
 

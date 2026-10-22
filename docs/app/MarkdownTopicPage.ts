@@ -22,7 +22,7 @@ export class MarkdownTopicPage extends Component {
         const tocItems: HTMLElement[] = [];
         const usedIds = new Set<string>();
         for (const heading of article.querySelectorAll<HTMLHeadingElement>("h2, h3")) {
-            const baseId = (heading.textContent || "section")
+            const baseId = heading.id || (heading.textContent || "section")
                 .toLowerCase()
                 .trim()
                 .replace(/[^a-z0-9\s-]/g, "")
@@ -89,17 +89,19 @@ export class MarkdownTopicPage extends Component {
                 .map(name => name.trim())
                 .filter(Boolean);
             const api = new ApiReference();
+            this.addCleanup(api);
             reference.replaceWith(api.dom);
             const selected = apiManifest.filter(entry => names.some(name =>
                 name === entry.name || name.startsWith(`${entry.name}.`)));
             void Promise.all(selected.map(entry => apiLoader.load(entry)))
-                .then(entries => api.setEntries(entries));
+                .then(entries => { if (!this.disposed.Value) api.setEntries(entries); });
         }
 
         const navigation = cdiv({ ui: ["elg", "d-flex", "justify-between", "gap-2", "mt-3", "pt-3", "border-top"] });
         if (topic.prev) navigation.dom.append(e("a", { href: `?!=${topic.prev}`, ui: ["elg", "btn", "neutral", "no-underline"] }, "← Previous topic"));
         if (topic.next) navigation.dom.append(e("a", { href: `?!=${topic.next}`, ui: ["elg", "btn", "neutral", "no-underline"] }, "Next topic →"));
-        if (topic.prev || topic.next) this.dom.append(navigation.dom);
+        if (topic.prev || topic.next) this.append(navigation);
+        else navigation.dispose();
         if (topic.toc !== false && tocItems.length) {
             this.addCleanup(new ScrollSpy({ container: article, navigation: onThisPage, scrollContainer }));
         }
