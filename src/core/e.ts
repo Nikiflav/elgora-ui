@@ -70,7 +70,7 @@ type ExtraProps = {
 export type ElementProps<T extends HTMLElement> =
     NativeProps<T> &
     DOMEvents<T> &
-    ExtraProps
+    ExtraProps & Partial<Record<`data-${string}`, string | number | boolean>>
 
 // ------------------------------------------------------
 // Function args

@@ -219,7 +219,8 @@ body {
     --elg-bg-l: 50;
     --elg-bg-color-2: transparent;
 
-    background-image: linear-gradient(300deg, var(--elg-bg-color), var(--elg-bg-color-2));
+    background-image: linear-gradient(var(--elg-gradient-angle, 300deg),
+        var(--elg-gradient-from, var(--elg-bg-color)), var(--elg-gradient-to, var(--elg-bg-color-2)));
     background-color: transparent;
 }
 
@@ -253,7 +254,8 @@ body {
   background-color: var(--elg-bg-rendered-color);
 }
 
-.elg:where(button, input, textarea, select):focus-visible {
+.elg:where(button, input, textarea, select):focus-visible,
+.elg-btn:focus-visible {
   outline: 2px solid var(--elg-selection-border);
   outline-offset: 1px;
 }
@@ -270,22 +272,44 @@ body {
 }
 
 .elg-btn {
-  padding: 0.15em 0.5em;
-  border-radius: 4px;
+  --elg-btn-neutral-state-bg: var(--elg-btn-neutral-bg);
+  padding: var(--elg-btn-padding);
+  border-radius: var(--elg-btn-radius);
   cursor: pointer;
   text-decoration: none;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   border: 1px solid var(--elg-border-color);
 }
 
-.elg-btn:hover {
+/* Explicit surfaces, semantic fills and selection keep the normal state pipeline.
+   Only plain/neutral buttons use the faint, achromatic treatment. */
+.elg-btn:where(:not(.elg-primary, .elg-accent, .elg-success, .elg-warning, .elg-danger, .elg-surface, .elg-surface-2, .elg-surface-3, .elg-selected)),
+.elg-btn.elg-neutral:where(:not(.elg-selected, .elg-primary, .elg-accent, .elg-success, .elg-warning, .elg-danger)) {
+  background-color: var(--elg-btn-neutral-state-bg);
+  border-color: var(--elg-btn-neutral-border);
+}
+
+/* Neutral ghost controls retain button geometry and keyboard focus, but have
+   no visible frame or resting fill. Selection still uses its own background. */
+.elg-btn.elg-btn-ghost {
+  --elg-btn-neutral-bg: transparent;
+  border-color: transparent;
+}
+.elg-btn.elg-btn-ghost:where(:not(.elg-selected)) {
+  background-color: var(--elg-btn-neutral-state-bg);
+}
+
+.elg-btn:hover:where(:not(:disabled, [aria-disabled="true"])) {
+  --elg-btn-neutral-state-bg: var(--elg-btn-neutral-hover-bg);
   --elg-state-s-3: var(--elg-hover-s);
   --elg-state-l-3: var(--elg-hover-l);
 }
 
-.elg-btn:disabled {
+.elg-btn:is(:disabled, [aria-disabled="true"]) {
+  --elg-state-s-3: 0;
+  --elg-state-l-3: 0;
   cursor: not-allowed;
-  filter: saturate(0.35) brightness(.95);
+  opacity: 0.55;
 }
 
 .elg:where(input, textarea, select):disabled {
@@ -298,8 +322,13 @@ body {
   opacity: 1;
 }
 
-.elg-btn:active {
+.elg-btn:active:where(:not(:disabled, [aria-disabled="true"])) {
+  --elg-btn-neutral-state-bg: var(--elg-btn-neutral-pressed-bg);
   filter: saturate(0.8) brightness(.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elg-btn { transition: none; }
 }
 
 /* Inset picker buttons share the input's frame and do not add a Tab stop. */

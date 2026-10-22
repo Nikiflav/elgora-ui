@@ -9,6 +9,9 @@ type GridColumnSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 /** Typed Elgora UI utility class name without the `elg-` prefix. */
 export type UiStyle =
+  // Website composition; all styles also work on plain HTML elements.
+  | "container" | "section" | "title-display" | "title-section" | "lead" | "eyebrow" | "measure"
+  | "gradient" | "gradient-radial" | "gradient-mesh" | "rotate-on-open"
   // ------------------
   // Display
   // ------------------
@@ -288,6 +291,7 @@ export type UiStyle =
   // Components
   // ======================================================
   | "btn"
+  | "btn-ghost"
   | "box"
   | "field"
   | "shadow"

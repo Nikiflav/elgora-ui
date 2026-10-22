@@ -6,7 +6,7 @@ export { AsyncObservableEvent, type AsyncObservableHandler } from './core/AsyncO
 export { Component, type ComponentOptions, type ComponentChild } from './core/Component';
 export { type UiDensity, type UiStyle } from './core/UiStyle';
 export { c, cdiv, cbutton } from './core/c';
-export { e, v } from './core/e';
+export { e, v, setElementProps } from './core/e';
 export { type RemixIcon } from './core/RemixIcon';
 
 export { type SizeManager, VariableSizeManager, FixedSizeManager } from './components/virtual-list/SizeManager';
@@ -19,6 +19,7 @@ export { Scrollbars, type ScrollbarsOptions, type ScrollbarsHandle, type Scrollb
 export { DataGrid, type DataGridOptions, type DataGridCellNavigatingEvent, type ColumnWidthMode, type ColumnResizeMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
 export { type DataCell, type DataViewField, type DisplayValue, type FieldLookup, type FieldEditContext, type FieldEditorContext } from './data/DataViewField';
 export { createFieldEditor } from './components/editors/createFieldEditor';
+export { ScrollReveal, type ScrollRevealOptions } from './components/scroll-reveal/ScrollReveal';
 export type { EditorButton } from './components/editors/EditorButton';
 export { type DataType, type DataField } from './data/DataField';
 export { type GroupInterval, type GroupIntervalDefinition, type OrderByToken } from './data/grouping';

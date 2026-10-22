@@ -94,7 +94,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 docs: path.join(docsDirectory, "index.html"),
-                sandbox: path.join(docsDirectory, "demo-sandbox.html")
+                sandbox: path.join(docsDirectory, "demo-sandbox.html"),
+                forma: path.join(docsDirectory, "forma.html")
             }
         }
     }

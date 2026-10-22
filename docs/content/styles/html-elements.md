@@ -56,6 +56,36 @@ e("section", { ui: ["elg", "surface-2", "box", "p-3"] }, "Panel content");
 
 `button.elg` keeps the native element predictable and flat. Add `btn` for the component styling, then choose a semantic role such as `primary`, `neutral`, or `danger`.
 
+The demo below includes all six semantic roles: `primary`, `accent`, `neutral`,
+`success`, `warning`, and `danger`, alongside flat and disabled buttons.
+"Anchor as button" is an `<a>` styled as a neutral button; "Text link →" is a
+plain navigation link, using the primary text color and an underline on hover
+or keyboard focus. Both links open an example destination in a new tab.
+
+For a neutral action without a resting fill or visible frame, combine `btn`
+with `btn-ghost`. Unlike a bare `button.elg`, it retains the standard button
+padding, radius, hover/pressed feedback, disabled treatment and keyboard focus
+outline. Its border stays transparent rather than changing the button's size;
+an explicit `selected` state still shows its selection background.
+
+```ts
+cbutton({ ui: ["elg", "btn", "btn-ghost"] }, "Action");
+```
+
+Plain and `neutral` buttons have a faint neutral background, a subtle border and
+neutral hover/pressed fills. Semantic roles such as `primary` and `danger` stay
+filled; explicit surfaces and `selected` keep their own backgrounds. Keyboard
+focus uses the shared outline. Native disabled buttons are dimmed and do not
+receive hover/pressed styling. An `aria-disabled` link is styled the same way,
+but the application must prevent its activation.
+
+The defaults are `--elg-btn-radius: 6px` and `--elg-btn-padding: .15em .5em`.
+Override these on a container or individual button for a denser layout.
+`--elg-btn-neutral-bg`, `--elg-btn-neutral-hover-bg`,
+`--elg-btn-neutral-pressed-bg` and `--elg-btn-neutral-border` control the neutral
+appearance. The resting/hover/pressed defaults mix the theme text color at 3%/6%/10% over
+transparency, so they work on both themes. Reduced motion disables transitions.
+
 <live-demo id="html-buttons" mode="readonly" demo="buttons"></live-demo>
 
 ## Form controls

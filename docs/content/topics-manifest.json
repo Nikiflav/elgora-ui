@@ -3,11 +3,11 @@
   "topics": [
     {
       "id": "docs-home",
-      "title": "Elgora UI documentation",
+      "title": "Elgora UI — Websites and applications, built for the browser",
       "path": "/",
       "group": "home",
       "order": 0,
-      "description": "Browser-native TypeScript components, editable data views and composable application foundations.",
+      "description": "Compose expressive websites and powerful applications with browser-native TypeScript components, editable data views and a shared visual language.",
       "toc": false,
       "api": [],
       "keywords": [],
@@ -335,6 +335,18 @@
         "accessibility"
       ],
       "module": "./content/topics/tooltip.js"
+    },
+    {
+      "id": "websites",
+      "title": "Website composition and motion",
+      "path": "/styles/websites",
+      "group": "styles",
+      "order": 40,
+      "description": "Build a fictional product website with composable layouts, gradients and accessible scroll reveals.",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "module": "./content/topics/websites.js"
     },
     {
       "id": "value-editors",

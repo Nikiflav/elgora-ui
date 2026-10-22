@@ -1,0 +1,75 @@
+/* Composable website styles; brand-specific decoration belongs to the consumer. */
+:root {
+    --elg-container-width: 74rem;
+    --elg-container-gutter: clamp(1rem, 4vw, 2.5rem);
+    --elg-section-space: clamp(3.5rem, 7vw, 6.5rem);
+    --elg-motion-duration: 560ms;
+    --elg-motion-easing: cubic-bezier(.2, .7, .2, 1);
+    --elg-motion-distance: 18px;
+}
+
+.elg-container {
+    width: 100%;
+    max-width: var(--elg-container-width);
+    margin-inline: auto;
+    padding-inline: var(--elg-container-gutter);
+    box-sizing: border-box;
+    min-width: 0;
+}
+.elg-section { padding-block: var(--elg-section-space); }
+.elg-title-display, .elg-title-section { margin: 0; text-wrap: balance; font-weight: 700; }
+.elg-title-display { font-size: clamp(2.8rem, 7vw, 6rem); line-height: 1.02; letter-spacing: -.06em; }
+.elg-title-section { font-size: clamp(2rem, 4.5vw, 3.5rem); line-height: 1.1; letter-spacing: -.045em; }
+.elg-lead { font-size: clamp(1.05rem, 1.6vw, 1.25rem); line-height: 1.7; text-wrap: pretty; }
+.elg-measure { max-width: 62ch; }
+.elg-eyebrow { font-size: .75rem; font-weight: 650; letter-spacing: .14em; text-transform: uppercase; }
+
+.elg-gradient-radial {
+    background-image: radial-gradient(ellipse at var(--elg-gradient-position, 50% 50%),
+        var(--elg-gradient-from, color-mix(in srgb, var(--elg-primary-color) 18%, transparent)),
+        var(--elg-gradient-to, transparent) 72%);
+}
+.elg-gradient-mesh {
+    background-image:
+        radial-gradient(ellipse at 15% 15%, var(--elg-gradient-from,
+            color-mix(in srgb, var(--elg-primary-color) 18%, transparent)), transparent 60%),
+        radial-gradient(ellipse at 90% 70%, var(--elg-gradient-to,
+            color-mix(in srgb, var(--elg-accent-color) 14%, transparent)), transparent 60%),
+        radial-gradient(ellipse at 40% 100%, var(--elg-gradient-accent,
+            color-mix(in srgb, var(--elg-primary-color) 8%, transparent)), transparent 65%);
+}
+
+/* Put this on a decorative icon inside a native summary or an aria-expanded control.
+   State belongs to the control; no animation-specific JavaScript is needed. */
+.elg-rotate-on-open {
+    display: inline-block;
+    transition: transform 180ms var(--elg-motion-easing);
+}
+details[open] > summary .elg-rotate-on-open,
+[aria-expanded="true"] > .elg-rotate-on-open {
+    transform: rotate(180deg);
+}
+
+/* Added only after a working observer has been installed. Without JS, content stays visible.
+   Individual translate composes with a component's existing transform (e.g. hover scale).
+   Backwards fill covers stagger delays but releases animation-owned properties afterwards. */
+.elg-reveal-pending:not(:focus-within) { opacity: 0; }
+.elg-reveal-visible {
+    animation: elg-reveal-fade var(--elg-motion-duration) var(--elg-motion-easing)
+        var(--elg-reveal-delay, 0ms) backwards;
+}
+.elg-reveal-visible.elg-reveal-up { animation-name: elg-reveal-up; }
+@keyframes elg-reveal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes elg-reveal-up {
+    from { opacity: 0; translate: 0 var(--elg-motion-distance); }
+    to { opacity: 1; translate: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .elg-rotate-on-open { transition: none; }
+    .elg-reveal-pending:not(:focus-within) { opacity: 1; }
+    .elg-reveal-visible { animation: none; }
+}
+@media print {
+    .elg-reveal-pending:not(:focus-within) { opacity: 1; }
+    .elg-reveal-visible { animation: none; }
+}

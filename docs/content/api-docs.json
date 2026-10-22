@@ -3858,7 +3858,7 @@
       "members": [
         {
           "name": "kind",
-          "type": "\"create\" | \"update\" | \"insert\" | \"delete\" | \"cancel\"",
+          "type": "\"cancel\" | \"create\" | \"update\" | \"insert\" | \"delete\"",
           "description": "The local operation being validated or processed by a business rule.\n\n- create: createNewRow() initialized a pending row. It is not in table.rows or query/save\n  results yet. Only rowChanged emits this kind, after identity and defaults are available.\n- update: one or more field values change, on either a confirmed or pending row.\n  rowChanging sees proposed values; rowChanged sees applied values.\n- insert: NewRowSession.insert() includes the pending row in its table.\n  rowChanging sees isPending === true; rowChanged sees isPending === false.\n  This is local insertion, not a server save; the row remains in added state.\n- delete: table.delete() marks a confirmed row deleted, or removes an unsaved added row.\n  Pending rows must be cancelled instead of deleted.\n- cancel: NewRowSession.cancel() discards a pending row without inserting it.\n  rowChanging sees the pending session; rowChanged sees the cancelled session.\n\ncreate and insert are separate steps: a user can fill in a created draft, then insert\nit or cancel it. Lifecycle kinds have empty fields; only update identifies changed fields.\nBusiness events do not emit reset and are not invoked during undo/redo or import.",
           "tags": [
             {
@@ -4675,7 +4675,7 @@
       "members": [
         {
           "name": "kind",
-          "type": "\"create\" | \"update\" | \"insert\" | \"delete\" | \"cancel\" | \"reset\"",
+          "type": "\"cancel\" | \"reset\" | \"create\" | \"update\" | \"insert\" | \"delete\"",
           "description": "The completed working-data operation. For DataTable, emitted only after transaction success.\ncreate initializes a pending draft outside table queries; insert includes that draft locally\ninto the table (not to a server). update changes field values, including pending values.\ndelete removes/marks a confirmed row; cancel discards a pending draft.\nreset requests a broader repaint after undo/redo, import, acceptance or rejection.",
           "tags": [],
           "topics": [],
@@ -10236,6 +10236,141 @@
       ]
     },
     {
+      "name": "ScrollReveal",
+      "kind": "class",
+      "type": "ScrollReveal",
+      "description": "Adds entrance effects to existing HTML or component-owned elements. Observations are\nframe-batched through the UI scheduler; CSS owns the animation frames. Unsupported\nbrowsers and reduced-motion users get visible content, without a polyfill.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const reveal = new ScrollReveal(component.dom, { stagger: 60 });\ncomponent.addCleanup(reveal);\n// Mark targets with data-elg-reveal=\"fade-up\". Call refresh() after adding targets."
+        }
+      ],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Scroll Reveal",
+      "path": "/api-reference/ScrollReveal",
+      "source": "src/components/scroll-reveal/ScrollReveal.ts",
+      "members": [
+        {
+          "name": "refresh",
+          "type": "() => void",
+          "description": "Observes newly added targets and releases removed ones; already revealed once-only targets stay visible.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "dispose",
+          "type": "() => void",
+          "description": "Disconnects observers/listeners and restores owned classes/delays. Queued render work becomes a no-op.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "ScrollRevealOptions",
+      "kind": "interface",
+      "type": "ScrollRevealOptions",
+      "description": "Viewport-triggered entrance animation configuration; no per-frame scroll handler is used.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Scroll Reveal",
+      "path": "/api-reference/ScrollRevealOptions",
+      "source": "src/components/scroll-reveal/ScrollReveal.ts",
+      "members": [
+        {
+          "name": "selector",
+          "type": "string | undefined",
+          "description": "Elements to reveal within the container, including the container itself if it matches.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "kind": "property"
+        },
+        {
+          "name": "effect",
+          "type": "\"fade\" | \"fade-up\" | undefined",
+          "description": "Default effect; data-elg-reveal=\"fade\" or \"fade-up\" overrides it for a target.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "kind": "property"
+        },
+        {
+          "name": "root",
+          "type": "Element | Document | null | undefined",
+          "description": "Scroll viewport. Omit for the document viewport; an element enables nested scrolling.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "kind": "property"
+        },
+        {
+          "name": "threshold",
+          "type": "number | undefined",
+          "description": "Visible fraction required to enter, between 0 and 1. Defaults to 0.15.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "kind": "property"
+        },
+        {
+          "name": "rootMargin",
+          "type": "string | undefined",
+          "description": "Observer root margin, in IntersectionObserver syntax. Defaults to 0px.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "kind": "property"
+        },
+        {
+          "name": "once",
+          "type": "boolean | undefined",
+          "description": "Reveal once (default) or hide/reveal again as targets leave and enter.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "kind": "property"
+        },
+        {
+          "name": "stagger",
+          "type": "number | undefined",
+          "description": "Delay in milliseconds between sibling targets, capped at 240ms per target. Defaults to 0.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/scroll-reveal/ScrollReveal.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "ScrollSpy",
       "kind": "class",
       "type": "ScrollSpy",
@@ -10993,6 +11128,56 @@
           "kind": "property"
         }
       ]
+    },
+    {
+      "name": "setElementProps",
+      "kind": "function",
+      "type": "<T extends HTMLElement>(el: T, props?: ElementProps<T>, assign?: boolean) => void",
+      "description": "Applies the given props to the given element.\r\nUses diff to apply only the changes.\r\nclass, className and ui are combined independently of property order. Patching\r\nremoves only their previous managed tokens, retaining unrelated DOM classes.\r\nDo not also control the same token through bindClass() or direct classList edits.",
+      "tags": [
+        {
+          "name": "param",
+          "text": "el The element to apply the props to."
+        },
+        {
+          "name": "param",
+          "text": "props The props to apply."
+        },
+        {
+          "name": "param",
+          "text": "assign If true only the provided props are modified, otherwise the not provided stored props are reset to null/default value."
+        }
+      ],
+      "topics": [],
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/setElementProps",
+      "source": "src/core/e.ts",
+      "parameters": [
+        {
+          "name": "el",
+          "type": "T",
+          "optional": false,
+          "description": "The element to apply the props to."
+        },
+        {
+          "name": "props",
+          "type": "ElementProps<T> | undefined",
+          "optional": true,
+          "description": "The props to apply."
+        },
+        {
+          "name": "assign",
+          "type": "boolean",
+          "optional": true,
+          "defaultValue": "false",
+          "description": "If true only the provided props are modified, otherwise the not provided stored props are reset to null/default value."
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      }
     },
     {
       "name": "SizeManager",
@@ -12098,7 +12283,7 @@
       "namespace": "Core",
       "path": "/api-reference/UiStyle",
       "source": "src/core/UiStyle.ts",
-      "definition": "| \"d-none\"\r\n  | \"d-block\"\r\n  | \"d-inline\"\r\n  | \"d-inline-block\"\r\n  | \"d-flex\"\r\n  | \"d-inline-flex\"\r\n  | \"d-grid\"\r\n\r\n  // Twelve-column grid; responsive variants query the parent grid's width.\r\n  | \"grid\"\r\n  | `col-${GridColumnSpan}`\r\n  | `col-sm-${GridColumnSpan}`\r\n  | `col-md-${GridColumnSpan}`\r\n  | `col-lg-${GridColumnSpan}`\r\n\r\n  // ------------------\r\n  // Flex direction\r\n  // ------------------\r\n  | \"flex-row\"\r\n  | \"flex-row-reverse\"\r\n  | \"flex-col\"\r\n  | \"flex-col-reverse\"\r\n\r\n  // ------------------\r\n  // Flex wrap\r\n  // ------------------\r\n  | \"flex-wrap\"\r\n  | \"flex-nowrap\"\r\n  | \"flex-wrap-reverse\"\r\n\r\n  // ------------------\r\n  // Justify\r\n  // ------------------\r\n  | \"justify-start\"\r\n  | \"justify-center\"\r\n  | \"justify-end\"\r\n  | \"justify-between\"\r\n  | \"justify-around\"\r\n  | \"justify-evenly\"\r\n\r\n  // ------------------\r\n  // Align items\r\n  // ------------------\r\n  | \"items-start\"\r\n  | \"items-center\"\r\n  | \"items-end\"\r\n  | \"items-stretch\"\r\n  | \"items-baseline\"\r\n\r\n  // ------------------\r\n  // Align self\r\n  // ------------------\r\n  | \"self-auto\"\r\n  | \"self-start\"\r\n  | \"self-center\"\r\n  | \"self-end\"\r\n  | \"self-stretch\"\r\n\r\n  // ------------------\r\n  // Gap\r\n  // ------------------\r\n  | \"gap-0\" | \"gap-1\" | \"gap-2\" | \"gap-3\" | \"gap-4\" | \"gap-5\"\r\n\r\n  // ------------------\r\n  // Flex sizing\r\n  // ------------------\r\n  | \"flex-1\"\r\n  | \"flex-auto\"\r\n  | \"flex-initial\"\r\n  | \"flex-none\"\r\n\r\n  // Grow / Shrink\r\n  | \"grow-0\" | \"grow-1\"\r\n  | \"shrink-0\" | \"shrink-1\"\r\n\r\n  // Min constraints (IMPORTANT)\r\n  | \"min-w-0\"\r\n  | \"min-h-0\"\r\n\r\n  // ------------------\r\n  // Margin\r\n  // ------------------\r\n  | \"m-0\" | \"m-1\" | \"m-2\" | \"m-3\" | \"m-4\" | \"m-5\" | \"m-auto\"\r\n  | \"mx-0\" | \"mx-1\" | \"mx-2\" | \"mx-3\" | \"mx-4\" | \"mx-5\" | \"mx-auto\"\r\n  | \"my-0\" | \"my-1\" | \"my-2\" | \"my-3\" | \"my-4\" | \"my-5\" | \"my-auto\"\r\n  | \"mt-0\" | \"mt-1\" | \"mt-2\" | \"mt-3\" | \"mt-4\" | \"mt-5\" | \"mt-auto\"\r\n  | \"mb-0\" | \"mb-1\" | \"mb-2\" | \"mb-3\" | \"mb-4\" | \"mb-5\" | \"mb-auto\"\r\n  | \"ms-0\" | \"ms-1\" | \"ms-2\" | \"ms-3\" | \"ms-4\" | \"ms-5\" | \"ms-auto\"\r\n  | \"me-0\" | \"me-1\" | \"me-2\" | \"me-3\" | \"me-4\" | \"me-5\" | \"me-auto\"\r\n\r\n  // ------------------\r\n  // Padding\r\n  // ------------------\r\n  | \"p-0\" | \"p-1\" | \"p-2\" | \"p-3\" | \"p-4\" | \"p-5\"\r\n  | \"px-0\" | \"px-1\" | \"px-2\" | \"px-3\" | \"px-4\" | \"px-5\"\r\n  | \"py-0\" | \"py-1\" | \"py-2\" | \"py-3\" | \"py-4\" | \"py-5\"\r\n  | \"pt-0\" | \"pt-1\" | \"pt-2\" | \"pt-3\" | \"pt-4\" | \"pt-5\"\r\n  | \"pb-0\" | \"pb-1\" | \"pb-2\" | \"pb-3\" | \"pb-4\" | \"pb-5\"\r\n  | \"ps-0\" | \"ps-1\" | \"ps-2\" | \"ps-3\" | \"ps-4\" | \"ps-5\"\r\n  | \"pe-0\" | \"pe-1\" | \"pe-2\" | \"pe-3\" | \"pe-4\" | \"pe-5\"\r\n\r\n  // ------------------\r\n  // Size\r\n  // ------------------\r\n  | \"w-100\" | \"w-auto\"\r\n  | \"h-100\" | \"h-auto\"\r\n\r\n  // ------------------\r\n  // Overflow\r\n  // ------------------\r\n  | \"overflow-auto\"\r\n  | \"overflow-hidden\"\r\n  | \"overflow-scroll\"\r\n  | \"overflow-x-auto\"\r\n  | \"overflow-y-auto\"\r\n\r\n  // ------------------\r\n  // Position\r\n  // ------------------\r\n  | \"position-relative\"\n  | \"position-absolute\"\n  | \"position-fixed\"\n  | \"position-sticky\"\n  | \"top-0\" | \"bottom-0\" | \"start-0\" | \"end-0\"\r\n\r\n  // ------------------\r\n  // Text\r\n  // ------------------\r\n  | \"text-start\"\r\n  | \"text-center\"\r\n  | \"text-end\"\n  | \"text-wrap\"\n  | \"text-nowrap\"\n  | \"text-ellipsis\"\n\r\n  // ------------------\r\n  // Border\r\n  // ------------------\r\n  | \"border\"\r\n  | \"border-0\"\r\n  | \"border-top\"\r\n  | \"border-bottom\"\r\n  | \"border-start\"\r\n  | \"border-end\"\r\n\r\n  // Border style\r\n  | \"border-solid\"\r\n  | \"border-dashed\"\r\n  | \"border-dotted\"\r\n  | \"border-none\"\r\n\r\n  // Border width\r\n  | \"border-1\"\r\n  | \"border-2\"\r\n  | \"border-3\"\r\n\r\n  // ------------------\r\n  // Radius\r\n  // ------------------\r\n  | \"rounded-0\"\r\n  | \"rounded-1\"\r\n  | \"rounded-2\"\r\n  | \"rounded-3\"\r\n  | \"rounded-4\"\r\n  | \"rounded-pill\"\r\n  | \"rounded-circle\"\r\n\r\n  // ------------------\r\n  // Colors (CSS class mirror)\r\n  // ------------------\r\n  // ======================================================\r\n  // BASE ELEMENT \r\n  // ======================================================\r\n  | \"elg\"\r\n\r\n  // ======================================================\r\n  // SURFACES\r\n  // ======================================================\r\n  | \"page\"\r\n  | \"surface\"\r\n  | \"surface-2\"\r\n  | \"surface-3\"\r\n\r\n  // ======================================================\r\n  // SEMANTIC COLORS\r\n  // ======================================================\r\n  | \"primary\"\n  | \"accent\"\n  | \"success\"\n  | \"warning\"\r\n  | \"danger\"\r\n  | \"neutral\"\r\n\r\n  | \"text-primary\"\n  | \"text-muted\"\n  | \"text-success\"\n  | \"text-warning\"\r\n  | \"text-danger\"\n  | \"text-neutral\"\n\n  // ======================================================\n  // TEXT DECORATION\n  // ======================================================\n  | \"underline\"\n  | \"overline\"\n  | \"line-through\"\n  | \"no-underline\"\n\n  // ======================================================\n  // STATE SLOT 1 (PERSISTENT)\r\n  // ======================================================\r\n  | \"selected\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 2 (SEMANTIC / CONTEXT)\r\n  // ======================================================\r\n  | \"active\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 3 (INTERACTION)\r\n  // ======================================================\r\n  | \"hover\"\r\n  | \"focus\"\r\n\r\n  // NOTE:\r\n  // active:active is pseudo-class usage, not a class,\r\n  // so it is NOT included separately.\r\n\r\n  // ======================================================\r\n  // BORDER\r\n  // ======================================================\r\n  | \"border\"\r\n  | \"border-strong\"\r\n\r\n  // ======================================================\r\n  // BG ALPHA UTILITIES\r\n  // ======================================================\r\n  | \"bg-a-05\"\r\n  | \"bg-a-10\"\r\n  | \"bg-a-25\"\r\n  | \"bg-a-50\"\r\n  | \"bg-a-75\"\r\n  | \"bg-a-100\"\r\n\r\n  // ======================================================\r\n  // Font Size\n  // ======================================================\n  | \"fs-50\"\n  | \"fs-60\"\n  | \"fs-70\"\n  | \"fs-80\"\n  | \"fs-90\"\n  | \"fs-100\"\n  | \"fs-110\"\n  | \"fs-120\"\n  | \"fs-130\"\n  | \"fs-140\"\n  | \"fs-150\"\n  | \"fs-200\"\r\n\r\n  // ======================================================\r\n  // Font Weight\r\n  // ======================================================\r\n  | \"fw-100\"\r\n  | \"fw-200\"\r\n  | \"fw-300\"\r\n  | \"fw-400\"\r\n  | \"fw-500\"\r\n  | \"fw-600\"\r\n  | \"fw-700\"\r\n  | \"fw-800\"\r\n\r\n  // ======================================================\r\n  // Components\n  // ======================================================\n  | \"btn\"\n  | \"box\"\n  | \"field\"\n  | \"shadow\"\n  | \"table\"\n  | \"table-bordered\"\n  | \"table-row-borders\"\n\n  | \"user-select-none\"\n  | \"cursor-pointer\"\n  | \"cursor-default\"\n  | \"bg-transparent\"\n  | \"opacity-50\""
+      "definition": "| \"container\" | \"section\" | \"title-display\" | \"title-section\" | \"lead\" | \"eyebrow\" | \"measure\"\r\n  | \"gradient\" | \"gradient-radial\" | \"gradient-mesh\" | \"rotate-on-open\"\r\n  // ------------------\r\n  // Display\r\n  // ------------------\r\n  | \"d-none\"\r\n  | \"d-block\"\r\n  | \"d-inline\"\r\n  | \"d-inline-block\"\r\n  | \"d-flex\"\r\n  | \"d-inline-flex\"\r\n  | \"d-grid\"\r\n\r\n  // Twelve-column grid; responsive variants query the parent grid's width.\r\n  | \"grid\"\r\n  | `col-${GridColumnSpan}`\r\n  | `col-sm-${GridColumnSpan}`\r\n  | `col-md-${GridColumnSpan}`\r\n  | `col-lg-${GridColumnSpan}`\r\n\r\n  // ------------------\r\n  // Flex direction\r\n  // ------------------\r\n  | \"flex-row\"\r\n  | \"flex-row-reverse\"\r\n  | \"flex-col\"\r\n  | \"flex-col-reverse\"\r\n\r\n  // ------------------\r\n  // Flex wrap\r\n  // ------------------\r\n  | \"flex-wrap\"\r\n  | \"flex-nowrap\"\r\n  | \"flex-wrap-reverse\"\r\n\r\n  // ------------------\r\n  // Justify\r\n  // ------------------\r\n  | \"justify-start\"\r\n  | \"justify-center\"\r\n  | \"justify-end\"\r\n  | \"justify-between\"\r\n  | \"justify-around\"\r\n  | \"justify-evenly\"\r\n\r\n  // ------------------\r\n  // Align items\r\n  // ------------------\r\n  | \"items-start\"\r\n  | \"items-center\"\r\n  | \"items-end\"\r\n  | \"items-stretch\"\r\n  | \"items-baseline\"\r\n\r\n  // ------------------\r\n  // Align self\r\n  // ------------------\r\n  | \"self-auto\"\r\n  | \"self-start\"\r\n  | \"self-center\"\r\n  | \"self-end\"\r\n  | \"self-stretch\"\r\n\r\n  // ------------------\r\n  // Gap\r\n  // ------------------\r\n  | \"gap-0\" | \"gap-1\" | \"gap-2\" | \"gap-3\" | \"gap-4\" | \"gap-5\"\r\n\r\n  // ------------------\r\n  // Flex sizing\r\n  // ------------------\r\n  | \"flex-1\"\r\n  | \"flex-auto\"\r\n  | \"flex-initial\"\r\n  | \"flex-none\"\r\n\r\n  // Grow / Shrink\r\n  | \"grow-0\" | \"grow-1\"\r\n  | \"shrink-0\" | \"shrink-1\"\r\n\r\n  // Min constraints (IMPORTANT)\r\n  | \"min-w-0\"\r\n  | \"min-h-0\"\r\n\r\n  // ------------------\r\n  // Margin\r\n  // ------------------\r\n  | \"m-0\" | \"m-1\" | \"m-2\" | \"m-3\" | \"m-4\" | \"m-5\" | \"m-auto\"\r\n  | \"mx-0\" | \"mx-1\" | \"mx-2\" | \"mx-3\" | \"mx-4\" | \"mx-5\" | \"mx-auto\"\r\n  | \"my-0\" | \"my-1\" | \"my-2\" | \"my-3\" | \"my-4\" | \"my-5\" | \"my-auto\"\r\n  | \"mt-0\" | \"mt-1\" | \"mt-2\" | \"mt-3\" | \"mt-4\" | \"mt-5\" | \"mt-auto\"\r\n  | \"mb-0\" | \"mb-1\" | \"mb-2\" | \"mb-3\" | \"mb-4\" | \"mb-5\" | \"mb-auto\"\r\n  | \"ms-0\" | \"ms-1\" | \"ms-2\" | \"ms-3\" | \"ms-4\" | \"ms-5\" | \"ms-auto\"\r\n  | \"me-0\" | \"me-1\" | \"me-2\" | \"me-3\" | \"me-4\" | \"me-5\" | \"me-auto\"\r\n\r\n  // ------------------\r\n  // Padding\r\n  // ------------------\r\n  | \"p-0\" | \"p-1\" | \"p-2\" | \"p-3\" | \"p-4\" | \"p-5\"\r\n  | \"px-0\" | \"px-1\" | \"px-2\" | \"px-3\" | \"px-4\" | \"px-5\"\r\n  | \"py-0\" | \"py-1\" | \"py-2\" | \"py-3\" | \"py-4\" | \"py-5\"\r\n  | \"pt-0\" | \"pt-1\" | \"pt-2\" | \"pt-3\" | \"pt-4\" | \"pt-5\"\r\n  | \"pb-0\" | \"pb-1\" | \"pb-2\" | \"pb-3\" | \"pb-4\" | \"pb-5\"\r\n  | \"ps-0\" | \"ps-1\" | \"ps-2\" | \"ps-3\" | \"ps-4\" | \"ps-5\"\r\n  | \"pe-0\" | \"pe-1\" | \"pe-2\" | \"pe-3\" | \"pe-4\" | \"pe-5\"\r\n\r\n  // ------------------\r\n  // Size\r\n  // ------------------\r\n  | \"w-100\" | \"w-auto\"\r\n  | \"h-100\" | \"h-auto\"\r\n\r\n  // ------------------\r\n  // Overflow\r\n  // ------------------\r\n  | \"overflow-auto\"\r\n  | \"overflow-hidden\"\r\n  | \"overflow-scroll\"\r\n  | \"overflow-x-auto\"\r\n  | \"overflow-y-auto\"\r\n\r\n  // ------------------\r\n  // Position\r\n  // ------------------\r\n  | \"position-relative\"\n  | \"position-absolute\"\n  | \"position-fixed\"\n  | \"position-sticky\"\n  | \"top-0\" | \"bottom-0\" | \"start-0\" | \"end-0\"\r\n\r\n  // ------------------\r\n  // Text\r\n  // ------------------\r\n  | \"text-start\"\r\n  | \"text-center\"\r\n  | \"text-end\"\n  | \"text-wrap\"\n  | \"text-nowrap\"\n  | \"text-ellipsis\"\n\r\n  // ------------------\r\n  // Border\r\n  // ------------------\r\n  | \"border\"\r\n  | \"border-0\"\r\n  | \"border-top\"\r\n  | \"border-bottom\"\r\n  | \"border-start\"\r\n  | \"border-end\"\r\n\r\n  // Border style\r\n  | \"border-solid\"\r\n  | \"border-dashed\"\r\n  | \"border-dotted\"\r\n  | \"border-none\"\r\n\r\n  // Border width\r\n  | \"border-1\"\r\n  | \"border-2\"\r\n  | \"border-3\"\r\n\r\n  // ------------------\r\n  // Radius\r\n  // ------------------\r\n  | \"rounded-0\"\r\n  | \"rounded-1\"\r\n  | \"rounded-2\"\r\n  | \"rounded-3\"\r\n  | \"rounded-4\"\r\n  | \"rounded-pill\"\r\n  | \"rounded-circle\"\r\n\r\n  // ------------------\r\n  // Colors (CSS class mirror)\r\n  // ------------------\r\n  // ======================================================\r\n  // BASE ELEMENT \r\n  // ======================================================\r\n  | \"elg\"\r\n\r\n  // ======================================================\r\n  // SURFACES\r\n  // ======================================================\r\n  | \"page\"\r\n  | \"surface\"\r\n  | \"surface-2\"\r\n  | \"surface-3\"\r\n\r\n  // ======================================================\r\n  // SEMANTIC COLORS\r\n  // ======================================================\r\n  | \"primary\"\n  | \"accent\"\n  | \"success\"\n  | \"warning\"\r\n  | \"danger\"\r\n  | \"neutral\"\r\n\r\n  | \"text-primary\"\n  | \"text-muted\"\n  | \"text-success\"\n  | \"text-warning\"\r\n  | \"text-danger\"\n  | \"text-neutral\"\n\n  // ======================================================\n  // TEXT DECORATION\n  // ======================================================\n  | \"underline\"\n  | \"overline\"\n  | \"line-through\"\n  | \"no-underline\"\n\n  // ======================================================\n  // STATE SLOT 1 (PERSISTENT)\r\n  // ======================================================\r\n  | \"selected\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 2 (SEMANTIC / CONTEXT)\r\n  // ======================================================\r\n  | \"active\"\r\n\r\n  // ======================================================\r\n  // STATE SLOT 3 (INTERACTION)\r\n  // ======================================================\r\n  | \"hover\"\r\n  | \"focus\"\r\n\r\n  // NOTE:\r\n  // active:active is pseudo-class usage, not a class,\r\n  // so it is NOT included separately.\r\n\r\n  // ======================================================\r\n  // BORDER\r\n  // ======================================================\r\n  | \"border\"\r\n  | \"border-strong\"\r\n\r\n  // ======================================================\r\n  // BG ALPHA UTILITIES\r\n  // ======================================================\r\n  | \"bg-a-05\"\r\n  | \"bg-a-10\"\r\n  | \"bg-a-25\"\r\n  | \"bg-a-50\"\r\n  | \"bg-a-75\"\r\n  | \"bg-a-100\"\r\n\r\n  // ======================================================\r\n  // Font Size\n  // ======================================================\n  | \"fs-50\"\n  | \"fs-60\"\n  | \"fs-70\"\n  | \"fs-80\"\n  | \"fs-90\"\n  | \"fs-100\"\n  | \"fs-110\"\n  | \"fs-120\"\n  | \"fs-130\"\n  | \"fs-140\"\n  | \"fs-150\"\n  | \"fs-200\"\r\n\r\n  // ======================================================\r\n  // Font Weight\r\n  // ======================================================\r\n  | \"fw-100\"\r\n  | \"fw-200\"\r\n  | \"fw-300\"\r\n  | \"fw-400\"\r\n  | \"fw-500\"\r\n  | \"fw-600\"\r\n  | \"fw-700\"\r\n  | \"fw-800\"\r\n\r\n  // ======================================================\r\n  // Components\n  // ======================================================\n  | \"btn\"\n  | \"btn-ghost\"\r\n  | \"box\"\n  | \"field\"\n  | \"shadow\"\n  | \"table\"\n  | \"table-bordered\"\n  | \"table-row-borders\"\n\n  | \"user-select-none\"\n  | \"cursor-pointer\"\n  | \"cursor-default\"\n  | \"bg-transparent\"\n  | \"opacity-50\""
     },
     {
       "name": "UndoBaselineEvent",

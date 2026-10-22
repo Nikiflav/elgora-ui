@@ -12,7 +12,7 @@ export default {
   "members": [
     {
       "name": "kind",
-      "type": "\"create\" | \"update\" | \"insert\" | \"delete\" | \"cancel\" | \"reset\"",
+      "type": "\"cancel\" | \"reset\" | \"create\" | \"update\" | \"insert\" | \"delete\"",
       "description": "The completed working-data operation. For DataTable, emitted only after transaction success.\ncreate initializes a pending draft outside table queries; insert includes that draft locally\ninto the table (not to a server). update changes field values, including pending values.\ndelete removes/marks a confirmed row; cancel discards a pending draft.\nreset requests a broader repaint after undo/redo, import, acceptance or rejection.",
       "tags": [],
       "topics": [],

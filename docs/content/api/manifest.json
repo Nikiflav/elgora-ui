@@ -1172,6 +1172,24 @@
       "module": "./content/api/ScrollEngineOptions.js"
     },
     {
+      "name": "ScrollReveal",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Scroll Reveal",
+      "path": "/api-reference/ScrollReveal",
+      "description": "Adds entrance effects to existing HTML or component-owned elements. Observations are\nframe-batched through the UI scheduler; CSS owns the animation frames. Unsupported\nbrowsers and reduced-motion users get visible content, without a polyfill.",
+      "module": "./content/api/ScrollReveal.js"
+    },
+    {
+      "name": "ScrollRevealOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Scroll Reveal",
+      "path": "/api-reference/ScrollRevealOptions",
+      "description": "Viewport-triggered entrance animation configuration; no per-frame scroll handler is used.",
+      "module": "./content/api/ScrollRevealOptions.js"
+    },
+    {
       "name": "ScrollSpy",
       "kind": "class",
       "group": "components",
@@ -1233,6 +1251,15 @@
       "path": "/api-reference/SelectionRange",
       "description": "Rectangular range between an anchor cell and a focus cell.",
       "module": "./content/api/SelectionRange.js"
+    },
+    {
+      "name": "setElementProps",
+      "kind": "function",
+      "group": "core",
+      "namespace": "Core",
+      "path": "/api-reference/setElementProps",
+      "description": "Applies the given props to the given element.\r\nUses diff to apply only the changes.\r\nclass, className and ui are combined independently of property order. Patching\r\nremoves only their previous managed tokens, retaining unrelated DOM classes.\r\nDo not also control the same token through bindClass() or direct classList edits.",
+      "module": "./content/api/setElementProps.js"
     },
     {
       "name": "SizeManager",

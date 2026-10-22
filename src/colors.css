@@ -20,6 +20,14 @@
     --elg-bg-a: 1;
     --elg-text-a: 1;
 
+    /* Standard buttons; compact controls can override padding locally. */
+    --elg-btn-padding: .15em .5em;
+    --elg-btn-radius: 6px;
+    --elg-btn-neutral-bg: color-mix(in srgb, var(--elg-text-color) 3%, transparent);
+    --elg-btn-neutral-hover-bg: color-mix(in srgb, var(--elg-text-color) 6%, transparent);
+    --elg-btn-neutral-pressed-bg: color-mix(in srgb, var(--elg-text-color) 10%, transparent);
+    --elg-btn-neutral-border: hsl(var(--elg-border-hsl));
+
     /* ======================================================
      STATE SLOTS (S + L AXES)
   ====================================================== */

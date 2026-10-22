@@ -12,7 +12,6 @@ import { ScrollSpy } from "../../src/components/scroll-spy/ScrollSpy";
 export class MarkdownTopicPage extends Component {
     constructor(topic: MarkdownTopic, apiLoader: ApiLoader, apiManifest: ApiManifestEntry[], scrollContainer?: HTMLElement) {
         const article = e("article", { ui: ["elg", "min-w-0"] });
-        if (topic.id === "docs-home") article.classList.add("docs-home");
         article.innerHTML = topic.html;
         const title = article.querySelector<HTMLHeadingElement>("h1");
         if (title) applyUi(title, ["elg", "mt-0"]);

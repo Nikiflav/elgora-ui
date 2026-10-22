@@ -1,5 +1,5 @@
 import { BrowserRouter, RouterHandler } from '../src/components/browser-router/BrowserRouter';
-import { c, cbutton, cdiv } from '../src/core/c';
+import { c, cdiv } from '../src/core/c';
 import { a, div, e, nav } from '../src/core/e';
 import { ObservableValue } from '../src/core/ElgoraUI';
 import { UiStyle } from '../src/core/UiStyle';
@@ -9,6 +9,7 @@ import { TopicLoader } from './app/TopicLoader';
 import { ApiLoader } from './app/ApiLoader';
 import { ApiTopicPage } from './app/ApiTopicPage';
 import { Scrollbars } from '../src/components/scrollbar/Scrollbars';
+import { createDocsHeader } from './app/DocsNavigation';
 
 type SidebarLink = {
     id?: string;
@@ -44,7 +45,7 @@ function createSidebarGroup(title: string, links: SidebarLink[], currentPath: Ob
         className: "ri-arrow-down-s-line elg-doc-nav-chevron"
     });
     chevron.dom.setAttribute("aria-hidden", "true");
-    const toggleUi: UiStyle[] = ["elg", "d-flex", "items-center", "justify-between", "w-100", "p-1", "rounded-1", "text-start", "border-0", "surface", "hover", "focus", "cursor-pointer"];
+    const toggleUi: UiStyle[] = ["elg", "d-flex", "items-center", "justify-between", "w-100", "p-1", "rounded-1", "text-start", "border-0", "hover", "focus", "cursor-pointer"];
     if (depth === 0) toggleUi.push("fs-110");
     const toggle = c("button", {
         ui: toggleUi,
@@ -81,53 +82,22 @@ function createSidebarGroup(title: string, links: SidebarLink[], currentPath: Ob
     return group;
 }
 
-function createDocsHeader(sidebar: HTMLElement) {
-    const toggleNavigation = e("button", { type: "button", class: "docs-nav-toggle",
-        ui: ["elg", "btn", "neutral"], ariaLabel: "Toggle navigation", ariaExpanded: "false" },
-        e("i", { class: "ri-menu-line", ariaHidden: "true" }));
-    toggleNavigation.setAttribute("aria-controls", "docs-sidebar");
-    const closeNavigation = () => { delete sidebar.dataset.open; toggleNavigation.setAttribute("aria-expanded", "false"); };
-    toggleNavigation.addEventListener("click", () => {
-        const open = !sidebar.dataset.open;
-        if (open) sidebar.dataset.open = "true"; else closeNavigation();
-        toggleNavigation.setAttribute("aria-expanded", String(open));
-    });
-    sidebar.addEventListener("click", event => { if ((event.target as Element).closest("a")) closeNavigation(); });
-    sidebar.addEventListener("keydown", event => { if (event.key === "Escape") { closeNavigation(); toggleNavigation.focus(); } });
-    const theme = new ObservableValue(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+function createSidebarSearch(sidebar: HTMLElement) {
     const search = e("input", {
         ui: ["elg"],
         type: "search",
         placeholder: "Search documentation…",
         ariaLabel: "Search documentation"
     });
-    const themeButton = cbutton({
-        ui: ["elg", "btn", "neutral"],
-        type: "button",
-        ariaLabel: "Toggle theme"
-    }, "Theme");
-
-    themeButton.bindProperty("textContent", theme, value => value === "dark" ? "☀ Light" : "☾ Dark");
-    themeButton.dom.addEventListener("click", () => {
-        const next = theme.Value === "dark" ? "light" : "dark";
-        theme.Value = next;
-        if (next === "dark") document.documentElement.dataset.theme = "dark";
-        else delete document.documentElement.dataset.theme;
-    });
-
     search.addEventListener("input", () => {
         const query = search.value.trim().toLowerCase();
-        for (const link of sidebar.querySelectorAll<HTMLAnchorElement>("a")) {
+        for (const link of sidebar.querySelectorAll<HTMLAnchorElement>(".docs-sidebar-topics a")) {
             link.style.display = !query || link.textContent?.toLowerCase().includes(query) ? "block" : "none";
         }
     });
-
-    return e("header", { class: "docs-header", ui: ["elg", "d-flex", "items-center", "gap-3", "px-4", "py-2", "border-bottom"] },
-        toggleNavigation,
-        e("a", { href: "?!=/", ui: ["elg", "fw-700", "no-underline"] }, "ELGORA UI"),
-        search,
-        themeButton
-    );
+    return e("div", { class: "docs-sidebar-search" },
+        e("div", { class: "docs-search-control" },
+            e("i", { class: "ri-search-line", ariaHidden: "true" }), search));
 }
 
 async function bootstrap(): Promise<void> {
@@ -149,6 +119,7 @@ async function bootstrap(): Promise<void> {
     let pageVersion = 0;
     const markdownRoutes: RouterHandler[] = markdownTopics.map(entry => ({
         path: entry.path,
+        ...(entry.path === "/" ? { regex: /^\/$/ } : {}),
         createPage() {
             const version = ++pageVersion;
             activePage?.dispose(); activePage = undefined;
@@ -161,10 +132,14 @@ async function bootstrap(): Promise<void> {
                     try {
                         const topic = await topicLoader.load(entry);
                         if (version !== pageVersion) return;
-                        const page = new MarkdownTopicPage(topic, apiLoader, apiManifest.entries, router.dom);
+                        const page = entry.path === "/"
+                            ? new (await import("./app/LandingPage")).LandingPage(topic.demos, router.dom)
+                            : new MarkdownTopicPage(topic, apiLoader, apiManifest.entries, router.dom);
+                        if (version !== pageVersion) { page.dispose(); return; }
                         activePage = page;
-                        pageRoot.className = "elg elg-p-3 elg-min-w-0 elg-w-100";
+                        pageRoot.className = entry.path === "/" ? "elg elg-min-w-0 elg-w-100" : "elg elg-p-3 elg-min-w-0 elg-w-100";
                         pageRoot.replaceChildren(page.dom);
+                        router.dom.scrollTop = 0;
                     } catch (error) {
                         pageRoot.className = "elg elg-p-3 elg-text-danger";
                         pageRoot.textContent = error instanceof Error ? error.message : String(error);
@@ -200,6 +175,7 @@ async function bootstrap(): Promise<void> {
                         activePage = page;
                         pageRoot.className = "elg elg-p-3 elg-min-w-0 elg-w-100";
                         pageRoot.replaceChildren(page.dom);
+                        router.dom.scrollTop = 0;
                         revealMember();
                     } catch (error) {
                         pageRoot.className = "elg elg-p-3 elg-text-danger";
@@ -217,6 +193,7 @@ async function bootstrap(): Promise<void> {
     ];
 
     const router = new BrowserRouter(routes);
+    router.dom.classList.add("docs-router");
 
     const gettingStartedLinks = buildSidebarTree(markdownTopics
         .filter(topic => topic.group === "getting-started")
@@ -297,10 +274,11 @@ const styleLinks = buildSidebarTree(markdownTopics
     const sidebar = nav(
         {
             id: "docs-sidebar", class: "docs-sidebar",
-            ui: ["elg", "surface", "flex-none", "h-100", "min-h-0", "overflow-y-auto", "p-3",
-                "border-end", "d-flex", "flex-col", "gap-1"],
+            ui: ["elg", "flex-none", "h-100", "min-h-0",
+                "border-end", "d-flex", "flex-col"],
             style: { width: "280px", minWidth: "280px" }
         },
+    div({ class: "docs-sidebar-topics", ui: ["elg", "grow-1", "min-h-0", "overflow-y-auto", "p-3", "d-flex", "flex-col", "gap-1"] },
     overviewLink,
     createSidebarGroup("Getting started", gettingStartedLinks, currentPath),
     createSidebarGroup("Fundamentals", fundamentalLinks, currentPath),
@@ -308,17 +286,19 @@ const styleLinks = buildSidebarTree(markdownTopics
             createSidebarGroup("Components", componentLinks, currentPath),
             createSidebarGroup("Data", dataLinks, currentPath),
             createSidebarGroup("Core utilities", coreLinks, currentPath, false),
-            createSidebarGroup("API Reference", apiLinks, currentPath, false)
+            createSidebarGroup("API Reference", apiLinks, currentPath, false))
     );
+    sidebar.prepend(createSidebarSearch(sidebar));
 
     const app = cdiv(
-        { ui: ["elg", "d-flex", "flex-col", "h-100"] },
-        createDocsHeader(sidebar),
-        cdiv({ ui: ["elg", "d-flex", "grow-1", "min-h-0"] },
-            sidebar,
-            div({ class: "docs-content", ui: ["grow-1", "d-flex", "min-w-0" ] }, router)
+        { ui: ["elg", "d-flex", "h-100"] },
+        sidebar,
+        cdiv({ className: "docs-main", ui: ["elg", "d-flex", "flex-col", "grow-1", "min-h-0", "min-w-0"] },
+            createDocsHeader(sidebar),
+            div({ class: "docs-content", ui: ["grow-1", "d-flex", "min-w-0", "min-h-0" ] }, router)
         )
     );
+    app.bindClass("docs-site-home", currentPath, path => path === "/");
 
     app.mount(document.getElementById('app')!);
     app.addCleanup(Scrollbars.install(window));

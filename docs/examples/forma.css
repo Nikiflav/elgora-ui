@@ -1,0 +1,153 @@
+/* Forma is a fictional product identity, not a default Elgora UI theme. */
+.forma {
+    --forma-paper: #fcfbf8;
+    --forma-ink: #262236;
+    --forma-muted: #706c7e;
+    --forma-panel: #fff;
+    --forma-line: #e7e3ed;
+    --forma-lilac: #eee9fc;
+    --forma-brand: #6b49cf;
+    --forma-shadow: 0 30px 90px #39296918;
+    --elg-container-width: 76rem;
+    --elg-section-space: clamp(3.5rem, 8vw, 7rem);
+    --elg-gradient-from: #cbb9ff42;
+    --elg-gradient-to: #ffbd9e38;
+    --elg-gradient-accent: #f6d4ef38;
+    background: var(--forma-paper);
+    color: var(--forma-ink);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    isolation: isolate;
+}
+[data-theme="dark"] .forma {
+    --forma-paper: #191722;
+    --forma-ink: #f1edf7;
+    --forma-muted: #b1aabd;
+    --forma-panel: #24212f;
+    --forma-line: #3e384d;
+    --forma-lilac: #352b4c;
+    --forma-brand: #bea4ff;
+    --forma-shadow: 0 30px 90px #0004;
+    --elg-gradient-from: #8865d92b;
+    --elg-gradient-to: #d79b7c16;
+    --elg-gradient-accent: #a46a9a20;
+}
+.forma *, .forma *::before, .forma *::after { box-sizing: border-box; }
+.forma a { color: inherit; text-decoration: none; }
+.forma button { font: inherit; cursor: pointer; }
+.forma p { margin: 0; }
+.forma h3 { font-size: 1.25rem; line-height: 1.25; letter-spacing: -.025em; margin: 0; }
+.forma .elg-text-muted { color: var(--forma-muted); }
+.forma :is(a, button, summary):focus-visible { outline: 2px solid var(--forma-brand); outline-offset: 4px; }
+.forma .forma-logo { display: inline-flex; align-items: center; gap: .55rem; font-weight: 750; font-size: 1.6rem; letter-spacing: -.07em; }
+.forma-logo-mark { width: 27px; height: 27px; border-radius: 9px 9px 9px 2px; background: var(--forma-brand); rotate: -10deg; display: inline-block; }
+.forma-header { min-height: 88px; border-bottom: 1px solid var(--forma-line); }
+.forma-nav-links { display: flex; gap: 2rem; font-size: .85rem; color: var(--forma-muted); }
+.forma-nav-links a:hover { color: var(--forma-brand); }
+.forma-theme { border: 1px solid var(--forma-line); background: var(--forma-panel); color: inherit; width: 36px; height: 36px; border-radius: 50%; }
+.forma .forma-button {
+    display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+    min-height: 46px; padding: .75rem 1.2rem; border: 1px solid transparent;
+    border-radius: 9px; font-size: .85rem; font-weight: 600;
+    background: var(--forma-ink); color: var(--forma-paper);
+    transition: transform 180ms var(--elg-motion-easing);
+}
+.forma .forma-button-secondary { background: var(--forma-panel); color: var(--forma-ink); border-color: var(--forma-line); }
+.forma .forma-button-small { min-height: 37px; padding: .5rem .85rem; }
+@media (hover: hover) { .forma .forma-button:hover { transform: translateY(-2px); } }
+.forma-hero { padding-top: clamp(3.5rem, 7vw, 6rem); padding-bottom: 0; text-align: center; overflow: hidden; }
+.forma .forma-badge { display: inline-flex; align-items: center; gap: .5rem; padding: .35rem .7rem; border: 1px solid var(--forma-line); background: var(--forma-panel); border-radius: 30px; font-size: .72rem; }
+.forma-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #9772d9; }
+.forma-hero .elg-title-display { max-width: 15ch; margin: 1.3rem auto; font-size: clamp(3rem, 7.4vw, 6.1rem); }
+.forma em { font-family: Georgia, serif; font-weight: 400; color: var(--forma-brand); }
+.forma-hero .elg-lead { max-width: 44ch; margin: 0 auto 1.6rem; }
+.forma-hero-note { font-size: .7rem; margin-top: .9rem !important; }
+.forma-workspace-wrap { max-width: 970px; margin: 3rem auto 0; padding: 0 .4rem; text-align: start; }
+.forma-workspace { display: grid; grid-template-columns: 165px minmax(0, 1fr); background: var(--forma-panel); border: 1px solid var(--forma-line); border-radius: 14px; box-shadow: var(--forma-shadow); min-width: 0; overflow: hidden; }
+.forma-sidebar { background: color-mix(in srgb, var(--forma-lilac) 40%, var(--forma-panel)); border-right: 1px solid var(--forma-line); padding: 1.25rem .9rem; font-size: .72rem; }
+.forma-sidebar .forma-logo { font-size: 1.05rem; margin: 0 .3rem 1.4rem; }
+.forma-sidebar .forma-logo-mark { width: 17px; height: 17px; border-radius: 6px 6px 6px 1px; }
+.forma-side-label { font-size: .6rem; letter-spacing: .1em; color: var(--forma-muted); margin: 1.5rem .4rem .5rem !important; }
+.forma-side-item { padding: .55rem; display: flex; gap: .5rem; align-items: center; border-radius: 6px; margin-block: .15rem; }
+.forma-side-active { background: var(--forma-lilac); color: var(--forma-brand); font-weight: 600; }
+.forma-workspace-main { padding: 1.4rem; min-width: 0; }
+.forma-workspace-title { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.forma-workspace-title h3 { font-size: 1.15rem; }
+.forma-workspace-subtitle { font-size: .7rem; color: var(--forma-muted); margin-block: .35rem 1rem !important; }
+.forma-avatars { display: flex; padding-left: .5rem; }
+.forma-avatar { display: inline-grid; place-items: center; width: 27px; height: 27px; border: 2px solid var(--forma-panel); background: #e6c4a5; color: #55392b; border-radius: 50%; font-size: .6rem; margin-left: -.4rem; }
+.forma-avatar:nth-child(2) { background: #c9d4c1; color: #394e31; }
+.forma-avatar:nth-child(3) { background: #d6c5ed; color: #50336d; }
+.forma-view-controls { border-bottom: 1px solid var(--forma-line); margin-bottom: 1rem; display: flex; gap: 1rem; }
+.forma-view-controls button { color: var(--forma-muted); background: none; border: 0; border-bottom: 2px solid transparent; padding: .4rem 0 .6rem; font-size: .72rem; }
+.forma-view-controls button[aria-pressed="true"] { color: var(--forma-brand); border-bottom-color: var(--forma-brand); }
+.forma-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; min-height: 217px; }
+.forma-board.is-list { grid-template-columns: 1fr; }
+.forma-board.is-list .forma-note { display: grid; grid-template-columns: 60px 1fr auto; align-items: center; gap: 1rem; }
+.forma-board.is-list .forma-art { height: 45px; margin: 0; border-radius: 5px; }
+.forma-note { border: 1px solid var(--forma-line); border-radius: 9px; padding: .6rem; min-width: 0; background: var(--forma-panel); }
+.forma-note h4 { margin: .7rem 0 .25rem; font-size: .76rem; }
+.forma-note p { font-size: .64rem; color: var(--forma-muted); }
+.forma-art { height: 115px; position: relative; overflow: hidden; border-radius: 5px; }
+.forma-art-landscape { background: radial-gradient(circle at 70% 25%, #f4d99f 0 8%, transparent 8.5%), linear-gradient(150deg, transparent 48%, #8e9b90 49% 66%, transparent 67%), linear-gradient(25deg, #62796f 0 35%, transparent 36%), linear-gradient(#c3d2cb, #e5dbbd); }
+.forma-art-poster { background: linear-gradient(110deg, #ecbfa8, #e9cdba); color: #553a36; }
+.forma-art-poster::before { content: "FIELD / NOTES"; font: italic 1.55rem/1.1 Georgia, serif; letter-spacing: -.05em; position: absolute; inset: 15% 12%; }
+.forma-art-poster::after { content: "A STUDY IN SMALL THINGS"; position: absolute; bottom: 12%; left: 12%; font-size: .35rem; letter-spacing: .15em; }
+.forma-art-shapes { background: #cdc0e4; }
+.forma-art-shapes::before { content: ""; position: absolute; width: 95px; height: 95px; border-radius: 50%; background: #8a73ac; left: 15%; top: 24%; }
+.forma-art-shapes::after { content: ""; position: absolute; width: 80px; height: 80px; border-radius: 45% 45% 4% 4%; background: #ece3d3; right: 12%; top: 10%; rotate: 15deg; }
+.forma-task { display: flex; gap: .5rem; align-items: center; width: 100%; text-align: start; padding: .65rem 0 0; border: 0; background: none; color: var(--forma-muted); font-size: .65rem !important; }
+.forma-task[aria-pressed="true"] { color: var(--forma-brand); }
+.forma-proof { padding-block: 2.5rem; border-bottom: 1px solid var(--forma-line); text-align: center; }
+.forma-proof p { font-size: .7rem; color: var(--forma-muted); }
+.forma-proof-roles { font-family: Georgia, serif; font-size: clamp(1rem, 2vw, 1.4rem); color: var(--forma-muted); margin-top: 1rem; display: flex; justify-content: center; gap: clamp(1rem, 4vw, 3rem); flex-wrap: wrap; }
+.forma-section-head { max-width: 640px; margin-bottom: 2rem; }
+.forma-section-head .elg-eyebrow { color: var(--forma-brand); margin-bottom: .9rem; }
+.forma-section-head .elg-title-section { margin-bottom: 1rem; }
+.forma-feature { padding: 2rem; border: 1px solid var(--forma-line); border-radius: 15px; background: var(--forma-panel); }
+.forma-feature p { margin-top: .7rem; max-width: 39ch; color: var(--forma-muted); }
+.forma-feature-wide { background: color-mix(in srgb, var(--forma-lilac) 55%, var(--forma-panel)); }
+.forma-feature-icon { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--forma-line); background: var(--forma-panel); color: var(--forma-brand); margin-bottom: 1.5rem; font-size: 1.2rem; }
+.forma-mini-notes { display: flex; gap: .75rem; margin-top: 2rem; }
+.forma-mini-note { padding: 1rem; min-height: 110px; width: 50%; border-radius: 8px; background: #e9d0ba; color: #654633; rotate: -3deg; font: italic 1.2rem Georgia, serif; }
+.forma-mini-note + .forma-mini-note { background: #d1d9c7; color: #3d5437; rotate: 3deg; }
+.forma-step { border-top: 1px solid var(--forma-line); padding-top: 1.25rem; }
+.forma-step-number { font-family: Georgia, serif; color: var(--forma-brand); font-size: 2rem; margin-bottom: 1rem; display: block; }
+.forma-step p { color: var(--forma-muted); margin-top: .7rem; }
+.forma-project { border-radius: 12px; border: 1px solid var(--forma-line); padding: .65rem; background: var(--forma-panel); }
+.forma-project .forma-art { height: 190px; }
+.forma-project h3 { font-size: 1rem; padding: .75rem .35rem .3rem; }
+.forma-project p { font-size: .8rem; color: var(--forma-muted); padding: 0 .35rem .5rem; }
+.forma-faq details { border-bottom: 1px solid var(--forma-line); padding-block: 1.2rem; }
+.forma-faq summary { cursor: pointer; font-weight: 550; display: flex; align-items: center; justify-content: space-between; gap: 1rem; list-style: none; }
+.forma-faq summary::-webkit-details-marker { display: none; }
+.forma-faq summary > i { flex: none; font-size: 1.25rem; color: var(--forma-muted); }
+.forma-faq details p { margin-top: .75rem; color: var(--forma-muted); max-width: 60ch; }
+.forma-cta { border-radius: 20px; padding: clamp(2rem, 5vw, 4rem); text-align: center; border: 1px solid var(--forma-line); }
+.forma-cta .elg-title-section { margin-bottom: 1rem; }
+.forma-cta p { max-width: 45ch; margin: 0 auto 1.5rem; color: var(--forma-muted); }
+.forma-footer { border-top: 1px solid var(--forma-line); padding-block: 2rem; font-size: .75rem; color: var(--forma-muted); }
+.forma-skip { position: absolute; top: -100px; left: 1rem; z-index: 10; padding: .7rem; background: var(--forma-panel); }
+.forma-skip:focus { top: 1rem; }
+.forma-demo-notice { padding: .5rem 1rem; font-size: .65rem; text-align: center; background: var(--forma-lilac); color: var(--forma-muted); }
+@media (max-width: 620px) {
+    .forma-header { min-height: 72px; }
+    .forma-nav-links { gap: .9rem; font-size: .75rem; white-space: nowrap; }
+    .forma .forma-nav-extra { display: none; }
+    .forma-workspace { grid-template-columns: 1fr; }
+    .forma-sidebar { display: none; }
+    .forma-workspace-main { padding: 1rem; }
+    .forma-board { grid-template-columns: 1fr; }
+    .forma-note { display: grid; grid-template-columns: 70px 1fr; gap: .7rem; align-items: center; }
+    .forma-note .forma-art { height: 75px; grid-row: span 2; }
+    .forma-note h4 { margin: 0 0 .2rem; }
+    .forma-note .forma-task { padding-top: 0; }
+    .forma-board.is-list .forma-note { grid-template-columns: 60px 1fr; }
+    .forma-feature { padding: 1.5rem; }
+}
+@media (max-width: 380px) {
+    .forma-nav-links { gap: .6rem; font-size: .7rem; }
+    .forma-header .forma-logo { font-size: 1.4rem; }
+}
+@media (prefers-reduced-motion: reduce) { .forma .forma-button { transition: none; } }
