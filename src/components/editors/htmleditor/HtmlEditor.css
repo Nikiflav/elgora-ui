@@ -1,0 +1,31 @@
+.elg-html-editor-content {
+    --elg-html-editor-background: #fff;
+    min-height: 120px;
+    padding: 0.75rem;
+    overflow: auto;
+    background-color: var(--elg-html-editor-background);
+    color: var(--elg-text-color, #212529);
+    border: 1px solid var(--elg-border-color, #ced4da);
+    border-radius: 0.25rem;
+    outline: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+[data-theme="dark"] .elg-html-editor-content {
+    --elg-html-editor-background: var(--elg-surface-color-2, #171921);
+}
+
+.elg-html-editor-content:focus {
+    border-color: var(--elg-primary-border, #86b7fe);
+}
+
+.elg-html-editor-content:empty::before {
+    content: attr(data-elg-placeholder);
+    color: var(--elg-muted-color, #6c757d);
+    pointer-events: none;
+}
+
+.elg-html-editor-content [data-elg-editor-node] {
+    outline: none;
+}

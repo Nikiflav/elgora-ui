@@ -695,6 +695,24 @@
       "module": "./content/api/FixedSizeManager.js"
     },
     {
+      "name": "getHtmlEditorElementBehavior",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/getHtmlEditorElementBehavior",
+      "description": "Central built-in behavior registry. Unknown block elements retain their container boundary.",
+      "module": "./content/api/getHtmlEditorElementBehavior.js"
+    },
+    {
+      "name": "getHtmlEditorStyle",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/getHtmlEditorStyle",
+      "description": "Looks up an explicitly authored property, respecting priority. Does not resolve shorthands or computed CSS.",
+      "module": "./content/api/getHtmlEditorStyle.js"
+    },
+    {
       "name": "GridCell",
       "kind": "type",
       "group": "types",
@@ -792,6 +810,132 @@
       "path": "/api-reference/GroupItem",
       "description": "A group bucket produced by QueryArgs.groupBy; count is the number of matching data rows.",
       "module": "./content/api/GroupItem.js"
+    },
+    {
+      "name": "HtmlEditor",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditor",
+      "description": "Rich-text editing through model commands, with scoped reconciliation for IME and noncancelable input.",
+      "module": "./content/api/HtmlEditor.js"
+    },
+    {
+      "name": "HtmlEditorCommand",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorCommand",
+      "description": "Operations currently supported by the rich-text command layer.",
+      "module": "./content/api/HtmlEditorCommand.js"
+    },
+    {
+      "name": "HtmlEditorDocument",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorDocument",
+      "description": "",
+      "module": "./content/api/HtmlEditorDocument.js"
+    },
+    {
+      "name": "HtmlEditorElement",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorElement",
+      "description": "HTML element content, with a single canonical location for each authored property.",
+      "module": "./content/api/HtmlEditorElement.js"
+    },
+    {
+      "name": "HtmlEditorElementBehavior",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorElementBehavior",
+      "description": "Rules shared by keyboard commands, range replacement and structural navigation.",
+      "module": "./content/api/HtmlEditorElementBehavior.js"
+    },
+    {
+      "name": "HtmlEditorElementKind",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorElementKind",
+      "description": "Structural editing policy, independent of CSS display and of the DOM renderer.",
+      "module": "./content/api/HtmlEditorElementKind.js"
+    },
+    {
+      "name": "HtmlEditorNode",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorNode",
+      "description": "",
+      "module": "./content/api/HtmlEditorNode.js"
+    },
+    {
+      "name": "HtmlEditorNodeId",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorNodeId",
+      "description": "Runtime identity used by selection and history; distinct from an HTML id attribute.",
+      "module": "./content/api/HtmlEditorNodeId.js"
+    },
+    {
+      "name": "HtmlEditorOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorOptions",
+      "description": "Configuration for the native rich-text editing surface.",
+      "module": "./content/api/HtmlEditorOptions.js"
+    },
+    {
+      "name": "HtmlEditorPositionState",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPositionState",
+      "description": "Text offsets count UTF-16 units; element/root offsets count supported model children.",
+      "module": "./content/api/HtmlEditorPositionState.js"
+    },
+    {
+      "name": "HtmlEditorSelectionState",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSelectionState",
+      "description": "Directed range: anchor is the fixed endpoint and focus is the moving endpoint.",
+      "module": "./content/api/HtmlEditorSelectionState.js"
+    },
+    {
+      "name": "HtmlEditorState",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorState",
+      "description": "A document and directed selection are committed/restored as one history entry.",
+      "module": "./content/api/HtmlEditorState.js"
+    },
+    {
+      "name": "HtmlEditorStyle",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorStyle",
+      "description": "One inline CSS declaration. Array order, duplicates and !important are significant.",
+      "module": "./content/api/HtmlEditorStyle.js"
+    },
+    {
+      "name": "HtmlEditorText",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorText",
+      "description": "A text leaf has no element attributes, presentation or children.",
+      "module": "./content/api/HtmlEditorText.js"
     },
     {
       "name": "KeyMapping",
@@ -1172,6 +1316,15 @@
       "module": "./content/api/RemixIcon.js"
     },
     {
+      "name": "removeHtmlEditorStyle",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/removeHtmlEditorStyle",
+      "description": "Removes only declarations with this exact name, returning the original array when unchanged.",
+      "module": "./content/api/removeHtmlEditorStyle.js"
+    },
+    {
       "name": "RenderRowArgs",
       "kind": "type",
       "group": "types",
@@ -1395,6 +1548,15 @@
       "path": "/api-reference/setElementProps",
       "description": "Applies the given props to the given element.\r\nUses diff to apply only the changes.\r\nclass, className and ui are combined independently of property order. Patching\r\nremoves only their previous managed tokens, retaining unrelated DOM classes.\r\nDo not also control the same token through bindClass() or direct classList edits.",
       "module": "./content/api/setElementProps.js"
+    },
+    {
+      "name": "setHtmlEditorStyle",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/setHtmlEditorStyle",
+      "description": "Replaces declarations of one property and appends the new declaration. Other shorthand/longhand declarations retain their order.",
+      "module": "./content/api/setHtmlEditorStyle.js"
     },
     {
       "name": "SizeManager",

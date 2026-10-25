@@ -38,6 +38,7 @@ the accepted value, and checkbox/toggle changes confirm immediately.
 - [Lookup](?!=/components/lookup-editor): search and select an item from a virtualized list.
 - [Date](?!=/components/date-editor): formatted date-only input and DatePicker picker.
 - [Time and DateTime](?!=/components/time-editors): time slots and a combined calendar/time picker.
+- [HTML editor](?!=/components/html-editor): edit rich-text HTML and accept or discard the draft.
 
 Each sub-topic contains an editable demo, configuration examples, keyboard
 behavior and links to its API reference. [DatePicker](?!=/components/date-picker)

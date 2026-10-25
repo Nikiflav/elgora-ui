@@ -5,7 +5,7 @@ export default {
   "group": "components",
   "order": 21,
   "description": "Build visual AND/OR filters independently of DataGrid and distinguish editor drafts from applied queries.",
-  "prev": "/components/date-picker",
+  "prev": "/components/html-editor",
   "next": "/popover",
   "toc": true,
   "api": [

@@ -64,3 +64,8 @@ export { PopoverEditor, type PopoverTextEditorOptions } from './components/edito
 export { LookupEditor, type LookupEditorOptions, type LookupQuery, type LookupResult } from './components/editors/LookupEditor';
 export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
     type ValueEditorOptions, type TextEditorOptions, type NumberEditorOptions, type BooleanEditorOptions } from './components/editors/ValueEditor';
+export { HtmlEditor, type HtmlEditorOptions } from './components/editors/htmleditor/HtmlEditor';
+export type { HtmlEditorNode, HtmlEditorNodeId, HtmlEditorText, HtmlEditorElement, HtmlEditorStyle, HtmlEditorDocument, HtmlEditorPositionState, HtmlEditorSelectionState } from './components/editors/htmleditor/HtmlEditorModel';
+export { getHtmlEditorStyle, setHtmlEditorStyle, removeHtmlEditorStyle } from './components/editors/htmleditor/HtmlEditorStyles';
+export type { HtmlEditorCommand, HtmlEditorState } from './components/editors/htmleditor/HtmlEditorCommands';
+export { getHtmlEditorElementBehavior, type HtmlEditorElementBehavior, type HtmlEditorElementKind } from './components/editors/htmleditor/HtmlEditorStructure';

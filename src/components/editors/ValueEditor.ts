@@ -51,7 +51,7 @@ export abstract class ValueEditor<T> extends Component {
     protected draft: T;
     protected accepted: T;
     protected readonly editorOptions: ValueEditorOptions<T>;
-    protected control!: HTMLInputElement | HTMLButtonElement;
+    protected control!: HTMLElement;
     private errorElement: HTMLElement;
     private errorAdornment?: HTMLElement;
     private errorTooltipCleanup?: () => void;
@@ -94,7 +94,7 @@ export abstract class ValueEditor<T> extends Component {
     }
 
     /** Installs a native control without replacing it during subsequent edits. */
-    protected installControl(control: HTMLInputElement | HTMLButtonElement): void {
+    protected installControl(control: HTMLElement): void {
         this.control = control;
         if (this.editorOptions.label) control.setAttribute("aria-label", this.editorOptions.label);
         this.dom.insertBefore(control, this.errorElement);
@@ -133,9 +133,10 @@ export abstract class ValueEditor<T> extends Component {
     /** Updates enabled and validation states while keeping native focus and selection. */
     protected syncControl(): void {
         if (!this.control) return;
-        this.control.disabled = !!this.editorOptions.disabled || this.busy
-            || (this.control instanceof HTMLButtonElement && !!this.editorOptions.readOnly)
-            || (this.control instanceof HTMLInputElement && this.control.type === "checkbox" && !!this.editorOptions.readOnly);
+        if (this.control instanceof HTMLInputElement || this.control instanceof HTMLButtonElement)
+            this.control.disabled = !!this.editorOptions.disabled || this.busy
+                || (!!this.editorOptions.readOnly && (this.control instanceof HTMLButtonElement || this.control.type === "checkbox"));
+        this.control.setAttribute("aria-disabled", String(!!this.editorOptions.disabled || this.busy));
         if (this.control instanceof HTMLInputElement) this.control.readOnly = !!this.editorOptions.readOnly;
         this.control.setAttribute("aria-invalid", String(!!this.message));
         this.dom.setAttribute("aria-busy", String(this.busy));

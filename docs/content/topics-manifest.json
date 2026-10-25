@@ -745,7 +745,7 @@
       "order": 20,
       "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
       "prev": "/components/time-editors",
-      "next": "/components/filter-editor",
+      "next": "/components/html-editor",
       "toc": true,
       "api": [],
       "keywords": [],
@@ -804,6 +804,73 @@
       "module": "./content/topics/data-fields.js"
     },
     {
+      "id": "html-editor",
+      "title": "HTML",
+      "path": "/components/html-editor",
+      "group": "components",
+      "parent": "editors",
+      "order": 20,
+      "description": "Edit rich-text HTML as a draft and let the host accept or discard it.",
+      "prev": "/components/date-picker",
+      "next": "/components/filter-editor",
+      "toc": true,
+      "api": [
+        "HtmlEditor",
+        "HtmlEditorOptions",
+        "ValueEditor"
+      ],
+      "keywords": [
+        "html",
+        "rich text",
+        "contenteditable",
+        "cms"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "edit-and-accept-content",
+          "title": "Edit and accept content"
+        },
+        {
+          "id": "use-in-a-host-form",
+          "title": "Use in a host form"
+        },
+        {
+          "id": "html-node-model",
+          "title": "HTML node model"
+        },
+        {
+          "id": "commands-and-history",
+          "title": "Commands and history"
+        },
+        {
+          "id": "structural-editing-rules",
+          "title": "Structural editing rules"
+        },
+        {
+          "id": "preformatted-text-and-quotes",
+          "title": "Preformatted text and quotes"
+        },
+        {
+          "id": "list-shortcuts-and-boundaries",
+          "title": "List shortcuts and boundaries"
+        },
+        {
+          "id": "html-fragment-insertion-and-clipboard",
+          "title": "HTML fragment insertion and clipboard"
+        },
+        {
+          "id": "selection-and-focus",
+          "title": "Selection and focus"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/html-editor.js"
+    },
+    {
       "id": "state-and-events",
       "title": "State, events and bindings",
       "path": "/fundamentals/state-and-events",
@@ -843,7 +910,7 @@
       "group": "components",
       "order": 21,
       "description": "Build visual AND/OR filters independently of DataGrid and distinguish editor drafts from applied queries.",
-      "prev": "/components/date-picker",
+      "prev": "/components/html-editor",
       "next": "/popover",
       "toc": true,
       "api": [
