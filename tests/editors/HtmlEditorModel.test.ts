@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { HtmlEditor } from "../../src/components/editors/htmleditor/HtmlEditor";
-import type { HtmlEditorElement, HtmlEditorStyle } from "../../src/components/editors/htmleditor/HtmlEditorModel";
+import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorStyle } from "../../src/components/editors/htmleditor/HtmlEditorModel";
+import { normalizeHtmlEditorState } from "../../src/components/editors/htmleditor/HtmlEditorNormalize";
+import type { HtmlEditorState } from "../../src/components/editors/htmleditor/HtmlEditorCommands";
 import { getHtmlEditorStyle, removeHtmlEditorStyle, setHtmlEditorStyle } from "../../src/components/editors/htmleditor/HtmlEditorStyles";
 
 describe("HtmlEditor authored HTML model", () => {
@@ -17,6 +19,35 @@ describe("HtmlEditor authored HTML model", () => {
         expect(root().id).not.toBe("section");
         expect(root().children[0]).toEqual({ id: expect.any(String), type: "text", text: "Hello" });
         expect(root().styles).toEqual([{ name: "display", value: "grid" }, { name: "position", value: "relative" }]);
+    });
+
+    it("removes empty text leaves, merges adjacent text and remaps their selection positions", () => {
+        const document: HtmlEditorDocument = { type: "document", children: [{ id: "p", type: "element", tag: "p",
+            classes: [], attributes: {}, styles: [], children: [
+                { id: "a", type: "text", text: "A" }, { id: "empty", type: "text", text: "" }, { id: "b", type: "text", text: "B" }
+            ] }] };
+        const state: HtmlEditorState = { document, selection: {
+            anchor: { nodeId: "empty", offset: 0 }, focus: { nodeId: "b", offset: 1 }
+        } };
+        normalizeHtmlEditorState(state, "root", () => "generated");
+        const paragraph = state.document.children[0] as HtmlEditorElement;
+        expect(paragraph.children).toEqual([{ id: "a", type: "text", text: "AB" }]);
+        expect(state.selection).toEqual({ anchor: { nodeId: "p", offset: 1 }, focus: { nodeId: "a", offset: 2 } });
+    });
+
+    it("removes indentation text between structural children but keeps inline whitespace", () => {
+        const document: HtmlEditorDocument = { type: "document", children: [{ id: "section", type: "element", tag: "section",
+            classes: [], attributes: {}, styles: [], children: [
+                { id: "leading", type: "text", text: "\n  " },
+                { id: "first", type: "element", tag: "p", classes: [], attributes: {}, styles: [], children: [{ id: "first-text", type: "text", text: "First" }] },
+                { id: "between", type: "text", text: "\n  " },
+                { id: "second", type: "element", tag: "p", classes: [], attributes: {}, styles: [], children: [{ id: "second-text", type: "text", text: "Second" }] },
+                { id: "trailing", type: "text", text: "\n" }
+            ] }] };
+        const state: HtmlEditorState = { document };
+        normalizeHtmlEditorState(state, "root", () => "generated");
+        const section = state.document.children[0] as HtmlEditorElement;
+        expect(section.children.map(node => node.type === "element" ? node.tag : node.text)).toEqual(["p", "p"]);
     });
 
     it("retains shorthand order, duplicate declarations and priorities through HTML round trips", () => {

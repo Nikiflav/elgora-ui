@@ -1,6 +1,6 @@
-import { isHtmlEditorBlock, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorPositionState } from "./HtmlEditorModel";
+import { isHtmlEditorBlock, type HtmlEditorDocument, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorPositionState } from "./HtmlEditorModel";
 import type { HtmlEditorState } from "./HtmlEditorCommands";
-import { getHtmlEditorElementBehavior, isAtomic } from "./HtmlEditorStructure";
+import { getHtmlEditorElementBehavior, isAtomic, isStructuralWhitespace } from "./HtmlEditorStructure";
 
 const block = isHtmlEditorBlock;
 
@@ -8,6 +8,31 @@ const block = isHtmlEditorBlock;
 export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string, id: () => string): HtmlEditorState {
     const make = (tag: string, children: HtmlEditorNode[]): HtmlEditorElement => ({ id: id(), type: "element", tag,
         classes: [], attributes: {}, styles: [], children });
+    const textPoints = new Map<string, HtmlEditorPositionState>();
+    const elementBoundaries = new Map<string, number[]>();
+    const normalizeChildren = (parent: HtmlEditorDocument | HtmlEditorElement): void => {
+        const original = parent.children, children: HtmlEditorNode[] = [], boundaries = [0];
+        const hasStructuralChild = original.some(node => node.type === "element"
+            && !isAtomic(node) && getHtmlEditorElementBehavior(node).kind !== "inline");
+        original.forEach(node => {
+            if (node.type === "element") normalizeChildren(node);
+            if (node.type === "text" && (node.text.length === 0 || (hasStructuralChild && isStructuralWhitespace(node)))) {
+                // Empty leaves and indentation between structural children have
+                // no authored text position. Preserve a caret at the parent gap.
+                textPoints.set(node.id, { nodeId: parent.type === "document" ? rootId : parent.id, offset: children.length });
+            } else {
+                const previous = children[children.length - 1];
+                if (previous?.type === "text" && node.type === "text") {
+                    const offset = previous.text.length;
+                    previous.text += node.text;
+                    textPoints.set(node.id, { nodeId: previous.id, offset });
+                } else children.push(node);
+            }
+            boundaries.push(children.length);
+        });
+        parent.children = children;
+        elementBoundaries.set(parent.type === "document" ? rootId : parent.id, boundaries);
+    };
     const visit = (node: HtmlEditorNode) => {
         if (node.type === "text") return;
         node.children.forEach(visit);
@@ -23,6 +48,7 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
         }
     };
     state.document.children.forEach(visit);
+    normalizeChildren(state.document);
     const children: HtmlEditorNode[] = [];
     const boundaries = new Map<number, HtmlEditorPositionState>();
     const old = state.document.children;
@@ -47,8 +73,16 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
     if (!children.length) children.push(make("p", []));
     state.document.children = children;
     if (state.selection) {
-        const map = (point: HtmlEditorPositionState) => point.nodeId === rootId ? boundaries.get(point.offset) ?? point : point;
-        state.selection = { anchor: map(state.selection.anchor), focus: map(state.selection.focus) };
+        const map = (point: HtmlEditorPositionState): HtmlEditorPositionState => {
+            const textPoint = textPoints.get(point.nodeId);
+            if (textPoint) return { nodeId: textPoint.nodeId, offset: textPoint.offset + point.offset };
+            const mappedBoundaries = elementBoundaries.get(point.nodeId);
+            if (mappedBoundaries) return { nodeId: point.nodeId, offset: mappedBoundaries[point.offset] ?? mappedBoundaries[mappedBoundaries.length - 1] ?? 0 };
+            return point;
+        };
+        const mapRoot = (point: HtmlEditorPositionState) => point.nodeId === rootId ? boundaries.get(point.offset) ?? point : point;
+        const mapPoint = (point: HtmlEditorPositionState) => mapRoot(map(point));
+        state.selection = { anchor: mapPoint(state.selection.anchor), focus: mapPoint(state.selection.focus) };
     }
     return state;
 }

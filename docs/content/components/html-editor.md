@@ -39,8 +39,9 @@ simulates an asynchronous save callback.
 
 The demo's buttons call the editor's command API. Typing, deletion, Enter,
 Shift+Enter, bold and italic use model transactions. Undo and redo restore both the
-document and selection. A selected-element inspector and more advanced structural
-commands are still under development; dropped content is blocked.
+document and selection. The selected-element inspector exposes compact Basic
+controls for the selected element; more advanced structural commands are still
+under development. Dropped content is blocked.
 
 Use **Sample** to switch between rich text, layout containers with media, and a
 table. Changing the sample replaces the current draft. Try Enter in the middle
@@ -57,8 +58,11 @@ The toolbar runs the existing Bold, Italic, Undo and Redo commands, with disable
 states and arrow-key navigation. The inspector's selector opens a virtualized
 [TreeView](?!=/components/tree-view) showing tags and shortened descriptions. It
 follows the text caret; choosing a tree item previews an inspection target without
-changing the remembered caret, document or history. **Properties** and **Advanced**
-are explicitly placeholder panels, not working property editors or structural selection.
+changing the remembered caret, document or history. **Properties** contains compact
+Basic commands such as Bold, Italic, block type, text color, text size and alignment.
+Commands with choices use one shared Lookup editor and commit through the same model
+transaction and Undo/Redo history as the editing surface. **Advanced** remains the
+place for direct classes, attributes and styles in a later step.
 On narrow screens this first layout stacks the inspector below the surface;
 a responsive drawer and resizable panel are future work.
 

@@ -3,7 +3,7 @@ import { Component, type ComponentOptions } from "../../../core/Component";
 import { HtmlEditorParser } from "./HtmlEditorParser";
 import { HtmlEditorRenderer } from "./HtmlEditorRenderer";
 import { ObservableEvent } from "../../../core/ElgoraUI";
-import type { HtmlEditorDocument, HtmlEditorSelectionState } from "./HtmlEditorModel";
+import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorSelectionState, HtmlEditorStyle } from "./HtmlEditorModel";
 import { HtmlEditorDom } from "./HtmlEditorDom";
 import { readHtmlEditorSelection, restoreHtmlEditorSelection } from "./HtmlEditorSelection";
 import { applyHtmlEditorCommand, getHtmlEditorMarkState, type HtmlEditorCommand, type HtmlEditorMarkState, type HtmlEditorState } from "./HtmlEditorCommands";
@@ -28,6 +28,19 @@ export interface HtmlEditorSurfaceOptions extends Omit<ComponentOptions, "tag" |
     disabled?: boolean;
 }
 
+/** A visual selection fragment with its owning block-flow element. */
+export interface HtmlEditorSelectionFlowRect {
+    rect: DOMRect;
+    flowNode: Element;
+}
+
+/** Geometry for a structural container intersected by the current selection. */
+export interface HtmlEditorSelectionContainerRect {
+    nodeId: string;
+    rect: DOMRect;
+    kind: "table" | "cell" | "grid-cell" | "flex" | "grid" | "selected";
+}
+
 /** Owns contenteditable, model, selection, input handling and history; never commits or cancels values. */
 export class HtmlEditorSurface extends Component {
     /** Native editing area; identical to this component's dom. */
@@ -40,10 +53,13 @@ export class HtmlEditorSurface extends Component {
     readonly interactionChanged = new ObservableEvent<void>();
     /** Detached remembered text selection, retained while surrounding controls have focus. */
     readonly selectionChanged = new ObservableEvent<HtmlEditorSelectionState | undefined>();
+    /** Structural HTML nodes selected independently from the text-flow selection. */
+    readonly selectedNodesChanged = new ObservableEvent<readonly string[]>();
     private readOnly: boolean;
     private disabled: boolean;
     private readonly domMap: HtmlEditorDom;
     private selectionState?: HtmlEditorSelectionState;
+    private selectedNodeIds: string[] = [];
     private readonly parser = new HtmlEditorParser();
     private readonly renderer = new HtmlEditorRenderer();
     private documentModel: HtmlEditorDocument;
@@ -69,8 +85,9 @@ export class HtmlEditorSurface extends Component {
         this.addCleanup(this.interactionChanged);
         this.domMap = new HtmlEditorDom(this.content);
         this.addCleanup(this.selectionChanged);
+        this.addCleanup(this.selectedNodesChanged);
         this.addCleanup(() => this.clearNativeInputTimer());
-        this.addCleanup(() => { this.domMap.reset(); this.selectionState = undefined; });
+        this.addCleanup(() => { this.domMap.reset(); this.selectionState = undefined; this.selectedNodeIds = []; });
         this.content.classList.add("elg-html-editor-content");
         if (label) this.content.setAttribute("aria-label", label);
         this.setInteractionState(readOnly, disabled);
@@ -146,6 +163,19 @@ export class HtmlEditorSurface extends Component {
 
     /** Detached snapshot; mutating it does not modify the editor. */
     get document(): HtmlEditorDocument { return structuredClone(this.documentModel); }
+    /** Finds an authored element without cloning the document; callers must not mutate it. */
+    findElement(nodeId: string | undefined): HtmlEditorElement | undefined {
+        if (!nodeId) return;
+        const visit = (nodes: readonly HtmlEditorNode[]): HtmlEditorElement | undefined => {
+            for (const node of nodes) {
+                if (node.type === "element" && node.id === nodeId) return node;
+                if (node.type === "element") { const found = visit(node.children); if (found) return found; }
+            }
+        };
+        return visit(this.documentModel.children);
+    }
+    /** Structural node selection, independent from the remembered text range. */
+    get selectedNodes(): readonly string[] { return [...this.selectedNodeIds]; }
     /** Detached node coverage for a range, sharing Copy/Delete rules without cloning the document. */
     getSelectionCoverage(selection: HtmlEditorSelectionState | undefined = this.selection): ReadonlyMap<string, HtmlEditorNodeCoverage> {
         return selection ? getHtmlEditorRangeCoverage(this.documentModel, this.domMap.rootId, selection) : new Map();
@@ -164,7 +194,45 @@ export class HtmlEditorSurface extends Component {
             return !!result || children.some(child => child.type === "element" && visit(child.children, child.id));
         };
         visit(this.documentModel.children, this.domMap.rootId);
-        return !!result && this.restoreSelection(result);
+        if (!result) return false;
+        this.setSelectedNodes([nodeId]);
+        // Keep the established atomic-node contract: image selection is also
+        // represented as a complete model range for coverage and commands.
+        return this.restoreSelection(result);
+    }
+    /** Selects structural nodes without moving the browser caret or text range. */
+    setSelectedNodes(nodeIds: readonly string[]): void {
+        if (this.disposed.Value) return;
+        const valid = new Set<string>();
+        const visit = (nodes: HtmlEditorNode[]): void => nodes.forEach(node => {
+            if (nodeIds.includes(node.id)) valid.add(node.id);
+            if (node.type === "element") visit(node.children);
+        });
+        visit(this.documentModel.children);
+        const next = [...valid];
+        if (next.length === this.selectedNodeIds.length && next.every((id, index) => id === this.selectedNodeIds[index])) return;
+        this.selectedNodeIds = next;
+        this.selectedNodesChanged.invoke([...next]);
+    }
+    /** Applies authored element properties as one undoable inspector transaction. */
+    updateElement(nodeId: string, patch: Partial<Pick<HtmlEditorElement, "tag" | "classes" | "styles" | "attributes">>): boolean {
+        if (!this.editable) return false;
+        const before = this.snapshot();
+        const document = structuredClone(before.document);
+        let changed = false;
+        const visit = (nodes: HtmlEditorNode[]): void => nodes.forEach(node => {
+            if (node.id === nodeId && node.type === "element") {
+                if (patch.tag !== undefined && patch.tag !== node.tag) { node.tag = patch.tag; changed = true; }
+                if (patch.classes !== undefined && JSON.stringify(patch.classes) !== JSON.stringify(node.classes)) { node.classes = [...patch.classes]; changed = true; }
+                if (patch.styles !== undefined && JSON.stringify(patch.styles) !== JSON.stringify(node.styles)) { node.styles = structuredClone(patch.styles); changed = true; }
+                if (patch.attributes !== undefined && JSON.stringify(patch.attributes) !== JSON.stringify(node.attributes)) { node.attributes = { ...patch.attributes }; changed = true; }
+            }
+            if (node.type === "element") visit(node.children);
+        });
+        visit(document.children);
+        if (!changed) return false;
+        this.acceptTransaction(before, { document, selection: before.selection });
+        return true;
     }
     /** Last selection inside this editor, retained while focus moves to a toolbar or inspector. */
     get selection(): HtmlEditorSelectionState | undefined {
@@ -176,6 +244,123 @@ export class HtmlEditorSurface extends Component {
         if (this.disposed.Value) return null;
         const selection = this.content.ownerDocument.getSelection();
         return selection && this.content.contains(selection.anchorNode) && this.content.contains(selection.focusNode) ? selection : null;
+    }
+    /** Returns live client rectangles for the remembered model selection. */
+    selectionClientRects(): DOMRect[] {
+        return this.selectionFlowRects().map(fragment => fragment.rect);
+    }
+    /** Returns selection fragments in DOM order with their owning block flow. */
+    selectionFlowRects(): HtmlEditorSelectionFlowRect[] {
+        const range = this.visualSelectionRange();
+        if (!range) return [];
+        const result: HtmlEditorSelectionFlowRect[] = [];
+        const walker = this.content.ownerDocument.createTreeWalker(this.content, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+        let current: Node | null = walker.nextNode();
+        while (current) {
+            try {
+                if (range.intersectsNode(current)) {
+                    if (current.nodeType === Node.TEXT_NODE) {
+                        const text = current.textContent ?? "";
+                        const start = current === range.startContainer ? range.startOffset : 0;
+                        const end = current === range.endContainer ? range.endOffset : text.length;
+                        if (end > start) {
+                            const fragment = this.content.ownerDocument.createRange();
+                            fragment.setStart(current, start); fragment.setEnd(current, end);
+                            [...fragment.getClientRects()].forEach(rect => {
+                                if (rect.width || rect.height) result.push({ rect, flowNode: this.blockFlowNode(current!) });
+                            });
+                        }
+                    } else if (current instanceof Element && /^(img|br|hr|video|audio|iframe|canvas|svg)$/i.test(current.tagName)) {
+                        const rect = current.getBoundingClientRect();
+                        if (rect.width || rect.height) result.push({ rect, flowNode: this.blockFlowNode(current) });
+                    }
+                }
+            } catch { /* A stale DOM node is ignored until the next render. */ }
+            current = walker.nextNode();
+        }
+        return result;
+    }
+    private visualSelectionRange(): Range | undefined {
+        const selection = this.selectionState;
+        if (!selection) return;
+        const anchor = this.domMap.resolve(selection.anchor), focus = this.domMap.resolve(selection.focus);
+        if (!anchor || !focus) return;
+        const range = this.content.ownerDocument.createRange();
+        try {
+            const first = this.content.ownerDocument.createRange();
+            const second = this.content.ownerDocument.createRange();
+            first.setStart(anchor.node, anchor.offset); first.collapse(true);
+            second.setStart(focus.node, focus.offset); second.collapse(true);
+            const anchorFirst = first.compareBoundaryPoints(Range.START_TO_START, second) <= 0;
+            const start = anchorFirst ? anchor : focus;
+            const end = anchorFirst ? focus : anchor;
+            range.setStart(start.node, start.offset); range.setEnd(end.node, end.offset);
+            return range;
+        } catch { return; }
+    }
+    private blockFlowNode(node: Node): Element {
+        const blockTags = /^(address|article|blockquote|caption|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|h[1-6]|header|li|main|nav|ol|p|pre|section|table|tbody|td|tfoot|th|thead|tr|ul)$/i;
+        let element = node.nodeType === Node.ELEMENT_NODE ? node as Element : node.parentElement;
+        while (element && element !== this.content) {
+            if (blockTags.test(element.tagName)) return element;
+            element = element.parentElement;
+        }
+        return this.content;
+    }
+    /** Returns viewport rectangles for independently selected structural nodes. */
+    selectedNodeClientRects(): { nodeId: string; rect: DOMRect }[] {
+        return this.selectedNodeIds.flatMap(nodeId => {
+            const node = this.domMap.resolve({ nodeId, offset: 0 })?.node;
+            if (!(node instanceof Element)) return [];
+            const rect = node.getBoundingClientRect();
+            return rect.width || rect.height ? [{ nodeId, rect }] : [];
+        });
+    }
+    /** Returns outlines for tables, cells and flex/grid containers touched by the text selection. */
+    selectionContainerClientRects(): HtmlEditorSelectionContainerRect[] {
+        const result = new Map<string, HtmlEditorSelectionContainerRect>();
+        const add = (element: Element, kind: HtmlEditorSelectionContainerRect["kind"]) => {
+            const nodeId = this.domMap.position(element, 0)?.nodeId;
+            if (!nodeId || result.has(nodeId)) return;
+            const rect = element.getBoundingClientRect();
+            if (rect.width || rect.height) result.set(nodeId, { nodeId, rect, kind });
+        };
+        const addGridItems = (grid: Element) => {
+            for (const child of Array.from(grid.children)) add(child, "grid-cell");
+        };
+        this.selectedNodeIds.forEach(nodeId => {
+            const node = this.domMap.resolve({ nodeId, offset: 0 })?.node;
+            if (node instanceof Element) {
+                add(node, "selected");
+                const display = this.content.ownerDocument.defaultView?.getComputedStyle(node).display;
+                if (display === "grid" || display === "inline-grid") addGridItems(node);
+            }
+        });
+        const range = this.visualSelectionRange();
+        if (!range) return [...result.values()];
+        const walker = this.content.ownerDocument.createTreeWalker(this.content, NodeFilter.SHOW_ELEMENT);
+        let current: Node | null = walker.nextNode();
+        while (current) {
+            const element = current as Element;
+            try {
+                if (range.intersectsNode(element)) {
+                    const tag = element.tagName.toLowerCase();
+                    const display = this.content.ownerDocument.defaultView?.getComputedStyle(element).display;
+                    const parent = element.parentElement;
+                    const parentDisplay = parent ? this.content.ownerDocument.defaultView?.getComputedStyle(parent).display : undefined;
+                    const kind = tag === "table" ? "table" : tag === "td" || tag === "th" ? "cell"
+                        : display === "flex" || display === "inline-flex" ? "flex"
+                            : display === "grid" || display === "inline-grid" ? "grid"
+                                : parentDisplay === "grid" || parentDisplay === "inline-grid" ? "grid-cell" : undefined;
+                    if (kind) {
+                        add(element, kind);
+                        if (kind === "grid") addGridItems(element);
+                    }
+                }
+            } catch { /* A stale DOM node is ignored until the next render. */ }
+            current = walker.nextNode();
+        }
+        return [...result.values()];
     }
     /** Restores a saved selection. Returns false for removed nodes or a replaced document. */
     restoreSelection(state: HtmlEditorSelectionState | undefined = this.selection): boolean {
@@ -212,6 +397,7 @@ export class HtmlEditorSurface extends Component {
     setHtml(html: string): void {
         if (this.disposed.Value) return;
         this.documentModel = this.parser.parse(html);
+        this.setSelectedNodes([]);
         this.domMap.reset();
         const rekey = (nodes: HtmlEditorDocument["children"]) => nodes.forEach(node => { node.id = this.domMap.createId(); if (node.type === "element") rekey(node.children); });
         rekey(this.documentModel.children);

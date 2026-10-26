@@ -7,6 +7,7 @@ import type { HtmlEditorCommand } from "./HtmlEditorCommands";
 import type { HtmlEditorSelectionState } from "./HtmlEditorModel";
 import { HtmlEditorCommandRegistry, type HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
 import { HtmlEditorCommandMenu } from "./HtmlEditorCommandMenu";
+import { HtmlEditorSelectionOverlay } from "./HtmlEditorSelectionOverlay";
 import "./HtmlEditor.css";
 
 /** Configuration for the HTML value editor and its optional surrounding tools. */
@@ -39,7 +40,10 @@ export class HtmlEditor extends ValueEditor<string> {
     readonly commandRegistry: HtmlEditorCommandRegistry;
     /** Context menu backed by the same registry as the toolbar and inspector. */
     private commandMenu?: HtmlEditorCommandMenu;
+    private readonly selectionOverlay: HtmlEditorSelectionOverlay;
     private baselineHtml = "";
+    private commandToast?: HTMLElement;
+    private commandToastTimer?: ReturnType<typeof setTimeout>;
 
     /** Creates and connects the surface and requested tools. */
     constructor(options: HtmlEditorOptions) {
@@ -53,8 +57,14 @@ export class HtmlEditor extends ValueEditor<string> {
         this.installControl(this.content);
         const body = e("div", { class: "elg-html-editor-body" });
         this.dom.insertBefore(body, this.content);
-        this.surface.mount(body);
+        const surfaceHost = e("div", { class: "elg-html-editor-surface-host" });
+        body.append(surfaceHost);
+        this.surface.mount(surfaceHost);
+        this.selectionOverlay = new HtmlEditorSelectionOverlay(this.surface);
+        this.selectionOverlay.attach(surfaceHost);
+        this.addCleanup(this.selectionOverlay);
         this.commandRegistry = new HtmlEditorCommandRegistry(this.surface, this.messages, commands);
+        this.subscribe(this.commandRegistry.commandFailed, () => this.showCommandFailure());
         this.listen(this.content, "contextmenu", event => {
             const menuEvent = event as MouseEvent;
             menuEvent.preventDefault();
@@ -123,5 +133,19 @@ export class HtmlEditor extends ValueEditor<string> {
         this.surface?.setInteractionState(!!this.editorOptions.readOnly, !!this.editorOptions.disabled || this.busy);
         this.toolbar?.update();
         this.inspector?.update();
+    }
+
+    /** Shows a short, localized, non-blocking explanation when a command cannot run. */
+    private showCommandFailure(): void {
+        this.commandToast ??= e("div", { class: "elg-html-editor-command-toast", role: "status" });
+        this.commandToast.textContent = this.messages.text("htmlEditorCommand.failed");
+        this.commandToast.setAttribute("aria-live", "polite");
+        if (!this.commandToast.isConnected) this.dom.append(this.commandToast);
+        this.commandToast.dataset.visible = "true";
+        if (this.commandToastTimer !== undefined) clearTimeout(this.commandToastTimer);
+        this.commandToastTimer = setTimeout(() => {
+            if (this.commandToast) delete this.commandToast.dataset.visible;
+            this.commandToastTimer = undefined;
+        }, 2400);
     }
 }

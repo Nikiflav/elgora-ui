@@ -4,11 +4,12 @@ import type { LocalizedMessages } from "../../../localization/Messages";
 import type { LocaleOptions } from "../../../localization/Localization";
 import { Popover } from "../../popup/popover";
 import { TreeView } from "../../tree-view/TreeView";
+import { LookupEditor } from "../LookupEditor";
 import type { HtmlEditorSurface } from "./HtmlEditorSurface";
 import type { HtmlEditorElement, HtmlEditorNode, HtmlEditorText } from "./HtmlEditorModel";
 import type { HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { isAtomic } from "./HtmlEditorStructure";
-import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
+import type { HtmlEditorCommandRegistry, HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
 
 let nextInspector = 0;
 
@@ -31,6 +32,10 @@ export class HtmlEditorInspector extends Component {
     private tree?: TreeView<HtmlEditorNode>;
     private popup?: Popover;
     private commandPopup?: Popover;
+    private readonly basicPanel: HTMLElement;
+    private basicLookup?: LookupEditor<string, { id: string; text: string }>;
+    private basicLookupHost?: HTMLElement;
+    private basicRenderKey = "";
 
     /** Connects one surface to the element navigator and placeholder property tabs. */
     constructor(private readonly surface: HtmlEditorSurface, private readonly messages: LocalizedMessages,
@@ -44,6 +49,7 @@ export class HtmlEditorInspector extends Component {
         this.selector.setAttribute("aria-haspopup", "dialog");
         this.selector.setAttribute("aria-expanded", "false");
         const tablist = e("div", { class: "elg-html-editor-inspector-tabs", role: "tablist" });
+        this.basicPanel = e("div", { class: "elg-html-editor-basic-commands" });
         this.panels = [0, 1].map(index => e("div", { id: `${id}-panel-${index}`, role: "tabpanel", tabIndex: 0 }));
         this.tabs = [0, 1].map(index => {
             const button = e("button", { id: `${id}-tab-${index}`, type: "button", role: "tab",
@@ -63,7 +69,7 @@ export class HtmlEditorInspector extends Component {
             this.selectTab(next); this.tabs[next].focus();
         });
         this.append([this.breadcrumb, this.selector, tablist, ...this.panels]);
-        this.subscribe(surface.documentChanged, () => this.refreshDocument());
+        this.subscribe(surface.documentChanged, () => { this.basicRenderKey = ""; this.refreshDocument(); });
         this.subscribe(surface.selectionChanged, () => this.followSelection());
         this.subscribe(surface.interactionChanged, () => this.update());
         this.selectTab(0);
@@ -144,8 +150,9 @@ export class HtmlEditorInspector extends Component {
     }
 
     private renderNodeLabel(host: HTMLElement, item: HtmlEditorElement): void {
+        const derived = item.children.some(child => child.type === "element");
         host.replaceChildren(e("code", { class: "elg-html-editor-node-tag" }, `<${item.tag}>`),
-            document.createTextNode(" "), e("span", { class: "elg-html-editor-node-description" }, this.description(item)));
+            document.createTextNode(" "), e("span", { class: `elg-html-editor-node-description${derived ? " elg-html-editor-node-description-derived" : ""}` }, this.description(item)));
     }
 
     private renderTextLabel(host: HTMLElement, item: HtmlEditorText): void {
@@ -168,6 +175,7 @@ export class HtmlEditorInspector extends Component {
         this.popup?.hide(); this.ancestorPopup?.hide();
         this.targetId = item.id;
         this.mixed = false;
+        this.surface.setSelectedNodes([item.id]);
         this.update();
         this.selector.focus();
     }
@@ -316,6 +324,78 @@ export class HtmlEditorInspector extends Component {
         });
     }
 
+    private basicContext() { return this.commands.context(this.targetId); }
+
+    private renderBasicCommands(): void {
+        this.basicPanel.replaceChildren();
+        const context = this.basicContext();
+        const commands = this.commands.getCommands(context).filter(command => command.id !== "select-node" && command.id !== "undo" && command.id !== "redo");
+        if (!commands.length) {
+            this.basicPanel.append(e("span", { class: "elg-html-editor-inspector-empty" }, this.messages.text("htmlEditorInspector.propertiesHint")));
+            return;
+        }
+        const list = e("div", { class: "elg-html-editor-basic-command-list" });
+        commands.forEach(command => {
+            const row = e("div", { class: "elg-html-editor-basic-command-row" });
+            const button = e("button", { type: "button", class: "elg-html-editor-basic-command-button",
+                disabled: !this.commands.enabled(command, context), title: this.commands.label(command),
+                onclick: () => this.activateBasicCommand(command) });
+            if (command.icon) button.append(e("i", { class: `elg-icon ${command.icon}`, ariaHidden: "true" }));
+            button.append(document.createTextNode(this.commands.label(command)));
+            const state = this.commands.state(command, context);
+            if (state) button.dataset.commandState = state;
+            row.append(button);
+            if (command.options?.length) {
+                const value = command.getValue?.(context);
+                const current = value?.mixed ? "" : value?.value ?? "";
+                const summary = command.options.find(option => option.id === current)?.text
+                    ?? (value?.mixed ? this.messages.text("htmlEditorInspector.mixed") : "—");
+                const optionButton = e("button", { type: "button", class: "elg-html-editor-basic-command-value",
+                    disabled: !this.commands.enabled(command, context), title: summary,
+                    onclick: () => this.activateBasicCommand(command) }, summary);
+                row.append(optionButton);
+            }
+            list.append(row);
+        });
+        this.basicPanel.append(list);
+        this.renderBasicLookup();
+    }
+
+    private activateBasicCommand(command: HtmlEditorUiCommand): void {
+        if (!command.options?.length) { this.commands.execute(command.id, this.basicContext()); return; }
+        this.activeBasicCommand = command;
+        this.renderBasicLookup();
+        this.basicLookup?.focus();
+    }
+
+    private activeBasicCommand?: HtmlEditorUiCommand;
+
+    private renderBasicLookup(): void {
+        this.basicLookupHost?.remove(); this.basicLookupHost = undefined;
+        this.basicLookup?.dispose(); this.basicLookup = undefined;
+        const command = this.activeBasicCommand;
+        if (!command?.options?.length) return;
+        const context = this.basicContext();
+        const current = command.getValue?.(context)?.value ?? command.options[0].id;
+        const items = command.options.map(option => ({ id: option.id, text: option.text }));
+        this.basicLookupHost = e("div", { class: "elg-html-editor-basic-lookup" });
+        this.basicLookup = new LookupEditor<string, { id: string; text: string }>({
+            value: current, label: this.commands.label(command), popupWidth: 220, popupHeight: 220, resizable: false,
+            locale: this.localeOptions.locale, localization: this.localeOptions.localization,
+            columns: [{ name: "text", caption: "Text" }],
+            loadItems: async () => ({ items, totalCount: items.length }),
+            getItemValue: item => item.id, getItemText: item => item.text, getValueText: value => items.find(item => item.id === value)?.text ?? value,
+            onCommit: async value => {
+                const succeeded = this.commands.execute(command.id, context, value);
+                this.activeBasicCommand = undefined;
+                this.basicRenderKey = "";
+                if (succeeded) this.update();
+            }
+        });
+        this.basicLookup.mount(this.basicLookupHost);
+        this.basicPanel.append(this.basicLookupHost);
+    }
+
     /** Updates labels/availability without cloning the document or moving DOM focus. */
     update(): void {
         this.dom.setAttribute("aria-label", this.messages.text("htmlEditorInspector.label"));
@@ -329,7 +409,12 @@ export class HtmlEditorInspector extends Component {
         if (this.selector.disabled) this.popup?.hide();
         this.tabs[0].textContent = this.messages.text("htmlEditorInspector.properties");
         this.tabs[1].textContent = this.messages.text("htmlEditorInspector.advanced");
-        this.panels[0].textContent = this.messages.text("htmlEditorInspector.propertiesHint");
+        const basicKey = `${this.targetId ?? ""}|${this.mixed}|${this.surface.content.getAttribute("aria-disabled") ?? "false"}`;
+        if (basicKey !== this.basicRenderKey) {
+            this.basicRenderKey = basicKey;
+            this.renderBasicCommands();
+        }
+        this.panels[0].replaceChildren(this.basicPanel);
         this.panels[1].textContent = this.messages.text("htmlEditorInspector.advancedHint");
     }
 

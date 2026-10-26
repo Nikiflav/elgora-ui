@@ -1,7 +1,7 @@
 import { isHtmlEditorBlock, type HtmlEditorDocument, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorText, type HtmlEditorPositionState, type HtmlEditorSelectionState } from "./HtmlEditorModel";
 import { getHtmlEditorElementBehavior as behavior, isAtomic, nodeSize as size, locate as find, editingScope as blockAt,
     caretAt as positionAt, resolveBoundary, canJoin, listEdge, deleteAtomicAtGap, splitScope, replaceScopeRange,
-    validPosition, prepareEditingSelection, editableEdge, joinListBoundary, structuralNeighbor, isStructuralWhitespace, sliceInline as slice } from "./HtmlEditorStructure";
+    validPosition, prepareEditingSelection, editableEdge, joinListBoundary, structuralNeighbor, isStructuralWhitespace, isInline, sliceInline as slice } from "./HtmlEditorStructure";
 import { insertHtmlEditorFragment } from "./HtmlEditorFragment";
 import { deleteHtmlEditorRange } from "./HtmlEditorRange";
 
@@ -72,17 +72,51 @@ function characterRange(block: HtmlEditorElement, offset: number, backward: bool
 }
 function plain(node: HtmlEditorNode): string { return node.type === "text" ? node.text ?? "" : atoms.has(node.tag) ? "\ufffc" : node.children.map(plain).join(""); }
 
+interface FormattingRange { block: HtmlEditorElement; from: number; to: number; }
+interface FormattingSelection {
+    document: HtmlEditorDocument;
+    selection: HtmlEditorSelectionState;
+    collapsed: boolean;
+    ranges: FormattingRange[];
+    reversed: boolean;
+}
+
+function formattingBlocks(document: HtmlEditorDocument): HtmlEditorElement[] {
+    const result: HtmlEditorElement[] = [];
+    const visit = (parent: HtmlEditorDocument | HtmlEditorElement): void => {
+        parent.children.forEach(node => {
+            if (node.type !== "element" || isAtomic(node)) return;
+            const kind = behavior(node).kind;
+            if (["textBlock", "listItem", "cell", "container"].includes(kind) && node.children.every(isInline)) result.push(node);
+            visit(node);
+        });
+    };
+    visit(document);
+    return result;
+}
+
 function formattingSelection(document: HtmlEditorDocument, rootId: string, selection: HtmlEditorSelectionState,
-    id: () => string): { document: HtmlEditorDocument; selection: HtmlEditorSelectionState; collapsed: boolean } | undefined {
+    id: () => string): FormattingSelection | undefined {
     if (!validPosition(document, rootId, selection.anchor) || !validPosition(document, rootId, selection.focus)) return;
     const prepared = structuredClone(document);
     const result = prepareEditingSelection(prepared, selection, id);
     const collapsed = result.anchor.nodeId === result.focus.nodeId && result.anchor.offset === result.focus.offset;
-    if (collapsed) return { document: prepared, selection: result, collapsed };
+    if (collapsed) return { document: prepared, selection: result, collapsed, ranges: [], reversed: false };
     const anchor = blockAt(prepared, result.anchor) ? result.anchor : resolveBoundary(prepared, rootId, result.anchor, true);
     const focus = blockAt(prepared, result.focus) ? result.focus : resolveBoundary(prepared, rootId, result.focus, false);
-    return blockAt(prepared, anchor) && blockAt(prepared, focus)
-        ? { document: prepared, selection: { anchor, focus }, collapsed } : undefined;
+    const anchorScope = blockAt(prepared, anchor), focusScope = blockAt(prepared, focus);
+    if (!anchorScope || !focusScope) return;
+    const blocks = formattingBlocks(prepared);
+    const anchorIndex = blocks.indexOf(anchorScope.block), focusIndex = blocks.indexOf(focusScope.block);
+    if (anchorIndex < 0 || focusIndex < 0) return;
+    const reversed = anchorIndex > focusIndex || (anchorIndex === focusIndex && anchorScope.offset > focusScope.offset);
+    const first = Math.min(anchorIndex, focusIndex), last = Math.max(anchorIndex, focusIndex);
+    const ranges = blocks.slice(first, last + 1).map(block => ({
+        block,
+        from: block === (reversed ? focusScope.block : anchorScope.block) ? (reversed ? focusScope.offset : anchorScope.offset) : 0,
+        to: block === (reversed ? anchorScope.block : focusScope.block) ? (reversed ? anchorScope.offset : focusScope.offset) : size(block)
+    }));
+    return { document: prepared, selection: { anchor, focus }, collapsed, ranges, reversed };
 }
 
 /** Computes formatting state from the same selected inline fragments used by formatting commands. */
@@ -100,11 +134,6 @@ export function getHtmlEditorMarkState(document: HtmlEditorDocument, rootId: str
             .some(node => tags.includes(node.tag));
         return (marks?.[mark] ?? inherited) ? "on" : "off";
     }
-    const start = blockAt(prepared.document, prepared.selection.anchor);
-    const end = blockAt(prepared.document, prepared.selection.focus);
-    if (!start || !end || start.parent !== end.parent) return "off";
-    const siblings = start.parent.children, first = siblings.indexOf(start.block), last = siblings.indexOf(end.block);
-    if (first < 0 || last < first) return "off";
     const values: boolean[] = [];
     const visit = (node: HtmlEditorNode, active: boolean): void => {
         if (node.type === "text") {
@@ -114,13 +143,55 @@ export function getHtmlEditorMarkState(document: HtmlEditorDocument, rootId: str
         const next = active || tags.includes(node.tag);
         node.children.forEach(child => visit(child, next));
     };
-    for (const block of siblings.slice(first, last + 1)) {
-        if (block.type !== "element") continue;
-        const from = block === start.block ? start.offset : 0, to = block === end.block ? end.offset : size(block);
-        if (from < to) slice(block.children, from, to, false, () => `state-piece-${nextId++}`).forEach(node => visit(node, false));
+    for (const range of prepared.ranges) {
+        if (range.from < range.to) slice(range.block.children, range.from, range.to, false, () => `state-piece-${nextId++}`)
+            .forEach(node => visit(node, false));
     }
     if (!values.length || values.every(value => value === values[0])) return values[0] ? "on" : "off";
     return "mixed";
+}
+
+function applyFormatting(selection: FormattingSelection, command: "bold" | "italic", id: () => string): HtmlEditorState {
+    const document = selection.document;
+    const tag = command === "bold" ? "strong" : "em";
+    const alias = command === "bold" ? "b" : "i";
+    const sameMark = (left: HtmlEditorElement, right: HtmlEditorElement): boolean =>
+        left.tag === right.tag && JSON.stringify(left.classes) === JSON.stringify(right.classes)
+        && JSON.stringify(left.attributes) === JSON.stringify(right.attributes)
+        && JSON.stringify(left.styles) === JSON.stringify(right.styles);
+    const normalizeMarks = (nodes: HtmlEditorNode[]): HtmlEditorNode[] => {
+        const normalized: HtmlEditorNode[] = [];
+        for (const node of nodes) {
+            const next = node.type === "element" ? { ...node, children: normalizeMarks(node.children) } : node;
+            const previous = normalized[normalized.length - 1];
+            if (previous?.type === "text" && next.type === "text") previous.text += next.text;
+            else if (previous?.type === "element" && next.type === "element"
+                && (previous.tag === tag || previous.tag === alias) && (next.tag === tag || next.tag === alias)
+                && sameMark(previous, next)) previous.children.push(...next.children);
+            else normalized.push(next);
+        }
+        return normalized;
+    };
+    const formatted = (node: HtmlEditorNode): boolean => node.type === "element"
+        && (node.tag === tag || node.tag === alias || (node.children.length > 0 && node.children.every(formatted)));
+    const unwrap = (node: HtmlEditorNode): HtmlEditorNode[] => node.type === "text" ? [node]
+        : node.tag === tag || node.tag === alias ? node.children.flatMap(unwrap)
+            : [{ ...node, children: node.children.flatMap(unwrap) }];
+    const apply = (node: HtmlEditorNode): HtmlEditorNode[] => node.type === "text" ? [node]
+        : node.tag === tag || node.tag === alias ? node.children.flatMap(apply)
+            : [{ ...node, children: normalizeMarks(node.children.flatMap(apply)) }];
+    const pieces = selection.ranges.filter(range => range.from < range.to)
+        .map(range => ({ range, nodes: slice(range.block.children, range.from, range.to, true, id) }));
+    const remove = pieces.length > 0 && pieces.every(piece => piece.nodes.length > 0 && piece.nodes.every(formatted));
+    pieces.forEach(({ range, nodes }) => {
+        const prefix = slice(range.block.children, 0, range.from, false, id);
+        const suffix = slice(range.block.children, range.to, size(range.block), true, id);
+        const replacement = remove ? nodes.flatMap(unwrap) : [element(tag, id, nodes.flatMap(apply))];
+        range.block.children = normalizeMarks([...prefix, ...replacement, ...suffix]);
+    });
+    const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
+    const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
+    return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
 }
 
 /** Preformatted input edits literal text while retaining the pre/code shells.
@@ -297,8 +368,11 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
     // whole paragraph). Formatting operates on text-bearing blocks, so map
     // those structural boundaries to the corresponding block edges. Deletion
     // deliberately keeps its original structural range semantics.
-    if (!originallyCollapsed && (command.type === "bold" || command.type === "italic"))
-        selection = formattingSelection(document, rootId, selection, id)?.selection ?? selection;
+    if (!originallyCollapsed && (command.type === "bold" || command.type === "italic")) {
+        const formatting = formattingSelection(document, rootId, selection, id);
+        if (!formatting || !formatting.ranges.length) return;
+        return applyFormatting(formatting, command.type, id);
+    }
     const anchorScope = blockAt(document, selection.anchor), focusScope = blockAt(document, selection.focus);
     const collapsed = originallyCollapsed || !!(anchorScope && focusScope && anchorScope.block === focusScope.block && anchorScope.offset === focusScope.offset);
     if (collapsed) {

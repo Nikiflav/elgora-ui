@@ -71,8 +71,28 @@ export default {
       "kind": "property"
     },
     {
+      "name": "options",
+      "type": "readonly HtmlEditorCommandOption[] | undefined",
+      "description": "Optional compact lookup choices rendered by the Basic Inspector.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "kind": "property"
+    },
+    {
+      "name": "getValue",
+      "type": "((context: HtmlEditorCommandContext) => HtmlEditorCommandValueState) | undefined",
+      "description": "Current lookup value; mixed means compatible targets have different values.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "kind": "property"
+    },
+    {
       "name": "execute",
-      "type": "(context: HtmlEditorCommandContext) => boolean | void",
+      "type": "(context: HtmlEditorCommandContext, value?: string) => boolean | void",
       "description": "Executes the command against the shared editor context.",
       "tags": [],
       "topics": [],

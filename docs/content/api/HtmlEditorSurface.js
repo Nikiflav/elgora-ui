@@ -61,9 +61,52 @@ export default {
       "kind": "property"
     },
     {
+      "name": "selectedNodesChanged",
+      "type": "ObservableEvent<readonly string[]>",
+      "description": "Structural HTML nodes selected independently from the text-flow selection.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "kind": "property"
+    },
+    {
       "name": "document",
       "type": "HtmlEditorDocument",
       "description": "Detached snapshot; mutating it does not modify the editor.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "kind": "property"
+    },
+    {
+      "name": "findElement",
+      "type": "(nodeId: string | undefined) => HtmlEditorElement | undefined",
+      "description": "Finds an authored element without cloning the document; callers must not mutate it.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "nodeId",
+          "type": "string | undefined",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorElement | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(nodeId: string | undefined) => HtmlEditorElement | undefined"
+    },
+    {
+      "name": "selectedNodes",
+      "type": "readonly string[]",
+      "description": "Structural node selection, independent from the remembered text range.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -148,6 +191,58 @@ export default {
       "signature": "(nodeId: string | undefined) => boolean"
     },
     {
+      "name": "setSelectedNodes",
+      "type": "(nodeIds: readonly string[]) => void",
+      "description": "Selects structural nodes without moving the browser caret or text range.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "nodeIds",
+          "type": "readonly string[]",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(nodeIds: readonly string[]) => void"
+    },
+    {
+      "name": "updateElement",
+      "type": "(nodeId: string, patch: Partial<Pick<HtmlEditorElement, \"tag\" | \"classes\" | \"styles\" | \"attributes\">>) => boolean",
+      "description": "Applies authored element properties as one undoable inspector transaction.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "patch",
+          "type": "Partial<Pick<HtmlEditorElement, \"attributes\" | \"tag\" | \"classes\" | \"styles\">>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(nodeId: string, patch: Partial<Pick<HtmlEditorElement, \"tag\" | \"classes\" | \"styles\" | \"attributes\">>) => boolean"
+    },
+    {
       "name": "selection",
       "type": "HtmlEditorSelectionState | undefined",
       "description": "Last selection inside this editor, retained while focus moves to a toolbar or inspector.",
@@ -166,6 +261,70 @@ export default {
       "optional": false,
       "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
       "kind": "property"
+    },
+    {
+      "name": "selectionClientRects",
+      "type": "() => DOMRect[]",
+      "description": "Returns live client rectangles for the remembered model selection.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [],
+      "returns": {
+        "type": "DOMRect[]",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => DOMRect[]"
+    },
+    {
+      "name": "selectionFlowRects",
+      "type": "() => HtmlEditorSelectionFlowRect[]",
+      "description": "Returns selection fragments in DOM order with their owning block flow.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [],
+      "returns": {
+        "type": "HtmlEditorSelectionFlowRect[]",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => HtmlEditorSelectionFlowRect[]"
+    },
+    {
+      "name": "selectedNodeClientRects",
+      "type": "() => { nodeId: string; rect: DOMRect; }[]",
+      "description": "Returns viewport rectangles for independently selected structural nodes.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [],
+      "returns": {
+        "type": "{ nodeId: string; rect: DOMRect }[]",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => { nodeId: string; rect: DOMRect; }[]"
+    },
+    {
+      "name": "selectionContainerClientRects",
+      "type": "() => HtmlEditorSelectionContainerRect[]",
+      "description": "Returns outlines for tables, cells and flex/grid containers touched by the text selection.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [],
+      "returns": {
+        "type": "HtmlEditorSelectionContainerRect[]",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => HtmlEditorSelectionContainerRect[]"
     },
     {
       "name": "restoreSelection",

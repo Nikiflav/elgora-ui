@@ -11,6 +11,16 @@ export default {
   "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
   "members": [
     {
+      "name": "commandFailed",
+      "type": "ObservableEvent<string>",
+      "description": "Emitted when a requested command cannot be executed in its current context.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "kind": "property"
+    },
+    {
       "name": "register",
       "type": "(command: HtmlEditorUiCommand) => void",
       "description": "Adds or replaces an application command by its stable identifier.",
@@ -82,7 +92,7 @@ export default {
     },
     {
       "name": "execute",
-      "type": "(id: string, context?: HtmlEditorCommandContext) => boolean",
+      "type": "(id: string, context?: HtmlEditorCommandContext, value?: string) => boolean",
       "description": "Executes one command by id using the same registry as every menu surface.",
       "tags": [],
       "topics": [],
@@ -101,6 +111,12 @@ export default {
           "optional": true,
           "defaultValue": "this.context()",
           "description": ""
+        },
+        {
+          "name": "value",
+          "type": "string | undefined",
+          "optional": true,
+          "description": ""
         }
       ],
       "returns": {
@@ -108,7 +124,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(id: string, context?: HtmlEditorCommandContext) => boolean"
+      "signature": "(id: string, context?: HtmlEditorCommandContext, value?: string) => boolean"
     },
     {
       "name": "label",

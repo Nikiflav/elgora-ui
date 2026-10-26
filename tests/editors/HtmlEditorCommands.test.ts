@@ -94,6 +94,14 @@ describe("HtmlEditor transactions", () => {
         expect(editor.content.innerHTML).toBe("<p><em><strong>Hello</strong></em></p><p>Next</p>");
     });
 
+    it("formats independent text areas across different container parents", () => {
+        create('<div style="display:grid"><div>Grid A</div><div>Grid B</div><div>Grid C</div></div>');
+        const cells = [...editor.content.firstElementChild!.children];
+        select(cells[0].firstChild!, 0, cells[2].firstChild!, 6);
+        expect(editor.execute({ type: "bold" })).toBe(true);
+        expect([...editor.content.querySelectorAll("strong")].map(node => node.textContent)).toEqual(["Grid A", "Grid B", "Grid C"]);
+    });
+
     it.each(['<p>Text - item</p>', '<p>-item</p>', '<pre>- item</pre>', '<p><code>- item</code></p>', '<ul><li><p>- item</p></li></ul>'])("does not convert ordinary or protected content: %s", html => {
         create(html);
         const text = document.createTreeWalker(editor.content, NodeFilter.SHOW_TEXT).nextNode()!;
@@ -219,7 +227,7 @@ describe("HtmlEditor transactions", () => {
         input("deleteContentBackward");
         expect(editor.content.children).toHaveLength(1);
         expect(editor.content.textContent).toContain("LastNext");
-        expect(editor.nativeSelection?.anchorNode?.textContent).toBe("Last");
+        expect(editor.nativeSelection?.anchorNode?.textContent).toBe("LastNext");
         expect(editor.nativeSelection?.anchorOffset).toBe(4);
     });
 

@@ -216,6 +216,89 @@ describe("HtmlEditor composition", () => {
         expect(editor.canUndo).toBe(false);
     });
 
+    it("renders selection rectangles in a non-interactive overlay", async () => {
+        const editor = create({ value: "<p>Hello world</p>" });
+        const flowNode = editor.content.querySelector("p")!;
+        vi.spyOn(editor.surface, "selectionFlowRects").mockReturnValue([
+            { rect: new DOMRect(0, 0, 10, 10), flowNode },
+            { rect: new DOMRect(10, -2, 5, 14), flowNode },
+            { rect: new DOMRect(0, 12, 12, 10), flowNode }
+        ]);
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(editor, text, 0, 5);
+        editor.content.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+        await frame();
+        const overlay = editor.dom.querySelector<HTMLElement>(".elg-html-editor-selection-overlay")!;
+        expect(overlay.hidden).toBe(true);
+        expect(overlay.style.pointerEvents).toBe("");
+        expect(overlay.querySelectorAll(".elg-html-editor-selection-rect")).toHaveLength(0);
+        editor.content.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        await frame();
+        expect(overlay.hidden).toBe(false);
+        expect(overlay.querySelectorAll(".elg-html-editor-selection-rect")).toHaveLength(2);
+    });
+
+    it.each([false, true])("orders the visual Range without changing selection direction: backwards=%s", backwards => {
+        const editor = create({ value: "<p>Hello world</p>" });
+        const text = editor.content.querySelector("p")!.firstChild!;
+        let visualRange: Range | undefined;
+        const rangePrototype = Range.prototype as Range & { getClientRects?: () => DOMRectList };
+        const originalGetClientRects = rangePrototype.getClientRects;
+        Object.defineProperty(rangePrototype, "getClientRects", { configurable: true, value: function(this: Range) {
+            visualRange = this;
+            return [new DOMRect(0, 0, 10, 10)];
+        } });
+        try {
+            select(editor, text, backwards ? 8 : 2, backwards ? 2 : 8);
+            editor.surface.selectionClientRects();
+            expect(editor.selection!.anchor.offset).toBe(backwards ? 8 : 2);
+            expect(editor.selection!.focus.offset).toBe(backwards ? 2 : 8);
+            expect(visualRange!.startOffset).toBe(2);
+            expect(visualRange!.endOffset).toBe(8);
+        } finally {
+            if (originalGetClientRects) Object.defineProperty(rangePrototype, "getClientRects", { configurable: true, value: originalGetClientRects });
+            else delete rangePrototype.getClientRects;
+        }
+    });
+
+    it("keeps text-flow selection and structural node outlines independent", async () => {
+        const editor = create({ value: "<section><p>Hello world</p></section>" });
+        const sectionId = editor.document.children[0].id;
+        vi.spyOn(editor.surface, "selectionFlowRects").mockReturnValue([
+            { rect: new DOMRect(0, 0, 10, 10), flowNode: editor.content.querySelector("p")! }
+        ]);
+        vi.spyOn(editor.surface, "selectionContainerClientRects").mockReturnValue([
+            { nodeId: sectionId, rect: new DOMRect(0, 0, 40, 30), kind: "selected" }
+        ]);
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(editor, text, 0, 5);
+        editor.surface.setSelectedNodes([sectionId]);
+        editor.content.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        await frame();
+        const overlay = editor.dom.querySelector<HTMLElement>(".elg-html-editor-selection-overlay")!;
+        expect(overlay.querySelectorAll(".elg-html-editor-text-selection-layer .elg-html-editor-selection-rect")).toHaveLength(1);
+        expect(overlay.querySelectorAll(".elg-html-editor-container-selection-layer .elg-html-editor-container-selection-rect")).toHaveLength(1);
+        expect(overlay.querySelector(".elg-html-editor-container-selection-rect")?.getAttribute("data-html-editor-node-id")).toBe(sectionId);
+    });
+
+    it("outlines direct grid items as separate grid cells", () => {
+        const editor = create({ value: '<div style="display:grid"><div>Grid A</div><div>Grid B</div><div>Grid C</div></div>' });
+        const grid = editor.content.firstElementChild!;
+        const cells = [...grid.children];
+        const originalGetComputedStyle = window.getComputedStyle.bind(window);
+        vi.spyOn(window, "getComputedStyle").mockImplementation(element => {
+            const style = originalGetComputedStyle(element);
+            Object.defineProperty(style, "display", { configurable: true, value: element === grid ? "grid" : "block" });
+            return style;
+        });
+        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 40, 20));
+        select(editor, cells[1].firstChild!, 0, 5);
+
+        expect(editor.surface.selectionContainerClientRects().filter(rect => rect.kind === "grid-cell")).toHaveLength(3);
+        expect(editor.surface.selectionContainerClientRects().find(rect => rect.kind === "grid-cell")?.nodeId)
+            .toBe(editor.surface.domMap.position(cells[0], 0)?.nodeId);
+    });
+
     it("preserves the compact ValueEditor API with exactly one surface", () => {
         const editor = new HtmlEditor({ value: "<p>Compact</p>" });
         owned.push(editor); editor.mount(document.body);
@@ -227,6 +310,15 @@ describe("HtmlEditor composition", () => {
         expect(editor.toolbar).toBeUndefined(); expect(editor.inspector).toBeUndefined();
         expect(editor.dom.hasAttribute("toolbar")).toBe(false);
         expect(editor.dom.hasAttribute("inspector")).toBe(false);
+    });
+
+    it("shows a localized toast when a command cannot be executed", () => {
+        const editor = create();
+        expect(editor.commandRegistry.execute("bold")).toBe(false);
+        const toast = editor.dom.querySelector<HTMLElement>(".elg-html-editor-command-toast")!;
+        expect(toast.textContent).toBe("This command cannot be executed in the current context.");
+        expect(toast.dataset.visible).toBe("true");
+        expect(toast.getAttribute("aria-live")).toBe("polite");
     });
 
     it("uses a standalone Component surface without an acceptance lifecycle", () => {
@@ -249,7 +341,7 @@ describe("HtmlEditor composition", () => {
         const editor = create({ toolbar, inspector });
         expect(!!editor.toolbar).toBe(toolbar); expect(!!editor.inspector).toBe(inspector);
         if (toolbar) expect(editor.dom.contains(editor.toolbar!.dom)).toBe(true);
-        if (inspector) expect(editor.inspector!.dom.parentElement).toBe(editor.surface.dom.parentElement);
+        if (inspector) expect(editor.inspector!.dom.parentElement).toBe(editor.surface.dom.parentElement?.parentElement);
         const children = [editor.surface, editor.toolbar, editor.inspector].filter(Boolean) as Component[];
         editor.dispose(); expect(children.every(component => component.disposed.Value)).toBe(true);
     });
@@ -300,6 +392,18 @@ describe("HtmlEditor composition", () => {
         document.getSelection()!.setBaseAndExtent(formatted, 1, plain, 2);
         document.dispatchEvent(new Event("selectionchange"));
         expect(bold.getAttribute("aria-pressed")).toBe("mixed");
+    });
+
+    it("reports formatting state across independent container parents", () => {
+        const editor = create({ value: "<div><div><strong>Grid A</strong></div><div>Grid B</div><div><strong>Grid C</strong></div></div>" });
+        const cells = [...editor.content.firstElementChild!.children];
+        const first = cells[0].querySelector("strong")!.firstChild!;
+        const last = cells[2].querySelector("strong")!.firstChild!;
+        document.getSelection()!.setBaseAndExtent(first, 0, last, 6);
+        document.dispatchEvent(new Event("selectionchange"));
+        expect(command(editor, "Bold").getAttribute("aria-pressed")).toBe("mixed");
+        expect(editor.execute({ type: "bold" })).toBe(true);
+        expect([...editor.content.querySelectorAll("strong")].map(node => node.textContent)).toEqual(["Grid A", "Grid B", "Grid C"]);
     });
 
     it("keeps tools unavailable while readonly, busy or composing, and recovers afterwards", async () => {
@@ -356,6 +460,17 @@ describe("HtmlEditor composition", () => {
         editor.setHtml("<h2>New scope</h2>");
         expect(selector.textContent).toBe("Choose an element…");
         expect(popup.matches(":popover-open")).toBe(false);
+    });
+
+    it("dims element descriptions that are composed from child elements", async () => {
+        const editor = create({ value: "<div><p>Nested text</p></div><p>Direct text</p>" });
+        await editor.inspector!.openElements(); await frame();
+        const popup = document.querySelector<HTMLElement>("[popover]")!;
+        const rows = [...popup.querySelectorAll<HTMLElement>("[role=treeitem]")];
+        const nested = rows.find(row => row.getAttribute("aria-label")?.startsWith("div "))!;
+        const direct = rows.find(row => row.getAttribute("aria-label")?.startsWith("p Direct text"))!;
+        expect(nested.querySelector(".elg-html-editor-node-description")?.classList.contains("elg-html-editor-node-description-derived")).toBe(true);
+        expect(direct.querySelector(".elg-html-editor-node-description")?.classList.contains("elg-html-editor-node-description-derived")).toBe(false);
     });
 
     it("does not clone the document on caret movement and cleans open popups on unmount/dispose", async () => {
