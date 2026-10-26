@@ -169,6 +169,16 @@ describe("DatePicker", () => {
         key(calendar, "End");
         expect(document.activeElement).toBe(day(calendar, "2026-11-08"));
     });
+    it("accepts the browsed date with Enter after keyboard navigation", () => {
+        const onSelect = vi.fn();
+        const calendar = create({ value: "2026-10-13", onSelect });
+        calendar.focus();
+        key(calendar, "ArrowRight");
+        expect(calendar.value).toBe("2026-10-13");
+        key(calendar, "Enter");
+        expect(calendar.value).toBe("2026-10-14");
+        expect(onSelect).toHaveBeenCalledExactlyOnceWith("2026-10-14", calendar);
+    });
     it("clamps Page navigation to valid month ends including leap days", () => {
         const calendar = create({ value: "2024-01-31" });
         key(calendar, "PageDown");

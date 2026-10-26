@@ -1,0 +1,27 @@
+.elg-data-form { display: grid; gap: 10px; width: 100%; max-width: 720px; min-width: 0; box-sizing: border-box; padding: 16px; border: 1px solid var(--elg-border-color); border-radius: 8px; background: var(--elg-surface-1, var(--elg-surface-color)); }
+.elg-data-form[data-label-position="start"] .elg-data-form-field { display: grid; grid-template-columns: minmax(96px, max-content) minmax(0, 1fr); gap: 4px 10px; align-items: center; }
+.elg-data-form-field { display: grid; gap: 2px; min-width: 0; }
+.elg-data-form-label { color: var(--elg-text-color); font-size: .8125em; font-weight: 600; line-height: 1.25; }
+.elg-data-form-required { margin-inline-start: 3px; color: var(--elg-danger-text, #b02a37); }
+.elg-data-form-value { width: 100%; min-width: 0; height: 30px; display: flex; align-items: center; box-sizing: border-box; padding: 4px 8px; border: 1px solid var(--elg-border-color); border-radius: 4px; background: color-mix(in srgb, var(--elg-surface-color-2) 20%, transparent); color: var(--elg-text-color); cursor: text; overflow-wrap: anywhere; }
+.elg-data-form-value:hover { border-color: var(--elg-border-color); background: var(--elg-surface-color-2); }
+.elg-data-form-value:focus-visible:not(.elg-data-form-value-editing) { border-color: var(--elg-primary-border); background: var(--elg-surface-color-2); outline: none; }
+.elg-data-form-value-editing { height: 30px; padding: 0; border-color: var(--elg-primary-border); background: transparent; }
+.elg-data-form-value-editing > * { width: 100%; height: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
+.elg-data-form-value-editing .elg-input-frame,
+.elg-data-form-value-editing .elg-field { width: 100%; height: 100%; min-width: 0; box-sizing: border-box; }
+.elg-data-form-value-editing .elg-field { border: 0; border-radius: 3px; padding: 4px 8px; }
+.elg-data-form-value-editing > .elg-field:focus-visible,
+.elg-data-form-value-editing .elg-input-frame > .elg-field:focus-visible {
+    /* Keep the editor focus cue inside the fixed cell, like DataGrid. */
+    outline: 1px solid color-mix(in srgb, var(--elg-selection-border) 55%, transparent);
+    outline-offset: -1px;
+}
+.elg-data-form-value-editing .elg-input-frame > .elg-position-absolute { z-index: 2; pointer-events: auto; }
+.elg-data-form-value-editing .elg-editor-trigger { position: relative; z-index: 1; pointer-events: auto; }
+.elg-data-form-editor-button { flex: 0 0 24px; width: 24px; height: 24px; margin-inline-start: auto; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--elg-text-muted); cursor: pointer; }
+.elg-data-form-editor-button:hover, .elg-data-form-editor-button:focus-visible { background: var(--elg-hover-bg); color: var(--elg-text-color); outline: none; }
+.elg-data-form-editor-button-hover { opacity: 0; }
+.elg-data-form-value:hover .elg-data-form-editor-button-hover, .elg-data-form-value:focus-within .elg-data-form-editor-button-hover { opacity: 1; }
+.elg-data-form-description { color: var(--elg-text-muted); font-size: .8em; }
+@media (max-width: 560px) { .elg-data-form { padding: 12px; } .elg-data-form[data-label-position="start"] .elg-data-form-field { grid-template-columns: 1fr; gap: 2px; } }

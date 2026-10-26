@@ -56,6 +56,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "editorButtonVisibility",
+      "type": "\"hover\" | \"always\" | \"never\" | undefined",
+      "description": "Controls picker trigger visibility in field consumers; forms default to always, grids to hover.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
       "name": "required",
       "type": "boolean | undefined",
       "description": "Rejects missing values in the default field editor. Custom consumers may add validation.",
@@ -211,7 +221,7 @@ export default {
     {
       "name": "displayFormat",
       "type": "string | undefined",
-      "description": "Display-only pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. Does not alter editor text or stored values.",
+      "description": "Presentation pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. It affects display and the built-in editor text, never the stored value.",
       "tags": [],
       "topics": [],
       "optional": true,

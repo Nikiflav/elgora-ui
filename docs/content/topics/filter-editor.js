@@ -6,7 +6,7 @@ export default {
   "order": 21,
   "description": "Build visual AND/OR filters independently of DataGrid and distinguish editor drafts from applied queries.",
   "prev": "/components/html-editor",
-  "next": "/popover",
+  "next": "/components/data-form",
   "toc": true,
   "api": [
     "FilterEditor",

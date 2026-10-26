@@ -93,6 +93,8 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     userState?: any;
     /** Prevents editing in consumers that honor this presentation flag. */
     readonly?: boolean;
+    /** Controls picker trigger visibility in field consumers; forms default to always, grids to hover. */
+    editorButtonVisibility?: "always" | "hover" | "never";
     /** Rejects missing values in the default field editor. Custom consumers may add validation. */
     required?: boolean;
     /** Whether a card/form consumer should omit the field label. */
@@ -107,7 +109,7 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     validate?(value: any, context: FieldEditContext<TRow>): string | undefined | Promise<string | undefined>;
     /** Formats a value for editing and, absent getText/lookup, for display. */
     formatValue?(value: any, context: FieldEditContext<TRow>): string;
-    /** Display-only pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. Does not alter editor text or stored values. */
+    /** Presentation pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. It affects display and the built-in editor text, never the stored value. */
     displayFormat?: string;
     /** Regional override for display and editor context. Falls back to the host locale, then Localization.default. Does not select a parser. */
     locale?: string;

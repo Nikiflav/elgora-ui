@@ -57,8 +57,11 @@ export function createFieldEditor<TRow>(context: FieldEditorContext<TRow>): Valu
     switch (DataViewFieldUtils.getDataType(field)) {
         case "number": return new NumberEditor(textOptions);
         case "boolean": return new CheckboxEditor(options);
-        case "date": return new DateEditor(textOptions);
-        case "datetime": return new DateTimeEditor(textOptions);
+        // Date editors use the same presentation pattern as the field's display
+        // value. The stored value remains canonical ISO text; only the editor's
+        // input and calendar acceptance text follow displayFormat.
+        case "date": return new DateEditor({ ...textOptions, dateFormat: field.displayFormat });
+        case "datetime": return new DateTimeEditor({ ...textOptions, dateFormat: field.displayFormat });
         case "object":
             if (!field.resolveText) throw new Error("Failed to create field editor. Object fields require resolveText or createEditor.");
             return new TextEditor(textOptions);

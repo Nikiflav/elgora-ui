@@ -18,6 +18,7 @@ export { ScrollSpy, type ScrollSpyOptions } from './components/scroll-spy/Scroll
 export { ScrollEngine, type ScrollEngineOptions, type ScrollbarMode } from './components/scrollbar/scroll-engine';
 export { Scrollbars, type ScrollbarsOptions, type ScrollbarsHandle, type ScrollbarsInstallation } from './components/scrollbar/Scrollbars';
 export { DataGrid, type DataGridOptions, type DataGridCellNavigatingEvent, type ColumnWidthMode, type ColumnResizeMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
+export { DataForm, type DataFormOptions, type DataFormAdapter } from './components/dataform/DataForm';
 export { type DataCell, type DataViewField, type DisplayValue, type FieldLookup, type FieldEditContext, type FieldEditorContext } from './data/DataViewField';
 export { createFieldEditor } from './components/editors/createFieldEditor';
 export { ScrollReveal, type ScrollRevealOptions } from './components/scroll-reveal/ScrollReveal';

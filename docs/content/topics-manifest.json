@@ -919,7 +919,7 @@
       "order": 21,
       "description": "Build visual AND/OR filters independently of DataGrid and distinguish editor drafts from applied queries.",
       "prev": "/components/html-editor",
-      "next": "/popover",
+      "next": "/components/data-form",
       "toc": true,
       "api": [
         "FilterEditor",
@@ -935,6 +935,45 @@
         }
       ],
       "module": "./content/topics/filter-editor.js"
+    },
+    {
+      "id": "data-form",
+      "title": "DataForm",
+      "path": "/components/data-form",
+      "group": "components",
+      "parent": "editors",
+      "order": 22,
+      "description": "Edit one plain object or DataRow with the same field and editor contract as DataGrid.",
+      "prev": "/components/filter-editor",
+      "next": "/popover",
+      "toc": true,
+      "api": [
+        "DataForm",
+        "DataFormOptions",
+        "DataFormAdapter"
+      ],
+      "keywords": [
+        "form",
+        "fields",
+        "DataRow",
+        "editing"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "plain-objects-and-datarow",
+          "title": "Plain objects and DataRow"
+        },
+        {
+          "id": "labels-and-adapters",
+          "title": "Labels and adapters"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/data-form.js"
     },
     {
       "id": "datagrid-columns",
@@ -1055,7 +1094,7 @@
       "parent": "menus",
       "order": 30,
       "description": "Create anchored and point-positioned floating panels.",
-      "prev": "/components/filter-editor",
+      "prev": "/components/data-form",
       "next": "/popup",
       "toc": true,
       "api": [

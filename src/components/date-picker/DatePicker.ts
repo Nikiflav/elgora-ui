@@ -316,6 +316,13 @@ export class DatePicker extends Component {
             event.preventDefault(); this.view = "days"; this.requestRender(`button[data-date='${this.focusedDate}']`); return;
         }
         if (this.view !== "days" || !(event.target as Element).closest("button[data-date]")) return;
+        // Arrow keys only browse. Enter explicitly accepts the browsed day,
+        // which keeps keyboard navigation consistent with clicking a day.
+        if (event.key === "Enter") {
+            event.preventDefault();
+            this.choose(this.focusedDate);
+            return;
+        }
         const date = parseDate(this.focusedDate);
         const delta: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
         if (event.key in delta) date.setUTCDate(date.getUTCDate() + delta[event.key]);

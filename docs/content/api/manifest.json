@@ -254,6 +254,33 @@
       "module": "./content/api/DataFilterRowValue.js"
     },
     {
+      "name": "DataForm",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataForm",
+      "description": "Compact one-object editor using the same DataViewField and field-editor contract as DataGrid.\nIt supports top/start labels, click/F2/Enter editing, async acceptance and Escape cancellation.",
+      "module": "./content/api/DataForm.js"
+    },
+    {
+      "name": "DataFormAdapter",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormAdapter",
+      "description": "Reads and accepts one form row. DataForm supplies a default adapter for plain objects and DataRow.",
+      "module": "./content/api/DataFormAdapter.js"
+    },
+    {
+      "name": "DataFormOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormOptions",
+      "description": "Data-bound form options. A form edits one object, not a query of rows.",
+      "module": "./content/api/DataFormOptions.js"
+    },
+    {
       "name": "DataGrid",
       "kind": "class",
       "group": "components",

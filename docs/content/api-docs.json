@@ -2089,6 +2089,255 @@
       ]
     },
     {
+      "name": "DataForm",
+      "kind": "class",
+      "type": "DataForm<TRow>",
+      "description": "Compact one-object editor using the same DataViewField and field-editor contract as DataGrid.\nIt supports top/start labels, click/F2/Enter editing, async acceptance and Escape cancellation.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataForm",
+      "source": "src/components/dataform/DataForm.ts",
+      "members": [
+        {
+          "name": "value",
+          "type": "TRow",
+          "description": "Current plain-object draft or the source-owned DataRow.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "kind": "property"
+        },
+        {
+          "name": "finishEdit",
+          "type": "() => Promise<boolean>",
+          "description": "Accepts the active field; failed async validation keeps its editor visible.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
+          "name": "cancelEdit",
+          "type": "() => boolean",
+          "description": "Cancels the active field and restores its displayed value.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
+        }
+      ]
+    },
+    {
+      "name": "DataFormAdapter",
+      "kind": "interface",
+      "type": "DataFormAdapter<TRow>",
+      "description": "Reads and accepts one form row. DataForm supplies a default adapter for plain objects and DataRow.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormAdapter",
+      "source": "src/components/dataform/DataForm.ts",
+      "members": [
+        {
+          "name": "getValue",
+          "type": "(row: TRow, field: DataViewField<TRow>) => any | Promise<any>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "field",
+              "type": "DataViewField<TRow>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "any | Promise<any>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: TRow, field: DataViewField<TRow>) => any | Promise<any>"
+        },
+        {
+          "name": "getText",
+          "type": "(row: TRow, field: DataViewField<TRow>, value: any, locale?: string) => string | Promise<string>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "field",
+              "type": "DataViewField<TRow>",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "any",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "locale",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string | Promise<string>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: TRow, field: DataViewField<TRow>, value: any, locale?: string) => string | Promise<string>"
+        },
+        {
+          "name": "setValue",
+          "type": "(row: TRow, field: DataViewField<TRow>, value: any) => Promise<void>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "TRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "field",
+              "type": "DataViewField<TRow>",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "any",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(row: TRow, field: DataViewField<TRow>, value: any) => Promise<void>"
+        }
+      ]
+    },
+    {
+      "name": "DataFormOptions",
+      "kind": "interface",
+      "type": "DataFormOptions<TRow>",
+      "description": "Data-bound form options. A form edits one object, not a query of rows.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormOptions",
+      "source": "src/components/dataform/DataForm.ts",
+      "members": [
+        {
+          "name": "data",
+          "type": "TRow",
+          "description": "Object or DataRow displayed and edited by the form.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "kind": "property"
+        },
+        {
+          "name": "fields",
+          "type": "readonly DataViewField<TRow>[]",
+          "description": "Field metadata shared with DataGrid.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "kind": "property"
+        },
+        {
+          "name": "labelPosition",
+          "type": "\"top\" | \"start\" | undefined",
+          "description": "Positions labels above controls or beside them. Defaults to top.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/dataform/DataForm.ts",
+          "kind": "property"
+        },
+        {
+          "name": "allowEdit",
+          "type": "boolean | undefined",
+          "description": "Prevents entering field editors. Defaults to true.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/dataform/DataForm.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onCommit",
+          "type": "((row: TRow, field: DataViewField<TRow>, value: any) => void | Promise<void>) | undefined",
+          "description": "Optional notification after a field has been accepted.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/dataform/DataForm.ts",
+          "kind": "property"
+        },
+        {
+          "name": "adapter",
+          "type": "DataFormAdapter<TRow> | undefined",
+          "description": "Explicit adapter for proxy/domain objects.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/dataform/DataForm.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "DataGrid",
       "kind": "class",
       "type": "DataGrid<TRow>",
@@ -5890,6 +6139,16 @@
           "kind": "property"
         },
         {
+          "name": "editorButtonVisibility",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "description": "Controls picker trigger visibility in field consumers; forms default to always, grids to hover.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
           "name": "required",
           "type": "boolean | undefined",
           "description": "Rejects missing values in the default field editor. Custom consumers may add validation.",
@@ -6045,7 +6304,7 @@
         {
           "name": "displayFormat",
           "type": "string | undefined",
-          "description": "Display-only pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. Does not alter editor text or stored values.",
+          "description": "Presentation pattern for number/date fields, e.g. N0, N2, P1, C2€ or dd.MM.yyyy. It affects display and the built-in editor text, never the stored value.",
           "tags": [],
           "topics": [],
           "optional": true,
