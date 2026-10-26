@@ -2,7 +2,7 @@ export default {
   "name": "HtmlEditor",
   "kind": "class",
   "type": "HtmlEditor",
-  "description": "Rich-text editing through model commands, with scoped reconciliation for IME and noncancelable input.",
+  "description": "Orchestrates one editing surface and optional tools; owns the sole commit/cancel lifecycle.",
   "tags": [],
   "topics": [],
   "group": "components",
@@ -11,9 +11,19 @@ export default {
   "source": "src/components/editors/htmleditor/HtmlEditor.ts",
   "members": [
     {
+      "name": "surface",
+      "type": "HtmlEditorSurface",
+      "description": "Sole owner of the editable model, DOM mapping, text selection and history.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "kind": "property"
+    },
+    {
       "name": "content",
       "type": "HTMLDivElement",
-      "description": "",
+      "description": "Native editing area, retained for compatibility with the compact editor API.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -22,8 +32,38 @@ export default {
     },
     {
       "name": "selectionChanged",
-      "type": "ObservableEvent<HtmlEditorSelectionState | undefined>",
-      "description": "A detached snapshot is emitted when the editor's remembered selection changes.",
+      "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<HtmlEditorSelectionState | undefined>",
+      "description": "Same event as surface.selectionChanged; no second selection state is maintained.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "kind": "property"
+    },
+    {
+      "name": "toolbar",
+      "type": "HtmlEditorToolbar | undefined",
+      "description": "Owned toolbar, present only when enabled at construction.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "kind": "property"
+    },
+    {
+      "name": "inspector",
+      "type": "HtmlEditorInspector | undefined",
+      "description": "Owned inspector scaffold, present only when enabled at construction.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "kind": "property"
+    },
+    {
+      "name": "commandRegistry",
+      "type": "HtmlEditorCommandRegistry",
+      "description": "Shared command source consumed by all optional editor tools.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -32,8 +72,8 @@ export default {
     },
     {
       "name": "document",
-      "type": "HtmlEditorDocument",
-      "description": "Detached snapshot; mutating it does not modify the editor.",
+      "type": "import(\"D:/Dev/github/elgora-ui/src/index\").HtmlEditorDocument",
+      "description": "Detached model snapshot; use commands rather than mutating it.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -43,7 +83,7 @@ export default {
     {
       "name": "selection",
       "type": "HtmlEditorSelectionState | undefined",
-      "description": "Last selection inside this editor, retained while focus moves to a toolbar or inspector.",
+      "description": "Remembered text selection, retained while surrounding controls have focus.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -53,7 +93,7 @@ export default {
     {
       "name": "nativeSelection",
       "type": "Selection | null",
-      "description": "Live browser selection, only when both endpoints belong to this editor.",
+      "description": "Live selection only when both endpoints belong to the surface.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -63,7 +103,7 @@ export default {
     {
       "name": "restoreSelection",
       "type": "(state?: HtmlEditorSelectionState | undefined) => boolean",
-      "description": "Restores a saved selection. Returns false for removed nodes or a replaced document.",
+      "description": "Restores a valid runtime text bookmark and focuses the surface.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -87,7 +127,7 @@ export default {
     {
       "name": "html",
       "type": "string",
-      "description": "HTML suitable for persistence under the parser's supported-content policy.",
+      "description": "Current serialized HTML, excluding surrounding editor UI.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -95,32 +135,25 @@ export default {
       "kind": "property"
     },
     {
-      "name": "resolveText",
-      "type": "(text: string) => string | Promise<string>",
-      "description": "Converts text into a typed value, or throws/rejects when it cannot be resolved.\nDoes not modify draft, error, busy or confirmation state, invoke validation,\nemit events or save. Hosts can use this independently for clipboard paste.",
+      "name": "getHtml",
+      "type": "() => string",
+      "description": "Returns the current serialized draft.",
       "tags": [],
       "topics": [],
       "optional": false,
       "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-      "parameters": [
-        {
-          "name": "text",
-          "type": "string",
-          "optional": false,
-          "description": ""
-        }
-      ],
+      "parameters": [],
       "returns": {
-        "type": "string | Promise<string>",
+        "type": "string",
         "description": ""
       },
       "kind": "method",
-      "signature": "(text: string) => string | Promise<string>"
+      "signature": "() => string"
     },
     {
       "name": "setHtml",
       "type": "(html: string) => void",
-      "description": "Replaces the document and its accepted baseline.",
+      "description": "Replaces content and establishes a new accepted baseline.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -141,57 +174,32 @@ export default {
       "signature": "(html: string) => void"
     },
     {
-      "name": "getHtml",
-      "type": "() => string",
-      "description": "",
+      "name": "resolveText",
+      "type": "(text: string) => string | Promise<string>",
+      "description": "Resolves external text without editing or saving.",
       "tags": [],
       "topics": [],
       "optional": false,
       "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
       "returns": {
-        "type": "string",
+        "type": "string | Promise<string>",
         "description": ""
       },
       "kind": "method",
-      "signature": "() => string"
-    },
-    {
-      "name": "commit",
-      "type": "() => Promise<boolean>",
-      "description": "Confirmation waits for the host to retry after native composition has finished.",
-      "tags": [],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-      "parameters": [],
-      "returns": {
-        "type": "Promise<boolean>",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "() => Promise<boolean>"
-    },
-    {
-      "name": "cancel",
-      "type": "() => boolean",
-      "description": "Restores the last accepted value. Returns false while confirmation is running.",
-      "tags": [],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-      "parameters": [],
-      "returns": {
-        "type": "boolean",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "() => boolean"
+      "signature": "(text: string) => string | Promise<string>"
     },
     {
       "name": "execute",
       "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean",
-      "description": "Applies a supported operation to the model and selection in one undoable transaction.",
+      "description": "Applies a command to the surface's single model/history.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -221,7 +229,7 @@ export default {
     {
       "name": "canUndo",
       "type": "boolean",
-      "description": "Whether the current document scope has an operation to undo.",
+      "description": "Whether an operation can be undone in this document scope.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -231,12 +239,44 @@ export default {
     {
       "name": "canRedo",
       "type": "boolean",
-      "description": "Whether the last undone operation can be reapplied.",
+      "description": "Whether an undone operation can be reapplied.",
       "tags": [],
       "topics": [],
       "optional": false,
       "source": "src/components/editors/htmleditor/HtmlEditor.ts",
       "kind": "property"
+    },
+    {
+      "name": "commit",
+      "type": "() => Promise<boolean>",
+      "description": "Waits for composition/native reconciliation to settle before external acceptance.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "parameters": [],
+      "returns": {
+        "type": "Promise<boolean>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => Promise<boolean>"
+    },
+    {
+      "name": "cancel",
+      "type": "() => boolean",
+      "description": "Restores the accepted value unless native composition is still active.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "parameters": [],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => boolean"
     }
   ]
 };

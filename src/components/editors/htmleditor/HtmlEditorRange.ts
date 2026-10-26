@@ -7,6 +7,9 @@ import { isAtomic, isStructuralWhitespace, locate, validPosition, type HtmlEdito
  */
 interface Interval { from: number; to: number; gaps?: number[]; }
 
+/** Coverage of a model node by a non-collapsed text range; unselected nodes are omitted. */
+export type HtmlEditorNodeCoverage = "full" | "partial";
+
 /** Shared, read-only coverage analysis for extraction and deletion on one model snapshot. */
 interface RangeAnalysis {
     intervals: Map<HtmlEditorParent | HtmlEditorNode, Interval>;
@@ -43,6 +46,21 @@ function analyzeRange(document: HtmlEditorDocument, rootId: string,
     const from = Math.min(a, b), to = Math.max(a, b);
     const start = a < b ? selection.anchor : selection.focus;
     return { intervals, from, to, start };
+}
+
+/** Read-only coverage using exactly the intervals used by Copy/Delete, including atoms and empty shells.
+ * Includes text leaves and elements; a collapsed or invalid range returns an empty map.
+ */
+export function getHtmlEditorRangeCoverage(document: HtmlEditorDocument, rootId: string,
+    selection: HtmlEditorSelectionState): ReadonlyMap<string, HtmlEditorNodeCoverage> {
+    const result = new Map<string, HtmlEditorNodeCoverage>();
+    const range = analyzeRange(document, rootId, selection);
+    if (!range) return result;
+    for (const [node, span] of range.intervals) {
+        if (node.type === "document" || span.to <= span.from || range.to <= span.from || range.from >= span.to) continue;
+        result.set(node.id, range.from <= span.from && span.to <= range.to ? "full" : "partial");
+    }
+    return result;
 }
 
 /** Extract selected content without changing the source, selection or runtime identities.

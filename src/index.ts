@@ -11,6 +11,7 @@ export { type RemixIcon } from './core/RemixIcon';
 
 export { type SizeManager, VariableSizeManager, FixedSizeManager } from './components/virtual-list/SizeManager';
 export { VirtualList, type VirtualListOptions, type VirtualDataSource as DataList, type RenderRowArgs } from './components/virtual-list/VirtualList';
+export { TreeView, type TreeViewOptions, type TreeDataAdapter, type TreeItemRenderContext } from './components/tree-view/TreeView';
 export { Throttle } from './core/Throttle';
 export { BrowserRouter } from './components/browser-router/BrowserRouter';
 export { ScrollSpy, type ScrollSpyOptions } from './components/scroll-spy/ScrollSpy';
@@ -65,6 +66,12 @@ export { LookupEditor, type LookupEditorOptions, type LookupQuery, type LookupRe
 export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
     type ValueEditorOptions, type TextEditorOptions, type NumberEditorOptions, type BooleanEditorOptions } from './components/editors/ValueEditor';
 export { HtmlEditor, type HtmlEditorOptions } from './components/editors/htmleditor/HtmlEditor';
+export { HtmlEditorCommandMenu } from './components/editors/htmleditor/HtmlEditorCommandMenu';
+export { HtmlEditorCommandRegistry, type HtmlEditorCommandContext, type HtmlEditorUiCommand } from './components/editors/htmleditor/HtmlEditorCommandRegistry';
+export { HtmlEditorSurface, type HtmlEditorSurfaceOptions } from './components/editors/htmleditor/HtmlEditorSurface';
+export { HtmlEditorToolbar } from './components/editors/htmleditor/HtmlEditorToolbar';
+export { HtmlEditorInspector } from './components/editors/htmleditor/HtmlEditorInspector';
+export type { HtmlEditorNodeCoverage } from './components/editors/htmleditor/HtmlEditorRange';
 export type { HtmlEditorNode, HtmlEditorNodeId, HtmlEditorText, HtmlEditorElement, HtmlEditorStyle, HtmlEditorDocument, HtmlEditorPositionState, HtmlEditorSelectionState } from './components/editors/htmleditor/HtmlEditorModel';
 export { getHtmlEditorStyle, setHtmlEditorStyle, removeHtmlEditorStyle } from './components/editors/htmleditor/HtmlEditorStyles';
 export type { HtmlEditorCommand, HtmlEditorState } from './components/editors/htmleditor/HtmlEditorCommands';

@@ -6709,7 +6709,7 @@
     {
       "name": "enMessages",
       "kind": "variable",
-      "type": "{ readonly \"datePicker.today\": \"Today\"; readonly \"datePicker.selectToday\": \"Select today\"; readonly \"datePicker.chooseMonth\": \"Choose month\"; readonly \"datePicker.chooseYear\": \"Choose year\"; readonly \"datePicker.previousPeriod\": \"Previous period\"; readonly \"datePicker.nextPeriod\": \"Next period\"; readonly \"datePicker.chooseDate\": \"Choose date\"; readonly \"datePicker.invalidDate\": \"Failed to read calendar date. Use a valid YYYY-MM-DD date.\"; readonly \"datePicker.outOfRange\": \"Failed to set calendar date. The date is outside the allowed range.\"; readonly \"valueEditor.required\": \"A value is required.\"; readonly \"valueEditor.validationError\": \"Validation error: {message}\"; readonly \"numberEditor.invalidNumber\": \"Failed to confirm number. Enter a valid number.\"; readonly \"numberEditor.finiteNumber\": \"Failed to confirm number. Enter a finite number.\"; readonly \"booleanEditor.invalidBoolean\": \"Failed to resolve boolean text. Enter true/false, yes/no or 1/0.\"; readonly \"toggleEditor.label\": \"Toggle\"; readonly \"dateEditor.open\": \"Open date picker\"; readonly \"dateEditor.popup\": \"{label} calendar\"; readonly \"dateEditor.label\": \"Date\"; readonly \"dateEditor.outOfRange\": \"Failed to resolve date. The date is outside the allowed range.\"; readonly \"dateFormatter.invalidDate\": \"Failed to parse date. Use a valid {pattern} date.\"; readonly \"dateFormatter.invalidValue\": \"Failed to format date. Use a valid YYYY-MM-DD value.\"; readonly \"timeEditor.open\": \"Open time picker\"; readonly \"timeEditor.label\": \"Time\"; readonly \"timeEditor.popup\": \"{label} picker\"; readonly \"timeFormatter.invalidTime\": \"Failed to parse time. Use a valid {pattern} value.\"; readonly \"timeFormatter.invalidValue\": \"Failed to format time. Use a valid HH:mm or HH:mm:ss value.\"; readonly \"dateTimeEditor.open\": \"Open date and time picker\"; readonly \"dateTimeEditor.label\": \"Date and time\"; readonly \"dateTimeEditor.popup\": \"{label} picker\"; readonly \"dateTimeEditor.invalidInput\": \"Failed to parse date-time. Use {pattern}.\"; readonly \"dateTimeEditor.invalidValue\": \"Failed to resolve date-time. Use a canonical date-time value.\"; readonly \"lookupEditor.open\": \"Open lookup\"; readonly \"lookupEditor.label\": \"Lookup\"; readonly \"lookupEditor.popup\": \"{label} results\"; readonly \"lookupEditor.loading\": \"Loading…\"; readonly \"lookupEditor.noResults\": \"No matching items\"; readonly \"lookupEditor.matches.one\": \"{count} match\"; readonly \"lookupEditor.matches.other\": \"{count} matches\"; readonly \"lookupEditor.loadFailed\": \"Failed to load lookup items.\"; readonly \"lookupEditor.notFound\": \"Failed to resolve lookup text. No matching item was found.\"; readonly \"lookupEditor.ambiguous\": \"Failed to resolve lookup text. More than one item matches.\"; readonly \"lookupEditor.missingItem\": \"Failed to resolve lookup text. The matching item was not returned.\"; readonly \"dataGrid.newRow\": \"New row\"; readonly \"dataGrid.groupPanelEmpty\": \"Drag a column here to group\"; readonly \"dataGrid.sortAscending\": \"Sort Ascending\"; readonly \"dataGrid.sortDescending\": \"Sort Descending\"; readonly \"dataGrid.clearSorting\": \"Clear sorting\"; readonly \"dataGrid.pinColumn\": \"Pin Column\"; readonly \"dataGrid.noPin\": \"No Pin\"; readonly \"dataGrid.pinLeft\": \"Pin Left\"; readonly \"dataGrid.pinRight\": \"Pin Right\"; readonly \"dataGrid.autosizeColumn\": \"Autosize This Column\"; readonly \"dataGrid.autosizeAll\": \"Autosize All Columns\"; readonly \"dataGrid.groupBy\": \"Group by {column}\"; readonly \"dataGrid.ungroup\": \"Ungroup {column}\"; readonly \"dataGrid.grouping\": \"Grouping\"; readonly \"dataGrid.interval\": \"Interval\"; readonly \"dataGrid.exactValue\": \"Exact value\"; readonly \"dataGrid.expandToLevel\": \"Expand to this level\"; readonly \"dataGrid.collapseLevel\": \"Collapse this level\"; readonly \"dataGrid.summary\": \"Summary\"; readonly \"dataGrid.summary.none\": \"None\"; readonly \"dataGrid.summary.count\": \"Count\"; readonly \"dataGrid.summary.sum\": \"Sum\"; readonly \"dataGrid.summary.avg\": \"Average\"; readonly \"dataGrid.summary.min\": \"Minimum\"; readonly \"dataGrid.summary.max\": \"Maximum\"; readonly \"dataGrid.summary.distinct\": \"Distinct\"; readonly \"dataGrid.cancelNewRow\": \"Cancel new row\"; readonly \"dataGrid.copy\": \"Copy selected cells\"; readonly \"dataGrid.copyWithHeaders\": \"Copy selected cells with headers\"; readonly \"dataGrid.paste\": \"Paste\"; readonly \"dataGrid.selectRow\": \"Select row\"; readonly \"dataGrid.clearSelection\": \"Clear selection\"; readonly \"dataGrid.sortPriority\": \"Sort priority {priority}\"; readonly \"dataGrid.sortedAscending\": \"Sorted ascending\"; readonly \"dataGrid.sortedDescending\": \"Sorted descending\"; readonly \"dataGrid.editFilter\": \"Edit filter\"; readonly \"dataGrid.addFilter\": \"Add filter\"; readonly \"dataGrid.editFilterExpression\": \"Edit filter: {filter}\"; readonly \"dataGrid.filterColumn\": \"Filter {column}\"; readonly \"dataGrid.clearColumnFilter\": \"Clear filter {column}\"; readonly \"dataGrid.acceptFailed\": \"Failed to accept cell input.\"; readonly \"dataGrid.displayValueFailed\": \"Could not format cell value: {message}\"; readonly \"dataGrid.clipboardUnavailable\": \"Clipboard reading is unavailable.\"; readonly \"dataGrid.clipboardFailed\": \"Failed to read clipboard. {message}\"; readonly \"dataGrid.pastePrompt\": \"Paste text below, then choose Paste.\"; readonly \"dataGrid.pasteText\": \"Paste tabular text\"; readonly \"dataGrid.cancel\": \"Cancel\"; readonly \"dataGrid.interval.year\": \"Year\"; readonly \"dataGrid.interval.yearQuarter\": \"Year-quarter\"; readonly \"dataGrid.interval.quarter\": \"Quarter\"; readonly \"dataGrid.interval.yearMonth\": \"Year-month\"; readonly \"dataGrid.interval.month\": \"Month\"; readonly \"dataGrid.interval.week\": \"ISO week\"; readonly \"dataGrid.interval.day\": \"Day\"; readonly \"dataGrid.interval.dayOfWeek\": \"Day of week\"; readonly \"dataGrid.interval.hour\": \"Hour\"; readonly \"dataGrid.interval.minute\": \"Minute\"; readonly \"dataGrid.interval.second\": \"Second\"; readonly \"dataGrid.interval.firstChar\": \"First character\"; readonly \"filterEditor.apply\": \"Apply Filter\"; readonly \"filterEditor.clear\": \"Clear\"; readonly \"filterEditor.and\": \"And\"; readonly \"filterEditor.or\": \"Or\"; readonly \"filterEditor.addCondition\": \"Add condition\"; readonly \"filterEditor.addGroup\": \"Add group\"; readonly \"filterEditor.removeCondition\": \"Remove condition\"; readonly \"filterEditor.removeGroup\": \"Remove group\"; readonly \"filterEditor.empty\": \"(empty)\"; readonly \"filterEditor.value\": \"Value\"; readonly \"filterEditor.operator.contains\": \"contains\"; readonly \"filterEditor.operator.notcontains\": \"notcontains\"; readonly \"filterEditor.operator.startswith\": \"startswith\"; readonly \"filterEditor.operator.endswith\": \"endswith\"; readonly \"numberFormatter.invalidNumber\": \"Failed to parse number. Use the '{pattern}' format.\"; readonly \"dataGrid.clipboardHint\": \"Return to grid and press Ctrl+V / Command+V\"; readonly \"dataGrid.clipboardMalformed\": \"The pasted text contains an unterminated quoted value.\"; readonly \"dataGrid.pasteBlocked\": \"Pasting is unavailable while editing is disabled or another row operation is running.\"; readonly \"dataGrid.pasteEditInProgress\": \"Finish or cancel the active cell edit before pasting.\"; readonly \"dataGrid.pasteReadOnlyRow\": \"The pasted range includes a group or summary row that cannot be edited.\"; readonly \"dataGrid.pasteCreateUnavailable\": \"The data source does not support creating rows for the pasted data.\"; readonly \"dataGrid.newRowOperationInProgress\": \"Finish the current editing operation before creating a new row.\"; readonly \"dataGrid.newRowUnavailable\": \"Row creation is unavailable because grid editing or source row creation is disabled.\"; readonly \"dataGrid.newRowCreationInProgress\": \"A new row is already being created.\"; readonly \"dataGrid.pasteRowFailed\": \"Failed to create pasted row {row}. {message}\"; readonly \"dataGrid.summaryLabel.count\": \"count\"; readonly \"dataGrid.summaryLabel.sum\": \"sum\"; readonly \"dataGrid.summaryLabel.avg\": \"avg\"; readonly \"dataGrid.summaryLabel.min\": \"min\"; readonly \"dataGrid.summaryLabel.max\": \"max\"; readonly \"dataGrid.summaryLabel.distinct\": \"distinct\"; }",
+      "type": "{ readonly \"htmlEditorToolbar.label\": \"HTML editing commands\"; readonly \"htmlEditorToolbar.bold\": \"Bold\"; readonly \"htmlEditorToolbar.italic\": \"Italic\"; readonly \"htmlEditorToolbar.undo\": \"Undo\"; readonly \"htmlEditorToolbar.redo\": \"Redo\"; readonly \"htmlEditorInspector.label\": \"Element inspector\"; readonly \"htmlEditorInspector.chooseElement\": \"Choose an element…\"; readonly \"htmlEditorInspector.elements\": \"HTML elements\"; readonly \"htmlEditorInspector.properties\": \"Properties\"; readonly \"htmlEditorInspector.advanced\": \"Advanced\"; readonly \"htmlEditorInspector.propertiesHint\": \"Property controls will appear here. Element inspection is a preview; structural selection and property editing are not implemented yet.\"; readonly \"htmlEditorInspector.advancedHint\": \"Advanced attributes, classes and styles will be grouped here. This panel does not modify HTML yet.\"; readonly \"htmlEditorInspector.empty\": \"Empty\"; readonly \"htmlEditorInspector.ancestors\": \"Element ancestors\"; readonly \"htmlEditorInspector.moreAncestors\": \"More ancestors\"; readonly \"htmlEditorInspector.inspectAncestor\": \"Inspect {tag}\"; readonly \"htmlEditorInspector.mixed\": \"Mixed\"; readonly \"htmlEditorInspector.fullySelected\": \"Fully selected\"; readonly \"htmlEditorInspector.partiallySelected\": \"Partially selected\"; readonly \"htmlEditorInspector.notSelected\": \"Not selected\"; readonly \"htmlEditorInspector.keyboardFocus\": \"Keyboard focus\"; readonly \"htmlEditorInspector.selectElement\": \"Select element\"; readonly \"htmlEditorInspector.moreActions\": \"More actions\"; readonly \"htmlEditorInspector.notSelectedHint\": \"Not selected — click to select element\"; readonly \"htmlEditorInspector.partiallySelectedHint\": \"Partially selected — click to select the entire element\"; readonly \"treeView.loading\": \"Loading…\"; readonly \"treeView.loadError\": \"Could not load this branch.\"; readonly \"treeView.retry\": \"Retry\"; readonly \"datePicker.today\": \"Today\"; readonly \"datePicker.selectToday\": \"Select today\"; readonly \"datePicker.chooseMonth\": \"Choose month\"; readonly \"datePicker.chooseYear\": \"Choose year\"; readonly \"datePicker.previousPeriod\": \"Previous period\"; readonly \"datePicker.nextPeriod\": \"Next period\"; readonly \"datePicker.chooseDate\": \"Choose date\"; readonly \"datePicker.invalidDate\": \"Failed to read calendar date. Use a valid YYYY-MM-DD date.\"; readonly \"datePicker.outOfRange\": \"Failed to set calendar date. The date is outside the allowed range.\"; readonly \"valueEditor.required\": \"A value is required.\"; readonly \"valueEditor.validationError\": \"Validation error: {message}\"; readonly \"numberEditor.invalidNumber\": \"Failed to confirm number. Enter a valid number.\"; readonly \"numberEditor.finiteNumber\": \"Failed to confirm number. Enter a finite number.\"; readonly \"booleanEditor.invalidBoolean\": \"Failed to resolve boolean text. Enter true/false, yes/no or 1/0.\"; readonly \"toggleEditor.label\": \"Toggle\"; readonly \"dateEditor.open\": \"Open date picker\"; readonly \"dateEditor.popup\": \"{label} calendar\"; readonly \"dateEditor.label\": \"Date\"; readonly \"dateEditor.outOfRange\": \"Failed to resolve date. The date is outside the allowed range.\"; readonly \"dateFormatter.invalidDate\": \"Failed to parse date. Use a valid {pattern} date.\"; readonly \"dateFormatter.invalidValue\": \"Failed to format date. Use a valid YYYY-MM-DD value.\"; readonly \"timeEditor.open\": \"Open time picker\"; readonly \"timeEditor.label\": \"Time\"; readonly \"timeEditor.popup\": \"{label} picker\"; readonly \"timeFormatter.invalidTime\": \"Failed to parse time. Use a valid {pattern} value.\"; readonly \"timeFormatter.invalidValue\": \"Failed to format time. Use a valid HH:mm or HH:mm:ss value.\"; readonly \"dateTimeEditor.open\": \"Open date and time picker\"; readonly \"dateTimeEditor.label\": \"Date and time\"; readonly \"dateTimeEditor.popup\": \"{label} picker\"; readonly \"dateTimeEditor.invalidInput\": \"Failed to parse date-time. Use {pattern}.\"; readonly \"dateTimeEditor.invalidValue\": \"Failed to resolve date-time. Use a canonical date-time value.\"; readonly \"lookupEditor.open\": \"Open lookup\"; readonly \"lookupEditor.label\": \"Lookup\"; readonly \"lookupEditor.popup\": \"{label} results\"; readonly \"lookupEditor.loading\": \"Loading…\"; readonly \"lookupEditor.noResults\": \"No matching items\"; readonly \"lookupEditor.matches.one\": \"{count} match\"; readonly \"lookupEditor.matches.other\": \"{count} matches\"; readonly \"lookupEditor.loadFailed\": \"Failed to load lookup items.\"; readonly \"lookupEditor.notFound\": \"Failed to resolve lookup text. No matching item was found.\"; readonly \"lookupEditor.ambiguous\": \"Failed to resolve lookup text. More than one item matches.\"; readonly \"lookupEditor.missingItem\": \"Failed to resolve lookup text. The matching item was not returned.\"; readonly \"dataGrid.newRow\": \"New row\"; readonly \"dataGrid.groupPanelEmpty\": \"Drag a column here to group\"; readonly \"dataGrid.sortAscending\": \"Sort Ascending\"; readonly \"dataGrid.sortDescending\": \"Sort Descending\"; readonly \"dataGrid.clearSorting\": \"Clear sorting\"; readonly \"dataGrid.pinColumn\": \"Pin Column\"; readonly \"dataGrid.noPin\": \"No Pin\"; readonly \"dataGrid.pinLeft\": \"Pin Left\"; readonly \"dataGrid.pinRight\": \"Pin Right\"; readonly \"dataGrid.autosizeColumn\": \"Autosize This Column\"; readonly \"dataGrid.autosizeAll\": \"Autosize All Columns\"; readonly \"dataGrid.groupBy\": \"Group by {column}\"; readonly \"dataGrid.ungroup\": \"Ungroup {column}\"; readonly \"dataGrid.grouping\": \"Grouping\"; readonly \"dataGrid.interval\": \"Interval\"; readonly \"dataGrid.exactValue\": \"Exact value\"; readonly \"dataGrid.expandToLevel\": \"Expand to this level\"; readonly \"dataGrid.collapseLevel\": \"Collapse this level\"; readonly \"dataGrid.summary\": \"Summary\"; readonly \"dataGrid.summary.none\": \"None\"; readonly \"dataGrid.summary.count\": \"Count\"; readonly \"dataGrid.summary.sum\": \"Sum\"; readonly \"dataGrid.summary.avg\": \"Average\"; readonly \"dataGrid.summary.min\": \"Minimum\"; readonly \"dataGrid.summary.max\": \"Maximum\"; readonly \"dataGrid.summary.distinct\": \"Distinct\"; readonly \"dataGrid.cancelNewRow\": \"Cancel new row\"; readonly \"dataGrid.copy\": \"Copy selected cells\"; readonly \"dataGrid.copyWithHeaders\": \"Copy selected cells with headers\"; readonly \"dataGrid.paste\": \"Paste\"; readonly \"dataGrid.selectRow\": \"Select row\"; readonly \"dataGrid.clearSelection\": \"Clear selection\"; readonly \"dataGrid.sortPriority\": \"Sort priority {priority}\"; readonly \"dataGrid.sortedAscending\": \"Sorted ascending\"; readonly \"dataGrid.sortedDescending\": \"Sorted descending\"; readonly \"dataGrid.editFilter\": \"Edit filter\"; readonly \"dataGrid.addFilter\": \"Add filter\"; readonly \"dataGrid.editFilterExpression\": \"Edit filter: {filter}\"; readonly \"dataGrid.filterColumn\": \"Filter {column}\"; readonly \"dataGrid.clearColumnFilter\": \"Clear filter {column}\"; readonly \"dataGrid.acceptFailed\": \"Failed to accept cell input.\"; readonly \"dataGrid.displayValueFailed\": \"Could not format cell value: {message}\"; readonly \"dataGrid.clipboardUnavailable\": \"Clipboard reading is unavailable.\"; readonly \"dataGrid.clipboardFailed\": \"Failed to read clipboard. {message}\"; readonly \"dataGrid.pastePrompt\": \"Paste text below, then choose Paste.\"; readonly \"dataGrid.pasteText\": \"Paste tabular text\"; readonly \"dataGrid.cancel\": \"Cancel\"; readonly \"dataGrid.interval.year\": \"Year\"; readonly \"dataGrid.interval.yearQuarter\": \"Year-quarter\"; readonly \"dataGrid.interval.quarter\": \"Quarter\"; readonly \"dataGrid.interval.yearMonth\": \"Year-month\"; readonly \"dataGrid.interval.month\": \"Month\"; readonly \"dataGrid.interval.week\": \"ISO week\"; readonly \"dataGrid.interval.day\": \"Day\"; readonly \"dataGrid.interval.dayOfWeek\": \"Day of week\"; readonly \"dataGrid.interval.hour\": \"Hour\"; readonly \"dataGrid.interval.minute\": \"Minute\"; readonly \"dataGrid.interval.second\": \"Second\"; readonly \"dataGrid.interval.firstChar\": \"First character\"; readonly \"filterEditor.apply\": \"Apply Filter\"; readonly \"filterEditor.clear\": \"Clear\"; readonly \"filterEditor.and\": \"And\"; readonly \"filterEditor.or\": \"Or\"; readonly \"filterEditor.addCondition\": \"Add condition\"; readonly \"filterEditor.addGroup\": \"Add group\"; readonly \"filterEditor.removeCondition\": \"Remove condition\"; readonly \"filterEditor.removeGroup\": \"Remove group\"; readonly \"filterEditor.empty\": \"(empty)\"; readonly \"filterEditor.value\": \"Value\"; readonly \"filterEditor.operator.contains\": \"contains\"; readonly \"filterEditor.operator.notcontains\": \"notcontains\"; readonly \"filterEditor.operator.startswith\": \"startswith\"; readonly \"filterEditor.operator.endswith\": \"endswith\"; readonly \"numberFormatter.invalidNumber\": \"Failed to parse number. Use the '{pattern}' format.\"; readonly \"dataGrid.clipboardHint\": \"Return to grid and press Ctrl+V / Command+V\"; readonly \"dataGrid.clipboardMalformed\": \"The pasted text contains an unterminated quoted value.\"; readonly \"dataGrid.pasteBlocked\": \"Pasting is unavailable while editing is disabled or another row operation is running.\"; readonly \"dataGrid.pasteEditInProgress\": \"Finish or cancel the active cell edit before pasting.\"; readonly \"dataGrid.pasteReadOnlyRow\": \"The pasted range includes a group or summary row that cannot be edited.\"; readonly \"dataGrid.pasteCreateUnavailable\": \"The data source does not support creating rows for the pasted data.\"; readonly \"dataGrid.newRowOperationInProgress\": \"Finish the current editing operation before creating a new row.\"; readonly \"dataGrid.newRowUnavailable\": \"Row creation is unavailable because grid editing or source row creation is disabled.\"; readonly \"dataGrid.newRowCreationInProgress\": \"A new row is already being created.\"; readonly \"dataGrid.pasteRowFailed\": \"Failed to create pasted row {row}. {message}\"; readonly \"dataGrid.summaryLabel.count\": \"count\"; readonly \"dataGrid.summaryLabel.sum\": \"sum\"; readonly \"dataGrid.summaryLabel.avg\": \"avg\"; readonly \"dataGrid.summaryLabel.min\": \"min\"; readonly \"dataGrid.summaryLabel.max\": \"max\"; readonly \"dataGrid.summaryLabel.distinct\": \"distinct\"; }",
       "description": "Canonical English messages; the source of key and named-parameter types.",
       "tags": [],
       "topics": [],
@@ -7603,7 +7603,7 @@
       "name": "HtmlEditor",
       "kind": "class",
       "type": "HtmlEditor",
-      "description": "Rich-text editing through model commands, with scoped reconciliation for IME and noncancelable input.",
+      "description": "Orchestrates one editing surface and optional tools; owns the sole commit/cancel lifecycle.",
       "tags": [],
       "topics": [],
       "group": "components",
@@ -7612,9 +7612,19 @@
       "source": "src/components/editors/htmleditor/HtmlEditor.ts",
       "members": [
         {
+          "name": "surface",
+          "type": "HtmlEditorSurface",
+          "description": "Sole owner of the editable model, DOM mapping, text selection and history.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
           "name": "content",
           "type": "HTMLDivElement",
-          "description": "",
+          "description": "Native editing area, retained for compatibility with the compact editor API.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7623,8 +7633,38 @@
         },
         {
           "name": "selectionChanged",
-          "type": "ObservableEvent<HtmlEditorSelectionState | undefined>",
-          "description": "A detached snapshot is emitted when the editor's remembered selection changes.",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<HtmlEditorSelectionState | undefined>",
+          "description": "Same event as surface.selectionChanged; no second selection state is maintained.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "toolbar",
+          "type": "HtmlEditorToolbar | undefined",
+          "description": "Owned toolbar, present only when enabled at construction.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "inspector",
+          "type": "HtmlEditorInspector | undefined",
+          "description": "Owned inspector scaffold, present only when enabled at construction.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "commandRegistry",
+          "type": "HtmlEditorCommandRegistry",
+          "description": "Shared command source consumed by all optional editor tools.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7633,8 +7673,8 @@
         },
         {
           "name": "document",
-          "type": "HtmlEditorDocument",
-          "description": "Detached snapshot; mutating it does not modify the editor.",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").HtmlEditorDocument",
+          "description": "Detached model snapshot; use commands rather than mutating it.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7644,7 +7684,7 @@
         {
           "name": "selection",
           "type": "HtmlEditorSelectionState | undefined",
-          "description": "Last selection inside this editor, retained while focus moves to a toolbar or inspector.",
+          "description": "Remembered text selection, retained while surrounding controls have focus.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7654,7 +7694,7 @@
         {
           "name": "nativeSelection",
           "type": "Selection | null",
-          "description": "Live browser selection, only when both endpoints belong to this editor.",
+          "description": "Live selection only when both endpoints belong to the surface.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7664,7 +7704,7 @@
         {
           "name": "restoreSelection",
           "type": "(state?: HtmlEditorSelectionState | undefined) => boolean",
-          "description": "Restores a saved selection. Returns false for removed nodes or a replaced document.",
+          "description": "Restores a valid runtime text bookmark and focuses the surface.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7688,7 +7728,7 @@
         {
           "name": "html",
           "type": "string",
-          "description": "HTML suitable for persistence under the parser's supported-content policy.",
+          "description": "Current serialized HTML, excluding surrounding editor UI.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7696,32 +7736,25 @@
           "kind": "property"
         },
         {
-          "name": "resolveText",
-          "type": "(text: string) => string | Promise<string>",
-          "description": "Converts text into a typed value, or throws/rejects when it cannot be resolved.\nDoes not modify draft, error, busy or confirmation state, invoke validation,\nemit events or save. Hosts can use this independently for clipboard paste.",
+          "name": "getHtml",
+          "type": "() => string",
+          "description": "Returns the current serialized draft.",
           "tags": [],
           "topics": [],
           "optional": false,
           "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-          "parameters": [
-            {
-              "name": "text",
-              "type": "string",
-              "optional": false,
-              "description": ""
-            }
-          ],
+          "parameters": [],
           "returns": {
-            "type": "string | Promise<string>",
+            "type": "string",
             "description": ""
           },
           "kind": "method",
-          "signature": "(text: string) => string | Promise<string>"
+          "signature": "() => string"
         },
         {
           "name": "setHtml",
           "type": "(html: string) => void",
-          "description": "Replaces the document and its accepted baseline.",
+          "description": "Replaces content and establishes a new accepted baseline.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7742,57 +7775,32 @@
           "signature": "(html: string) => void"
         },
         {
-          "name": "getHtml",
-          "type": "() => string",
-          "description": "",
+          "name": "resolveText",
+          "type": "(text: string) => string | Promise<string>",
+          "description": "Resolves external text without editing or saving.",
           "tags": [],
           "topics": [],
           "optional": false,
           "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-          "parameters": [],
+          "parameters": [
+            {
+              "name": "text",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
           "returns": {
-            "type": "string",
+            "type": "string | Promise<string>",
             "description": ""
           },
           "kind": "method",
-          "signature": "() => string"
-        },
-        {
-          "name": "commit",
-          "type": "() => Promise<boolean>",
-          "description": "Confirmation waits for the host to retry after native composition has finished.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "Promise<boolean>",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => Promise<boolean>"
-        },
-        {
-          "name": "cancel",
-          "type": "() => boolean",
-          "description": "Restores the last accepted value. Returns false while confirmation is running.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
-          "parameters": [],
-          "returns": {
-            "type": "boolean",
-            "description": ""
-          },
-          "kind": "method",
-          "signature": "() => boolean"
+          "signature": "(text: string) => string | Promise<string>"
         },
         {
           "name": "execute",
           "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean",
-          "description": "Applies a supported operation to the model and selection in one undoable transaction.",
+          "description": "Applies a command to the surface's single model/history.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7822,7 +7830,7 @@
         {
           "name": "canUndo",
           "type": "boolean",
-          "description": "Whether the current document scope has an operation to undo.",
+          "description": "Whether an operation can be undone in this document scope.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -7832,12 +7840,44 @@
         {
           "name": "canRedo",
           "type": "boolean",
-          "description": "Whether the last undone operation can be reapplied.",
+          "description": "Whether an undone operation can be reapplied.",
           "tags": [],
           "topics": [],
           "optional": false,
           "source": "src/components/editors/htmleditor/HtmlEditor.ts",
           "kind": "property"
+        },
+        {
+          "name": "commit",
+          "type": "() => Promise<boolean>",
+          "description": "Waits for composition/native reconciliation to settle before external acceptance.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<boolean>"
+        },
+        {
+          "name": "cancel",
+          "type": "() => boolean",
+          "description": "Restores the accepted value unless native composition is still active.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
         }
       ]
     },
@@ -7853,6 +7893,321 @@
       "path": "/api-reference/HtmlEditorCommand",
       "source": "src/components/editors/htmleditor/HtmlEditorCommands.ts",
       "definition": "| { type: \"insertText\"; text: string }\n    | { type: \"insertHtml\"; html: string }\n    | { type: \"deleteBackward\" | \"deleteForward\" | \"insertParagraph\" | \"insertLineBreak\" | \"indent\" | \"outdent\" | \"bold\" | \"italic\" | \"undo\" | \"redo\" }"
+    },
+    {
+      "name": "HtmlEditorCommandContext",
+      "kind": "interface",
+      "type": "HtmlEditorCommandContext",
+      "description": "Context supplied to every HTML editor command surface.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorCommandContext",
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "members": [
+        {
+          "name": "surface",
+          "type": "HtmlEditorSurface",
+          "description": "The authoritative model-backed editing surface.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "targetId",
+          "type": "string | undefined",
+          "description": "The inspector node currently under the command surface, when applicable.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "selection",
+          "type": "HtmlEditorSelectionState | undefined",
+          "description": "The remembered text selection at the time the command was requested.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorCommandMenu",
+      "kind": "class",
+      "type": "HtmlEditorCommandMenu",
+      "description": "Shared command-menu renderer used for the editor context menu and future menu surfaces.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorCommandMenu",
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandMenu.ts",
+      "members": [
+        {
+          "name": "showAt",
+          "type": "(x: number, y: number, context?: HtmlEditorCommandContext) => void",
+          "description": "Shows the same filtered registry commands at a viewport point.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandMenu.ts",
+          "parameters": [
+            {
+              "name": "x",
+              "type": "number",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "HtmlEditorCommandContext",
+              "optional": true,
+              "defaultValue": "this.registry.context()",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(x: number, y: number, context?: HtmlEditorCommandContext) => void"
+        },
+        {
+          "name": "hide",
+          "type": "() => void",
+          "description": "Closes the menu without changing the editor selection or document.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandMenu.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "description": "Whether the menu is currently visible.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandMenu.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorCommandRegistry",
+      "kind": "class",
+      "type": "HtmlEditorCommandRegistry",
+      "description": "Shared command registry owned by HtmlEditor and consumed by all its UI surfaces.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorCommandRegistry",
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "members": [
+        {
+          "name": "register",
+          "type": "(command: HtmlEditorUiCommand) => void",
+          "description": "Adds or replaces an application command by its stable identifier.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "command",
+              "type": "HtmlEditorUiCommand",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(command: HtmlEditorUiCommand) => void"
+        },
+        {
+          "name": "context",
+          "type": "(targetId?: string) => HtmlEditorCommandContext",
+          "description": "Returns the current command context without copying the document.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "targetId",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorCommandContext",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(targetId?: string) => HtmlEditorCommandContext"
+        },
+        {
+          "name": "getCommands",
+          "type": "(context?: HtmlEditorCommandContext) => HtmlEditorUiCommand[]",
+          "description": "Resolves visible commands and their current enabled state for a UI surface.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "context",
+              "type": "HtmlEditorCommandContext",
+              "optional": true,
+              "defaultValue": "this.context()",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorUiCommand[]",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(context?: HtmlEditorCommandContext) => HtmlEditorUiCommand[]"
+        },
+        {
+          "name": "execute",
+          "type": "(id: string, context?: HtmlEditorCommandContext) => boolean",
+          "description": "Executes one command by id using the same registry as every menu surface.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "id",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "HtmlEditorCommandContext",
+              "optional": true,
+              "defaultValue": "this.context()",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(id: string, context?: HtmlEditorCommandContext) => boolean"
+        },
+        {
+          "name": "label",
+          "type": "(command: HtmlEditorUiCommand) => string",
+          "description": "Returns the localized display label for a command.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "command",
+              "type": "HtmlEditorUiCommand",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(command: HtmlEditorUiCommand) => string"
+        },
+        {
+          "name": "enabled",
+          "type": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => boolean",
+          "description": "Returns whether a command is currently enabled in a context.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "command",
+              "type": "HtmlEditorUiCommand",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "HtmlEditorCommandContext",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => boolean"
+        },
+        {
+          "name": "state",
+          "type": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => HtmlEditorMarkState | undefined",
+          "description": "Returns the command's aggregate visual state.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "command",
+              "type": "HtmlEditorUiCommand",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "HtmlEditorCommandContext",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorMarkState | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => HtmlEditorMarkState | undefined"
+        }
+      ]
     },
     {
       "name": "HtmlEditorDocument",
@@ -8030,6 +8385,52 @@
       "definition": "\"inline\" | \"textBlock\" | \"container\" | \"list\" | \"listItem\" | \"cell\" | \"table\" | \"atomic\""
     },
     {
+      "name": "HtmlEditorInspector",
+      "kind": "class",
+      "type": "HtmlEditorInspector",
+      "description": "Inspector scaffold owned by HtmlEditor. Targets are previews, not structural editor selections.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspector",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "members": [
+        {
+          "name": "update",
+          "type": "() => void",
+          "description": "Updates labels/availability without cloning the document or moving DOM focus.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "openElements",
+          "type": "() => Promise<void>",
+          "description": "Opens a lazy model tree. Choosing a node previews it without changing caret, HTML or history.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<void>"
+        }
+      ]
+    },
+    {
       "name": "HtmlEditorNode",
       "kind": "type",
       "type": "any",
@@ -8041,6 +8442,19 @@
       "path": "/api-reference/HtmlEditorNode",
       "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
       "definition": "HtmlEditorText | HtmlEditorElement"
+    },
+    {
+      "name": "HtmlEditorNodeCoverage",
+      "kind": "type",
+      "type": "any",
+      "description": "Coverage of a model node by a non-collapsed text range; unselected nodes are omitted.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorNodeCoverage",
+      "source": "src/components/editors/htmleditor/HtmlEditorRange.ts",
+      "definition": "\"full\" | \"partial\""
     },
     {
       "name": "HtmlEditorNodeId",
@@ -8059,7 +8473,7 @@
       "name": "HtmlEditorOptions",
       "kind": "interface",
       "type": "HtmlEditorOptions",
-      "description": "Configuration for the native rich-text editing surface.",
+      "description": "Configuration for the HTML value editor and its optional surrounding tools.",
       "tags": [],
       "topics": [],
       "group": "types",
@@ -8080,7 +8494,37 @@
         {
           "name": "minHeight",
           "type": "string | number | undefined",
-          "description": "Minimum height in pixels or a CSS length.",
+          "description": "Minimum editing-area height in pixels or a CSS length.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "toolbar",
+          "type": "boolean | undefined",
+          "description": "Creates the built-in command toolbar. Defaults to false.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "inspector",
+          "type": "boolean | undefined",
+          "description": "Creates the right-side inspector scaffold. Defaults to false.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "commands",
+          "type": "HtmlEditorUiCommand[] | undefined",
+          "description": "Additional commands exposed by the toolbar, context menu and inspector actions.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -8246,6 +8690,423 @@
       ]
     },
     {
+      "name": "HtmlEditorSurface",
+      "kind": "class",
+      "type": "HtmlEditorSurface",
+      "description": "Owns contenteditable, model, selection, input handling and history; never commits or cancels values.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSurface",
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "members": [
+        {
+          "name": "content",
+          "type": "HTMLDivElement",
+          "description": "Native editing area; identical to this component's dom.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "input",
+          "type": "ObservableEvent<void>",
+          "description": "User document changes only; selection and baseline replacement do not emit input.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "documentChanged",
+          "type": "ObservableEvent<void>",
+          "description": "Document/history replacement or editing; lets views refresh without treating replacement as user input.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "interactionChanged",
+          "type": "ObservableEvent<void>",
+          "description": "Interaction/composition availability changed, without a document edit.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "selectionChanged",
+          "type": "ObservableEvent<HtmlEditorSelectionState | undefined>",
+          "description": "Detached remembered text selection, retained while surrounding controls have focus.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "document",
+          "type": "HtmlEditorDocument",
+          "description": "Detached snapshot; mutating it does not modify the editor.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getSelectionCoverage",
+          "type": "(selection?: HtmlEditorSelectionState | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>",
+          "description": "Detached node coverage for a range, sharing Copy/Delete rules without cloning the document.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "selection",
+              "type": "HtmlEditorSelectionState | undefined",
+              "optional": true,
+              "defaultValue": "this.selection",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "ReadonlyMap<string, HtmlEditorNodeCoverage>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(selection?: HtmlEditorSelectionState | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>"
+        },
+        {
+          "name": "getMarkState",
+          "type": "(mark: \"bold\" | \"italic\", selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState",
+          "description": "Returns the aggregate Bold/Italic state for the current selected fragments.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "mark",
+              "type": "\"bold\" | \"italic\"",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "selection",
+              "type": "HtmlEditorSelectionState | undefined",
+              "optional": true,
+              "defaultValue": "this.selection",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorMarkState",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(mark: \"bold\" | \"italic\", selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState"
+        },
+        {
+          "name": "selectNode",
+          "type": "(nodeId: string | undefined) => boolean",
+          "description": "Selects a complete model node while retaining the same model/history contract as text selection.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": "string | undefined",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(nodeId: string | undefined) => boolean"
+        },
+        {
+          "name": "selection",
+          "type": "HtmlEditorSelectionState | undefined",
+          "description": "Last selection inside this editor, retained while focus moves to a toolbar or inspector.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "nativeSelection",
+          "type": "Selection | null",
+          "description": "Live browser selection, only when both endpoints belong to this editor.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "restoreSelection",
+          "type": "(state?: HtmlEditorSelectionState | undefined) => boolean",
+          "description": "Restores a saved selection. Returns false for removed nodes or a replaced document.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "state",
+              "type": "HtmlEditorSelectionState | undefined",
+              "optional": true,
+              "defaultValue": "this.selection",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(state?: HtmlEditorSelectionState | undefined) => boolean"
+        },
+        {
+          "name": "html",
+          "type": "string",
+          "description": "HTML suitable for persistence under the parser's supported-content policy.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "settled",
+          "type": "boolean",
+          "description": "True when native composition/reconciliation has finished and a host may accept or replace content.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "editable",
+          "type": "boolean",
+          "description": "Whether commands may edit the document now, including composition and host interaction state.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getHtml",
+          "type": "() => string",
+          "description": "Returns serialized draft HTML.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => string"
+        },
+        {
+          "name": "execute",
+          "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean",
+          "description": "Applies a supported operation to the model and selection in one undoable transaction.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "command",
+              "type": "HtmlEditorCommand",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "selection",
+              "type": "HtmlEditorSelectionState | undefined",
+              "optional": true,
+              "defaultValue": "this.selection",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean"
+        },
+        {
+          "name": "canUndo",
+          "type": "boolean",
+          "description": "Whether the current document scope has an operation to undo.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "canRedo",
+          "type": "boolean",
+          "description": "Whether the last undone operation can be reapplied.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "setHtml",
+          "type": "(html: string) => void",
+          "description": "Replaces content and resets history/runtime bookmarks without emitting user input.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "html",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(html: string) => void"
+        },
+        {
+          "name": "setInteractionState",
+          "type": "(readOnly: boolean, disabled: boolean) => void",
+          "description": "Updates host permissions without replacing content, selection or history.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "readOnly",
+              "type": "boolean",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(readOnly: boolean, disabled: boolean) => void"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorSurfaceOptions",
+      "kind": "interface",
+      "type": "HtmlEditorSurfaceOptions",
+      "description": "Options for the standalone model-backed editing surface, without saving or surrounding tools.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSurfaceOptions",
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "members": [
+        {
+          "name": "html",
+          "type": "string",
+          "description": "Initial HTML, parsed through the supported-content policy.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "label",
+          "type": "string | undefined",
+          "description": "Accessible name of the editing area.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "description": "Hint shown for empty content.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "minHeight",
+          "type": "string | number | undefined",
+          "description": "Minimum editing-area height, in pixels or a CSS length.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean | undefined",
+          "description": "Prevents edits while allowing selection and copying.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "description": "Prevents user edits while the host is disabled or busy.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "HtmlEditorText",
       "kind": "interface",
       "type": "HtmlEditorText",
@@ -8285,6 +9146,120 @@
           "topics": [],
           "optional": false,
           "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorToolbar",
+      "kind": "class",
+      "type": "HtmlEditorToolbar",
+      "description": "Initial command toolbar. Created, placed and disposed by HtmlEditor, not by the surface.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorToolbar",
+      "source": "src/components/editors/htmleditor/HtmlEditorToolbar.ts",
+      "members": [
+        {
+          "name": "update",
+          "type": "() => void",
+          "description": "Refreshes localized labels and command availability without rebuilding controls.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorToolbar.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommand",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommand",
+      "description": "A command exposed by a toolbar, context menu, or node action overlay.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommand",
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "members": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Stable application-facing command identifier.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Localization key or literal label resolved by the registry.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "icon",
+          "type": "string | undefined",
+          "description": "Optional Remix Icon class.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "isVisible",
+          "type": "((context: HtmlEditorCommandContext) => boolean) | undefined",
+          "description": "Whether the command belongs in the current surface.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "isEnabled",
+          "type": "((context: HtmlEditorCommandContext) => boolean) | undefined",
+          "description": "Whether the command can currently be executed.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getState",
+          "type": "((context: HtmlEditorCommandContext) => HtmlEditorMarkState) | undefined",
+          "description": "Aggregate visual state, independent from whether the command is executable.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "execute",
+          "type": "(context: HtmlEditorCommandContext) => boolean | void",
+          "description": "Executes the command against the shared editor context.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
           "kind": "property"
         }
       ]
@@ -9392,7 +10367,7 @@
             },
             {
               "name": "args",
-              "type": "MessageArguments<Extract<`${N}.${K}`, \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\">>",
+              "type": "MessageArguments<Extract<`${N}.${K}`, \"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\">>",
               "optional": false,
               "description": ""
             }
@@ -10442,7 +11417,7 @@
         },
         {
           "name": "triggerMessage",
-          "type": "\"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\" | undefined",
+          "type": "\"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\" | undefined",
           "description": "Optional built-in message key; custom triggerLabel is otherwise retained verbatim.",
           "tags": [],
           "topics": [],
@@ -13804,6 +14779,477 @@
           "topics": [],
           "optional": true,
           "source": "src/components/popup/Tooltip.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "TreeDataAdapter",
+      "kind": "interface",
+      "type": "TreeDataAdapter<T>",
+      "description": "Reads a hierarchy without requiring a separate TreeNode model. Keys are globally unique.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeDataAdapter",
+      "source": "src/components/tree-view/TreeView.ts",
+      "members": [
+        {
+          "name": "getKey",
+          "type": "(item: T) => string",
+          "description": "Stable identity, unique throughout this tree.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T) => string"
+        },
+        {
+          "name": "hasChildren",
+          "type": "(item: T) => boolean",
+          "description": "Indicates expandability before children have been loaded.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T) => boolean"
+        },
+        {
+          "name": "getChildren",
+          "type": "(item: T | undefined, signal: AbortSignal) => readonly T[] | Promise<readonly T[]>",
+          "description": "undefined requests roots. All immediate children are loaded together; no pagination.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T | undefined",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "signal",
+              "type": "AbortSignal",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "readonly T[] | Promise<readonly T[]>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T | undefined, signal: AbortSignal) => readonly T[] | Promise<readonly T[]>"
+        }
+      ]
+    },
+    {
+      "name": "TreeItemRenderContext",
+      "kind": "interface",
+      "type": "TreeItemRenderContext<T>",
+      "description": "Custom row content; disclosure, focus and selection remain owned by TreeView.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeItemRenderContext",
+      "source": "src/components/tree-view/TreeView.ts",
+      "members": [
+        {
+          "name": "item",
+          "type": "T",
+          "description": "The original adapter item.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "element",
+          "type": "HTMLElement",
+          "description": "Content host to populate; recycled hosts are cleared before rendering.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "depth",
+          "type": "number",
+          "description": "Zero-based nesting depth.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "selected",
+          "type": "boolean",
+          "description": "Whether this row is selected.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "focused",
+          "type": "boolean",
+          "description": "Whether this row has keyboard focus within the tree.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "expanded",
+          "type": "boolean",
+          "description": "Whether its branch is open.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "TreeView",
+      "kind": "class",
+      "type": "TreeView<T>",
+      "description": "Virtualized tree with lazy branch loading, cached children and independent focus/selection.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeView",
+      "source": "src/components/tree-view/TreeView.ts",
+      "members": [
+        {
+          "name": "selectionChanged",
+          "type": "ObservableEvent<T | undefined>",
+          "description": "Emits the original selected item; undefined when selection is cleared.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "itemActivated",
+          "type": "ObservableEvent<T>",
+          "description": "Emits when Enter or a double-click activates an item.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "focusedItemChanged",
+          "type": "ObservableEvent<T | undefined>",
+          "description": "Emits keyboard focus changes independently of confirmed selection.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "itemContextMenu",
+          "type": "ObservableEvent<{ item: T; event: MouseEvent; }>",
+          "description": "Allows a host to attach its own context menu without embedding menu policy in TreeView.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "selectedItem",
+          "type": "T | undefined",
+          "description": "Current selected adapter item, if it is present in the loaded tree.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "focusedItem",
+          "type": "T | undefined",
+          "description": "Current focused adapter item. Focusing does not confirm selection.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "load",
+          "type": "() => Promise<void>",
+          "description": "Loads roots, sharing an in-flight request and retaining successful results.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => Promise<void>"
+        },
+        {
+          "name": "isExpanded",
+          "type": "(item: T) => boolean",
+          "description": "Returns whether the loaded item's branch is open.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T) => boolean"
+        },
+        {
+          "name": "expand",
+          "type": "(item: T) => Promise<void>",
+          "description": "Opens an already loaded item and lazily loads its children. Errors are displayed locally.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T) => Promise<void>"
+        },
+        {
+          "name": "collapse",
+          "type": "(item: T) => void",
+          "description": "Hides descendants but retains their cache and expansion state, including pending loads.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T) => void"
+        },
+        {
+          "name": "select",
+          "type": "(item: T | undefined) => void",
+          "description": "Selects a loaded item by key. undefined clears selection; emits only for a changed key.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T | undefined",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T | undefined) => void"
+        },
+        {
+          "name": "reveal",
+          "type": "(item: T) => Promise<boolean>",
+          "description": "Opens ancestors of a known item and scrolls it into view. Does not steal DOM focus.\nUnknown remote descendants must first be loaded, e.g. by expanding their path.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T) => Promise<boolean>"
+        },
+        {
+          "name": "refresh",
+          "type": "(item?: T) => Promise<void>",
+          "description": "Invalidates cached descendants and reloads this branch, or the entire tree.\nStable keys retain selection/expansion where their items remain present.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item?: T) => Promise<void>"
+        }
+      ]
+    },
+    {
+      "name": "TreeViewOptions",
+      "kind": "interface",
+      "type": "TreeViewOptions<T>",
+      "description": "Options for an independently virtualized, single-selection tree.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeViewOptions",
+      "source": "src/components/tree-view/TreeView.ts",
+      "members": [
+        {
+          "name": "data",
+          "type": "TreeDataAdapter<T>",
+          "description": "Hierarchical data access; synchronous and asynchronous loaders share one contract.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "kind": "property"
+        },
+        {
+          "name": "getText",
+          "type": "(item: T) => string",
+          "description": "Accessible row label, also used for keyboard type-ahead.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "item",
+              "type": "T",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(item: T) => string"
+        },
+        {
+          "name": "renderItem",
+          "type": "((context: TreeItemRenderContext<T>) => void) | undefined",
+          "description": "Optional content renderer, called again when an item or its state changes.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/tree-view/TreeView.ts",
+          "parameters": [
+            {
+              "name": "context",
+              "type": "TreeItemRenderContext<T>",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "((context: TreeItemRenderContext<T>) => void) | undefined"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Accessible tree name.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/tree-view/TreeView.ts",
           "kind": "property"
         }
       ]

@@ -54,6 +54,8 @@ console.log(message);</code></pre>
     }, initialHtml);
     const editor = new HtmlEditor({
         value: initialHtml,
+        toolbar: true,
+        inspector: true,
         label: "Page content",
         placeholder: "Write page content…",
         minHeight: 350,
@@ -81,10 +83,6 @@ console.log(message);</code></pre>
         editor.cancel();
         status.textContent = "Draft discarded. Showing the last accepted HTML.";
     } }, "Discard");
-    const commandButtons = (["bold", "italic", "undo", "redo"] as const).map(type => e("button", {
-        type: "button", ui: ["elg", "btn", "neutral"],
-        onclick: () => { editor.execute({ type }); }
-    }, type[0].toUpperCase() + type.slice(1)));
     const sample = e("select", { class: "elg", onchange: () => {
         const selected = samples[sample.value as keyof typeof samples];
         editor.setHtml(selected.html);
@@ -110,7 +108,7 @@ console.log(message);</code></pre>
     const root = cdiv({ ui: ["d-flex", "flex-col", "gap-2", "p-1"], style: { width: "100%", boxSizing: "border-box" } },
         e("label", { ui: ["d-flex", "flex-wrap", "gap-1", "items-center"] }, "Sample", sample),
         e("small", { ui: ["text-muted"] }, "Changing the sample replaces the current draft."),
-        e("div", { ui: ["d-flex", "flex-wrap", "gap-1"] }, ...commandButtons, save, discard),
+        e("div", { ui: ["d-flex", "flex-wrap", "gap-1"] }, save, discard),
         e("div", { ui: ["d-flex", "flex-wrap", "gap-1"] }, fragment, insert),
         editor,
         status,

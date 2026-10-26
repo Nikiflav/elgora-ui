@@ -47,7 +47,7 @@
 }
 details[open] > summary .elg-rotate-on-open,
 [aria-expanded="true"] > .elg-rotate-on-open {
-    transform: rotate(180deg);
+    transform: rotate(var(--elg-open-rotation, 180deg));
 }
 
 /* Added only after a working observer has been installed. Without JS, content stays visible.

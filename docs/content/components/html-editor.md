@@ -9,6 +9,10 @@ description: Edit rich-text HTML as a draft and let the host accept or discard i
 api:
   - HtmlEditor
   - HtmlEditorOptions
+  - HtmlEditorSurface
+  - HtmlEditorSurfaceOptions
+  - HtmlEditorToolbar
+  - HtmlEditorInspector
   - ValueEditor
 keywords:
   - html
@@ -44,6 +48,76 @@ of a card or cell, Backspace/Delete at a paragraph boundary, then Undo and Redo.
 Place the caret in text and use **Insert HTML** to try an inline fragment, list,
 table or layout card. This uses the same insertion command as HTML paste.
 
+The editor creates and owns the toolbar above the surface and the inspector on
+the right because the demo enables `toolbar: true` and `inspector: true`.
+Both options default to false, preserving the compact editor. They are construction
+options; this first scaffold does not provide runtime visibility toggles.
+
+The toolbar runs the existing Bold, Italic, Undo and Redo commands, with disabled
+states and arrow-key navigation. The inspector's selector opens a virtualized
+[TreeView](?!=/components/tree-view) showing tags and shortened descriptions. It
+follows the text caret; choosing a tree item previews an inspection target without
+changing the remembered caret, document or history. **Properties** and **Advanced**
+are explicitly placeholder panels, not working property editors or structural selection.
+On narrow screens this first layout stacks the inspector below the surface;
+a responsive drawer and resizable panel are future work.
+
+For a non-collapsed range, the selector displays **Mixed** when selected content
+belongs to multiple text/atomic elements. Enclosing shells alone do not make a
+single text owner mixed. The tree uses the same interval coverage as Copy/Delete:
+fully and partially covered nodes share the same blue background. A circular
+indicator after the tag shows coverage: empty for unselected, half-filled for
+partial, filled for full, with a localized tooltip. These are decorative status
+indicators, not checkboxes. A right-arrow icon (tooltip: "Keyboard focus") in a fixed gutter at the start of the focused row, before indentation and the disclosure chevron, replaces
+the dotted focus outline in this HTML tree only; the tree viewport retains its
+focus frame. Empty elements and images count only when their own interval is covered.
+Opening the tree reveals partial endpoint containers; fully selected subtrees can
+remain collapsed and show their coverage on the parent. Their descendants receive
+the same marks when expanded. A caret alone has no range-coverage marks.
+
+Coverage is separate from the tree's keyboard focus and single inspection-preview
+choice. Choosing a preview may replace the Mixed label until the next text-selection
+change, but never changes the range or its highlights. Coverage is also announced
+in the accessible row labels. Only this HTML tree uses a monospace font, gray tag
+badges and muted descriptions; the selector uses the same label rendering in a
+transparent, borderless-looking ghost button, with standard hover and keyboard-focus
+feedback. Ordinary TreeView appearance is unchanged.
+
+The breadcrumb above the selector lists only the three nearest **parents**, not
+the current element (already shown in the selector). A leading **…** opens earlier
+ancestors in document order. Every ancestor can be previewed without moving the
+text selection or adding an undo entry; keyboard activation uses native buttons,
+and Escape closes the overflow popup and returns focus to its trigger.
+For **Mixed**, the path includes the nearest common ancestor of the selected
+content owners. If no authored element contains the whole range, the path is hidden:
+the virtual document root is not shown as an invented `body` element. Root-level
+inspection targets also have no parent breadcrumb. The path remains single-line.
+
+## Surface and orchestration
+
+`HtmlEditorSurface` is a standalone `Component`. It owns the contenteditable area,
+model, DOM mapping, text selection, input handling and the single Undo/Redo history.
+It does not have `value`, `confirmedValue`, `commit()` or `cancel()`.
+
+`HtmlEditor` remains a `ValueEditor<string>`. It creates and disposes one surface
+and the optional `HtmlEditorToolbar`/`HtmlEditorInspector`, connects their events,
+and owns parsing/validation/external acceptance through the value-editor lifecycle.
+The existing `content`, `document`, `selection`, `execute`, `canUndo` and `canRedo`
+API delegates to that same surface; no second model or history is maintained.
+Use `editor.setHtml()` for an accepted baseline, not `editor.surface.setHtml()`:
+the low-level surface method only replaces its document and resets its history.
+
+For a custom host that needs only the editing area:
+
+```ts
+const surface = new HtmlEditorSurface({ html: "<p>Hello</p>", label: "Content" });
+surface.mount(container);
+surface.input.subscribe(() => console.log(surface.html));
+```
+
+The host owns saving and any baseline when using the surface directly. The built-in
+toolbar and inspector never save content or create their own edit history.
+
 ## Use in a host form
 
 ```ts
@@ -52,6 +126,8 @@ const content = new HtmlEditor({
     label: "Article body",
     placeholder: "Write your article…",
     minHeight: 240,
+    toolbar: true,
+    inspector: true,
     onCommit: async html => { await saveArticle({ bodyHtml: html }); }
 });
 content.mount(container);

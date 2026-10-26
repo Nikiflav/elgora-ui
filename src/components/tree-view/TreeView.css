@@ -1,0 +1,11 @@
+.elg-tree-view { position: relative; min-width: 0; min-height: 0; height: 100%; color: var(--elg-text-color); }
+.elg-tree-view [role="tree"] { outline: none; }
+/* Paint the viewport frame above the rows, so their backgrounds cannot interrupt it. */
+.elg-tree-view:focus-within::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border: 1px solid color-mix(in srgb, var(--elg-selection-border) 50%, transparent); }
+.elg-tree-row { box-sizing: border-box; height: 30px; display: flex; align-items: center; gap: 4px; padding-inline-end: 6px; white-space: nowrap; user-select: none; }
+.elg-tree-row[role="treeitem"] { cursor: pointer; }
+.elg-tree-row:hover { background: var(--elg-surface-color-2); }
+.elg-tree-row[aria-selected="true"] { background: var(--elg-selection-bg); color: var(--elg-selection-text); }
+.elg-tree-view [role="tree"]:focus-within .elg-tree-focused { outline: 1px dotted color-mix(in srgb, var(--elg-selection-border) 65%, transparent); outline-offset: -3px; }
+.elg-tree-disclosure { --elg-open-rotation: 90deg; flex: 0 0 18px; text-align: center; }
+.elg-tree-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

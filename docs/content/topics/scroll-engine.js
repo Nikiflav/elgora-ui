@@ -7,6 +7,7 @@ export default {
   "order": 52,
   "description": "Scroll virtual dimensions through a bounded viewport with programmatic and pointer input.",
   "prev": "/components/virtual-list",
+  "next": "/components/tree-view",
   "toc": true,
   "api": [
     "ScrollEngine"

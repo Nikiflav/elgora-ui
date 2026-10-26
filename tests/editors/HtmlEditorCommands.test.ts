@@ -84,6 +84,16 @@ describe("HtmlEditor transactions", () => {
         expect(editor.content.firstElementChild?.tagName).toBe("P");
     });
 
+    it("formats a paragraph selected through enclosing element boundaries", () => {
+        create("<p>Hello</p><p>Next</p>");
+        select(editor.content, 0, editor.content, 1);
+        expect(editor.execute({ type: "bold" })).toBe(true);
+        expect(editor.content.innerHTML).toBe("<p><strong>Hello</strong></p><p>Next</p>");
+        select(editor.content, 0, editor.content, 1);
+        expect(editor.execute({ type: "italic" })).toBe(true);
+        expect(editor.content.innerHTML).toBe("<p><em><strong>Hello</strong></em></p><p>Next</p>");
+    });
+
     it.each(['<p>Text - item</p>', '<p>-item</p>', '<pre>- item</pre>', '<p><code>- item</code></p>', '<ul><li><p>- item</p></li></ul>'])("does not convert ordinary or protected content: %s", html => {
         create(html);
         const text = document.createTreeWalker(editor.content, NodeFilter.SHOW_TEXT).nextNode()!;
@@ -340,6 +350,25 @@ describe("HtmlEditor transactions", () => {
         editor.execute({ type: "italic" });
         input("insertText", "X");
         expect(editor.content.querySelector("em")?.textContent).toBe("X");
+    });
+
+    it("merges existing and newly formatted bold fragments", () => {
+        create("<p>Hello <strong>bold</strong> world</p>");
+        const paragraph = editor.content.firstElementChild!;
+        select(paragraph.firstChild!, 0, paragraph.lastChild!, paragraph.lastChild!.textContent!.length);
+        expect(editor.execute({ type: "bold" })).toBe(true);
+        expect(paragraph.querySelectorAll("strong")).toHaveLength(1);
+        expect(paragraph.querySelector("strong")?.textContent).toBe("Hello bold world");
+    });
+
+    it("merges adjacent text nodes after removing a mark", () => {
+        create("<p><strong>A</strong><strong>B</strong></p>");
+        const paragraph = editor.content.firstElementChild!;
+        select(paragraph.querySelector("strong")!.firstChild!, 0, paragraph.querySelectorAll("strong")[1].firstChild!, 1);
+        expect(editor.execute({ type: "bold" })).toBe(true);
+        expect(editor.content.innerHTML).toBe("<p>AB</p>");
+        expect(editor.document.children[0].children).toHaveLength(1);
+        expect(editor.document.children[0].children[0].type).toBe("text");
     });
 
     it("uses beforeinput target ranges for replacement rather than the visible caret", () => {

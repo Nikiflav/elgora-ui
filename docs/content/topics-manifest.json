@@ -817,6 +817,10 @@
       "api": [
         "HtmlEditor",
         "HtmlEditorOptions",
+        "HtmlEditorSurface",
+        "HtmlEditorSurfaceOptions",
+        "HtmlEditorToolbar",
+        "HtmlEditorInspector",
         "ValueEditor"
       ],
       "keywords": [
@@ -830,6 +834,10 @@
         {
           "id": "edit-and-accept-content",
           "title": "Edit and accept content"
+        },
+        {
+          "id": "surface-and-orchestration",
+          "title": "Surface and orchestration"
         },
         {
           "id": "use-in-a-host-form",
@@ -1916,6 +1924,7 @@
       "order": 52,
       "description": "Scroll virtual dimensions through a bounded viewport with programmatic and pointer input.",
       "prev": "/components/virtual-list",
+      "next": "/components/tree-view",
       "toc": true,
       "api": [
         "ScrollEngine"
@@ -2009,6 +2018,53 @@
         }
       ],
       "module": "./content/topics/dataset-sessions.js"
+    },
+    {
+      "id": "tree-view",
+      "title": "TreeView",
+      "path": "/components/tree-view",
+      "group": "components",
+      "parent": "navigation",
+      "order": 53,
+      "description": "Virtualized trees with lazy synchronous or asynchronous children, caching and keyboard navigation.",
+      "prev": "/components/scroll-engine",
+      "toc": true,
+      "api": [
+        "TreeView",
+        "TreeViewOptions",
+        "TreeDataAdapter",
+        "TreeItemRenderContext"
+      ],
+      "keywords": [
+        "tree",
+        "asynchronous",
+        "hierarchy",
+        "lazy loading"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "lazy-asynchronous-branches",
+          "title": "Lazy asynchronous branches"
+        },
+        {
+          "id": "data-adapter",
+          "title": "Data adapter"
+        },
+        {
+          "id": "cache-and-lifetime",
+          "title": "Cache and lifetime"
+        },
+        {
+          "id": "focus-selection-and-activation",
+          "title": "Focus, selection and activation"
+        },
+        {
+          "id": "custom-rows",
+          "title": "Custom rows"
+        }
+      ],
+      "module": "./content/topics/tree-view.js"
     },
     {
       "id": "dataset-saving",

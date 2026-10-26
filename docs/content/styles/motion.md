@@ -68,6 +68,10 @@ For custom controls, put the icon directly inside a button with
 manage the associated content; this utility only animates the icon. Reduced
 motion disables the transition, but preserves the open-state rotation.
 
+Set `--elg-open-rotation` on the icon to customize the angle (default `180deg`).
+TreeView uses `90deg` to turn a right-facing chevron downward. Keep the icon's
+DOM node when updating the state so the CSS transition can run.
+
 ## Accessibility and fallback
 
 Content remains visible if IntersectionObserver is unavailable. The helper does

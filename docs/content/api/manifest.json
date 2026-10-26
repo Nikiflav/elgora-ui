@@ -817,7 +817,7 @@
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditor",
-      "description": "Rich-text editing through model commands, with scoped reconciliation for IME and noncancelable input.",
+      "description": "Orchestrates one editing surface and optional tools; owns the sole commit/cancel lifecycle.",
       "module": "./content/api/HtmlEditor.js"
     },
     {
@@ -828,6 +828,33 @@
       "path": "/api-reference/HtmlEditorCommand",
       "description": "Operations currently supported by the rich-text command layer.",
       "module": "./content/api/HtmlEditorCommand.js"
+    },
+    {
+      "name": "HtmlEditorCommandContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorCommandContext",
+      "description": "Context supplied to every HTML editor command surface.",
+      "module": "./content/api/HtmlEditorCommandContext.js"
+    },
+    {
+      "name": "HtmlEditorCommandMenu",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorCommandMenu",
+      "description": "Shared command-menu renderer used for the editor context menu and future menu surfaces.",
+      "module": "./content/api/HtmlEditorCommandMenu.js"
+    },
+    {
+      "name": "HtmlEditorCommandRegistry",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorCommandRegistry",
+      "description": "Shared command registry owned by HtmlEditor and consumed by all its UI surfaces.",
+      "module": "./content/api/HtmlEditorCommandRegistry.js"
     },
     {
       "name": "HtmlEditorDocument",
@@ -866,6 +893,15 @@
       "module": "./content/api/HtmlEditorElementKind.js"
     },
     {
+      "name": "HtmlEditorInspector",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspector",
+      "description": "Inspector scaffold owned by HtmlEditor. Targets are previews, not structural editor selections.",
+      "module": "./content/api/HtmlEditorInspector.js"
+    },
+    {
       "name": "HtmlEditorNode",
       "kind": "type",
       "group": "types",
@@ -873,6 +909,15 @@
       "path": "/api-reference/HtmlEditorNode",
       "description": "",
       "module": "./content/api/HtmlEditorNode.js"
+    },
+    {
+      "name": "HtmlEditorNodeCoverage",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorNodeCoverage",
+      "description": "Coverage of a model node by a non-collapsed text range; unselected nodes are omitted.",
+      "module": "./content/api/HtmlEditorNodeCoverage.js"
     },
     {
       "name": "HtmlEditorNodeId",
@@ -889,7 +934,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorOptions",
-      "description": "Configuration for the native rich-text editing surface.",
+      "description": "Configuration for the HTML value editor and its optional surrounding tools.",
       "module": "./content/api/HtmlEditorOptions.js"
     },
     {
@@ -929,6 +974,24 @@
       "module": "./content/api/HtmlEditorStyle.js"
     },
     {
+      "name": "HtmlEditorSurface",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSurface",
+      "description": "Owns contenteditable, model, selection, input handling and history; never commits or cancels values.",
+      "module": "./content/api/HtmlEditorSurface.js"
+    },
+    {
+      "name": "HtmlEditorSurfaceOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSurfaceOptions",
+      "description": "Options for the standalone model-backed editing surface, without saving or surrounding tools.",
+      "module": "./content/api/HtmlEditorSurfaceOptions.js"
+    },
+    {
       "name": "HtmlEditorText",
       "kind": "interface",
       "group": "types",
@@ -936,6 +999,24 @@
       "path": "/api-reference/HtmlEditorText",
       "description": "A text leaf has no element attributes, presentation or children.",
       "module": "./content/api/HtmlEditorText.js"
+    },
+    {
+      "name": "HtmlEditorToolbar",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorToolbar",
+      "description": "Initial command toolbar. Created, placed and disposed by HtmlEditor, not by the surface.",
+      "module": "./content/api/HtmlEditorToolbar.js"
+    },
+    {
+      "name": "HtmlEditorUiCommand",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommand",
+      "description": "A command exposed by a toolbar, context menu, or node action overlay.",
+      "module": "./content/api/HtmlEditorUiCommand.js"
     },
     {
       "name": "KeyMapping",
@@ -1719,6 +1800,42 @@
       "path": "/api-reference/TooltipShowOptions",
       "description": "Positioning, content, and timing options for Tooltip.show().",
       "module": "./content/api/TooltipShowOptions.js"
+    },
+    {
+      "name": "TreeDataAdapter",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeDataAdapter",
+      "description": "Reads a hierarchy without requiring a separate TreeNode model. Keys are globally unique.",
+      "module": "./content/api/TreeDataAdapter.js"
+    },
+    {
+      "name": "TreeItemRenderContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeItemRenderContext",
+      "description": "Custom row content; disclosure, focus and selection remain owned by TreeView.",
+      "module": "./content/api/TreeItemRenderContext.js"
+    },
+    {
+      "name": "TreeView",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeView",
+      "description": "Virtualized tree with lazy branch loading, cached children and independent focus/selection.",
+      "module": "./content/api/TreeView.js"
+    },
+    {
+      "name": "TreeViewOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Tree View",
+      "path": "/api-reference/TreeViewOptions",
+      "description": "Options for an independently virtualized, single-selection tree.",
+      "module": "./content/api/TreeViewOptions.js"
     },
     {
       "name": "UiDensity",
