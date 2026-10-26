@@ -1,5 +1,6 @@
 import { Component } from "../../core/Component";
 import { ObservableEvent } from "../../core/ElgoraUI";
+import type { UiStyle } from "../../core/UiStyle";
 import { Localization, type LocaleOptions } from "../../localization/Localization";
 import { LocalizedError, type MessageKey } from "../../localization/Messages";
 import { setElementProps, e, assignElementProps, span, tr, VNode, v, VNodeChild, ElementProps } from "../../core/e";
@@ -8,7 +9,7 @@ import { DataFilter } from "../../data/filter";
 import { ScrollEngine, type ScrollbarMode } from "../scrollbar/scroll-engine";
 import { VariableSizeManager } from "../virtual-list/SizeManager";
 import { VirtualList, VirtualDataSource, RenderRowArgs } from "../virtual-list/VirtualList";
-import { DataViewFieldUtils } from "../../data/DataViewField";
+import { DataViewFieldUtils, type DataViewButton, type DataViewButtonContext } from "../../data/DataViewField";
 import type { DataGridColumnLayoutInfo } from "./DataGridColumn";
 import { orderByTokenToString, type GroupInterval, type GroupIntervalDefinition, type OrderByToken } from "../../data/grouping";
 import type { SummaryDefinition, SummaryType, SummaryResult } from "../../data/summary";
@@ -394,7 +395,9 @@ export class DataGrid<TRow> extends Component {
         }
         for (let i = 0; i < lines.length; i++) {
             if (this.disposed.Value) return;
-            if (!lines[i].some((_input, j) => columns[origin.colIndex + j] && !columns[origin.colIndex + j].readonly)) continue;
+            if (!lines[i].some((_input, j) => columns[origin.colIndex + j]
+                && columns[origin.colIndex + j].type !== "buttons"
+                && !columns[origin.colIndex + j].readonly)) continue;
             let row = targets[i];
             let session = this._newRowSessions.find(item => item.row === row);
             if (row === undefined) {
@@ -411,7 +414,7 @@ export class DataGrid<TRow> extends Component {
             const inputs = new Map<string, string>();
             for (let j = 0; j < lines[i].length && origin.colIndex + j < columns.length; j++) {
                 const field = columns[origin.colIndex + j];
-                if (field.readonly) continue;
+                if (field.type === "buttons" || field.readonly) continue;
                 const input = lines[i][j];
                 inputs.set(field.name, input);
                 let editor: ReturnType<typeof createFieldEditor<TRow>> | undefined;
@@ -667,7 +670,7 @@ export class DataGrid<TRow> extends Component {
         rowIndex ??= active?.rowIndex;
         const columns = this._gridColumns.filter(col => col.type === "data");
         const column = columnName ? columns.find(col => col.dataColumn!.name === columnName) : columns[active?.colIndex ?? 0];
-        if (rowIndex === undefined || rowIndex < 0 || !column || column.dataColumn!.readonly) return false;
+        if (rowIndex === undefined || rowIndex < 0 || !column || column.dataColumn!.readonly || column.dataColumn!.type === "buttons") return false;
         if (this._newRowSession && !await this.leaveNewRowFor(rowIndex)) return false;
         if (this._openingEdit) return false;
         const field = column.dataColumn!;
@@ -1026,10 +1029,105 @@ export class DataGrid<TRow> extends Component {
         });
     };
 
+    /** Returns the visible action buttons rendered for one data-cell coordinate. */
+    private getActionCellButtons(rowIndex: number, colIndex: number): HTMLButtonElement[] {
+        const field = this._gridColumns.filter(col => col.type === "data")[colIndex]?.dataColumn;
+        if (!field || field.type !== "buttons") return [];
+
+        const cell = Array.from(this._contentTable.querySelectorAll<HTMLElement>("tbody [data-elg-edit-row]"))
+            .find(item => item.getAttribute("data-elg-edit-row") === String(rowIndex)
+                && item.getAttribute("data-elg-edit-column") === field.name);
+        if (!cell) return [];
+
+        return Array.from(cell.querySelectorAll<HTMLButtonElement>(".elg-data-grid-action-button"))
+            .filter(button => !button.disabled && !button.hidden);
+    }
+
+    /** Focuses a rendered grid cell after leaving an action-button sub-navigation. */
+    private focusGridCell(rowIndex: number, colIndex: number): void {
+        const field = this._gridColumns.filter(col => col.type === "data")[colIndex]?.dataColumn;
+        if (!field) return;
+        const cell = Array.from(this._contentTable.querySelectorAll<HTMLElement>("tbody [data-elg-edit-row]"))
+            .find(item => item.getAttribute("data-elg-edit-row") === String(rowIndex)
+                && item.getAttribute("data-elg-edit-column") === field.name);
+        cell?.focus({ preventScroll: true });
+    }
+
+    /** Enters the action buttons belonging to the active cell, in the requested direction. */
+    private async focusActionCell(rowIndex: number, colIndex: number, backwards = false): Promise<void> {
+        const focus = () => {
+            const buttons = this.getActionCellButtons(rowIndex, colIndex);
+            const button = buttons[backwards ? buttons.length - 1 : 0];
+            if (!button) return false;
+            button.focus({ preventScroll: true });
+            return true;
+        };
+        if (focus() || this.disposed.Value) return;
+        await Utils.nextFrame();
+        if (!this.disposed.Value) focus();
+    }
+
+    /** Handles the button sequence inside an action cell without changing grid editing state. */
+    private async handleActionButtonKeyDown(event: KeyboardEvent, button: HTMLButtonElement): Promise<boolean> {
+        const cell = button.closest<HTMLElement>("[data-elg-edit-row][data-elg-edit-column]");
+        if (!cell) return false;
+
+        const rowIndex = Number(cell.getAttribute("data-elg-edit-row"));
+        const columnName = cell.getAttribute("data-elg-edit-column");
+        const colIndex = this._gridColumns.filter(col => col.type === "data")
+            .findIndex(col => col.dataColumn?.name === columnName);
+        if (!Number.isInteger(rowIndex) || colIndex < 0) return false;
+
+        // Enter and Space are intentionally left to the native button. Its click
+        // handler invokes exactly one action and does not enter cell editing.
+        if (event.key === "Enter" || event.key === " ") return true;
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            this._selection.selectSingleCell(rowIndex, colIndex);
+            this.refresh();
+            this.focusGridCell(rowIndex, colIndex);
+            return true;
+        }
+
+        if (event.key !== "Tab") return true;
+
+        const buttons = this.getActionCellButtons(rowIndex, colIndex);
+        const index = buttons.indexOf(button);
+        const nextIndex = index + (event.shiftKey ? -1 : 1);
+        if (nextIndex >= 0 && nextIndex < buttons.length) {
+            event.preventDefault();
+            event.stopPropagation();
+            buttons[nextIndex].focus({ preventScroll: true });
+            return true;
+        }
+
+        // The action column is a cell in the grid traversal. Once its last (or
+        // first, in reverse) button is passed, continue through neighboring cells.
+        event.preventDefault();
+        event.stopPropagation();
+        const previous = this._selection.getActiveCell();
+        if (this.navigateSelection(event)) {
+            this.refresh();
+            const active = this._selection.getActiveCell();
+            if (active && (!previous || previous.rowIndex !== active.rowIndex || previous.colIndex !== active.colIndex)) {
+                this.ensureCellVisible(active.rowIndex, active.colIndex);
+            }
+            if (active) await this.focusActionCell(active.rowIndex, active.colIndex, event.shiftKey);
+        }
+        return true;
+    }
+
     private handleSelectionKeyDown = async (event: KeyboardEvent) => {
         if (this._newRowOperation || (this._creatingNewRow && !this._openingEdit) || this._pasteOperation) { event.preventDefault(); event.stopPropagation(); return; }
         if (this._cellEditor?.element.contains(event.target as Node)) {
             if (["PageUp", "PageDown", "Home", "End"].includes(event.key)) event.stopPropagation();
+            return;
+        }
+        const actionButton = (event.target as Element | null)?.closest<HTMLButtonElement>(".elg-data-grid-action-button");
+        if (actionButton) {
+            await this.handleActionButtonKeyDown(event, actionButton);
             return;
         }
         if (this._openingEdit && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey) {
@@ -1080,6 +1178,18 @@ export class DataGrid<TRow> extends Component {
             void this.navigatePageOrEdge(event);
             return;
         }
+        const active = this._selection.getActiveCell();
+        const activeColumn = active
+            ? this._gridColumns.filter(col => col.type === "data")[active.colIndex]?.dataColumn
+            : undefined;
+        if (!event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey
+            && (event.key === "F2" || (event.key === "Enter" && !event.shiftKey))
+            && active && activeColumn?.type === "buttons") {
+            event.preventDefault();
+            event.stopPropagation();
+            await this.focusActionCell(active.rowIndex, active.colIndex);
+            return;
+        }
         if (!event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey
             && (event.key === "F2" || (event.key === "Enter" && !event.shiftKey) || event.key.length === 1) && this._gridOptions.allowEdit) {
             event.preventDefault(); event.stopPropagation();
@@ -1095,6 +1205,7 @@ export class DataGrid<TRow> extends Component {
             if (active && (!previous || previous.rowIndex !== active.rowIndex || previous.colIndex !== active.colIndex)) {
                 this.ensureCellVisible(active.rowIndex, active.colIndex);
             }
+            if (event.key === "Tab" && active) await this.focusActionCell(active.rowIndex, active.colIndex, event.shiftKey);
         }
     };
 
@@ -1349,6 +1460,7 @@ export class DataGrid<TRow> extends Component {
     };
 
     private setColumnSort = (columnName: string, direction: "asc" | "desc", preserveExisting = false) => {
+        if (this._columnsIndex.get(columnName)?.type === "buttons") return;
         if (!preserveExisting) {
             this.setOptions({ orderBy: [[columnName, direction]] });
             return;
@@ -1390,7 +1502,7 @@ export class DataGrid<TRow> extends Component {
 
     /** Adds a column to grouping and makes it the primary sort criterion. */
     public groupBy = (columnName: string, direction: "asc" | "desc" = "asc") => {
-        if (this._isHierarchicalData) return;
+        if (this._isHierarchicalData || this._columnsIndex.get(columnName)?.type === "buttons") return;
 
         const groupColumns = [...(this._gridOptions.groupColumns ?? [])];
         if (!groupColumns.includes(columnName)) groupColumns.push(columnName);
@@ -1424,7 +1536,7 @@ export class DataGrid<TRow> extends Component {
     };
 
     private toggleColumnGrouping = (columnName: string) => {
-        if (this._isHierarchicalData) return;
+        if (this._isHierarchicalData || this._columnsIndex.get(columnName)?.type === "buttons") return;
         const groupColumns = [...(this._gridOptions.groupColumns ?? [])];
         const index = groupColumns.indexOf(columnName);
         if (index >= 0) groupColumns.splice(index, 1);
@@ -1436,6 +1548,7 @@ export class DataGrid<TRow> extends Component {
     };
 
     private setColumnSummary = (columnName: string, summaryType?: SummaryType) => {
+        if (this._columnsIndex.get(columnName)?.type === "buttons") return;
         const groupSummaries = (this._gridOptions.groupSummary ?? []).filter(s => s.field !== columnName);
         const totalSummaries = (this._gridOptions.totalSummary ?? []).filter(s => s.field !== columnName);
         if (summaryType) {
@@ -1485,26 +1598,27 @@ export class DataGrid<TRow> extends Component {
 
         if (context.target === "columnHeader" && context.column) {
             const columnName = context.column.name;
+            const actionColumn = context.column.type === "buttons";
             const pinPosition = this.getColumnPinPosition(columnName);
             const isGrouped = this._gridOptions.groupColumns?.includes(columnName) === true;
             const sortDirection = this.getColumnSortDirection(columnName);
             const preserveExistingSort = (event?: Event) => event instanceof MouseEvent && event.shiftKey;
 
-            if ((!sortDirection || sortDirection === "desc") && hasStandard("sortAscending" as GridStandardContextMenuItem)) {
+            if (!actionColumn && (!sortDirection || sortDirection === "desc") && hasStandard("sortAscending" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-arrow-up-line",
                     text: this.messages.text("dataGrid.sortAscending"),
                     action: event => this.setColumnSort(columnName, "asc", preserveExistingSort(event))
                 });
             }
-            if ((!sortDirection || sortDirection === "asc") && hasStandard("sortDescending" as GridStandardContextMenuItem)) {
+            if (!actionColumn && (!sortDirection || sortDirection === "asc") && hasStandard("sortDescending" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-arrow-down-line",
                     text: this.messages.text("dataGrid.sortDescending"),
                     action: event => this.setColumnSort(columnName, "desc", preserveExistingSort(event))
                 });
             }
-            if (sortDirection && !isGrouped && hasStandard("clearSort" as GridStandardContextMenuItem)) {
+            if (!actionColumn && sortDirection && !isGrouped && hasStandard("clearSort" as GridStandardContextMenuItem)) {
                 items.push({
                     icon: "ri-close-line",
                     text: this.messages.text("dataGrid.clearSorting"),
@@ -1552,7 +1666,7 @@ export class DataGrid<TRow> extends Component {
                 });
             }
             const groupingItems: MenuItem[] = [];
-            if (hasStandard("groupColumn") && !this._isHierarchicalData) {
+            if (!actionColumn && hasStandard("groupColumn") && !this._isHierarchicalData) {
                 const intervalLabels: Record<string, string> = {
                     "year": this.messages.text("dataGrid.interval.year"),
                     "yearQuarter": this.messages.text("dataGrid.interval.yearQuarter"),
@@ -1604,7 +1718,7 @@ export class DataGrid<TRow> extends Component {
                     });
                 }
             }
-            if (isGrouped && !this._isHierarchicalData) {
+            if (!actionColumn && isGrouped && !this._isHierarchicalData) {
                 if (groupingItems.length && (hasStandard("expandGroupsToLevel") || hasStandard("collapseGroupsAtLevel")))
                     groupingItems.push({ isDivider: true });
                 if (hasStandard("expandGroupsToLevel")) {
@@ -1630,8 +1744,9 @@ export class DataGrid<TRow> extends Component {
                     subItems: async () => groupingItems
                 });
             }
-            addDivider();
-            items.push({
+            if (!actionColumn) {
+                addDivider();
+                items.push({
                 icon: "ri-calculator-line",
                 text: this.messages.text("dataGrid.summary"),
                 disabled: this._isHierarchicalData,
@@ -1668,7 +1783,8 @@ export class DataGrid<TRow> extends Component {
                         };
                     });
                 }
-            });
+                });
+            }
         }
 
         if (context.target === "cell" || context.target === "rowHeader" || context.target === "row") {
@@ -2480,13 +2596,18 @@ export class DataGrid<TRow> extends Component {
                 fixedPosition = "right"
 
             const isAutoWidth = !dataCol?.width;
+            const textAlign = dataCol?.textAlign === "center" ? "center"
+                : dataCol?.textAlign === "end" ? "right"
+                    : dataCol?.textAlign === "start" ? "left"
+                        : dataCol?.type === "buttons" || (dataCol && DataViewFieldUtils.getDataType(dataCol) === "number")
+                            ? "right" : "left";
 
             const col: GridColumn<TRow> = {
                 type: "data",
                 dataColumn: dataCol,
                 visibleIndex: gridColumns.length,
                 groupIndex,
-                textAlign: "left",
+                textAlign,
                 width: this._defaultColumnWidth,
                 fixedPosition,
                 isAutoWidth,
@@ -2848,6 +2969,7 @@ export class DataGrid<TRow> extends Component {
             return gridRow.text ?? "";
 
         if (col.dataColumn) {
+            if (col.dataColumn.type === "buttons") return "";
             const invalidInput = this.getInvalidCellInput(gridRow, col.dataColumn.name);
             if (invalidInput && DataViewFieldUtils.getDataType(col.dataColumn) !== "boolean") return invalidInput.text;
             const cell = gridRow.cells?.[col.dataColumn.name];
@@ -2875,7 +2997,8 @@ export class DataGrid<TRow> extends Component {
 
     private createCellProps = (col: GridColumn<TRow>): any => ({
         title: "",
-        className: `elg-data-grid-cell elg-data-grid-cell-${col.type}`
+        className: `elg-data-grid-cell elg-data-grid-cell-${col.type}`,
+        style: { textAlign: col.textAlign }
     });
 
     private applyRowHeaderCell = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
@@ -2970,12 +3093,13 @@ export class DataGrid<TRow> extends Component {
         if (!customStyle) return;
 
         if (customStyle.className) props.className += " " + customStyle.className;
-        if (customStyle.style) props.style = customStyle.style;
+        if (customStyle.style) props.style = { ...(props.style ?? {}), ...customStyle.style };
     };
 
     private applyDataCellInteractions = (props: any, gridRow: GridRow, col: GridColumn<TRow>) => {
         props["data-elg-edit-row"] = String(gridRow.visibleIndex);
         props["data-elg-edit-column"] = col.dataColumn!.name;
+        if (col.dataColumn!.type === "buttons") props.tabIndex = -1;
         props.onmousedown = async (e: MouseEvent) => {
             if (this._openingEdit || this._creatingNewRow || this._newRowOperation || this._pasteOperation) { e.preventDefault(); return; }
             const edited = !!this._cellEditor;
@@ -2989,7 +3113,8 @@ export class DataGrid<TRow> extends Component {
             this.beginCellSelection(e, gridRow, col.visibleIndex);
             if (edited) this.endSelectionDrag();
         };
-        props.ondblclick = () => { void this.beginEdit(gridRow.visibleIndex, col.dataColumn!.name); };
+        if (col.dataColumn!.type !== "buttons")
+            props.ondblclick = () => { void this.beginEdit(gridRow.visibleIndex, col.dataColumn!.name); };
         props.onmouseenter = () => this.enterSelection(gridRow, col.visibleIndex);
         props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(
             e, "cell", gridRow, col.dataColumn, col.visibleIndex - this.rowHeaderOffset
@@ -3002,6 +3127,15 @@ export class DataGrid<TRow> extends Component {
         col: GridColumn<TRow>,
         dataCell: GridCell<TRow>
     ) => {
+        if (col.dataColumn!.type === "buttons") {
+            props.textContent = undefined;
+            const dataColumns = this._gridColumns.filter(item => item.type === "data");
+            const lastDataColumn = dataColumns[dataColumns.length - 1] === col;
+            props.vnodes = ["data", "node", "new"].includes(gridRow.type)
+                ? [this.createButtonField(dataCell, lastDataColumn)]
+                : [];
+            return;
+        }
         const customVNode = col.dataColumn!.renderCell?.(dataCell);
         if (gridRow.type !== "footer" && col.visibleIndex == this.rowHeaderOffset)
             props.vnodes = [
@@ -3015,6 +3149,68 @@ export class DataGrid<TRow> extends Component {
             props.textContent = dataCell.text;
     };
 
+    private createButtonContext = (dataCell: GridCell<TRow>, button: DataViewButton<TRow>): DataViewButtonContext<TRow> => ({
+        owner: this,
+        row: ["data", "node", "new"].includes(dataCell.gridRow.type) ? dataCell.rowData : undefined,
+        field: dataCell.column,
+        button,
+        value: dataCell.value
+    });
+
+    private createButtonField = (dataCell: GridCell<TRow>, lastDataColumn = false): VNode<any> => {
+        const field = dataCell.column;
+        const buttons = (field.buttons ?? []).map(button => {
+            const context = this.createButtonContext(dataCell, button);
+            const visible = typeof button.visible === "function" ? button.visible(context) : button.visible !== false;
+            if (!visible) return null;
+            const disabled = typeof button.disabled === "function" ? button.disabled(context) : button.disabled === true;
+            const pressed = typeof button.pressed === "function" ? button.pressed(context) : button.pressed;
+            const appearance = DataViewFieldUtils.getButtonAppearance(button, "iconOnly");
+            const label = DataViewFieldUtils.getButtonLabel(button);
+            const showIcon = !!button.icon && appearance !== "textOnly";
+            const showText = appearance !== "iconOnly" || !button.icon;
+            const icon = showIcon ? v("i", { class: button.icon, ariaHidden: "true" }) : null;
+            const text = showText ? DataViewFieldUtils.getButtonText(button) : null;
+            const buttonUi: UiStyle[] = button.ui === undefined
+                ? ["neutral"]
+                : Array.isArray(button.ui) ? [...button.ui] : [button.ui];
+            const content = button.render?.(context)
+                ?? v("span", { ui: ["d-inline-flex", "items-center", "gap-1"] },
+                    appearance === "textAndIcon" ? text : icon,
+                    appearance === "textAndIcon" ? icon : text);
+            return v("button", {
+                key: button.id, type: "button", class: "elg-data-grid-action-button",
+                ui: ["elg", "btn", ...buttonUi, "p-0"], tabIndex: -1, disabled,
+                ariaLabel: label, title: appearance === "iconOnly" ? label : button.tooltip,
+                ariaPressed: pressed === undefined ? undefined : String(pressed),
+                onpointerdown: (event: PointerEvent) => { event.stopPropagation(); },
+                onmousedown: (event: MouseEvent) => { event.stopPropagation(); },
+                onclick: async (event: MouseEvent, element: HTMLButtonElement) => {
+                    event.preventDefault(); event.stopPropagation();
+                    if (element.disabled || !button.onClick) return;
+                    element.disabled = true;
+                    try { await button.onClick(context); }
+                    catch (error) { console.error("DataGrid action failed.", error); }
+                    finally {
+                        if (!this.disposed.Value) {
+                            element.disabled = typeof button.disabled === "function" ? button.disabled(context) : button.disabled === true;
+                            this.refresh();
+                        }
+                    }
+                }
+            }, content);
+        }).filter(Boolean) as VNode<any>[];
+        const justifyContent = field.textAlign === "start"
+            ? "flex-start"
+            : field.textAlign === "center" ? "center" : "flex-end";
+        const visibility = field.buttonVisibility ?? "hover";
+        return v("span", {
+            class: `elg-data-grid-buttons elg-data-grid-buttons-${visibility}${lastDataColumn ? " elg-data-grid-buttons-last" : ""}`,
+            ui: ["d-flex", "items-center", "gap-1", "w-100"],
+            style: { justifyContent, ...(lastDataColumn ? { paddingRight: "12px", boxSizing: "border-box" } : {}) }
+        }, ...buttons);
+    };
+
     /** Shares explicit picker opening between the cell trigger and Alt+ArrowDown. */
     private async openCellPicker(rowIndex: number, columnName: string): Promise<void> {
         if (!await this.beginEdit(rowIndex, columnName)) return;
@@ -3025,7 +3221,7 @@ export class DataGrid<TRow> extends Component {
     /** Adds a keyed, cell-owned trigger without creating an editor or changing content geometry. */
     private applyCellEditorButton(props: any, gridRow: GridRow, col: GridColumn<TRow>): void {
         const field = col.dataColumn;
-        if (!field || field.readonly || !this._gridOptions.allowEdit || !this._dataSource.update
+        if (!field || field.type === "buttons" || field.readonly || !this._gridOptions.allowEdit || !this._dataSource.update
             || !["data", "node", "new"].includes(gridRow.type)) return;
         const visibility = field.editorButtonVisibility ?? this._gridOptions.defaultColumnOptions?.editorButtonVisibility ?? "hover";
         const button = visibility !== "never" ? getFieldEditorButton(field, this._gridOptions) : undefined;
@@ -3099,8 +3295,9 @@ export class DataGrid<TRow> extends Component {
     private applyHeaderCell = (props: any, col: GridColumn<TRow>) => {
         if (col.type != "data" || !col.dataColumn) return;
 
-        const sortDirection = this.getColumnSortDirection(col.dataColumn.name);
-        const sortOrder = this.getColumnSortOrder(col.dataColumn.name);
+        const actionColumn = col.dataColumn.type === "buttons";
+        const sortDirection = actionColumn ? undefined : this.getColumnSortDirection(col.dataColumn.name);
+        const sortOrder = actionColumn ? undefined : this.getColumnSortOrder(col.dataColumn.name);
         const showSortOrder = sortOrder !== undefined && (this._gridOptions.orderBy?.length ?? 0) > 1;
         props.vnodes = [
             v("span", this.getColumnHeaderText(col.dataColumn)),
@@ -3133,7 +3330,7 @@ export class DataGrid<TRow> extends Component {
         props.ontouchstart = (e: TouchEvent, td: HTMLTableCellElement) => this.startColumnDrag(e, td, col);
         props.onclick = async (e: MouseEvent, td: HTMLTableCellElement) => {
             if (this._openingEdit || !await this.finishActiveRowEdit()) return;
-            if (this._gridOptions.sortOnHeaderClick !== false && td.dataset["dragMoved"] !== "true")
+            if (!actionColumn && this._gridOptions.sortOnHeaderClick !== false && td.dataset["dragMoved"] !== "true")
                 this.toggleColumnSort(col.dataColumn!.name, e.shiftKey);
         };
         props.oncontextmenu = (e: MouseEvent) => this.showContextMenu(e, "columnHeader", undefined, col.dataColumn);
@@ -3246,6 +3443,11 @@ export class DataGrid<TRow> extends Component {
             return;
         }
         if (!col.dataColumn) return;
+        if (col.dataColumn.type === "buttons") {
+            props.textContent = "";
+            props.vnodes = [];
+            return;
+        }
 
         if (!complexFilter) {
             const column = col.dataColumn;

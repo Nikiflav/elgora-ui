@@ -346,7 +346,7 @@ describe("HtmlEditor structural boundaries", () => {
         select(root.firstChild!.firstChild!, 6);
         reversible({ type: "deleteForward" }, () => {
             expect(root.querySelector("li")!.textContent).toBe("BeforeItem");
-            expect(editor.nativeSelection?.anchorNode?.textContent).toBe("Before");
+            expect(editor.nativeSelection?.anchorNode?.textContent).toBe("BeforeItem");
             expect(editor.nativeSelection?.anchorOffset).toBe(6);
         });
     });

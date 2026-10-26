@@ -47,6 +47,95 @@ describe("DataGrid cell editing", () => {
         expect(grid.getExpansionState()).toEqual(saved);
     });
 
+    it("renders buttons columns as actions without starting cell editing", async () => {
+        const calls: any[] = [];
+        const { grid, rows } = create({ columns: [
+            { name: "name", dataType: "string" },
+            { name: "amount", dataType: "number" },
+            { name: "actions", type: "buttons", buttons: [
+                { id: "inspect", text: "Inspect", icon: "ri-eye-line", ui: "btn-ghost", onClick: context => calls.push(context) }
+            ] }
+        ] });
+        await settle();
+        const button = grid.dom.querySelector<HTMLButtonElement>(".elg-data-grid-action-button")!;
+        expect(button).not.toBeNull();
+        button.click();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(calls).toHaveLength(1);
+        expect(calls[0].row).toBe(rows[0]);
+        expect(calls[0].field.name).toBe("actions");
+        expect(grid.dom.querySelector(".elg-data-grid-editor")).toBeNull();
+        expect(button.textContent).not.toContain("Inspect");
+        expect(button.title).toBe("Inspect");
+        expect(button.classList.contains("elg-btn-ghost")).toBe(true);
+    });
+
+    it("treats action buttons as separate keyboard targets inside a buttons cell", async () => {
+        const { grid } = create({ columns: [
+            { name: "name", dataType: "string" },
+            { name: "amount", dataType: "number" },
+            { name: "actions", type: "buttons", buttons: [
+                { id: "inspect", text: "Inspect" },
+                { id: "more", text: "More" }
+            ] }
+        ] });
+        await settle();
+
+        const viewport = grid.dom.querySelector<HTMLElement>(".elg-data-grid-viewport")!;
+        const buttons = () => Array.from(grid.dom.querySelectorAll<HTMLButtonElement>(".elg-data-grid-action-button"));
+        grid.getSelectionManager().selectSingleCell(0, 2);
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+        await settle();
+        expect(document.activeElement).toBe(buttons()[0]);
+
+        const next = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+        buttons()[0].dispatchEvent(next);
+        await settle();
+        expect(next.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(buttons()[1]);
+
+        const last = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+        buttons()[1].dispatchEvent(last);
+        await settle();
+        expect(last.defaultPrevented).toBe(true);
+        expect(grid.getActiveSelectionCell()).toEqual({ rowIndex: 1, colIndex: 0 });
+
+        grid.getSelectionManager().selectSingleCell(0, 2);
+        viewport.dispatchEvent(new KeyboardEvent("keydown", { key: "F2", bubbles: true, cancelable: true }));
+        await settle();
+        const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+        buttons()[0].dispatchEvent(escape);
+        expect(escape.defaultPrevented).toBe(true);
+        expect(document.activeElement).toMatchObject({
+            getAttribute: expect.any(Function)
+        });
+        expect((document.activeElement as HTMLElement).getAttribute("data-elg-edit-column")).toBe("actions");
+    });
+
+    it("applies column alignment to text and buttons cells", async () => {
+        const { grid } = create({ columns: [
+            { name: "name", dataType: "string", textAlign: "end" },
+            { name: "amount", dataType: "number" },
+            { name: "actions", type: "buttons", buttons: [{ id: "inspect", icon: "ri-eye-line" }] },
+            { name: "centerActions", type: "buttons", textAlign: "center", buttonVisibility: "always", buttons: [{ id: "inspect", icon: "ri-eye-line" }] }
+        ] });
+        await settle();
+
+        const cell = (column: string) => grid.dom.querySelector<HTMLElement>(
+            `[data-elg-edit-row="0"][data-elg-edit-column="${column}"]`
+        )!;
+        expect(cell("name").style.textAlign).toBe("right");
+        expect(cell("amount").style.textAlign).toBe("right");
+        expect(cell("actions").style.textAlign).toBe("right");
+        expect(cell("actions").querySelector<HTMLElement>(".elg-data-grid-buttons")?.style.justifyContent).toBe("flex-end");
+        expect(cell("actions").querySelector<HTMLElement>(".elg-data-grid-buttons")?.style.paddingRight).toBe("");
+        expect(cell("actions").querySelector<HTMLElement>(".elg-data-grid-buttons")?.classList.contains("elg-data-grid-buttons-hover")).toBe(true);
+        expect(cell("centerActions").style.textAlign).toBe("center");
+        expect(cell("centerActions").querySelector<HTMLElement>(".elg-data-grid-buttons")?.style.justifyContent).toBe("center");
+        expect(cell("centerActions").querySelector<HTMLElement>(".elg-data-grid-buttons")?.style.paddingRight).toBe("12px");
+        expect(cell("centerActions").querySelector<HTMLElement>(".elg-data-grid-buttons")?.classList.contains("elg-data-grid-buttons-always")).toBe(true);
+    });
+
     it("clears expansion for source and grouped interval changes through public setters", async () => {
         const { grid } = create({ groupColumns: ["name"] });
         await grid.expandAllGroups();

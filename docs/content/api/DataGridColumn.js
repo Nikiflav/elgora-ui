@@ -41,6 +41,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "buttonVisibility",
+      "type": "\"hover\" | \"always\" | undefined",
+      "description": "Action-button visibility. Omit for auto: hover on pointer devices and always on touch devices.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/datagrid/DataGridColumn.ts",
+      "kind": "property"
+    },
+    {
       "name": "resizable",
       "type": "boolean | undefined",
       "description": "Whether the user can resize this column.",

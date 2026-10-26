@@ -1,8 +1,9 @@
 import { Component, type ComponentOptions } from "../../core/Component";
-import { e } from "../../core/e";
+import { e, setElementProps, v } from "../../core/e";
+import type { UiStyle } from "../../core/UiStyle";
 import type { LocaleOptions } from "../../localization/Localization";
 import { DataRow } from "../../data/dataset/DataRow";
-import type { DataViewField, FieldEditContext } from "../../data/DataViewField";
+import type { DataViewButton, DataViewButtonContext, DataViewField, FieldEditContext } from "../../data/DataViewField";
 import { DataViewFieldUtils } from "../../data/DataViewField";
 import { createFieldEditor, getFieldEditorButton } from "../editors/createFieldEditor";
 import { TextEditor, type ValueEditor } from "../editors/ValueEditor";
@@ -89,7 +90,7 @@ export class DataForm<TRow> extends Component {
         this.draft = isDataRow(options.data) ? options.data : { ...(options.data as any) };
         this.adapter = options.adapter ?? (isDataRow(options.data)
             ? dataRowAdapter as unknown as DataFormAdapter<TRow>
-            : createObjectAdapter(this.draft as TRow & Record<string, any>));
+            : createObjectAdapter(this.draft as TRow & Record<string, any>) as unknown as DataFormAdapter<TRow>);
         this.dom.dataset.labelPosition = options.labelPosition ?? "top";
         this.renderFields();
     }
@@ -109,12 +110,15 @@ export class DataForm<TRow> extends Component {
         this.active?.editor.dispose(); this.active = undefined;
         this.fieldRows.clear(); this.dom.replaceChildren();
         this.visibleFields().forEach((field, index) => {
+            const buttonField = field.type === "buttons";
             const row = e("div", { class: "elg-data-form-field", "data-field": field.name });
             const label = e("label", { class: "elg-data-form-label" }, field.caption ?? field.name,
                 field.required ? e("span", { class: "elg-data-form-required", ariaHidden: "true" }, "*") : undefined);
-            const value = e("div", { class: "elg-data-form-value", tabIndex: this.options.allowEdit === false || field.readonly ? -1 : 0,
-                role: "button", ariaLabel: field.caption ?? field.name,
+            const value = e("div", { class: `elg-data-form-value${buttonField ? " elg-data-form-buttons-host" : ""}`,
+                tabIndex: buttonField ? -1 : (this.options.allowEdit === false || field.readonly ? -1 : 0),
+                role: buttonField ? undefined : "button", ariaLabel: field.caption ?? field.name,
                 onclick: () => {
+                    if (buttonField) return;
                     // The display host keeps its handler after the editor is
                     // mounted. Do not restart the same edit when a picker
                     // trigger or input click bubbles from the active editor.
@@ -122,6 +126,7 @@ export class DataForm<TRow> extends Component {
                     void this.beginEdit(field, index);
                 },
                 onkeydown: (event: KeyboardEvent) => {
+                    if (buttonField) return;
                     // The host handler remains mounted while the editor lives
                     // inside the cell. Let the active editor receive all
                     // subsequent text instead of treating every character as
@@ -143,6 +148,10 @@ export class DataForm<TRow> extends Component {
     }
 
     private async updateDisplay(field: DataViewField<TRow>, host: HTMLElement): Promise<void> {
+        if (field.type === "buttons") {
+            setElementProps(host, { vnodes: [this.createButtonField(field)] });
+            return;
+        }
         const value = await this.adapter.getValue(this.draft, field);
         host.replaceChildren(document.createTextNode(await this.displayText(field, value)));
         const visibility = field.editorButtonVisibility ?? "always";
@@ -169,8 +178,55 @@ export class DataForm<TRow> extends Component {
         }, e("i", { class: button.icon, ariaHidden: "true" })));
     }
 
+    private createButtonContext(field: DataViewField<TRow>, button: DataViewButton<TRow>): DataViewButtonContext<TRow> {
+        return { owner: this, row: this.draft, field, button };
+    }
+
+    private createButtonField(field: DataViewField<TRow>): ReturnType<typeof v> {
+        const buttons = (field.buttons ?? []).map(button => {
+            const context = this.createButtonContext(field, button);
+            const visible = typeof button.visible === "function" ? button.visible(context) : button.visible !== false;
+            if (!visible) return null;
+            const disabled = typeof button.disabled === "function" ? button.disabled(context) : button.disabled === true;
+            const pressed = typeof button.pressed === "function" ? button.pressed(context) : button.pressed;
+            const appearance = DataViewFieldUtils.getButtonAppearance(button);
+            const label = DataViewFieldUtils.getButtonLabel(button);
+            const showIcon = !!button.icon && appearance !== "textOnly";
+            const showText = appearance !== "iconOnly" || !button.icon;
+            const icon = showIcon ? v("i", { class: button.icon, ariaHidden: "true" }) : null;
+            const text = showText ? DataViewFieldUtils.getButtonText(button) : null;
+            const buttonUi: UiStyle[] = button.ui === undefined
+                ? ["neutral"]
+                : Array.isArray(button.ui) ? [...button.ui] : [button.ui];
+            const content = button.render?.(context)
+                ?? v("span", { ui: ["d-inline-flex", "items-center", "gap-1"] },
+                    appearance === "textAndIcon" ? text : icon,
+                    appearance === "textAndIcon" ? icon : text);
+            return v("button", {
+                key: button.id, type: "button", class: "elg-data-form-action-button",
+                ui: ["elg", "btn", ...buttonUi, "p-0"], disabled,
+                ariaLabel: label, title: appearance === "iconOnly" ? label : button.tooltip,
+                ariaPressed: pressed === undefined ? undefined : String(pressed),
+                onmousedown: (event: MouseEvent) => { event.preventDefault(); event.stopPropagation(); },
+                onpointerdown: (event: PointerEvent) => { event.preventDefault(); event.stopPropagation(); },
+                onclick: async (event: MouseEvent, element: HTMLButtonElement) => {
+                    event.preventDefault(); event.stopPropagation();
+                    if (element.disabled || !button.onClick) return;
+                    element.disabled = true;
+                    try { await button.onClick(context); }
+                    catch (error) { console.error("DataForm action failed.", error); }
+                    finally {
+                        if (!this.disposed.Value)
+                            element.disabled = typeof button.disabled === "function" ? button.disabled(context) : button.disabled === true;
+                    }
+                }
+            }, content);
+        }).filter(Boolean) as ReturnType<typeof v>[];
+        return v("span", { class: "elg-data-form-buttons", ui: ["d-flex", "items-center", "gap-1", "w-100"] }, ...buttons);
+    }
+
     private async beginEdit(field: DataViewField<TRow>, index: number, initialText?: string): Promise<boolean> {
-        if (this.options.allowEdit === false || field.readonly || this.disposed.Value) return false;
+        if (this.options.allowEdit === false || field.readonly || field.type === "buttons" || this.disposed.Value) return false;
         if (this.active && !(await this.finishEdit())) return false;
         const host = this.fieldRows.get(field.name); if (!host) return false;
         const value = await this.adapter.getValue(this.draft, field);
@@ -257,7 +313,7 @@ export class DataForm<TRow> extends Component {
 
     /** Focuses a neighboring editable field after keyboard confirmation. */
     private focusField(field: DataViewField<TRow>, direction = 0): void {
-        const fields = this.visibleFields().filter(item => this.options.allowEdit !== false && !item.readonly);
+        const fields = this.visibleFields().filter(item => this.options.allowEdit !== false && !item.readonly && item.type !== "buttons");
         const current = fields.indexOf(field);
         const target = direction === 0 ? current : current + direction;
         const next = fields[target] ?? field;

@@ -523,3 +523,26 @@ thead .elg-data-grid-row-header .elg-data-grid-cell-data {
 .elg-selected-cell-t.elg-selected-cell-b.elg-selected-cell-l.elg-selected-cell-r {
     box-shadow: inset 0 var(--elg-data-grid-sel-width) 0 0 var(--elg-data-grid-sel-color), inset 0 calc(-1 * var(--elg-data-grid-sel-width)) 0 0 var(--elg-data-grid-sel-color), inset var(--elg-data-grid-sel-width) 0 0 0 var(--elg-data-grid-sel-color), inset calc(-1 * var(--elg-data-grid-sel-width)) 0 0 0 var(--elg-data-grid-sel-color);
 }
+.elg-data-grid-buttons { min-width: 0; }
+.elg-data-grid-buttons-hover {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+}
+.elg-data-grid-buttons-hover:focus-within,
+.elg-data-grid-row:hover .elg-data-grid-buttons-hover {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+@media (hover: none), (pointer: coarse) {
+    .elg-data-grid-buttons-hover {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+.elg-data-grid-action-button { min-width: 28px; height: 24px; padding-inline: 6px; color: var(--elg-text-muted); }
+.elg-data-grid-action-button:hover, .elg-data-grid-action-button:focus-visible { color: var(--elg-text-color); }
+.elg-data-grid-action-button:disabled { opacity: .55; }

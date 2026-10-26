@@ -21,6 +21,11 @@
 .elg-data-form-value-editing .elg-editor-trigger { position: relative; z-index: 1; pointer-events: auto; }
 .elg-data-form-editor-button { flex: 0 0 24px; width: 24px; height: 24px; margin-inline-start: auto; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--elg-text-muted); cursor: pointer; }
 .elg-data-form-editor-button:hover, .elg-data-form-editor-button:focus-visible { background: var(--elg-hover-bg); color: var(--elg-text-color); outline: none; }
+.elg-data-form-buttons-host { cursor: default; }
+.elg-data-form-buttons { height: 100%; }
+.elg-data-form-action-button { min-width: 28px; height: 24px; padding-inline: 6px; color: var(--elg-text-muted); }
+.elg-data-form-action-button:hover, .elg-data-form-action-button:focus-visible { color: var(--elg-text-color); }
+.elg-data-form-action-button:disabled { opacity: .55; }
 .elg-data-form-editor-button-hover { opacity: 0; }
 .elg-data-form-value:hover .elg-data-form-editor-button-hover, .elg-data-form-value:focus-within .elg-data-form-editor-button-hover { opacity: 1; }
 .elg-data-form-description { color: var(--elg-text-muted); font-size: .8em; }

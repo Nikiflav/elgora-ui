@@ -497,6 +497,33 @@
       "module": "./content/api/DataType.js"
     },
     {
+      "name": "DataViewButton",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewButton",
+      "description": "A semantic action rendered by a `type: \"buttons\"` field.",
+      "module": "./content/api/DataViewButton.js"
+    },
+    {
+      "name": "DataViewButtonAppearance",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewButtonAppearance",
+      "description": "Visual order used when a data-view action has both an icon and a label.",
+      "module": "./content/api/DataViewButtonAppearance.js"
+    },
+    {
+      "name": "DataViewButtonContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewButtonContext",
+      "description": "Context supplied to a field action callback or custom button renderer.",
+      "module": "./content/api/DataViewButtonContext.js"
+    },
+    {
       "name": "DataViewField",
       "kind": "interface",
       "group": "types",

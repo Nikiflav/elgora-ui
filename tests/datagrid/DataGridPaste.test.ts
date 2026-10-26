@@ -39,7 +39,7 @@ describe("clipboard text", () => {
         expect(parseClipboardText('"A\tB"\t"C""D"\r\n"two\nlines"\t\r\n'))
             .toEqual([["A\tB", 'C"D'], ["two\nlines", ""]]);
         expect(parseClipboardText("\t")).toEqual([["", ""]]);
-        expect(() => parseClipboardText('"broken')).toThrow("not terminated");
+        expect(() => parseClipboardText('"broken')).toThrow("unterminated");
     });
 });
 

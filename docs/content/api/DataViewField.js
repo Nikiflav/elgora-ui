@@ -16,6 +16,16 @@ export default {
   "source": "src/data/DataViewField.ts",
   "members": [
     {
+      "name": "type",
+      "type": "\"data\" | \"buttons\" | undefined",
+      "description": "Presentation role. `data` is the default value field; `buttons` renders row actions.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
       "name": "caption",
       "type": "string | undefined",
       "description": "Display label; falls back to `name` when unset.",
@@ -252,6 +262,16 @@ export default {
       "name": "editorButton",
       "type": "EditorButton | undefined",
       "description": "Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
+      "name": "buttons",
+      "type": "readonly DataViewButton<TRow>[] | undefined",
+      "description": "Actions rendered when `type` is `buttons`; action fields never enter value editing.",
       "tags": [],
       "topics": [],
       "optional": true,

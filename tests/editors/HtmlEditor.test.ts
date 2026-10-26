@@ -172,21 +172,23 @@ describe("HtmlEditor DOM selection", () => {
         expect(editor.nativeSelection?.anchorNode).toBe(editor.content);
     });
 
-    it("retains surviving text identities across native splitting and merging", () => {
+    it("normalizes adjacent native text nodes while retaining the surviving identity", () => {
         const editor = create("<p>Hello</p>");
         const first = editor.content.firstChild!.firstChild as Text;
         const originalId = editor.document.children[0].children[0].id;
-        const second = first.splitText(2);
+        first.splitText(2);
         input(editor);
         expect(editor.document.children[0].children[0].id).toBe(originalId);
-        select(second, 2);
-        const splitRange = editor.selection!;
-        expect(splitRange.anchor.nodeId).toBe(editor.document.children[0].children[1].id);
+        expect(editor.document.children[0].children).toHaveLength(1);
+        const merged = editor.content.firstChild!.firstChild as Text;
+        select(merged, 2);
+        const mergedRange = editor.selection!;
+        expect(mergedRange.anchor.nodeId).toBe(originalId);
         editor.content.firstChild!.normalize();
         input(editor);
         expect(editor.document.children[0].children).toHaveLength(1);
         expect(editor.document.children[0].children[0].id).toBe(originalId);
-        expect(editor.restoreSelection(splitRange)).toBe(false);
+        expect(editor.restoreSelection(mergedRange)).toBe(true);
     });
 
     it("retains a detached selection when focus or selection moves outside the editor", () => {

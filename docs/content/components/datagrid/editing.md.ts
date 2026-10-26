@@ -11,6 +11,7 @@ export default function demo(): void {
         { id: 2, description: "Workshop", productId: 2, quantity: 5, delivery: "2026-10-22", approved: true }
     ];
     let nextId = rows.reduce((max, row) => Math.max(max, row.id), 0) + 1;
+    let actionStatus: HTMLElement | undefined;
     const source = new ArrayDataSource(rows, { createRowId: () => nextId++, defaults: () => ({
         description: "", productId: 1, quantity: 1, delivery: "2026-10-20", approved: false
     }) });
@@ -32,13 +33,22 @@ export default function demo(): void {
             { name: "quantity", caption: "Quantity", dataType: "number", width: 100,
                 validate: value => value > 0 ? undefined : "Quantity must be positive." },
             { name: "delivery", caption: "Delivery", dataType: "date", width: 130 },
-            { name: "approved", caption: "Approved", dataType: "boolean", width: 100 }
+            { name: "approved", caption: "Approved", dataType: "boolean", width: 100 },
+            { name: "actions", type: "buttons", caption: "Actions", width: 150, buttons: [
+                { id: "approve", text: "Approve", icon: "ri-check-line", tooltip: "Approve row",
+                    disabled: ({ row }) => !!row?.approved,
+                    onClick: ({ row }) => { actionStatus!.textContent = `Action invoked for ${row?.description ?? "row"}.`; } },
+                { id: "more", icon: "ri-more-2-line", tooltip: "More actions",
+                    onClick: ({ row }) => { actionStatus!.textContent = `More actions for ${row?.description ?? "row"}.`; } }
+            ] }
         ], totalSummary: [{ field: "quantity", summaryType: "sum" }]
     });
     grid.dom.style.height = "250px";
     const root = cdiv({ ui: ["d-flex", "flex-col", "gap-2", "min-w-0"] });
     const status = e("p", { ui: ["m-0", "text-muted", "fs-80"], role: "status" },
         "Add rows or paste into Description. Invalid quantities keep their row pending.");
+    actionStatus = e("p", { ui: ["m-0", "text-muted", "fs-80"], role: "status" },
+        "Action buttons are rendered by the grid.");
     const sessions = e("div", { ariaLabel: "Pending new-row sessions" });
     let busy = false;
     const renderSessions = () => {
@@ -93,7 +103,9 @@ export default function demo(): void {
             "Copy cells from Excel or Sheets, click Description once, then press Ctrl+V / Command+V or choose Paste from the grid’s context menu. Inside an open editor, keyboard paste inserts text into that editor only. Clipboard access from the menu may require browser permission."),
         e("p", { ui: ["m-0", "text-muted", "fs-80"] },
             "Esc: closes an open popup first. Otherwise, clears the active cell’s invalid input and restores its actual value, even when its editor is closed. If the active cell has no error, Esc cancels its entire pending row; in an existing row, it only cancels the current cell edit."),
-        sessions, status
+        e("p", { ui: ["m-0", "text-muted", "fs-80"] },
+            "The Actions column uses type: buttons. Its buttons are rendered inside the grid, stop selection/editing side effects, and receive the row, field and owning grid in their callback context."),
+        sessions, status, actionStatus
     ]);
     root.addCleanup(source.changed.subscribe(() => root.render(renderSessions)));
     root.render(renderSessions);

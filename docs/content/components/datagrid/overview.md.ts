@@ -62,7 +62,30 @@ export default function demo(): void {
       { name: "quantity", caption: "Quantity", dataType: "number", displayFormat: "N0" },
       { name: "unitPrice", caption: "Unit price", dataType: "number", displayFormat: "N2" },
       { name: "totalAmount", caption: "Total amount", dataType: "number", displayFormat: "C2€" },
-      { name: "orderDate", caption: "Order date", dataType: "date" }
+      { name: "orderDate", caption: "Order date", dataType: "date" },
+      {
+        name: "actions",
+        caption: "Actions",
+        type: "buttons",
+        width: 150,
+        buttons: [
+          {
+            id: "inspect",
+            text: "Inspect",
+            icon: "ri-eye-line",
+            appearance: "iconOnly",
+            onClick: ({ row }) => console.info("Inspect order", row)
+          },
+          {
+            id: "more",
+            text: "More actions",
+            icon: "ri-more-2-line",
+            appearance: "iconOnly",
+            ui: "btn-ghost",
+            onClick: ({ row }) => console.info("More order actions", row)
+          }
+        ]
+      }
     ],
     groupSummary: [
       { field: "quantity", summaryType: "sum" },
@@ -72,6 +95,7 @@ export default function demo(): void {
       { field: "quantity", summaryType: "sum" },
       { field: "totalAmount", summaryType: "sum" }
     ],
+    showRowHover: true,
     stickyGroupRows: true
   });
   grid.dom.classList.add("elg-h-100");

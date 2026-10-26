@@ -300,7 +300,7 @@ describe("LookupEditor", () => {
         type(editor, "New");
         await vi.waitFor(() => expect(queries.some(query => query.search === "New")).toBe(true));
         finish({ items, totalCount: 3 });
-        await vi.waitFor(() => expect(editor.dom.querySelector("[role='status']")!.textContent).toBe("1 matches"));
+        await vi.waitFor(() => expect(editor.dom.querySelector("[role='status']")!.textContent).toBe("1 match"));
         expect(queries.find(query => query.search === "Old")!.abortSignal!.aborted).toBe(true);
     });
     it("retains popup dimensions on reopening and optionally omits the resize grip", async () => {

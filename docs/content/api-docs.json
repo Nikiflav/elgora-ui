@@ -3186,6 +3186,16 @@
           "kind": "property"
         },
         {
+          "name": "buttonVisibility",
+          "type": "\"hover\" | \"always\" | undefined",
+          "description": "Action-button visibility. Omit for auto: hover on pointer devices and always on touch devices.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/datagrid/DataGridColumn.ts",
+          "kind": "property"
+        },
+        {
           "name": "resizable",
           "type": "boolean | undefined",
           "description": "Whether the user can resize this column.",
@@ -6082,6 +6092,217 @@
       "definition": "\"string\" | \"number\" | \"boolean\" | \"date\" | \"datetime\" | \"object\""
     },
     {
+      "name": "DataViewButton",
+      "kind": "interface",
+      "type": "DataViewButton<TRow>",
+      "description": "A semantic action rendered by a `type: \"buttons\"` field.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewButton",
+      "source": "src/data/DataViewField.ts",
+      "members": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Stable action identifier, also used as the VNode key.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "text",
+          "type": "string | undefined",
+          "description": "Optional visible label.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "icon",
+          "type": "string | undefined",
+          "description": "Optional Remix Icon class, e.g. `ri-edit-line`.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "description",
+          "type": "string | undefined",
+          "description": "Optional longer explanation used to build the fallback icon-only tooltip.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "tooltip",
+          "type": "string | undefined",
+          "description": "Optional tooltip and accessible label. Falls back to `text`, `description`, then `id`.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "appearance",
+          "type": "DataViewButtonAppearance | undefined",
+          "description": "Controls whether the action shows its icon, text, or both. Defaults to the available content.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "ui",
+          "type": "UiStyle | UiStyle[] | undefined",
+          "description": "Optional typed UI styles; when omitted, action buttons use the `neutral` variant.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "visible",
+          "type": "boolean | ((context: DataViewButtonContext<TRow>) => boolean) | undefined",
+          "description": "Controls whether the button is rendered for this row.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean | ((context: DataViewButtonContext<TRow>) => boolean) | undefined",
+          "description": "Prevents invocation while retaining the button in the layout.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "pressed",
+          "type": "boolean | \"mixed\" | ((context: DataViewButtonContext<TRow>) => boolean | \"mixed\") | undefined",
+          "description": "Optional toggle state exposed through `aria-pressed`.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "onClick",
+          "type": "((context: DataViewButtonContext<TRow>) => void | Promise<void>) | undefined",
+          "description": "Invoked after the host has stopped the event from changing grid/form selection.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "render",
+          "type": "((context: DataViewButtonContext<TRow>) => VNode<any>) | undefined",
+          "description": "Replaces the standard icon/text content while the host still owns the button element.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "DataViewButtonAppearance",
+      "kind": "type",
+      "type": "any",
+      "description": "Visual order used when a data-view action has both an icon and a label.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewButtonAppearance",
+      "source": "src/data/DataViewField.ts",
+      "definition": "\"iconOnly\" | \"textOnly\" | \"iconAndText\" | \"textAndIcon\""
+    },
+    {
+      "name": "DataViewButtonContext",
+      "kind": "interface",
+      "type": "DataViewButtonContext<TRow>",
+      "description": "Context supplied to a field action callback or custom button renderer.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Data",
+      "path": "/api-reference/DataViewButtonContext",
+      "source": "src/data/DataViewField.ts",
+      "members": [
+        {
+          "name": "row",
+          "type": "TRow | undefined",
+          "description": "Business row represented by the action; absent for synthetic/group rows.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "field",
+          "type": "DataViewField<TRow>",
+          "description": "Field that owns the action buttons.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "button",
+          "type": "DataViewButton<TRow>",
+          "description": "Button definition currently being resolved or invoked.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "Current raw field value when the host can resolve one.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "owner",
+          "type": "unknown",
+          "description": "DataForm or DataGrid instance that owns the rendered button.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "DataViewField",
       "kind": "interface",
       "type": "DataViewField<TRow>",
@@ -6098,6 +6319,16 @@
       "path": "/api-reference/DataViewField",
       "source": "src/data/DataViewField.ts",
       "members": [
+        {
+          "name": "type",
+          "type": "\"data\" | \"buttons\" | undefined",
+          "description": "Presentation role. `data` is the default value field; `buttons` renders row actions.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
         {
           "name": "caption",
           "type": "string | undefined",
@@ -6335,6 +6566,16 @@
           "name": "editorButton",
           "type": "EditorButton | undefined",
           "description": "Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
+          "name": "buttons",
+          "type": "readonly DataViewButton<TRow>[] | undefined",
+          "description": "Actions rendered when `type` is `buttons`; action fields never enter value editing.",
           "tags": [],
           "topics": [],
           "optional": true,

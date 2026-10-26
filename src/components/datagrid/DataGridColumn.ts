@@ -26,6 +26,8 @@ export interface DataGridColumn<TRow> extends DataViewField<TRow> {
     width?: number;
     /** Alignment of the grid cell content. */
     textAlign?: "start" | "center" | "end";
+    /** Action-button visibility. Omit for auto: hover on pointer devices and always on touch devices. */
+    buttonVisibility?: "hover" | "always";
     /** Whether the user can resize this column. */
     resizable?: boolean;
     /** Whether the user can reorder this column. */

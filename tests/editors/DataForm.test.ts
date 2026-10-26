@@ -97,4 +97,25 @@ describe("DataForm", () => {
         expect(secondKey.defaultPrevented).toBe(false);
         expect(form.dom.querySelector(".elg-data-form-value-editing")).not.toBeNull();
     });
+
+    it("renders a buttons field without entering value editing", async () => {
+        const calls: any[] = [];
+        const form = new DataForm({ data: { name: "Initial" }, fields: [
+            { name: "name", caption: "Name" },
+            { name: "actions", type: "buttons", caption: "Actions", buttons: [
+                { id: "inspect", text: "Inspect", ui: "btn-ghost", visible: ({ row }) => row?.name === "Initial",
+                    onClick: context => calls.push(context) }
+            ] }
+        ] });
+        owned.push(form); form.mount(document.body);
+        const button = form.dom.querySelector<HTMLButtonElement>(".elg-data-form-action-button")!;
+        expect(button).not.toBeNull();
+        button.click();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(calls).toHaveLength(1);
+        expect(calls[0].field.name).toBe("actions");
+        expect(calls[0].row.name).toBe("Initial");
+        expect(form.dom.querySelector("input, textarea")).toBeNull();
+        expect(button.classList.contains("elg-btn-ghost")).toBe(true);
+    });
 });

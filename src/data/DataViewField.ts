@@ -7,6 +7,8 @@ import { Localization } from "../localization/Localization";
 import type { ValueEditor } from "../components/editors/ValueEditor";
 import type { EditorButton } from "../components/editors/EditorButton";
 import type { LookupEditorOptions, LookupQuery, LookupResult } from "../components/editors/LookupEditor";
+import type { VNode } from "../core/e";
+import type { UiStyle } from "../core/UiStyle";
 
 /** Original source row and field supplied to value conversion and validation. */
 export interface FieldEditContext<TRow> {
@@ -55,6 +57,51 @@ export type DisplayValue = {
     image?: string;
 }
 
+/** Context supplied to a field action callback or custom button renderer. */
+export interface DataViewButtonContext<TRow> {
+    /** Business row represented by the action; absent for synthetic/group rows. */
+    row?: TRow;
+    /** Field that owns the action buttons. */
+    field: DataViewField<TRow>;
+    /** Button definition currently being resolved or invoked. */
+    button: DataViewButton<TRow>;
+    /** Current raw field value when the host can resolve one. */
+    value?: any;
+    /** DataForm or DataGrid instance that owns the rendered button. */
+    owner: unknown;
+}
+
+/** Visual order used when a data-view action has both an icon and a label. */
+export type DataViewButtonAppearance = "iconOnly" | "textOnly" | "iconAndText" | "textAndIcon";
+
+/** A semantic action rendered by a `type: "buttons"` field. */
+export interface DataViewButton<TRow> {
+    /** Stable action identifier, also used as the VNode key. */
+    id: string;
+    /** Optional visible label. */
+    text?: string;
+    /** Optional Remix Icon class, e.g. `ri-edit-line`. */
+    icon?: string;
+    /** Optional longer explanation used to build the fallback icon-only tooltip. */
+    description?: string;
+    /** Optional tooltip and accessible label. Falls back to `text`, `description`, then `id`. */
+    tooltip?: string;
+    /** Controls whether the action shows its icon, text, or both. Defaults to the available content. */
+    appearance?: DataViewButtonAppearance;
+    /** Optional typed UI styles; when omitted, action buttons use the `neutral` variant. */
+    ui?: UiStyle | UiStyle[];
+    /** Controls whether the button is rendered for this row. */
+    visible?: boolean | ((context: DataViewButtonContext<TRow>) => boolean);
+    /** Prevents invocation while retaining the button in the layout. */
+    disabled?: boolean | ((context: DataViewButtonContext<TRow>) => boolean);
+    /** Optional toggle state exposed through `aria-pressed`. */
+    pressed?: boolean | "mixed" | ((context: DataViewButtonContext<TRow>) => boolean | "mixed");
+    /** Invoked after the host has stopped the event from changing grid/form selection. */
+    onClick?: (context: DataViewButtonContext<TRow>) => void | Promise<void>;
+    /** Replaces the standard icon/text content while the host still owns the button element. */
+    render?: (context: DataViewButtonContext<TRow>) => VNode<any>;
+}
+
 /** Contract for a component hosting data-bound UI (e.g. a grid) that can be told to reload. */
 export interface DataComponent {
     supportsFilter?: boolean;
@@ -85,6 +132,8 @@ export type DataCell<TRow> = {
  * };
  */
 export interface DataViewField<TRow> extends DataField<TRow> {
+    /** Presentation role. `data` is the default value field; `buttons` renders row actions. */
+    type?: "data" | "buttons";
     /** Display label; falls back to `name` when unset. */
     caption?: string;
     /** Field description, available to consumers as a tooltip or help text. */
@@ -117,6 +166,8 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     lookup?: FieldLookup<TRow>;
     /** Optional picker trigger for a custom PopoverEditor; built-in editors supply their own defaults. */
     editorButton?: EditorButton;
+    /** Actions rendered when `type` is `buttons`; action fields never enter value editing. */
+    buttons?: readonly DataViewButton<TRow>[];
     /** Creates a specialized editor. Example: ctx => new ToggleEditor({ value: ctx.value, onCommit: ctx.onCommit }). */
     createEditor?(context: FieldEditorContext<TRow>): ValueEditor<any>;
 }
@@ -126,6 +177,27 @@ export class DataViewFieldUtils {
     private static readonly displayFormatters = new WeakMap<object, {
         pattern: string; locale?: string; type: DataType; formatter: NumberFormatter | DateFormatter;
     }>();
+
+    /** Resolves the visible action label used when a button has no explicit text. */
+    static getButtonText<TRow>(button: DataViewButton<TRow>): string {
+        return button.text ?? button.id;
+    }
+
+    /**
+     * Resolves the accessible label and icon-only tooltip for an action.
+     * When a description exists, it is presented as `text: description`.
+     */
+    static getButtonLabel<TRow>(button: DataViewButton<TRow>): string {
+        if (button.tooltip) return button.tooltip;
+        const text = DataViewFieldUtils.getButtonText(button);
+        return button.description ? `${text}: ${button.description}` : text;
+    }
+
+    /** Uses the explicit appearance, otherwise applies the host's requested default. */
+    static getButtonAppearance<TRow>(button: DataViewButton<TRow>, defaultAppearance: DataViewButtonAppearance = "iconAndText"): DataViewButtonAppearance {
+        if (button.appearance) return button.appearance;
+        return defaultAppearance;
+    }
 
     /** Formats a raw display value without row-dependent labels. Null/undefined become empty text. */
     static formatDisplayValue<TRow>(field: DataViewField<TRow>, value: any, inheritedLocale?: string): string {
@@ -181,6 +253,8 @@ export class DataViewFieldUtils {
 
     static async getValue<TRow>(col: DataViewField<TRow>, row: TRow): Promise<any> {
 
+        if (col.type === "buttons") return undefined;
+
         if (col.getValue)
             return await col.getValue(row);
 
@@ -190,6 +264,7 @@ export class DataViewFieldUtils {
     static async getText<TRow>(col: DataViewField<TRow>, row: TRow, inheritedLocale?: string): Promise<string> {
 
         try {
+            if (col.type === "buttons") return "";
             if (col.getText)
                 return await col.getText(row);
             const value = await DataViewFieldUtils.getValue(col, row);
