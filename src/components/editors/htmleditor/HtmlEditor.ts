@@ -88,6 +88,7 @@ export class HtmlEditor extends ValueEditor<string> {
             this.inspector = new HtmlEditorInspector(this.surface, this.messages, this.commandRegistry,
                 { locale: this.locale, localization: options.localization });
             this.inspector.mount(body);
+            this.selectionOverlay.connectInspector(this.inspector.dom, () => this.inspector!.inspectedElements);
             body.classList.add("elg-html-editor-with-inspector");
         }
         this.baselineHtml = this.html;

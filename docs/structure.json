@@ -9,6 +9,7 @@
   ],
   "categories": [
     { "id": "editors", "group": "components", "title": "Value editors", "order": 10 },
+    { "id": "forms", "group": "components", "title": "DataForm", "order": 12 },
     { "id": "menus", "group": "components", "title": "Popovers and menus", "order": 30 },
     { "id": "navigation", "group": "components", "title": "Navigation", "order": 40 },
     { "id": "scrolling", "group": "components", "title": "Scrolling and lists", "order": 50 },

@@ -32,7 +32,7 @@ export default {
     },
     {
       "name": "marks",
-      "type": "{ bold?: boolean; italic?: boolean; } | undefined",
+      "type": "{ bold?: boolean; italic?: boolean; styles?: Partial<Record<\"color\" | \"background-color\" | \"font-size\", string>>; } | undefined",
       "description": "Explicit typing-format overrides at a collapsed caret.",
       "tags": [],
       "topics": [],

@@ -11,6 +11,16 @@ export default {
   "source": "src/components/dataform/DataForm.ts",
   "members": [
     {
+      "name": "editEnded",
+      "type": "ObservableEvent<void>",
+      "description": "Emitted after an accepted or cancelled editor has been disposed.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/dataform/DataForm.ts",
+      "kind": "property"
+    },
+    {
       "name": "value",
       "type": "TRow",
       "description": "Current plain-object draft or the source-owned DataRow.",
@@ -19,6 +29,32 @@ export default {
       "optional": false,
       "source": "src/components/dataform/DataForm.ts",
       "kind": "property"
+    },
+    {
+      "name": "isEditing",
+      "type": "boolean",
+      "description": "Whether a field editor is currently accepting or cancelling a value.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/dataform/DataForm.ts",
+      "kind": "property"
+    },
+    {
+      "name": "getGroupState",
+      "type": "() => ReadonlyMap<string, boolean>",
+      "description": "Snapshot of current disclosure states, suitable for a replacement form's groupState option.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/dataform/DataForm.ts",
+      "parameters": [],
+      "returns": {
+        "type": "ReadonlyMap<string, boolean>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => ReadonlyMap<string, boolean>"
     },
     {
       "name": "finishEdit",

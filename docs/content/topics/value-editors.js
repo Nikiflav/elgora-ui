@@ -7,7 +7,7 @@ export default {
   "parent": "editors",
   "order": 10,
   "description": "Explore value editors and their shared validation and asynchronous acceptance lifecycle.",
-  "prev": "/docs",
+  "prev": "/components/data-form",
   "next": "/components/value-editors/lifecycle",
   "toc": true,
   "api": [],

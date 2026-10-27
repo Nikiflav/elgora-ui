@@ -7,7 +7,7 @@ export default {
   "order": 20,
   "description": "Edit rich-text HTML as a draft and let the host accept or discard it.",
   "prev": "/components/date-picker",
-  "next": "/components/filter-editor",
+  "next": "/components/data-form/layout",
   "toc": true,
   "api": [
     "HtmlEditor",

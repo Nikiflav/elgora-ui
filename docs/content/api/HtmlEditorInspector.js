@@ -11,6 +11,16 @@ export default {
   "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
   "members": [
     {
+      "name": "inspectedElements",
+      "type": "readonly string[]",
+      "description": "Current property targets, derived from the remembered editor selection.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "kind": "property"
+    },
+    {
       "name": "update",
       "type": "() => void",
       "description": "Updates labels/availability without cloning the document or moving DOM focus.",

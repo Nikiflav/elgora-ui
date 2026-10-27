@@ -7,6 +7,7 @@ import { deleteHtmlEditorRange } from "./HtmlEditorRange";
 
 /** Operations currently supported by the rich-text command layer. */
 export type HtmlEditorCommand =
+    | { type: "textStyle"; property: "color" | "background-color" | "font-size"; value: string }
     | { type: "insertText"; text: string }
     | { type: "insertHtml"; html: string }
     | { type: "deleteBackward" | "deleteForward" | "insertParagraph" | "insertLineBreak" | "indent" | "outdent" | "bold" | "italic" | "undo" | "redo" };
@@ -16,7 +17,9 @@ export interface HtmlEditorState {
     document: HtmlEditorDocument;
     selection?: HtmlEditorSelectionState;
     /** Explicit typing-format overrides at a collapsed caret. */
-    marks?: { bold?: boolean; italic?: boolean };
+    marks?: { bold?: boolean; italic?: boolean;
+        /** Explicit text styles for subsequent typing; empty values remove inline overrides. */
+        styles?: Partial<Record<"color" | "background-color" | "font-size", string>> };
 }
 
 /** Aggregate formatting state used by toolbar and menu controls. */
@@ -117,6 +120,40 @@ function formattingSelection(document: HtmlEditorDocument, rootId: string, selec
         to: block === (reversed ? anchorScope.block : focusScope.block) ? (reversed ? anchorScope.offset : focusScope.offset) : size(block)
     }));
     return { document: prepared, selection: { anchor, focus }, collapsed, ranges, reversed };
+}
+
+/** Reads the same text fragments that textStyle modifies; undefined denotes inherited/default styling. */
+export function getHtmlEditorTextStyleValues(document: HtmlEditorDocument, rootId: string,
+    selection: HtmlEditorSelectionState | undefined, property: string, marks?: HtmlEditorState["marks"]): (string | undefined)[] {
+    if (!selection) return [];
+    let next = 0;
+    const prepared = formattingSelection(document, rootId, selection, () => `style-read-${next++}`);
+    if (!prepared) return [];
+    if (prepared.collapsed) {
+        const override = marks?.styles?.[property as "color" | "background-color" | "font-size"];
+        if (override !== undefined) return [override || undefined];
+        const location = find(prepared.document, prepared.selection.anchor.nodeId);
+        if (!location) return [];
+        let value: string | undefined;
+        for (const parent of [...location.ancestors, ...(location.node.type === "element" ? [location.node] : [])])
+            value = [...parent.styles].reverse().find(style => style.name === property)?.value ?? value;
+        return [value];
+    }
+    const values: (string | undefined)[] = [];
+    const visit = (node: HtmlEditorNode, inherited?: string): void => {
+        if (node.type === "text") { if (node.text) values.push(inherited); return; }
+        const value = [...node.styles].reverse().find(style => style.name === property)?.value ?? inherited;
+        node.children.forEach(child => visit(child, value));
+    };
+    for (const range of prepared.ranges) {
+        const location = find(prepared.document, range.block.id);
+        let inherited: string | undefined;
+        for (const parent of [...location?.ancestors ?? [], range.block])
+            inherited = [...parent.styles].reverse().find(style => style.name === property)?.value ?? inherited;
+        slice(range.block.children, range.from, range.to, false, () => `style-piece-${next++}`)
+            .forEach(node => visit(node, inherited));
+    }
+    return values;
 }
 
 /** Computes formatting state from the same selected inline fragments used by formatting commands. */
@@ -350,6 +387,36 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
     if (!validPosition(state.document, rootId, state.selection.anchor) || !validPosition(state.document, rootId, state.selection.focus)) return;
     const document = structuredClone(state.document);
     let selection = prepareEditingSelection(document, state.selection, id);
+    if (command.type === "textStyle") {
+        const formatting = formattingSelection(document, rootId, selection, id);
+        if (!formatting) return;
+        if (formatting.collapsed) return { document, selection, marks: { ...state.marks,
+            styles: { ...state.marks?.styles, [command.property]: command.value } } };
+        if (!formatting.ranges.some(range => range.to > range.from)) return;
+        const styleText = (node: HtmlEditorNode): HtmlEditorNode[] => {
+            if (node.type === "text") {
+                if (!command.value) return [node];
+                const wrapper = element("span", id, [node]);
+                wrapper.styles = [{ name: command.property, value: command.value }];
+                return [wrapper];
+            }
+            if (isAtomic(node)) return [node];
+            node.styles = node.styles.filter(style => style.name !== command.property);
+            node.children = node.children.flatMap(styleText);
+            return node.tag === "span" && !node.styles.length && !node.classes.length && !Object.keys(node.attributes).length
+                ? node.children : [node];
+        };
+        for (const range of formatting.ranges) {
+            const prefix = slice(range.block.children, 0, range.from, false, id);
+            const middle = slice(range.block.children, range.from, range.to, true, id).flatMap(styleText);
+            const suffix = slice(range.block.children, range.to, size(range.block), true, id);
+            range.block.children = [...prefix, ...middle, ...suffix];
+        }
+        const first = formatting.ranges[0], last = formatting.ranges[formatting.ranges.length - 1];
+        const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
+        return { document: formatting.document, selection: { anchor: formatting.reversed ? right : left,
+            focus: formatting.reversed ? left : right }, marks: state.marks };
+    }
     const pre = editPre(document, selection, command, id);
     if (pre) return { ...pre, marks: state.marks };
     // Indentation is currently defined only inside one preformatted area.
@@ -468,7 +535,13 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         if (location?.node.type === "text") {
             const tags = location.ancestors.map(node => node.tag);
             const matches = (state.marks?.bold === undefined || state.marks.bold === tags.some(tag => ["strong", "b"].includes(tag)))
-                && (state.marks?.italic === undefined || state.marks.italic === tags.some(tag => ["em", "i"].includes(tag)));
+                && (state.marks?.italic === undefined || state.marks.italic === tags.some(tag => ["em", "i"].includes(tag)))
+                && Object.entries(state.marks?.styles ?? {}).every(([property, value]) => {
+                    let inherited: string | undefined;
+                    for (const parent of location.ancestors)
+                        inherited = [...parent.styles].reverse().find(style => style.name === property)?.value ?? inherited;
+                    return (inherited ?? "") === value;
+                });
             if (matches) {
                 const from = Math.min(selection.anchor.offset, selection.focus.offset), to = Math.max(selection.anchor.offset, selection.focus.offset);
                 location.node.text = (location.node.text ?? "").slice(0, from) + command.text + (location.node.text ?? "").slice(to);
@@ -629,11 +702,19 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         const wrappers = inline.slice(blockIndex + 1).filter(node => !(state.marks?.bold === false && ["strong", "b"].includes(node.tag)) && !(state.marks?.italic === false && ["em", "i"].includes(node.tag)));
         for (const wrapper of wrappers.reverse()) {
             const copy = { ...structuredClone(wrapper), id: id(), children: inserted };
+            copy.styles = copy.styles.filter(style => state.marks?.styles?.[style.name as "color" | "background-color" | "font-size"] === undefined);
             delete copy.attributes.id;
             inserted = [copy];
         }
         if (state.marks?.bold && !wrappers.some(node => ["strong", "b"].includes(node.tag))) inserted = [element("strong", id, inserted)];
         if (state.marks?.italic && !wrappers.some(node => ["em", "i"].includes(node.tag))) inserted = [element("em", id, inserted)];
+        const styles = Object.entries(state.marks?.styles ?? {}).filter(([, value]) => !!value)
+            .map(([name, value]) => ({ name, value: value! }));
+        if (styles.length) {
+            const wrapper = element("span", id, inserted);
+            wrapper.styles = styles;
+            inserted = [wrapper];
+        }
     } else if (command.type === "insertLineBreak") inserted = [element("br", id)];
     const caret = replaceScopeRange(start, end, before, inserted, after);
     return { document, selection: { anchor: caret, focus: caret }, marks: state.marks };

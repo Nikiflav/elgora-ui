@@ -6,7 +6,7 @@ import { ObservableEvent } from "../../../core/ElgoraUI";
 import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorSelectionState, HtmlEditorStyle } from "./HtmlEditorModel";
 import { HtmlEditorDom } from "./HtmlEditorDom";
 import { readHtmlEditorSelection, restoreHtmlEditorSelection } from "./HtmlEditorSelection";
-import { applyHtmlEditorCommand, getHtmlEditorMarkState, type HtmlEditorCommand, type HtmlEditorMarkState, type HtmlEditorState } from "./HtmlEditorCommands";
+import { applyHtmlEditorCommand, getHtmlEditorMarkState, getHtmlEditorTextStyleValues, type HtmlEditorCommand, type HtmlEditorMarkState, type HtmlEditorState } from "./HtmlEditorCommands";
 import { normalizeHtmlEditorState } from "./HtmlEditorNormalize";
 import { extractHtmlEditorRange, getHtmlEditorRangeCoverage, type HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { htmlEditorFragmentText } from "./HtmlEditorClipboard";
@@ -71,6 +71,7 @@ export class HtmlEditorSurface extends Component {
     private nativeBefore?: HtmlEditorState;
     private nativeInputTimer?: ReturnType<typeof setTimeout>;
     private typingMarks?: HtmlEditorState["marks"];
+    private modelVersionValue = 0;
 
     /** Creates a standalone surface; the host owns persistence and any accepted baseline. */
     constructor(options: HtmlEditorSurfaceOptions) {
@@ -163,6 +164,12 @@ export class HtmlEditorSurface extends Component {
 
     /** Detached snapshot; mutating it does not modify the editor. */
     get document(): HtmlEditorDocument { return structuredClone(this.documentModel); }
+    /**
+     * Monotonic model generation for pinned inspector edits. Replacement, Undo/Redo
+     * and accepted transactions advance it before selection/document events fire.
+     * It is runtime metadata, never serialized or restored from an Undo snapshot.
+     */
+    get modelVersion(): number { return this.modelVersionValue; }
     /** Finds an authored element without cloning the document; callers must not mutate it. */
     findElement(nodeId: string | undefined): HtmlEditorElement | undefined {
         if (!nodeId) return;
@@ -184,8 +191,12 @@ export class HtmlEditorSurface extends Component {
     getMarkState(mark: "bold" | "italic", selection: HtmlEditorSelectionState | undefined = this.selection): HtmlEditorMarkState {
         return getHtmlEditorMarkState(this.documentModel, this.domMap.rootId, selection, mark, this.typingMarks);
     }
+    /** Reads authored text style values over the same fragments used by text formatting. */
+    getTextStyleValues(property: string, selection = this.selection): (string | undefined)[] {
+        return getHtmlEditorTextStyleValues(this.documentModel, this.domMap.rootId, selection, property, this.typingMarks);
+    }
     /** Selects a complete model node while retaining the same model/history contract as text selection. */
-    selectNode(nodeId: string | undefined): boolean {
+    selectNode(nodeId: string | undefined, extend = false): boolean {
         if (!nodeId || this.disposed.Value) return false;
         let result: HtmlEditorSelectionState | undefined;
         const visit = (children: HtmlEditorDocument["children"], parentId: string): boolean => {
@@ -195,7 +206,26 @@ export class HtmlEditorSurface extends Component {
         };
         visit(this.documentModel.children, this.domMap.rootId);
         if (!result) return false;
-        this.setSelectedNodes([nodeId]);
+        if (extend && this.selection) {
+            const rangeFor = (state: HtmlEditorSelectionState) => {
+                const a = this.domMap.resolve(state.anchor), b = this.domMap.resolve(state.focus);
+                if (!a || !b) return undefined;
+                const range = this.content.ownerDocument.createRange();
+                range.setStart(a.node, a.offset); range.collapse(true);
+                const end = this.content.ownerDocument.createRange();
+                end.setStart(b.node, b.offset); end.collapse(true);
+                if (range.compareBoundaryPoints(0, end) <= 0) range.setEnd(b.node, b.offset);
+                else { range.setStart(b.node, b.offset); range.setEnd(a.node, a.offset); }
+                return range;
+            };
+            const current = rangeFor(this.selection), next = rangeFor(result);
+            if (current && next) {
+                if (current.compareBoundaryPoints(0, next) < 0) next.setStart(current.startContainer, current.startOffset);
+                if (current.compareBoundaryPoints(2, next) > 0) next.setEnd(current.endContainer, current.endOffset);
+                result = { anchor: this.domMap.position(next.startContainer, next.startOffset)!,
+                    focus: this.domMap.position(next.endContainer, next.endOffset)! };
+            }
+        }
         // Keep the established atomic-node contract: image selection is also
         // represented as a complete model range for coverage and commands.
         return this.restoreSelection(result);
@@ -216,12 +246,20 @@ export class HtmlEditorSurface extends Component {
     }
     /** Applies authored element properties as one undoable inspector transaction. */
     updateElement(nodeId: string, patch: Partial<Pick<HtmlEditorElement, "tag" | "classes" | "styles" | "attributes">>): boolean {
+        return this.updateElements([{ nodeId, patch }]);
+    }
+    /** Applies several authored element patches in one undoable inspector transaction. */
+    updateElements(updates: readonly { nodeId: string; patch: Partial<Pick<HtmlEditorElement, "tag" | "classes" | "styles" | "attributes">> }[]): boolean {
         if (!this.editable) return false;
+        if (!updates.length) return false;
+        if (updates.some(update => !this.findElement(update.nodeId))) return false;
         const before = this.snapshot();
         const document = structuredClone(before.document);
         let changed = false;
+        const patches = new Map(updates.map(update => [update.nodeId, update.patch]));
         const visit = (nodes: HtmlEditorNode[]): void => nodes.forEach(node => {
-            if (node.id === nodeId && node.type === "element") {
+            const patch = node.type === "element" ? patches.get(node.id) : undefined;
+            if (patch && node.type === "element") {
                 if (patch.tag !== undefined && patch.tag !== node.tag) { node.tag = patch.tag; changed = true; }
                 if (patch.classes !== undefined && JSON.stringify(patch.classes) !== JSON.stringify(node.classes)) { node.classes = [...patch.classes]; changed = true; }
                 if (patch.styles !== undefined && JSON.stringify(patch.styles) !== JSON.stringify(node.styles)) { node.styles = structuredClone(patch.styles); changed = true; }
@@ -230,7 +268,7 @@ export class HtmlEditorSurface extends Component {
             if (node.type === "element") visit(node.children);
         });
         visit(document.children);
-        if (!changed) return false;
+        if (!changed) return true;
         this.acceptTransaction(before, { document, selection: before.selection });
         return true;
     }
@@ -308,8 +346,8 @@ export class HtmlEditorSurface extends Component {
         return this.content;
     }
     /** Returns viewport rectangles for independently selected structural nodes. */
-    selectedNodeClientRects(): { nodeId: string; rect: DOMRect }[] {
-        return this.selectedNodeIds.flatMap(nodeId => {
+    selectedNodeClientRects(nodeIds: readonly string[] = this.selectedNodeIds): { nodeId: string; rect: DOMRect }[] {
+        return nodeIds.flatMap(nodeId => {
             const node = this.domMap.resolve({ nodeId, offset: 0 })?.node;
             if (!(node instanceof Element)) return [];
             const rect = node.getBoundingClientRect();
@@ -328,7 +366,9 @@ export class HtmlEditorSurface extends Component {
         const addGridItems = (grid: Element) => {
             for (const child of Array.from(grid.children)) add(child, "grid-cell");
         };
-        this.selectedNodeIds.forEach(nodeId => {
+        const state = this.selectionState;
+        const collapsed = state && state.anchor.nodeId === state.focus.nodeId && state.anchor.offset === state.focus.offset;
+        (collapsed ? [] : this.selectedNodeIds).forEach(nodeId => {
             const node = this.domMap.resolve({ nodeId, offset: 0 })?.node;
             if (node instanceof Element) {
                 add(node, "selected");
@@ -396,6 +436,7 @@ export class HtmlEditorSurface extends Component {
     /** Replaces content and resets history/runtime bookmarks without emitting user input. */
     setHtml(html: string): void {
         if (this.disposed.Value) return;
+        this.modelVersionValue++;
         this.documentModel = this.parser.parse(html);
         this.setSelectedNodes([]);
         this.domMap.reset();
@@ -490,6 +531,7 @@ export class HtmlEditorSurface extends Component {
             this.redoStack = [];
         }
         this.documentModel = after.document;
+        this.modelVersionValue++;
         this.renderModel(after.selection, focusEditor);
         this.typingMarks = after.marks;
         if (changed) this.notifyInput();
@@ -502,6 +544,7 @@ export class HtmlEditorSurface extends Component {
         if (!state) return false;
         (redo ? this.undoStack : this.redoStack).push(this.snapshot());
         this.documentModel = state.document;
+        this.modelVersionValue++;
         this.renderModel(state.selection, true);
         this.typingMarks = state.marks;
         this.notifyInput();
@@ -599,6 +642,11 @@ export class HtmlEditorSurface extends Component {
         if (JSON.stringify(state) === JSON.stringify(this.selectionState)) return;
         this.typingMarks = undefined;
         this.selectionState = state ? structuredClone(state) : undefined;
+        const coverage = this.getSelectionCoverage(state);
+        this.setSelectedNodes([...coverage.keys()].filter(id => {
+            const node = this.domMap.resolve({ nodeId: id, offset: 0 })?.node;
+            return node instanceof Element;
+        }));
         this.selectionChanged.invoke(state ? structuredClone(state) : undefined);
     }
 

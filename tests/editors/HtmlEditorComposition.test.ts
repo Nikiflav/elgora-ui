@@ -41,70 +41,132 @@ afterEach(async () => {
 });
 
 describe("HtmlEditor composition", () => {
-    it("shows only three nearest parents, without duplicating the selector target", () => {
-        const editor = create({ value: "<article><section><div><p><strong>Text</strong></p></div></section></article>" });
-        select(editor, editor.content.querySelector("strong")!.firstChild!, 1, 3);
-        const saved = editor.selection, html = editor.html;
-        const nav = editor.inspector!.dom.querySelector<HTMLElement>(".elg-html-editor-breadcrumb")!;
-        expect(nav.hidden).toBe(false);
-        expect([...nav.querySelectorAll("button")].map(button => button.textContent)).toEqual(["…", "section", "div", "p"]);
-        expect(nav.textContent).not.toContain("strong");
-        nav.querySelectorAll<HTMLButtonElement>("button")[3].click();
-        const selector = editor.inspector!.dom.querySelector<HTMLButtonElement>(".elg-html-editor-node-selector")!;
-        expect(selector.querySelector("code")!.textContent).toBe("<p>");
-        expect([...nav.querySelectorAll("button")].map(button => button.textContent)).toEqual(["article", "section", "div"]);
-        expect(editor.selection).toEqual(saved); expect(editor.html).toBe(html);
-        expect(editor.modified).toBe(false); expect(editor.canUndo).toBe(false);
-        expect(document.activeElement).toBe(selector);
+    it("selects the whole caret element from the selector circle without opening the tree, then unbolds it", async () => {
+        const editor = create({ value: "<p>Before <strong>Bold text</strong> after</p>" });
+        select(editor, editor.content.querySelector("strong")!.firstChild!, 3);
+        const inspector = editor.inspector!.dom;
+        expect(inspector.querySelector(".elg-html-editor-breadcrumb")).toBeNull();
+        const row = inspector.querySelector<HTMLElement>(".elg-html-editor-selector-row")!;
+        expect(row.querySelector("code")!.textContent).toBe("<strong>");
+        const circle = row.querySelector<HTMLButtonElement>(".elg-html-editor-node-coverage")!;
+        expect(circle.hidden).toBe(false);
+        circle.click();
+        expect(editor.surface.getSelectionCoverage().get(editor.document.children[0].type === "element"
+            ? editor.document.children[0].children[1].id : "")).toBe("full");
+        expect(row.dataset.htmlEditorCoverage).toBe("full");
+        expect(document.querySelector(".elg-html-editor-elements-popup")).toBeNull();
+        expect(editor.execute({ type: "bold" })).toBe(true);
+        expect(editor.html).toBe("<p>Before Bold text after</p>");
+        inspector.querySelector<HTMLButtonElement>(".elg-html-editor-node-selector")!.click();
+        await frame();
+        expect(document.querySelector(".elg-html-editor-elements-popup")).not.toBeNull();
     });
-
-    it.each([false, true])("includes the common parent for Mixed ranges: backwards=%s", backwards => {
-        const editor = create({ value: "<section><div><p><strong>ABC</strong><em>DEF</em></p></div></section>" });
-        const a = editor.content.querySelector("strong")!.firstChild!, b = editor.content.querySelector("em")!.firstChild!;
-        document.getSelection()!.setBaseAndExtent(backwards ? b : a, backwards ? 2 : 1, backwards ? a : b, backwards ? 1 : 2);
-        document.dispatchEvent(new Event("selectionchange"));
-        expect(editor.inspector!.dom.querySelector(".elg-html-editor-node-selector")!.textContent).toBe("Mixed");
-        const nav = editor.inspector!.dom.querySelector(".elg-html-editor-breadcrumb")!;
-        expect([...nav.querySelectorAll("button")].map(button => button.textContent)).toEqual(["section", "div", "p"]);
-    });
-
-    it("hides the breadcrumb for root-level targets and ranges with no authored common parent", () => {
-        const editor = create(); select(editor);
-        const nav = editor.inspector!.dom.querySelector<HTMLElement>(".elg-html-editor-breadcrumb")!;
-        expect(nav.hidden).toBe(true);
+    it("hides the selector circle for a Mixed range", () => {
+        const editor = create();
         const paragraphs = editor.content.querySelectorAll("p");
         document.getSelection()!.setBaseAndExtent(paragraphs[0].firstChild!, 1, paragraphs[1].firstChild!, 2);
         document.dispatchEvent(new Event("selectionchange"));
-        expect(editor.inspector!.dom.querySelector(".elg-html-editor-node-selector")!.textContent).toBe("Mixed");
-        expect(nav.hidden).toBe(true);
+        expect(editor.inspector!.dom.querySelector<HTMLButtonElement>(".elg-html-editor-selector-row > .elg-html-editor-node-coverage")!.hidden).toBe(true);
     });
-
-    it("opens earlier ancestors, returns focus on Escape and clears stale paths/popups", async () => {
-        const editor = create({ value: "<article><section><div><p><strong>Text</strong></p></div></section></article>" });
-        select(editor, editor.content.querySelector("strong")!.firstChild!, 1);
-        const nav = editor.inspector!.dom.querySelector<HTMLElement>(".elg-html-editor-breadcrumb")!;
-        const more = nav.querySelector<HTMLButtonElement>("button")!;
-        more.click();
-        const popup = document.querySelector<HTMLElement>(".elg-html-editor-ancestor-popup")!;
-        expect(popup.matches(":popover-open")).toBe(true);
-        expect(popup.textContent).toContain("<article>");
-        popup.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
-        expect(document.activeElement).toBe(more);
-        expect(popup.matches(":popover-open")).toBe(false);
-        // An unchanged path must preserve the focused breadcrumb control.
-        editor.reportError("Example error");
-        expect(nav.querySelector("button")).toBe(more); expect(document.activeElement).toBe(more);
+    it("keeps the inspection overlay visible when a menu button preserves surface focus", async () => {
+        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 100, 30));
+        const editor = create();
+        select(editor, editor.content.querySelector("p")!.firstChild!, 2);
         const saved = editor.selection;
-        more.click(); popup.querySelector<HTMLButtonElement>("button")!.click();
-        expect(editor.inspector!.dom.querySelector(".elg-html-editor-node-selector code")!.textContent).toBe("<article>");
-        expect(nav.hidden).toBe(true); expect(editor.selection).toEqual(saved);
-        expect(editor.modified).toBe(false); expect(editor.canUndo).toBe(false);
-        select(editor, editor.content.querySelector("strong")!.firstChild!, 0);
-        nav.querySelector<HTMLButtonElement>("button")!.click();
-        editor.setHtml("<p>Replacement</p>");
-        expect(nav.hidden).toBe(true); expect(popup.matches(":popover-open")).toBe(false);
-        editor.dispose(); await frame();
-        expect(document.querySelector(".elg-html-editor-ancestor-popup")).toBeNull();
+        const button = editor.inspector!.dom.querySelector<HTMLButtonElement>('[data-field="block.heading"] button')!;
+        button.click();
+        await frame();
+        expect(editor.dom.querySelector('[data-inspection-target="true"]')).not.toBeNull();
+        expect(editor.selection).toEqual(saved);
+        const menu = document.querySelector<HTMLElement>('[role="menu"]')!;
+        menu.querySelector<HTMLElement>('button')!.focus();
+        await frame();
+        expect(editor.dom.querySelector('[data-inspection-target="true"]')).not.toBeNull();
+        editor.content.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+        await frame();
+        expect(editor.dom.querySelector('[data-inspection-target="true"]')).toBeNull();
+    });
+    it("reads caret styles and changes only subsequent typing, resetting overrides on caret movement", () => {
+        const editor = create({ value: '<p><span style="font-size: 150%; color: red">Hello</span> plain</p>' });
+        select(editor, editor.content.querySelector("span")!.firstChild!, 2);
+        expect(editor.surface.getTextStyleValues("font-size")).toEqual(["150%"]);
+        expect(editor.surface.getTextStyleValues("color")).toEqual(["red"]);
+        const before = editor.html;
+        expect(editor.execute({ type: "textStyle", property: "font-size", value: "200%" })).toBe(true);
+        expect(editor.html).toBe(before);
+        expect(editor.canUndo).toBe(false);
+        expect(editor.surface.getTextStyleValues("font-size")).toEqual(["200%"]);
+        expect(editor.execute({ type: "insertText", text: "X" })).toBe(true);
+        const inserted = [...editor.content.querySelectorAll("span")].find(span => span.textContent === "X")!;
+        expect(inserted.style.fontSize).toBe("200%");
+        expect(editor.content.textContent).toBe("HeXllo plain");
+        select(editor, editor.content.querySelector("p")!.lastChild!, 2);
+        expect(editor.surface.getTextStyleValues("font-size")).toEqual([undefined]);
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.html).toBe(before);
+    });
+    it("styles selected text across paragraphs without styling the blocks", () => {
+        const editor = create({ value: "<p>First word</p><p>Second word</p>" });
+        const paragraphs = editor.content.querySelectorAll("p");
+        document.getSelection()!.setBaseAndExtent(paragraphs[0].firstChild!, 6, paragraphs[1].firstChild!, 6);
+        document.dispatchEvent(new Event("selectionchange"));
+        const before = editor.html;
+        expect(editor.execute({ type: "textStyle", property: "color", value: "red" })).toBe(true);
+        expect(editor.content.querySelectorAll("p[style]")).toHaveLength(0);
+        expect([...editor.content.querySelectorAll("span")].map(span => span.textContent)).toEqual(["word", "Second"]);
+        expect(editor.surface.getTextStyleValues("color")).toEqual(["red", "red"]);
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.html).toBe(before);
+    });
+    it("opens a Basic choice menu in one click and applies its choice with undo", async () => {
+        const editor = create();
+        select(editor);
+        editor.inspector!.dom.querySelector<HTMLButtonElement>('[data-field="block.heading"] button')!.click();
+        await frame();
+        const menu = document.querySelector<HTMLElement>('[role="menu"]')!;
+        expect(menu).not.toBeNull();
+        const heading = [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]')]
+            .find(item => item.textContent?.includes("Heading 2"))!;
+        expect(heading).toBeDefined();
+        heading.click();
+        await frame();
+        expect(editor.html).toContain("<h2>Hello</h2>");
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.html).toContain("<p>Hello</p>");
+    });
+    it("outlines the caret property target while inspector controls have focus without extending selection", async () => {
+        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 100, 30));
+        const editor = create();
+        select(editor, editor.content.querySelector("p")!.firstChild!, 2);
+        const saved = editor.selection;
+        const field = editor.inspector!.dom.querySelector<HTMLElement>('[data-field="block.heading"] button')!;
+        field.focus();
+        await frame();
+        const outline = '.elg-html-editor-container-selection-rect[data-html-editor-node-id="' + editor.document.children[0].id + '"]';
+        expect(editor.dom.querySelector(outline)).not.toBeNull();
+        expect(editor.selection).toEqual(saved);
+        editor.content.focus();
+        editor.content.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+        await frame();
+        expect(editor.dom.querySelector(outline)).toBeNull();
+        expect(editor.selection).toEqual(saved);
+    });
+    it("updates common element fields from surface selection and keeps text commands during tree inspection", async () => {
+        const editor = create();
+        select(editor);
+        expect(editor.inspector!.dom.querySelector('[data-field="block.heading"]')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="bold"]')).not.toBeNull();
+        const paragraphs = editor.content.querySelectorAll("p");
+        document.getSelection()!.setBaseAndExtent(paragraphs[0].firstChild!, 1, paragraphs[1].firstChild!, 2);
+        document.dispatchEvent(new Event("selectionchange"));
+        expect(editor.inspector!.dom.querySelector('[data-field="block.align"]')).not.toBeNull();
+        expect([...editor.inspector!.dom.querySelectorAll<HTMLElement>("details[data-group]")]
+            .map(section => section.dataset.group)).toEqual(["format", "appearance", "paragraph"]);
+        editor.surface.setSelectedNodes([editor.surface.document.children[1].id]);
+        expect(editor.inspector!.dom.querySelector('[data-field="bold"]')).not.toBeNull();
+        select(editor, paragraphs[0].firstChild!, 1);
+        expect(editor.inspector!.dom.querySelector('[data-field="block.heading"]')).not.toBeNull();
+        await frame();
     });
 
     it.each([false, true])("shows Mixed and shared full/partial coverage across table and list: backwards=%s", async backwards => {
@@ -455,7 +517,7 @@ describe("HtmlEditor composition", () => {
         expect(selector.textContent).toContain("Next");
         expect(selector.querySelector(".elg-html-editor-node-tag")!.textContent).toBe("<p>");
         expect(selector.querySelector(".elg-html-editor-node-description")!.textContent).toBe("Next");
-        expect(editor.selection).toEqual(saved); expect(document.activeElement).toBe(selector);
+        expect(editor.selection).not.toEqual(saved); expect(document.activeElement).toBe(selector);
         expect(editor.modified).toBe(false); expect(input).not.toHaveBeenCalled(); expect(editor.canUndo).toBe(false);
         editor.setHtml("<h2>New scope</h2>");
         expect(selector.textContent).toBe("Choose an element…");

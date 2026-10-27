@@ -119,3 +119,5 @@
 .elg-menu-item-container.is-open > .elg-menu-submenu {
     display: block;
 }
+.elg-menu-color-swatch { display: inline-block; flex: 0 0 14px; width: 14px; height: 14px; box-sizing: border-box; border: 1px solid var(--elg-border-color); border-radius: 3px; position: relative; }
+.elg-menu-color-swatch[data-empty="true"]::after { content: ""; position: absolute; inset: 5px -1px; border-top: 1px solid var(--elg-danger-color, #dc3545); transform: rotate(-45deg); }

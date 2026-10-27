@@ -9,5 +9,5 @@ export default {
   "namespace": "Components.Editors",
   "path": "/api-reference/HtmlEditorCommand",
   "source": "src/components/editors/htmleditor/HtmlEditorCommands.ts",
-  "definition": "| { type: \"insertText\"; text: string }\n    | { type: \"insertHtml\"; html: string }\n    | { type: \"deleteBackward\" | \"deleteForward\" | \"insertParagraph\" | \"insertLineBreak\" | \"indent\" | \"outdent\" | \"bold\" | \"italic\" | \"undo\" | \"redo\" }"
+  "definition": "| { type: \"textStyle\"; property: \"color\" | \"background-color\" | \"font-size\"; value: string }\n    | { type: \"insertText\"; text: string }\n    | { type: \"insertHtml\"; html: string }\n    | { type: \"deleteBackward\" | \"deleteForward\" | \"insertParagraph\" | \"insertLineBreak\" | \"indent\" | \"outdent\" | \"bold\" | \"italic\" | \"undo\" | \"redo\" }"
 };

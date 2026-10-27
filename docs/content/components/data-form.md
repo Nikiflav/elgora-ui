@@ -1,10 +1,10 @@
 ---
 id: data-form
-title: DataForm
+title: Overview
 group: components
-parent: editors
+parent: forms
 path: /components/data-form
-order: 22
+order: 10
 description: Edit one plain object or DataRow with the same field and editor contract as DataGrid.
 api:
   - DataForm
@@ -42,10 +42,18 @@ own keyboard commands until it closes.
 
 ## Labels and adapters
 
-Use `labelPosition: "top"` (the default) or `"start"` for compact horizontal
+Explore [Layouts](?!=/components/data-form/layout) for vertical, wrapping flex,
+twelve-column and mixed-row forms. See [Editing and actions](?!=/components/data-form/editing)
+for validation, keyboard navigation and button fields.
+
+Use `labelPosition: "top"` (the default), `"start"`, or `"none"` for compact
 forms. Both forms accept the same `DataViewField` definitions. Supply `adapter`
 when a domain object does not expose field values directly; the adapter only
 needs `getValue`, `getText`, and `setValue`.
+
+The default form uses a framed surface. For an embedded form, such as an
+inspector panel, use `surface: "none"` to remove the container frame,
+background and padding while keeping the field layout and editing behavior.
 
 For plain objects, the built-in adapter edits a shallow draft. For `DataRow`,
 the built-in adapter preserves the table's mutation pipeline. Use `onCommit` for

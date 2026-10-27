@@ -1,4 +1,5 @@
 .elg-data-form { display: grid; gap: 10px; width: 100%; max-width: 720px; min-width: 0; box-sizing: border-box; padding: 16px; border: 1px solid var(--elg-border-color); border-radius: 8px; background: var(--elg-surface-1, var(--elg-surface-color)); }
+.elg-data-form[data-surface="none"] { max-width: none; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .elg-data-form[data-label-position="start"] .elg-data-form-field { display: grid; grid-template-columns: minmax(96px, max-content) minmax(0, 1fr); gap: 4px 10px; align-items: center; }
 .elg-data-form-field { display: grid; gap: 2px; min-width: 0; }
 .elg-data-form-label { color: var(--elg-text-color); font-size: .8125em; font-weight: 600; line-height: 1.25; }
@@ -21,12 +22,29 @@
 .elg-data-form-value-editing .elg-editor-trigger { position: relative; z-index: 1; pointer-events: auto; }
 .elg-data-form-editor-button { flex: 0 0 24px; width: 24px; height: 24px; margin-inline-start: auto; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--elg-text-muted); cursor: pointer; }
 .elg-data-form-editor-button:hover, .elg-data-form-editor-button:focus-visible { background: var(--elg-hover-bg); color: var(--elg-text-color); outline: none; }
-.elg-data-form-buttons-host { cursor: default; }
+.elg-data-form-buttons-host { display: flex; align-items: center; gap: 4px; cursor: default; }
 .elg-data-form-buttons { height: 100%; }
-.elg-data-form-action-button { min-width: 28px; height: 24px; padding-inline: 6px; color: var(--elg-text-muted); }
+.elg-data-form-action-button { min-width: 28px; height: 30px; box-sizing: border-box; padding-inline: 6px; color: var(--elg-text-muted); }
 .elg-data-form-action-button:hover, .elg-data-form-action-button:focus-visible { color: var(--elg-text-color); }
 .elg-data-form-action-button:disabled { opacity: .55; }
 .elg-data-form-editor-button-hover { opacity: 0; }
 .elg-data-form-value:hover .elg-data-form-editor-button-hover, .elg-data-form-value:focus-within .elg-data-form-editor-button-hover { opacity: 1; }
 .elg-data-form-description { color: var(--elg-text-muted); font-size: .8em; }
+:where(.elg-data-form-layout-row) { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; min-width: 0; }
+.elg-data-form-layout-row[data-wrap="false"] { flex-wrap: nowrap; overflow-x: auto; }
+.elg-data-form-layout-row[data-display="grid"] { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.elg-data-form .elg-data-form-field[data-label-position="start"] { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 4px 8px; align-items: center; }
+.elg-data-form .elg-data-form-field[data-label-position="top"],
+.elg-data-form .elg-data-form-field[data-label-position="none"] { grid-template-columns: minmax(0, 1fr); }
+.elg-data-form-layout-row > .elg-data-form-field { max-width: 100%; }
+@media (max-width: 560px) { .elg-data-form-layout-row[data-display="grid"] > .elg-data-form-field { grid-column: 1 / -1 !important; width: auto !important; } }
 @media (max-width: 560px) { .elg-data-form { padding: 12px; } .elg-data-form[data-label-position="start"] .elg-data-form-field { grid-template-columns: 1fr; gap: 2px; } }
+.elg-data-form-group { min-width: 0; border-top: 1px solid var(--elg-border-color); }
+.elg-data-form-group-heading { display: flex; align-items: center; gap: 6px; margin: 0; padding: 7px 2px; border: 0; color: var(--elg-text-muted); font-size: .8125rem; font-weight: 600; list-style: none; }
+summary.elg-data-form-group-heading { cursor: pointer; user-select: none; }
+summary.elg-data-form-group-heading::-webkit-details-marker { display: none; }
+summary.elg-data-form-group-heading::before { content: ""; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(-45deg); }
+.elg-data-form-group[open] > summary::before { transform: rotate(45deg); }
+summary.elg-data-form-group-heading:hover { background: var(--elg-hover-bg); }
+summary.elg-data-form-group-heading:focus-visible { outline: 1px solid var(--elg-primary-border); outline-offset: -1px; }
+.elg-data-form-group-body { display: grid; gap: 4px; padding-bottom: 8px; }

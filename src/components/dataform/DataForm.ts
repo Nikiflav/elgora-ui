@@ -1,4 +1,5 @@
 import { Component, type ComponentOptions } from "../../core/Component";
+import { ObservableEvent } from "../../core/ElgoraUI";
 import { e, setElementProps, v } from "../../core/e";
 import type { UiStyle } from "../../core/UiStyle";
 import type { LocaleOptions } from "../../localization/Localization";
@@ -17,6 +18,51 @@ export interface DataFormAdapter<TRow> {
     setValue(row: TRow, field: DataViewField<TRow>, value: any): Promise<void>;
 }
 
+/** Label placement, independent of the row's layout. Hidden labels retain accessible field names. */
+export type DataFormLabelPosition = "top" | "start" | "none";
+/** Placement of an existing field; field metadata and validation remain shared with DataGrid. */
+export interface DataFormLayoutItem {
+    /** Name of a field in the form. Each field may appear at most once. */
+    field: string;
+    /** Typed utility styles applied to the field wrapper, including its label and value. */
+    ui?: UiStyle | UiStyle[];
+    /** Number of columns in a grid row (1–12). Defaults to 12. */
+    span?: number;
+    /** Flex item width, in pixels or a CSS length. Defaults to auto. */
+    width?: number | string;
+    /** Overrides the row/form label placement. */
+    labelPosition?: DataFormLabelPosition;
+}
+/** A row of fields. Flex supports arbitrary item counts; grid distributes twelve columns. */
+export interface DataFormLayoutRow {
+    /** Typed utility styles applied to the row container. */
+    ui?: UiStyle | UiStyle[];
+    /** Defaults to flex. */
+    display?: "flex" | "grid";
+    /** Flex wrapping defaults to true. False keeps one horizontally scrollable row. */
+    wrap?: boolean;
+    /** Row-specific label placement. */
+    labelPosition?: DataFormLabelPosition;
+    /** Ordered field placements. Unlisted fields are omitted from the layout. */
+    fields: readonly DataFormLayoutItem[];
+}
+/** Named section containing ordinary layout rows. IDs preserve disclosure state across form recreation. */
+export interface DataFormLayoutGroup {
+    /** Unique group identity, independent from its translated title. */
+    id: string;
+    /** Visible and accessible section heading. */
+    title: string;
+    /** Allows keyboard and pointer disclosure through a native details/summary control. */
+    collapsible?: boolean;
+    /** Initial state when groupState does not contain this ID. Defaults to false. */
+    collapsed?: boolean;
+    /** Utility styles on the section container. */
+    ui?: UiStyle | UiStyle[];
+    /** Ordered rows within the group. */
+    rows: readonly DataFormLayoutRow[];
+}
+/** Forms may interleave standalone rows and named groups. */
+export type DataFormLayout = readonly (DataFormLayoutRow | DataFormLayoutGroup)[];
 /** Data-bound form options. A form edits one object, not a query of rows. */
 export interface DataFormOptions<TRow> extends Omit<ComponentOptions, "tag" | "children">, LocaleOptions {
     /** Object or DataRow displayed and edited by the form. */
@@ -24,7 +70,13 @@ export interface DataFormOptions<TRow> extends Omit<ComponentOptions, "tag" | "c
     /** Field metadata shared with DataGrid. */
     fields: readonly DataViewField<TRow>[];
     /** Positions labels above controls or beside them. Defaults to top. */
-    labelPosition?: "top" | "start";
+    labelPosition?: DataFormLabelPosition;
+    /** Optional visual rows. Omission renders all fields vertically; keyboard traversal follows layout order. */
+    layout?: DataFormLayout;
+    /** Restored collapsed states by group ID. Read once on construction; obtain updates with getGroupState(). */
+    groupState?: ReadonlyMap<string, boolean>;
+    /** Controls the form container chrome. `none` removes its frame, background and padding for embedded forms. */
+    surface?: "default" | "none";
     /** Prevents entering field editors. Defaults to true. */
     allowEdit?: boolean;
     /** Optional notification after a field has been accepted. */
@@ -77,29 +129,48 @@ type ActiveEdit<TRow> = {
  * It supports top/start labels, click/F2/Enter editing, async acceptance and Escape cancellation.
  */
 export class DataForm<TRow> extends Component {
+    /** Emitted after an accepted or cancelled editor has been disposed. */
+    readonly editEnded = new ObservableEvent<void>();
     private readonly options: DataFormOptions<TRow>;
     private readonly draft: TRow;
     private readonly adapter: DataFormAdapter<TRow>;
     private active?: ActiveEdit<TRow>;
     private readonly fieldRows = new Map<string, HTMLElement>();
+    private readonly groups = new Map<string, HTMLDetailsElement>();
 
     constructor(options: DataFormOptions<TRow>) {
-        const { data, fields, labelPosition, allowEdit, onCommit, adapter, ...componentOptions } = options;
+        const { data, fields, labelPosition, layout, groupState, surface, allowEdit, onCommit, adapter, ...componentOptions } = options;
         super({ ...componentOptions, class: `${options.class ?? ""} elg-data-form`.trim() });
         this.options = options;
+        this.addCleanup(this.editEnded);
         this.draft = isDataRow(options.data) ? options.data : { ...(options.data as any) };
         this.adapter = options.adapter ?? (isDataRow(options.data)
             ? dataRowAdapter as unknown as DataFormAdapter<TRow>
             : createObjectAdapter(this.draft as TRow & Record<string, any>) as unknown as DataFormAdapter<TRow>);
         this.dom.dataset.labelPosition = options.labelPosition ?? "top";
+        this.dom.dataset.surface = surface ?? "default";
         this.renderFields();
     }
 
     /** Current plain-object draft or the source-owned DataRow. */
     get value(): TRow { return this.draft; }
+    /** Whether a field editor is currently accepting or cancelling a value. */
+    get isEditing(): boolean { return !!this.active; }
+
+    /** Snapshot of current disclosure states, suitable for a replacement form's groupState option. */
+    getGroupState(): ReadonlyMap<string, boolean> {
+        return new Map([...this.groups].map(([id, element]) => [id, !element.open]));
+    }
+
+    private layoutRows(): readonly DataFormLayoutRow[] {
+        return this.options.layout?.flatMap(entry => "rows" in entry ? [...entry.rows] : [entry]) ?? [];
+    }
 
     private visibleFields(): DataViewField<TRow>[] {
-        return this.options.fields.filter(field => field.showInRow?.(this.draft) ?? true);
+        const fields = this.options.fields.filter(field => field.showInRow?.(this.draft) ?? true);
+        if (!this.options.layout) return fields;
+        const names = this.layoutRows().flatMap(row => row.fields.map(item => item.field));
+        return names.map(name => fields.find(field => field.name === name)).filter((field): field is DataViewField<TRow> => !!field);
     }
 
     private async displayText(field: DataViewField<TRow>, value: any): Promise<string> {
@@ -109,12 +180,62 @@ export class DataForm<TRow> extends Component {
     private renderFields(): void {
         this.active?.editor.dispose(); this.active = undefined;
         this.fieldRows.clear(); this.dom.replaceChildren();
+        this.groups.clear();
+        const placements = new Map<string, { host: HTMLElement; item: DataFormLayoutItem; labels: DataFormLabelPosition }>();
+        const rowParents = new Map<DataFormLayoutRow, HTMLElement>();
+        const groupIds = new Set<string>();
+        for (const entry of this.options.layout ?? []) {
+            if (!("rows" in entry)) { rowParents.set(entry, this.dom); continue; }
+            if (groupIds.has(entry.id)) throw new Error(`Duplicate DataForm group: ${entry.id}`);
+            groupIds.add(entry.id);
+            const section = entry.collapsible
+                ? e("details", { class: "elg-data-form-group", ui: entry.ui, "data-group": entry.id,
+                    open: !(this.options.groupState?.get(entry.id) ?? entry.collapsed ?? false) })
+                : e("section", { class: "elg-data-form-group", ui: entry.ui, "data-group": entry.id });
+            section.append(entry.collapsible
+                ? e("summary", { class: "elg-data-form-group-heading" }, entry.title)
+                : e("h3", { class: "elg-data-form-group-heading" }, entry.title));
+            const body = e("div", { class: "elg-data-form-group-body" });
+            section.append(body); this.dom.append(section);
+            if (section instanceof HTMLDetailsElement) this.groups.set(entry.id, section);
+            for (const row of entry.rows) rowParents.set(row, body);
+        }
+        for (const [layout, parent] of rowParents) {
+            const host = e("div", { class: "elg-data-form-layout-row", ui: layout.ui, "data-display": layout.display ?? "flex",
+                "data-wrap": layout.wrap !== false });
+            // Insert standalone rows in layout order, even when groups precede/follow them.
+            if (parent === this.dom) {
+                const entries = this.options.layout!;
+                const nextGroup = entries.slice(entries.indexOf(layout) + 1).find(entry => "rows" in entry);
+                const nextHost = nextGroup && "rows" in nextGroup
+                    ? [...this.dom.children].find(child => (child as HTMLElement).dataset.group === nextGroup.id) : undefined;
+                this.dom.insertBefore(host, nextHost ?? null);
+            } else parent.append(host);
+            for (const item of layout.fields) {
+                if (placements.has(item.field)) throw new Error(`Duplicate DataForm layout field: ${item.field}`);
+                if (!this.options.fields.some(field => field.name === item.field)) throw new Error(`Unknown DataForm layout field: ${item.field}`);
+                if (item.span !== undefined && (!Number.isInteger(item.span) || item.span < 1 || item.span > 12))
+                    throw new Error("DataForm grid span must be an integer between 1 and 12.");
+                placements.set(item.field, { host, item, labels: item.labelPosition ?? layout.labelPosition ?? this.options.labelPosition ?? "top" });
+            }
+        }
         this.visibleFields().forEach((field, index) => {
             const buttonField = field.type === "buttons";
-            const row = e("div", { class: "elg-data-form-field", "data-field": field.name });
-            const label = e("label", { class: "elg-data-form-label" }, field.caption ?? field.name,
+            const placement = placements.get(field.name);
+            const row = e("div", { class: "elg-data-form-field", ui: placement?.item.ui, "data-field": field.name });
+            const labels = placement?.labels ?? this.options.labelPosition ?? "top";
+            row.dataset.labelPosition = labels;
+            if (placement) {
+                row.style.gridColumn = `span ${placement.item.span ?? 12}`;
+                row.style.flex = "0 0 auto";
+                row.style.width = typeof placement.item.width === "number" ? `${placement.item.width}px` : placement.item.width ?? "auto";
+            }
+            const label = field.hideLabel || labels === "none" ? undefined : e("label", { class: "elg-data-form-label" }, field.caption ?? field.name,
                 field.required ? e("span", { class: "elg-data-form-required", ariaHidden: "true" }, "*") : undefined);
-            const value = e("div", { class: `elg-data-form-value${buttonField ? " elg-data-form-buttons-host" : ""}`,
+            const value = e("div", { class: buttonField
+                ? "elg-data-form-buttons-host elg-data-form-buttons"
+                : "elg-data-form-value",
+                "data-field": buttonField ? field.name : undefined,
                 tabIndex: buttonField ? -1 : (this.options.allowEdit === false || field.readonly ? -1 : 0),
                 role: buttonField ? undefined : "button", ariaLabel: field.caption ?? field.name,
                 onclick: () => {
@@ -141,15 +262,16 @@ export class DataForm<TRow> extends Component {
                     }
                 } });
             const description = field.description ? e("div", { class: "elg-data-form-description" }, field.description) : undefined;
-            row.append(label, value); if (description) row.append(description);
-            this.dom.append(row); this.fieldRows.set(field.name, value);
+            if (label) row.append(label);
+            row.append(value); if (description) row.append(description);
+            (placement?.host ?? this.dom).append(row); this.fieldRows.set(field.name, value);
             void this.updateDisplay(field, value);
         });
     }
 
     private async updateDisplay(field: DataViewField<TRow>, host: HTMLElement): Promise<void> {
         if (field.type === "buttons") {
-            setElementProps(host, { vnodes: [this.createButtonField(field)] });
+            setElementProps(host, { vnodes: this.createButtonField(field) }, true);
             return;
         }
         const value = await this.adapter.getValue(this.draft, field);
@@ -182,7 +304,7 @@ export class DataForm<TRow> extends Component {
         return { owner: this, row: this.draft, field, button };
     }
 
-    private createButtonField(field: DataViewField<TRow>): ReturnType<typeof v> {
+    private createButtonField(field: DataViewField<TRow>): ReturnType<typeof v>[] {
         const buttons = (field.buttons ?? []).map(button => {
             const context = this.createButtonContext(field, button);
             const visible = typeof button.visible === "function" ? button.visible(context) : button.visible !== false;
@@ -222,7 +344,7 @@ export class DataForm<TRow> extends Component {
                 }
             }, content);
         }).filter(Boolean) as ReturnType<typeof v>[];
-        return v("span", { class: "elg-data-form-buttons", ui: ["d-flex", "items-center", "gap-1", "w-100"] }, ...buttons);
+        return buttons;
     }
 
     private async beginEdit(field: DataViewField<TRow>, index: number, initialText?: string): Promise<boolean> {
@@ -313,7 +435,8 @@ export class DataForm<TRow> extends Component {
 
     /** Focuses a neighboring editable field after keyboard confirmation. */
     private focusField(field: DataViewField<TRow>, direction = 0): void {
-        const fields = this.visibleFields().filter(item => this.options.allowEdit !== false && !item.readonly && item.type !== "buttons");
+        const fields = this.visibleFields().filter(item => this.options.allowEdit !== false && !item.readonly && item.type !== "buttons"
+            && !this.fieldRows.get(item.name)?.closest("details:not([open])"));
         const current = fields.indexOf(field);
         const target = direction === 0 ? current : current + direction;
         const next = fields[target] ?? field;
@@ -333,6 +456,7 @@ export class DataForm<TRow> extends Component {
         this.active = undefined;
         void this.updateDisplay(active.field, active.host);
         active.host.focus();
+        this.editEnded.invoke();
     }
 
     protected override onUnmount(): void {

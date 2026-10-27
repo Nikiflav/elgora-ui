@@ -2,6 +2,15 @@
   "schemaVersion": 1,
   "entries": [
     {
+      "name": "aggregateHtmlEditorInspectorValues",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/aggregateHtmlEditorInspectorValues",
+      "description": "Aggregates per-target authored values with Object.is. Undefined means unset;\nempty text, zero, false and null remain real values. Empty input has no applicable\ntargets and returns undefined, so the caller can omit that field entirely.",
+      "module": "./content/api/aggregateHtmlEditorInspectorValues.js"
+    },
+    {
       "name": "ArrayDataSource",
       "kind": "class",
       "group": "core",
@@ -270,6 +279,51 @@
       "path": "/api-reference/DataFormAdapter",
       "description": "Reads and accepts one form row. DataForm supplies a default adapter for plain objects and DataRow.",
       "module": "./content/api/DataFormAdapter.js"
+    },
+    {
+      "name": "DataFormLabelPosition",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormLabelPosition",
+      "description": "Label placement, independent of the row's layout. Hidden labels retain accessible field names.",
+      "module": "./content/api/DataFormLabelPosition.js"
+    },
+    {
+      "name": "DataFormLayout",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormLayout",
+      "description": "Forms may interleave standalone rows and named groups.",
+      "module": "./content/api/DataFormLayout.js"
+    },
+    {
+      "name": "DataFormLayoutGroup",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormLayoutGroup",
+      "description": "Named section containing ordinary layout rows. IDs preserve disclosure state across form recreation.",
+      "module": "./content/api/DataFormLayoutGroup.js"
+    },
+    {
+      "name": "DataFormLayoutItem",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormLayoutItem",
+      "description": "Placement of an existing field; field metadata and validation remain shared with DataGrid.",
+      "module": "./content/api/DataFormLayoutItem.js"
+    },
+    {
+      "name": "DataFormLayoutRow",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Dataform",
+      "path": "/api-reference/DataFormLayoutRow",
+      "description": "A row of fields. Flex supports arbitrary item counts; grid distributes twelve columns.",
+      "module": "./content/api/DataFormLayoutRow.js"
     },
     {
       "name": "DataFormOptions",
@@ -947,6 +1001,24 @@
       "module": "./content/api/HtmlEditorElementKind.js"
     },
     {
+      "name": "HtmlEditorInspectionContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectionContext",
+      "description": "Captured inspected elements and remembered text range, independent of DOM focus.\nBoth scopes coexist. Tree navigation changes the elements without widening the\ntext range. A gesture in the surface updates both from its model selection.\nCapture once when a field starts editing and retain it until commit/cancel.",
+      "module": "./content/api/HtmlEditorInspectionContext.js"
+    },
+    {
+      "name": "HtmlEditorInspectionRow",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectionRow",
+      "description": "Virtual DataForm row. Its fields describe editor operations rather than node\nmembers. A future DataFormAdapter reads each binding's state and submits through\nexecuteInspectorField; mutating this row must never mutate the HTML model.",
+      "module": "./content/api/HtmlEditorInspectionRow.js"
+    },
+    {
       "name": "HtmlEditorInspector",
       "kind": "class",
       "group": "components",
@@ -954,6 +1026,60 @@
       "path": "/api-reference/HtmlEditorInspector",
       "description": "Inspector scaffold owned by HtmlEditor. Targets are previews, not structural editor selections.",
       "module": "./content/api/HtmlEditorInspector.js"
+    },
+    {
+      "name": "HtmlEditorInspectorCommandContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectorCommandContext",
+      "description": "Command context after target resolution; shared by all entry points into an inspector command.",
+      "module": "./content/api/HtmlEditorInspectorCommandContext.js"
+    },
+    {
+      "name": "HtmlEditorInspectorField",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectorField",
+      "description": "Optional Basic-tab declaration on a shared command. Register role-based commands\nsuch as text.color or block.align; keep these declarations out of node instances.\nA data contribution becomes a DataForm value field; a buttons contribution becomes\nan action using the command's label/icon/state. Execution always stays in the registry.",
+      "module": "./content/api/HtmlEditorInspectorField.js"
+    },
+    {
+      "name": "HtmlEditorInspectorFieldPresentation",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectorFieldPresentation",
+      "description": "Existing DataViewField presentation reused by the inspector. The command ID\nsupplies name; the adapter owns reads and Mixed labels. Lookup uses the shared\nfield.lookup contract, so no second editor-type or allowed-values system exists.",
+      "module": "./content/api/HtmlEditorInspectorFieldPresentation.js"
+    },
+    {
+      "name": "HtmlEditorInspectorTargets",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectorTargets",
+      "description": "Command-specific application units. A resolver maps a selection to eligible\ntext fragments or element owners (e.g. paragraphs for alignment), deduplicates\nthem, and excludes structural shells that the command cannot safely change.\nAn empty list makes the field inapplicable. Resolve once and use the same units\nfor state, permissions and execution; never widen a range inside a UI adapter.",
+      "module": "./content/api/HtmlEditorInspectorTargets.js"
+    },
+    {
+      "name": "HtmlEditorInspectorValue",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectorValue",
+      "description": "Values accepted by Basic properties. Undefined requests reset; it is never the Mixed marker.",
+      "module": "./content/api/HtmlEditorInspectorValue.js"
+    },
+    {
+      "name": "HtmlEditorInspectorValueState",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorInspectorValueState",
+      "description": "Aggregated authored value of a property. Unset means every target uses its default;\nMixed means targets disagree. Neither state is a value to persist into HTML.\nA concrete value outside a lookup's options remains a value, not Unset.",
+      "module": "./content/api/HtmlEditorInspectorValueState.js"
     },
     {
       "name": "HtmlEditorNode",
@@ -999,6 +1125,24 @@
       "path": "/api-reference/HtmlEditorPositionState",
       "description": "Text offsets count UTF-16 units; element/root offsets count supported model children.",
       "module": "./content/api/HtmlEditorPositionState.js"
+    },
+    {
+      "name": "HtmlEditorResolvedInspection",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorResolvedInspection",
+      "description": "A resolved scope passed to the shared command's enabled/state/execute callbacks.",
+      "module": "./content/api/HtmlEditorResolvedInspection.js"
+    },
+    {
+      "name": "HtmlEditorResolvedInspectorField",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorResolvedInspectorField",
+      "description": "One resolved field, identified by command.id. Reuse this binding during a field\nedit; refreshing the form creates new bindings only after that edit has settled.\nThe declaration's group/order are presentation metadata, never HTML properties.",
+      "module": "./content/api/HtmlEditorResolvedInspectorField.js"
     },
     {
       "name": "HtmlEditorSelectionState",
@@ -1746,6 +1890,33 @@
       "path": "/api-reference/SummaryType",
       "description": "Aggregation kind applied to a group column's summary value.\n`count` and `distinct` support all value types; `sum`, `avg`, `min`, and `max`\nrequire a numeric column.",
       "module": "./content/api/SummaryType.js"
+    },
+    {
+      "name": "TabView",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Tab View",
+      "path": "/api-reference/TabView",
+      "description": "Persistent panels with roving tab focus, arrow/Home/End navigation and native accessible relationships.",
+      "module": "./content/api/TabView.js"
+    },
+    {
+      "name": "TabViewItem",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Tab View",
+      "path": "/api-reference/TabViewItem",
+      "description": "One stable tab and its persistent panel content.",
+      "module": "./content/api/TabViewItem.js"
+    },
+    {
+      "name": "TabViewOptions",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Tab View",
+      "path": "/api-reference/TabViewOptions",
+      "description": "Compact horizontal tabs with automatic keyboard activation.",
+      "module": "./content/api/TabViewOptions.js"
     },
     {
       "name": "TextEditor",

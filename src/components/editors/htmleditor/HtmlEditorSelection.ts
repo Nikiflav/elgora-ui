@@ -17,7 +17,7 @@ export function restoreHtmlEditorSelection(dom: HtmlEditorDom, state?: HtmlEdito
     const focus = dom.resolve(state.focus);
     const selection = dom.root.ownerDocument.getSelection();
     if (!anchor || !focus || !selection) return false;
-    if (focusEditor) dom.root.focus();
+    if (focusEditor) dom.root.focus({ preventScroll: true });
     selection.setBaseAndExtent(anchor.node, anchor.offset, focus.node, focus.offset);
     return true;
 }

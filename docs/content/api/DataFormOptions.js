@@ -32,8 +32,38 @@ export default {
     },
     {
       "name": "labelPosition",
-      "type": "\"top\" | \"start\" | undefined",
+      "type": "DataFormLabelPosition | undefined",
       "description": "Positions labels above controls or beside them. Defaults to top.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/dataform/DataForm.ts",
+      "kind": "property"
+    },
+    {
+      "name": "layout",
+      "type": "DataFormLayout | undefined",
+      "description": "Optional visual rows. Omission renders all fields vertically; keyboard traversal follows layout order.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/dataform/DataForm.ts",
+      "kind": "property"
+    },
+    {
+      "name": "groupState",
+      "type": "ReadonlyMap<string, boolean> | undefined",
+      "description": "Restored collapsed states by group ID. Read once on construction; obtain updates with getGroupState().",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/dataform/DataForm.ts",
+      "kind": "property"
+    },
+    {
+      "name": "surface",
+      "type": "\"none\" | \"default\" | undefined",
+      "description": "Controls the form container chrome. `none` removes its frame, background and padding for embedded forms.",
       "tags": [],
       "topics": [],
       "optional": true,

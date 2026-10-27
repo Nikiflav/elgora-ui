@@ -39,6 +39,16 @@ export default {
       "optional": true,
       "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
       "kind": "property"
+    },
+    {
+      "name": "inspection",
+      "type": "HtmlEditorResolvedInspection | undefined",
+      "description": "Resolved Basic property scope, when invoked through the inspector framework.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "kind": "property"
     }
   ]
 };

@@ -91,8 +91,18 @@ export default {
       "kind": "property"
     },
     {
+      "name": "inspector",
+      "type": "HtmlEditorInspectorField | undefined",
+      "description": "Optional DataForm contribution; node roles and target resolution belong here, not in the view.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "kind": "property"
+    },
+    {
       "name": "execute",
-      "type": "(context: HtmlEditorCommandContext, value?: string) => boolean | void",
+      "type": "(context: HtmlEditorCommandContext, value?: HtmlEditorInspectorValue) => boolean | void",
       "description": "Executes the command against the shared editor context.",
       "tags": [],
       "topics": [],

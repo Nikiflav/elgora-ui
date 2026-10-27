@@ -6,7 +6,7 @@ export default {
   "parent": "menus",
   "order": 30,
   "description": "Create anchored and point-positioned floating panels.",
-  "prev": "/components/data-form",
+  "prev": "/components/data-form/editing",
   "next": "/popup",
   "toc": true,
   "api": [

@@ -188,6 +188,45 @@
       "module": "./content/topics/framework-overview.js"
     },
     {
+      "id": "data-form",
+      "title": "Overview",
+      "path": "/components/data-form",
+      "group": "components",
+      "parent": "forms",
+      "order": 10,
+      "description": "Edit one plain object or DataRow with the same field and editor contract as DataGrid.",
+      "prev": "/docs",
+      "next": "/components/value-editors",
+      "toc": true,
+      "api": [
+        "DataForm",
+        "DataFormOptions",
+        "DataFormAdapter"
+      ],
+      "keywords": [
+        "form",
+        "fields",
+        "DataRow",
+        "editing"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "plain-objects-and-datarow",
+          "title": "Plain objects and DataRow"
+        },
+        {
+          "id": "labels-and-adapters",
+          "title": "Labels and adapters"
+        },
+        {
+          "id": "api-reference",
+          "title": "API reference"
+        }
+      ],
+      "module": "./content/topics/data-form.js"
+    },
+    {
       "id": "datagrid-overview",
       "title": "Overview",
       "path": "/components/datagrid/overview",
@@ -318,7 +357,7 @@
       "parent": "editors",
       "order": 10,
       "description": "Explore value editors and their shared validation and asynchronous acceptance lifecycle.",
-      "prev": "/docs",
+      "prev": "/components/data-form",
       "next": "/components/value-editors/lifecycle",
       "toc": true,
       "api": [],
@@ -812,7 +851,7 @@
       "order": 20,
       "description": "Edit rich-text HTML as a draft and let the host accept or discard it.",
       "prev": "/components/date-picker",
-      "next": "/components/filter-editor",
+      "next": "/components/data-form/layout",
       "toc": true,
       "api": [
         "HtmlEditor",
@@ -879,6 +918,48 @@
       "module": "./content/topics/html-editor.js"
     },
     {
+      "id": "data-form-layout",
+      "title": "Layout",
+      "path": "/components/data-form/layout",
+      "group": "components",
+      "parent": "forms",
+      "order": 20,
+      "description": "Arrange fields in vertical forms, wrapping flex rows and twelve-column grids.",
+      "prev": "/components/html-editor",
+      "next": "/components/filter-editor",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "try-different-layouts",
+          "title": "Try different layouts"
+        },
+        {
+          "id": "flex-rows",
+          "title": "Flex rows"
+        },
+        {
+          "id": "twelve-column-rows",
+          "title": "Twelve-column rows"
+        },
+        {
+          "id": "collapsible-groups",
+          "title": "Collapsible groups"
+        },
+        {
+          "id": "utility-styles",
+          "title": "Utility styles"
+        },
+        {
+          "id": "label-placement",
+          "title": "Label placement"
+        }
+      ],
+      "module": "./content/topics/data-form-layout.js"
+    },
+    {
       "id": "state-and-events",
       "title": "State, events and bindings",
       "path": "/fundamentals/state-and-events",
@@ -918,8 +999,8 @@
       "group": "components",
       "order": 21,
       "description": "Build visual AND/OR filters independently of DataGrid and distinguish editor drafts from applied queries.",
-      "prev": "/components/html-editor",
-      "next": "/components/data-form",
+      "prev": "/components/data-form/layout",
+      "next": "/components/tab-view",
       "toc": true,
       "api": [
         "FilterEditor",
@@ -937,43 +1018,34 @@
       "module": "./content/topics/filter-editor.js"
     },
     {
-      "id": "data-form",
-      "title": "DataForm",
-      "path": "/components/data-form",
+      "id": "tab-view",
+      "title": "TabView",
+      "path": "/components/tab-view",
       "group": "components",
-      "parent": "editors",
-      "order": 22,
-      "description": "Edit one plain object or DataRow with the same field and editor contract as DataGrid.",
+      "parent": "navigation",
+      "order": 25,
+      "description": "Compact accessible tabs with persistent panels and keyboard navigation.",
       "prev": "/components/filter-editor",
-      "next": "/popover",
+      "next": "/components/data-form/editing",
       "toc": true,
       "api": [
-        "DataForm",
-        "DataFormOptions",
-        "DataFormAdapter"
+        "TabView",
+        "TabViewOptions",
+        "TabViewItem"
       ],
-      "keywords": [
-        "form",
-        "fields",
-        "DataRow",
-        "editing"
-      ],
+      "keywords": [],
       "sectionRedirects": [],
       "headings": [
         {
-          "id": "plain-objects-and-datarow",
-          "title": "Plain objects and DataRow"
+          "id": "selection-and-content",
+          "title": "Selection and content"
         },
         {
-          "id": "labels-and-adapters",
-          "title": "Labels and adapters"
-        },
-        {
-          "id": "api-reference",
-          "title": "API reference"
+          "id": "keyboard-navigation",
+          "title": "Keyboard navigation"
         }
       ],
-      "module": "./content/topics/data-form.js"
+      "module": "./content/topics/tab-view.js"
     },
     {
       "id": "datagrid-columns",
@@ -1050,6 +1122,32 @@
       "module": "./content/topics/datasource-overview.js"
     },
     {
+      "id": "data-form-editing",
+      "title": "Editing and actions",
+      "path": "/components/data-form/editing",
+      "group": "components",
+      "parent": "forms",
+      "order": 30,
+      "description": "Data binding, keyboard navigation, validation and action buttons in DataForm.",
+      "prev": "/components/tab-view",
+      "next": "/popover",
+      "toc": true,
+      "api": [],
+      "keywords": [],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "values-and-validation",
+          "title": "Values and validation"
+        },
+        {
+          "id": "action-fields",
+          "title": "Action fields"
+        }
+      ],
+      "module": "./content/topics/data-form-editing.js"
+    },
+    {
       "id": "layout",
       "title": "Layout and responsive grid",
       "path": "/styles/layout",
@@ -1094,7 +1192,7 @@
       "parent": "menus",
       "order": 30,
       "description": "Create anchored and point-positioned floating panels.",
-      "prev": "/components/data-form",
+      "prev": "/components/data-form/editing",
       "next": "/popup",
       "toc": true,
       "api": [

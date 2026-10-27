@@ -18,7 +18,8 @@ export { ScrollSpy, type ScrollSpyOptions } from './components/scroll-spy/Scroll
 export { ScrollEngine, type ScrollEngineOptions, type ScrollbarMode } from './components/scrollbar/scroll-engine';
 export { Scrollbars, type ScrollbarsOptions, type ScrollbarsHandle, type ScrollbarsInstallation } from './components/scrollbar/Scrollbars';
 export { DataGrid, type DataGridOptions, type DataGridCellNavigatingEvent, type ColumnWidthMode, type ColumnResizeMode, type DataGridCursor, type DataGridCellBorders, type GridDataSource } from './components/datagrid/DataGrid';
-export { DataForm, type DataFormOptions, type DataFormAdapter } from './components/dataform/DataForm';
+export { DataForm, type DataFormOptions, type DataFormAdapter, type DataFormLayoutRow, type DataFormLayoutItem, type DataFormLabelPosition, type DataFormLayoutGroup, type DataFormLayout } from './components/dataform/DataForm';
+export { TabView, type TabViewOptions, type TabViewItem } from './components/tab-view/TabView';
 export { type DataCell, type DataViewField, type DataViewButton, type DataViewButtonAppearance, type DataViewButtonContext, type DisplayValue, type FieldLookup, type FieldEditContext, type FieldEditorContext } from './data/DataViewField';
 export { createFieldEditor } from './components/editors/createFieldEditor';
 export { ScrollReveal, type ScrollRevealOptions } from './components/scroll-reveal/ScrollReveal';
@@ -72,6 +73,11 @@ export { HtmlEditorCommandRegistry, type HtmlEditorCommandContext, type HtmlEdit
 export { HtmlEditorSurface, type HtmlEditorSurfaceOptions } from './components/editors/htmleditor/HtmlEditorSurface';
 export { HtmlEditorToolbar } from './components/editors/htmleditor/HtmlEditorToolbar';
 export { HtmlEditorInspector } from './components/editors/htmleditor/HtmlEditorInspector';
+export { aggregateHtmlEditorInspectorValues } from './components/editors/htmleditor/HtmlEditorInspection';
+export type { HtmlEditorInspectorValue, HtmlEditorInspectorValueState, HtmlEditorInspectionContext,
+    HtmlEditorInspectorTargets, HtmlEditorResolvedInspection, HtmlEditorInspectorCommandContext,
+    HtmlEditorInspectionRow, HtmlEditorInspectorFieldPresentation, HtmlEditorInspectorField,
+    HtmlEditorResolvedInspectorField } from './components/editors/htmleditor/HtmlEditorInspection';
 export type { HtmlEditorNodeCoverage } from './components/editors/htmleditor/HtmlEditorRange';
 export type { HtmlEditorNode, HtmlEditorNodeId, HtmlEditorText, HtmlEditorElement, HtmlEditorStyle, HtmlEditorDocument, HtmlEditorPositionState, HtmlEditorSelectionState } from './components/editors/htmleditor/HtmlEditorModel';
 export { getHtmlEditorStyle, setHtmlEditorStyle, removeHtmlEditorStyle } from './components/editors/htmleditor/HtmlEditorStyles';

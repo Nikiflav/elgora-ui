@@ -11,6 +11,16 @@ export default {
   "source": "src/components/popup/PopupMenu.ts",
   "members": [
     {
+      "name": "color",
+      "type": "string | undefined",
+      "description": "CSS color shown as a swatch before the label; empty string indicates no explicit color.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/popup/PopupMenu.ts",
+      "kind": "property"
+    },
+    {
       "name": "key",
       "type": "string | number | undefined",
       "description": "Stable identity used by the VNode reconciler when menu items change.",

@@ -81,6 +81,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "modelVersion",
+      "type": "number",
+      "description": "Monotonic model generation for pinned inspector edits. Replacement, Undo/Redo\nand accepted transactions advance it before selection/document events fire.\nIt is runtime metadata, never serialized or restored from an Undo snapshot.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "kind": "property"
+    },
+    {
       "name": "findElement",
       "type": "(nodeId: string | undefined) => HtmlEditorElement | undefined",
       "description": "Finds an authored element without cloning the document; callers must not mutate it.",
@@ -168,8 +178,38 @@ export default {
       "signature": "(mark: \"bold\" | \"italic\", selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState"
     },
     {
+      "name": "getTextStyleValues",
+      "type": "(property: string, selection?: HtmlEditorSelectionState | undefined) => (string | undefined)[]",
+      "description": "Reads authored text style values over the same fragments used by text formatting.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "property",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "selection",
+          "type": "HtmlEditorSelectionState | undefined",
+          "optional": true,
+          "defaultValue": "this.selection",
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "(string | undefined)[]",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(property: string, selection?: HtmlEditorSelectionState | undefined) => (string | undefined)[]"
+    },
+    {
       "name": "selectNode",
-      "type": "(nodeId: string | undefined) => boolean",
+      "type": "(nodeId: string | undefined, extend?: boolean) => boolean",
       "description": "Selects a complete model node while retaining the same model/history contract as text selection.",
       "tags": [],
       "topics": [],
@@ -181,6 +221,13 @@ export default {
           "type": "string | undefined",
           "optional": false,
           "description": ""
+        },
+        {
+          "name": "extend",
+          "type": "boolean",
+          "optional": true,
+          "defaultValue": "false",
+          "description": ""
         }
       ],
       "returns": {
@@ -188,7 +235,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(nodeId: string | undefined) => boolean"
+      "signature": "(nodeId: string | undefined, extend?: boolean) => boolean"
     },
     {
       "name": "setSelectedNodes",
@@ -230,7 +277,7 @@ export default {
         },
         {
           "name": "patch",
-          "type": "Partial<Pick<HtmlEditorElement, \"attributes\" | \"tag\" | \"classes\" | \"styles\">>",
+          "type": "Partial<Pick<HtmlEditorElement, \"tag\" | \"attributes\" | \"classes\" | \"styles\">>",
           "optional": false,
           "description": ""
         }
@@ -241,6 +288,29 @@ export default {
       },
       "kind": "method",
       "signature": "(nodeId: string, patch: Partial<Pick<HtmlEditorElement, \"tag\" | \"classes\" | \"styles\" | \"attributes\">>) => boolean"
+    },
+    {
+      "name": "updateElements",
+      "type": "(updates: readonly { nodeId: string; patch: Partial<Pick<HtmlEditorElement, \"tag\" | \"classes\" | \"styles\" | \"attributes\">>; }[]) => boolean",
+      "description": "Applies several authored element patches in one undoable inspector transaction.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "updates",
+          "type": "readonly { nodeId: string; patch: Partial<Pick<HtmlEditorElement, \"tag\" | \"classes\" | \"styles\" | \"attributes\">>; }[]",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(updates: readonly { nodeId: string; patch: Partial<Pick<HtmlEditorElement, \"tag\" | \"classes\" | \"styles\" | \"attributes\">>; }[]) => boolean"
     },
     {
       "name": "selection",
@@ -296,19 +366,27 @@ export default {
     },
     {
       "name": "selectedNodeClientRects",
-      "type": "() => { nodeId: string; rect: DOMRect; }[]",
+      "type": "(nodeIds?: readonly string[]) => { nodeId: string; rect: DOMRect; }[]",
       "description": "Returns viewport rectangles for independently selected structural nodes.",
       "tags": [],
       "topics": [],
       "optional": false,
       "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "nodeIds",
+          "type": "readonly string[]",
+          "optional": true,
+          "defaultValue": "this.selectedNodeIds",
+          "description": ""
+        }
+      ],
       "returns": {
         "type": "{ nodeId: string; rect: DOMRect }[]",
         "description": ""
       },
       "kind": "method",
-      "signature": "() => { nodeId: string; rect: DOMRect; }[]"
+      "signature": "(nodeIds?: readonly string[]) => { nodeId: string; rect: DOMRect; }[]"
     },
     {
       "name": "selectionContainerClientRects",

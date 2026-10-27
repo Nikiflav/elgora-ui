@@ -67,6 +67,88 @@ export default {
       "signature": "(targetId?: string) => HtmlEditorCommandContext"
     },
     {
+      "name": "inspectionContext",
+      "type": "(nodeIds?: readonly string[]) => HtmlEditorInspectionContext",
+      "description": "Captures inspection intent without cloning the document or changing focus.\nInspected element IDs and the remembered text range coexist. Tree navigation\ncan change the inspected elements without widening the remembered range.",
+      "tags": [
+        {
+          "name": "example",
+          "text": "const context = registry.inspectionContext([imageId]);\nconst fields = registry.getInspectorFields(context);\n// A DataForm adapter retains a field binding until commit/cancel, then\n// submits a user-chosen value with registry.executeInspectorField(binding, value)."
+        }
+      ],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "parameters": [
+        {
+          "name": "nodeIds",
+          "type": "readonly string[]",
+          "optional": true,
+          "defaultValue": "[]",
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorInspectionContext",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(nodeIds?: readonly string[]) => HtmlEditorInspectionContext"
+    },
+    {
+      "name": "getInspectorFields",
+      "type": "(context?: HtmlEditorInspectionContext) => HtmlEditorResolvedInspectorField[]",
+      "description": "Resolves registered contributions. Element-area fields must cover every\ninspected element; text-area fields use the independent range. Every command\nchooses its own eligible targets, so alignment may bind blocks while Bold\nbinds text fragments. Empty scopes are omitted; disabled fields stay visible.\nNo built-in contributions are migrated automatically by this scaffold.\nCapture fresh bindings after an accepted model change; do not recreate them\nhalfway through an active property edit or read them as mutable node objects.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "parameters": [
+        {
+          "name": "context",
+          "type": "HtmlEditorInspectionContext",
+          "optional": true,
+          "defaultValue": "this.inspectionContext()",
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorResolvedInspectorField[]",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(context?: HtmlEditorInspectionContext) => HtmlEditorResolvedInspectorField[]"
+    },
+    {
+      "name": "executeInspectorField",
+      "type": "(field: HtmlEditorResolvedInspectorField, value?: HtmlEditorInspectorValue) => boolean",
+      "description": "Submits a captured binding through the same command dispatcher as menus and\ntoolbar. Rejects replaced definitions, stale documents and lost edit permission.\nOne command must apply all captured targets in one model transaction; never\nimplement a multi-target command as repeated calls to updateElement().",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "parameters": [
+        {
+          "name": "field",
+          "type": "HtmlEditorResolvedInspectorField",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "value",
+          "type": "HtmlEditorInspectorValue | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(field: HtmlEditorResolvedInspectorField, value?: HtmlEditorInspectorValue) => boolean"
+    },
+    {
       "name": "getCommands",
       "type": "(context?: HtmlEditorCommandContext) => HtmlEditorUiCommand[]",
       "description": "Resolves visible commands and their current enabled state for a UI surface.",
@@ -92,7 +174,7 @@ export default {
     },
     {
       "name": "execute",
-      "type": "(id: string, context?: HtmlEditorCommandContext, value?: string) => boolean",
+      "type": "(id: string, context?: HtmlEditorCommandContext, value?: HtmlEditorInspectorValue) => boolean",
       "description": "Executes one command by id using the same registry as every menu surface.",
       "tags": [],
       "topics": [],
@@ -114,7 +196,7 @@ export default {
         },
         {
           "name": "value",
-          "type": "string | undefined",
+          "type": "HtmlEditorInspectorValue | undefined",
           "optional": true,
           "description": ""
         }
@@ -124,7 +206,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(id: string, context?: HtmlEditorCommandContext, value?: string) => boolean"
+      "signature": "(id: string, context?: HtmlEditorCommandContext, value?: HtmlEditorInspectorValue) => boolean"
     },
     {
       "name": "label",

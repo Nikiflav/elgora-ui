@@ -1,23 +1,28 @@
 import { Component } from "../../../core/Component";
-import { e } from "../../../core/e";
+import { e, v } from "../../../core/e";
 import type { LocalizedMessages } from "../../../localization/Messages";
 import type { LocaleOptions } from "../../../localization/Localization";
 import { Popover } from "../../popup/popover";
+import { PopupMenu } from "../../popup/PopupMenu";
 import { TreeView } from "../../tree-view/TreeView";
-import { LookupEditor } from "../LookupEditor";
+import { TabView } from "../../tab-view/TabView";
+import { DataForm, type DataFormAdapter, type DataFormLayoutGroup, type DataFormLayoutRow } from "../../dataform/DataForm";
+import type { DataViewField, DataViewButton, FieldLookup } from "../../../data/DataViewField";
+import type { LookupQuery } from "../LookupEditor";
 import type { HtmlEditorSurface } from "./HtmlEditorSurface";
 import type { HtmlEditorElement, HtmlEditorNode, HtmlEditorText } from "./HtmlEditorModel";
 import type { HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { isAtomic } from "./HtmlEditorStructure";
-import type { HtmlEditorCommandRegistry, HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
+import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
+import type { HtmlEditorInspectionContext, HtmlEditorInspectionRow, HtmlEditorResolvedInspectorField } from "./HtmlEditorInspection";
 
-let nextInspector = 0;
 
 /** Inspector scaffold owned by HtmlEditor. Targets are previews, not structural editor selections. */
 export class HtmlEditorInspector extends Component {
-    private readonly breadcrumb: HTMLElement;
     private readonly selector: HTMLButtonElement;
-    private readonly tabs: HTMLButtonElement[];
+    private readonly selectorCoverage: HTMLButtonElement;
+    private readonly selectorRow: HTMLElement;
+    private readonly tabView: TabView;
     private readonly panels: HTMLElement[];
     private readonly nodes = new Map<string, HtmlEditorNode>();
     private readonly parents = new Map<string, HtmlEditorElement>();
@@ -25,54 +30,70 @@ export class HtmlEditorInspector extends Component {
     private targetId?: string;
     private mixed = false;
     private commonAncestorId?: string;
-    private breadcrumbKey = "";
-    private ancestorPopup?: Popover;
-    private ancestorAnchor?: HTMLButtonElement;
     private coverage: ReadonlyMap<string, HtmlEditorNodeCoverage> = new Map();
     private tree?: TreeView<HtmlEditorNode>;
     private popup?: Popover;
     private commandPopup?: Popover;
     private readonly basicPanel: HTMLElement;
-    private basicLookup?: LookupEditor<string, { id: string; text: string }>;
-    private basicLookupHost?: HTMLElement;
+    private basicForm?: DataForm<HtmlEditorInspectionRow>;
+    private inspectedIds: string[] = [];
     private basicRenderKey = "";
+    private basicRefreshQueued = false;
+    private choiceMenu?: PopupMenu;
+    /** User choices survive selection changes, including temporarily absent groups. */
+    private readonly categoryState = new Map<string, boolean>();
+
+    /** Current property targets, derived from the remembered editor selection. */
+    get inspectedElements(): readonly string[] { return [...this.inspectedIds]; }
 
     /** Connects one surface to the element navigator and placeholder property tabs. */
     constructor(private readonly surface: HtmlEditorSurface, private readonly messages: LocalizedMessages,
         private readonly commands: HtmlEditorCommandRegistry,
         private readonly localeOptions: LocaleOptions = {}) {
         super({ class: "elg-html-editor-inspector", role: "complementary" });
-        const id = `elg-html-inspector-${++nextInspector}`;
-        this.breadcrumb = e("nav", { class: "elg-html-editor-breadcrumb", hidden: true });
         this.selector = e("button", { type: "button", class: "elg-html-editor-node-selector",
             ui: ["elg", "btn", "neutral", "btn-ghost"], onclick: () => { void this.openElements(); } });
         this.selector.setAttribute("aria-haspopup", "dialog");
         this.selector.setAttribute("aria-expanded", "false");
-        const tablist = e("div", { class: "elg-html-editor-inspector-tabs", role: "tablist" });
+        this.selectorCoverage = e("button", { type: "button", class: "elg-html-editor-node-coverage",
+            onpointerdown: event => event.preventDefault(), onmousedown: event => event.preventDefault(),
+            onclick: event => {
+                event.stopPropagation();
+                if (!this.mixed && this.targetId && !this.selectorCoverage.disabled) {
+                    this.surface.selectNode(this.targetId);
+                    this.selectorCoverage.focus();
+                }
+            } });
+        this.selectorRow = e("div", { class: "elg-html-editor-selector-row" }, this.selectorCoverage, this.selector);
         this.basicPanel = e("div", { class: "elg-html-editor-basic-commands" });
-        this.panels = [0, 1].map(index => e("div", { id: `${id}-panel-${index}`, role: "tabpanel", tabIndex: 0 }));
-        this.tabs = [0, 1].map(index => {
-            const button = e("button", { id: `${id}-tab-${index}`, type: "button", role: "tab",
-                ui: ["elg", "btn", "btn-ghost"], onclick: () => this.selectTab(index) });
-            button.setAttribute("aria-controls", this.panels[index].id);
-            this.panels[index].setAttribute("aria-labelledby", button.id);
-            tablist.append(button);
-            return button;
+        this.tabView = new TabView({ label: this.messages.text("htmlEditorInspector.label"), items: [
+            { id: "basic", text: this.messages.text("htmlEditorInspector.properties"), content: this.basicPanel },
+            { id: "advanced", text: this.messages.text("htmlEditorInspector.advanced") }
+        ] });
+        this.panels = [this.tabView.getPanel("basic")!, this.tabView.getPanel("advanced")!];
+        this.append([this.selectorRow, this.tabView]);
+        this.subscribe(surface.documentChanged, () => {
+            // DataForm may be inside an active commit. Let its editor close before
+            // replacing the binding with the next model generation.
+            queueMicrotask(() => {
+                if (this.disposed.Value) return;
+                this.basicRenderKey = "";
+                this.refreshDocument();
+            });
         });
-        this.listen(tablist, "keydown", event => {
-            const key = event as KeyboardEvent;
-            if (key.altKey || key.ctrlKey || key.metaKey || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(key.key)) return;
-            const index = this.tabs.indexOf(key.target as HTMLButtonElement);
-            if (index < 0) return;
-            key.preventDefault();
-            const next = key.key === "Home" ? 0 : key.key === "End" ? 1 : 1 - index;
-            this.selectTab(next); this.tabs[next].focus();
+        this.subscribe(surface.selectionChanged, () => {
+            // Surface gestures update the inspected elements and remembered text
+            // range together; moving focus to inspector controls preserves both.
+            this.followSelection();
         });
-        this.append([this.breadcrumb, this.selector, tablist, ...this.panels]);
-        this.subscribe(surface.documentChanged, () => { this.basicRenderKey = ""; this.refreshDocument(); });
-        this.subscribe(surface.selectionChanged, () => this.followSelection());
+        this.subscribe(surface.selectedNodesChanged, ids => {
+            if (!ids.length) return;
+            this.inspectedIds = ids.filter(id => this.nodes.get(id)?.type === "element");
+            this.targetId = this.inspectedIds[0];
+            this.mixed = this.inspectedIds.length > 1;
+            this.update();
+        });
         this.subscribe(surface.interactionChanged, () => this.update());
-        this.selectTab(0);
         this.refreshDocument();
     }
 
@@ -97,7 +118,6 @@ export class HtmlEditorInspector extends Component {
 
     private refreshDocument(): void {
         this.popup?.hide();
-        this.ancestorPopup?.hide();
         this.nodes.clear(); this.parents.clear();
         const snapshot = this.surface.document;
         const visit = (node: HtmlEditorNode, parent?: HtmlEditorElement) => {
@@ -124,6 +144,17 @@ export class HtmlEditorInspector extends Component {
                 if (parent) owners.add(parent.id);
             } else if (selected && (isAtomic(selected) || !selected.children.length)) owners.add(id);
         }
+        // Fully covered outer elements own their descendants as a single target,
+        // regardless of whether the range originated in the tree or the surface.
+        const endpointAncestors = new Set(selection
+            ? [...this.elementPath(selection.anchor.nodeId), ...this.elementPath(selection.focus.nodeId)].map(node => node.id) : []);
+        const full = [...this.coverage].filter(([id, coverage]) => coverage === "full"
+            && !endpointAncestors.has(id) && this.nodes.get(id)?.type === "element").map(([id]) => id);
+        for (const id of full) {
+            if (this.elementPath(id).slice(0, -1).some(parent => full.includes(parent.id))) continue;
+            for (const owner of owners) if (this.elementPath(owner).some(parent => parent.id === id)) owners.delete(owner);
+            owners.add(id);
+        }
         this.mixed = owners.size > 1;
         let common: HtmlEditorElement[] | undefined;
         if (this.mixed) for (const id of owners) {
@@ -138,6 +169,7 @@ export class HtmlEditorInspector extends Component {
         this.commonAncestorId = common?.[common.length - 1]?.id;
         this.targetId = owners.size === 1 ? owners.values().next().value
             : node?.type === "element" ? node.id : node ? this.parents.get(node.id)?.id : undefined;
+        this.inspectedIds = owners.size ? [...owners] : this.targetId ? [this.targetId] : [];
         this.updateTreeCoverage();
         this.update();
     }
@@ -172,84 +204,15 @@ export class HtmlEditorInspector extends Component {
 
     private inspect(item: HtmlEditorElement): void {
         if (this.selector.disabled || this.disposed.Value || !this.nodes.has(item.id)) return;
-        this.popup?.hide(); this.ancestorPopup?.hide();
+        this.popup?.hide();
         this.targetId = item.id;
+        this.inspectedIds = [item.id];
         this.mixed = false;
-        this.surface.setSelectedNodes([item.id]);
+        this.surface.selectNode(item.id);
         this.update();
         this.selector.focus();
     }
 
-    private renderBreadcrumb(): void {
-        // A Mixed selector has no current tag, so include its common ancestor.
-        // The ordinary selector already shows the target: list only its parents.
-        const path = this.mixed ? this.elementPath(this.commonAncestorId) : this.elementPath(this.targetId).slice(0, -1);
-        const label = this.messages.text("htmlEditorInspector.ancestors");
-        const more = this.messages.text("htmlEditorInspector.moreAncestors");
-        this.breadcrumb.setAttribute("aria-label", label);
-        const key = JSON.stringify([this.selector.disabled, label, more,
-            this.messages.text("htmlEditorInspector.inspectAncestor", { tag: "" }),
-            path.map(item => [item.id, item.tag, item.attributes.id, item.classes])]);
-        // Permission/selection events often preserve the path. Keep its buttons
-        // (and any focused overflow anchor) rather than rebuilding on every update.
-        if (key === this.breadcrumbKey) return;
-        this.breadcrumbKey = key;
-        this.ancestorPopup?.hide();
-        this.breadcrumb.replaceChildren();
-        this.breadcrumb.hidden = !path.length;
-        const separator = () => e("span", { ariaHidden: "true", class: "elg-html-editor-breadcrumb-separator" }, "›");
-        if (path.length > 3) {
-            const earlier = path.slice(0, -3);
-            const button = e("button", { type: "button", ui: ["elg", "btn", "btn-ghost"],
-                disabled: this.selector.disabled, ariaLabel: more, title: more,
-                onclick: () => this.openAncestors(button, earlier) }, "…");
-            button.setAttribute("aria-haspopup", "dialog");
-            button.setAttribute("aria-expanded", "false");
-            this.breadcrumb.append(button, separator());
-        }
-        path.slice(-3).forEach((item, index) => {
-            if (index) this.breadcrumb.append(separator());
-            const title = `<${item.tag}>${item.attributes.id ? ` #${item.attributes.id}` : ""}${item.classes.map(name => ` .${name}`).join("")}`;
-            this.breadcrumb.append(e("button", { type: "button", ui: ["elg", "btn", "btn-ghost"],
-                disabled: this.selector.disabled, title,
-                ariaLabel: this.messages.text("htmlEditorInspector.inspectAncestor", { tag: item.tag }),
-                onclick: () => this.inspect(item) }, item.tag));
-        });
-    }
-
-    private openAncestors(anchor: HTMLButtonElement, items: HtmlEditorElement[]): void {
-        if (anchor.disabled || this.disposed.Value) return;
-        if (this.ancestorPopup?.isOpen() && this.ancestorAnchor === anchor) { this.ancestorPopup.hide(); return; }
-        this.popup?.hide();
-        this.ancestorAnchor = anchor;
-        if (!this.ancestorPopup) {
-            this.ancestorPopup = new Popover({ anchorElement: anchor, bindAnchorTarget: false, role: "dialog",
-                class: "elg-html-editor-ancestor-popup" });
-            this.addCleanup(this.ancestorPopup);
-            this.listen(this.ancestorPopup.dom, "toggle", () => {
-                const open = this.ancestorPopup!.isOpen();
-                this.ancestorAnchor?.setAttribute("aria-expanded", String(open));
-                if (!open) this.ancestorPopup!.hide();
-            });
-            this.listen(this.ancestorPopup.dom, "keydown", event => {
-                if ((event as KeyboardEvent).key === "Escape") {
-                    event.preventDefault(); this.ancestorPopup!.hide();
-                    (this.ancestorAnchor?.isConnected ? this.ancestorAnchor : this.selector).focus();
-                }
-            });
-        }
-        this.ancestorPopup.setAnchor(anchor);
-        this.ancestorPopup.dom.setAttribute("aria-label", this.messages.text("htmlEditorInspector.moreAncestors"));
-        this.ancestorPopup.setContent(items.map(item => {
-            const button = e("button", { type: "button", ui: ["elg", "btn", "btn-ghost"],
-                onclick: () => this.inspect(item) });
-            this.renderNodeLabel(button, item);
-            return button;
-        }));
-        this.ancestorPopup.mount(this.dom.ownerDocument.body);
-        this.ancestorPopup.show();
-        this.ancestorPopup.dom.querySelector<HTMLButtonElement>("button")?.focus();
-    }
 
     private openCommandMenu(anchor: HTMLButtonElement, item: HtmlEditorElement): void {
         if (this.disposed.Value) return;
@@ -316,84 +279,190 @@ export class HtmlEditorInspector extends Component {
         });
     }
 
-    private selectTab(index: number): void {
-        this.tabs.forEach((button, current) => {
-            button.setAttribute("aria-selected", String(current === index));
-            button.tabIndex = current === index ? 0 : -1;
-            this.panels[current].hidden = current !== index;
-        });
-    }
 
     private basicContext() { return this.commands.context(this.targetId); }
 
+    private basicInspectionContext(): HtmlEditorInspectionContext {
+        return this.commands.inspectionContext(this.inspectedIds);
+    }
+
+    private inspectorValue(binding: HtmlEditorResolvedInspectorField): any {
+        const value = binding.value;
+        return value?.kind === "value" ? value.value : value?.kind === "mixed" ? null : undefined;
+    }
+
+    private optionsLookup(binding: HtmlEditorResolvedInspectorField): FieldLookup<HtmlEditorInspectionRow> | undefined {
+        const options = binding.command.options;
+        if (!options?.length) return undefined;
+        return {
+            loadItems: async (query: LookupQuery) => {
+                const search = query.search.trim().toLocaleLowerCase();
+                const items = options.filter(option => !search || option.text.toLocaleLowerCase().includes(search));
+                const skip = query.skip ?? 0, top = query.top ?? items.length;
+                return { items: items.slice(skip, skip + top), totalCount: items.length };
+            },
+            getItemValue: item => item.id,
+            getItemText: item => item.text,
+            getValueText: value => options.find(option => option.id === value)?.text ?? String(value ?? ""),
+            popupWidth: 220,
+            popupHeight: 220,
+            resizable: false
+        };
+    }
+
+    private formField(binding: HtmlEditorResolvedInspectorField, row: HtmlEditorInspectionRow): DataViewField<HtmlEditorInspectionRow> {
+        const presentation = binding.definition.field ?? {};
+        const command = binding.command;
+        const field: DataViewField<HtmlEditorInspectionRow> = {
+            ...presentation,
+            name: command.id,
+            type: binding.definition.type,
+            hideLabel: binding.definition.type === "buttons" ? true : presentation.hideLabel,
+            caption: presentation.caption?.startsWith("htmlEditor")
+                ? this.messages.text(presentation.caption as never) : presentation.caption ?? this.commands.label(command),
+            readonly: presentation.readonly || !binding.enabled,
+            showInRow: () => true
+        };
+        if (binding.definition.type === "data" && binding.definition.presentation
+            && binding.definition.presentation !== "lookup" && command.options?.length) {
+            field.type = "buttons";
+            const value = binding.value?.kind === "value" ? binding.value.value : undefined;
+            if (binding.definition.presentation === "buttons") {
+                field.hideLabel = true;
+                field.buttons = command.options.map(option => ({ id: option.id, text: option.text,
+                    icon: option.icon ?? ({ default: "ri-format-clear", start: "ri-align-left", center: "ri-align-center", end: "ri-align-right" } as Record<string, string>)[option.id],
+                    appearance: option.icon || command.id === "block.align" ? "iconOnly" : "textOnly",
+                    ui: "btn-ghost", pressed: value === option.id, disabled: !binding.enabled || option.disabled,
+                    onClick: () => { this.commands.executeInspectorField(binding, option.id); } }));
+            } else {
+                const selected = command.options.find(option => option.id === value
+                    || binding.value?.kind === "unset" && option.id === "default");
+                field.buttons = [{ id: command.id, text: binding.value?.kind === "mixed"
+                    ? this.messages.text("htmlEditorInspector.mixed") : selected?.text ?? String(value ?? "—"),
+                    icon: selected?.icon ?? "ri-arrow-down-s-line", appearance: "textAndIcon",
+                    render: command.options.some(option => option.color !== undefined) ? () => v("span", {
+                        class: "elg-html-editor-color-choice"
+                    }, v("span", { class: "elg-menu-color-swatch", ariaHidden: "true",
+                        "data-empty": !selected?.color,
+                        style: { backgroundColor: selected?.color ?? (typeof value === "string" ? value : "transparent") }
+                    }), v("span", binding.value?.kind === "mixed" ? this.messages.text("htmlEditorInspector.mixed")
+                        : selected?.text ?? String(value ?? "—")),
+                    v("i", { class: "ri-arrow-down-s-line", ariaHidden: "true" })) : undefined,
+                    disabled: !binding.enabled, onClick: async ({ owner }) => {
+                        const form = owner as DataForm<HtmlEditorInspectionRow>;
+                        const anchor = [...form.dom.querySelectorAll<HTMLElement>("[data-field]")]
+                            .find(host => host.dataset.field === command.id)?.querySelector<HTMLButtonElement>("button");
+                        if (!anchor) return;
+                        if (!this.choiceMenu) {
+                            this.choiceMenu = new PopupMenu({ density: "compact" });
+                            this.choiceMenu.mount(this.dom.ownerDocument.body);
+                            this.addCleanup(this.choiceMenu);
+                        }
+                        await this.choiceMenu.show({ anchor, items: command.options!.map(option => ({ key: option.id,
+                            text: option.text, icon: option.icon, color: option.color, disabled: option.disabled,
+                            checked: () => selected?.id === option.id,
+                            action: () => { this.commands.executeInspectorField(binding, option.id); } })) });
+                    } }];
+            }
+        } else if (binding.definition.type === "data") {
+            field.lookup = presentation.lookup ?? this.optionsLookup(binding);
+            field.getValue = () => this.inspectorValue(row.fields.get(command.id)!);
+        } else {
+            const state = this.commands.state(command, binding.context);
+            const button: DataViewButton<HtmlEditorInspectionRow> = {
+                id: command.id,
+                text: this.commands.label(command),
+                icon: command.icon,
+                appearance: "iconOnly",
+                ui: "btn-ghost",
+                tooltip: this.commands.label(command),
+                pressed: state === "mixed" ? "mixed" : state === "on",
+                disabled: !binding.enabled,
+                onClick: async () => {
+                    this.commands.executeInspectorField(binding);
+                }
+            };
+            field.buttons = [button];
+        }
+        return field;
+    }
+
     private renderBasicCommands(): void {
+        this.choiceMenu?.hide();
+        for (const [id, collapsed] of this.basicForm?.getGroupState() ?? []) this.categoryState.set(id, collapsed);
+        this.basicForm?.dispose(); this.basicForm = undefined;
         this.basicPanel.replaceChildren();
-        const context = this.basicContext();
-        const commands = this.commands.getCommands(context).filter(command => command.id !== "select-node" && command.id !== "undo" && command.id !== "redo");
-        if (!commands.length) {
+        const context = this.basicInspectionContext();
+        const fields = this.commands.getInspectorFields(context);
+        if (!fields.length) {
             this.basicPanel.append(e("span", { class: "elg-html-editor-inspector-empty" }, this.messages.text("htmlEditorInspector.propertiesHint")));
             return;
         }
-        const list = e("div", { class: "elg-html-editor-basic-command-list" });
-        commands.forEach(command => {
-            const row = e("div", { class: "elg-html-editor-basic-command-row" });
-            const button = e("button", { type: "button", class: "elg-html-editor-basic-command-button",
-                disabled: !this.commands.enabled(command, context), title: this.commands.label(command),
-                onclick: () => this.activateBasicCommand(command) });
-            if (command.icon) button.append(e("i", { class: `elg-icon ${command.icon}`, ariaHidden: "true" }));
-            button.append(document.createTextNode(this.commands.label(command)));
-            const state = this.commands.state(command, context);
-            if (state) button.dataset.commandState = state;
-            row.append(button);
-            if (command.options?.length) {
-                const value = command.getValue?.(context);
-                const current = value?.mixed ? "" : value?.value ?? "";
-                const summary = command.options.find(option => option.id === current)?.text
-                    ?? (value?.mixed ? this.messages.text("htmlEditorInspector.mixed") : "—");
-                const optionButton = e("button", { type: "button", class: "elg-html-editor-basic-command-value",
-                    disabled: !this.commands.enabled(command, context), title: summary,
-                    onclick: () => this.activateBasicCommand(command) }, summary);
-                row.append(optionButton);
+        const row: HtmlEditorInspectionRow = { context, fields: new Map(fields.map(field => [field.command.id, field])) };
+        const ordered = [...fields.filter(field => field.definition.area === "text"),
+            ...fields.filter(field => field.definition.area !== "text")];
+        const dataFields = ordered.map(field => this.formField(field, row));
+        const adapter: DataFormAdapter<HtmlEditorInspectionRow> = {
+            getValue: (_row, field) => this.inspectorValue(row.fields.get(field.name)!),
+            getText: async (_row, field, value) => {
+                const binding = row.fields.get(field.name);
+                if (!binding?.value || binding.value.kind === "unset") return "—";
+                if (binding.value.kind === "mixed") return this.messages.text("htmlEditorInspector.mixed");
+                if (field.lookup) return field.lookup.getValueText(value, { row, field, value });
+                return String(value ?? "");
+            },
+            setValue: async (_row, field, value) => {
+                const binding = row.fields.get(field.name);
+                if (!binding || !this.commands.executeInspectorField(binding, value))
+                    throw new Error(this.messages.text("htmlEditorInspector.propertiesHint"));
             }
-            list.append(row);
-        });
-        this.basicPanel.append(list);
-        this.renderBasicLookup();
+        };
+        const category = (field: HtmlEditorResolvedInspectorField) => field.definition.type === "buttons" ? "format"
+            : field.definition.group === "block" ? "paragraph" : field.definition.group ?? "appearance";
+        const groups = new Map<string, HtmlEditorResolvedInspectorField[]>();
+        for (const field of ordered) {
+            const key = category(field);
+            groups.set(key, [...groups.get(key) ?? [], field]);
+        }
+        const labels: Record<string, string> = {
+            format: this.messages.text("htmlEditorInspector.formatCategory"),
+            typography: this.messages.text("htmlEditorInspector.typographyCategory"),
+            paragraph: this.messages.text("htmlEditorInspector.paragraphCategory"),
+            appearance: this.messages.text("htmlEditorInspector.appearanceCategory")
+        };
+        const layout: DataFormLayoutGroup[] = [];
+        for (const [key, bindings] of groups) {
+            const rows: DataFormLayoutRow[] = [];
+            const actions: { field: string }[] = [];
+            for (const binding of bindings) {
+                const field = dataFields.find(field => field.name === binding.command.id)!;
+                if (binding.definition.type === "buttons") {
+                    actions.push({ field: field.name });
+                } else {
+                    if (binding.definition.presentation === "menu") {
+                        field.buttons?.forEach(button => button.ui = ["neutral", "w-100"]);
+                    }
+                    rows.push({ fields: [{ field: field.name, width: "100%",
+                        labelPosition: binding.command.id === "block.heading" || field.hideLabel ? "none" : "start" }] });
+                }
+            }
+            if (actions.length) rows.push({ fields: actions, labelPosition: "none", ui: ["gap-0"] });
+            layout.push({ id: key, title: labels[key] ?? key, collapsible: true, rows });
+        }
+        this.basicForm = new DataForm({ data: row, fields: dataFields, layout, groupState: this.categoryState,
+            class: "elg-html-editor-basic-form", labelPosition: "start", surface: "none",
+            allowEdit: true, locale: this.localeOptions.locale, localization: this.localeOptions.localization, adapter });
+        this.basicForm.editEnded.subscribe(() => this.queueBasicRefresh());
+        this.basicForm.mount(this.basicPanel);
     }
 
-    private activateBasicCommand(command: HtmlEditorUiCommand): void {
-        if (!command.options?.length) { this.commands.execute(command.id, this.basicContext()); return; }
-        this.activeBasicCommand = command;
-        this.renderBasicLookup();
-        this.basicLookup?.focus();
-    }
-
-    private activeBasicCommand?: HtmlEditorUiCommand;
-
-    private renderBasicLookup(): void {
-        this.basicLookupHost?.remove(); this.basicLookupHost = undefined;
-        this.basicLookup?.dispose(); this.basicLookup = undefined;
-        const command = this.activeBasicCommand;
-        if (!command?.options?.length) return;
-        const context = this.basicContext();
-        const current = command.getValue?.(context)?.value ?? command.options[0].id;
-        const items = command.options.map(option => ({ id: option.id, text: option.text }));
-        this.basicLookupHost = e("div", { class: "elg-html-editor-basic-lookup" });
-        this.basicLookup = new LookupEditor<string, { id: string; text: string }>({
-            value: current, label: this.commands.label(command), popupWidth: 220, popupHeight: 220, resizable: false,
-            locale: this.localeOptions.locale, localization: this.localeOptions.localization,
-            columns: [{ name: "text", caption: "Text" }],
-            loadItems: async () => ({ items, totalCount: items.length }),
-            getItemValue: item => item.id, getItemText: item => item.text, getValueText: value => items.find(item => item.id === value)?.text ?? value,
-            onCommit: async value => {
-                const succeeded = this.commands.execute(command.id, context, value);
-                this.activeBasicCommand = undefined;
-                this.basicRenderKey = "";
-                if (succeeded) this.update();
-            }
+    private queueBasicRefresh(): void {
+        if (this.basicRefreshQueued) return;
+        this.basicRefreshQueued = true;
+        setTimeout(() => {
+            this.basicRefreshQueued = false;
+            if (!this.disposed.Value) this.update();
         });
-        this.basicLookup.mount(this.basicLookupHost);
-        this.basicPanel.append(this.basicLookupHost);
     }
 
     /** Updates labels/availability without cloning the document or moving DOM focus. */
@@ -405,14 +474,23 @@ export class HtmlEditorInspector extends Component {
             this.messages.text(this.mixed ? "htmlEditorInspector.mixed" : "htmlEditorInspector.chooseElement")));
         this.selector.title = this.selector.textContent;
         this.selector.disabled = this.surface.content.getAttribute("aria-disabled") === "true";
-        this.renderBreadcrumb();
+        const coverage = !this.mixed && target ? this.coverage.get(target.id) ?? "none" : "none";
+        this.selectorRow.dataset.htmlEditorCoverage = coverage;
+        this.selectorCoverage.hidden = this.mixed || target?.type !== "element";
+        this.selectorCoverage.disabled = this.selector.disabled || !target;
+        const hint = this.messages.text(coverage === "full" ? "htmlEditorInspector.fullySelected"
+            : coverage === "partial" ? "htmlEditorInspector.partiallySelectedHint" : "htmlEditorInspector.notSelectedHint");
+        this.selectorCoverage.title = hint;
+        this.selectorCoverage.setAttribute("aria-label", hint);
         if (this.selector.disabled) this.popup?.hide();
-        this.tabs[0].textContent = this.messages.text("htmlEditorInspector.properties");
-        this.tabs[1].textContent = this.messages.text("htmlEditorInspector.advanced");
-        const basicKey = `${this.targetId ?? ""}|${this.mixed}|${this.surface.content.getAttribute("aria-disabled") ?? "false"}`;
+        this.tabView.setTabText("basic", this.messages.text("htmlEditorInspector.properties"));
+        this.tabView.setTabText("advanced", this.messages.text("htmlEditorInspector.advanced"));
+        const basicKey = `${this.inspectedIds.join(",")}|${this.mixed}|${this.surface.modelVersion}|${JSON.stringify(this.surface.selection)}|${this.surface.editable}`;
         if (basicKey !== this.basicRenderKey) {
-            this.basicRenderKey = basicKey;
-            this.renderBasicCommands();
+            if (!this.basicForm?.isEditing) {
+                this.basicRenderKey = basicKey;
+                this.renderBasicCommands();
+            }
         }
         this.panels[0].replaceChildren(this.basicPanel);
         this.panels[1].textContent = this.messages.text("htmlEditorInspector.advancedHint");
@@ -421,7 +499,6 @@ export class HtmlEditorInspector extends Component {
     /** Opens a lazy model tree. Choosing a node previews it without changing caret, HTML or history. */
     async openElements(): Promise<void> {
         if (this.disposed.Value || this.selector.disabled) return;
-        this.ancestorPopup?.hide();
         if (this.popup?.isOpen()) { this.popup.hide(); return; }
         if (!this.popup) {
             this.tree = new TreeView<HtmlEditorNode>({ ...this.localeOptions,
@@ -437,8 +514,16 @@ export class HtmlEditorInspector extends Component {
                         ariaLabel: this.messages.text("htmlEditorInspector.notSelectedHint"),
                         onclick: event => {
                             event.stopPropagation();
-                            if ((this.coverage.get(item.id) ?? "none") !== "full")
-                                this.commands.execute("select-node", this.commands.context(item.id));
+                            if ((this.coverage.get(item.id) ?? "none") !== "full") {
+                                // select-node restores a model range synchronously;
+                                // preserve explicit element mode for this command.
+                                if (item.type === "element") {
+                                    this.inspectedIds = [item.id];
+                                    this.targetId = item.id;
+                                    this.mixed = false;
+                                }
+                                this.surface.selectNode(item.id, true);
+                            }
                         } });
                     element.querySelector(item.type === "element" ? ".elg-html-editor-node-tag" : ".elg-html-editor-node-text-tag")!.after(indicator);
                     if (item.type === "element") {
@@ -482,8 +567,8 @@ export class HtmlEditorInspector extends Component {
             });
             this.subscribe(this.tree.selectionChanged, item => {
                 if (!item) return;
-                const target = item.type === "element" ? item : this.parents.get(item.id);
-                if (target) this.inspect(target);
+                if (item.type === "element") this.inspect(item);
+                else this.surface.selectNode(item.id);
             });
         }
         this.popup.mount(this.dom.ownerDocument.body);
@@ -509,5 +594,5 @@ export class HtmlEditorInspector extends Component {
         if (!this.disposed.Value && this.popup.isOpen()) this.tree!.dom.querySelector<HTMLElement>('[role="tree"]')?.focus();
     }
 
-    protected override onUnmount(): void { this.popup?.hide(); this.commandPopup?.hide(); this.ancestorPopup?.hide(); }
+    protected override onUnmount(): void { this.basicForm?.dispose(); this.choiceMenu?.hide(); this.popup?.hide(); this.commandPopup?.hide(); }
 }

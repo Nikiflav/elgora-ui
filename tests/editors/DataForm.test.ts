@@ -6,6 +6,39 @@ const owned: DataForm<any>[] = [];
 afterEach(() => { owned.splice(0).forEach(form => form.dispose()); });
 
 describe("DataForm", () => {
+    it("interleaves groups and rows and restores collapsed state by stable ID", () => {
+        const fields = ["a", "b", "c", "d"].map(name => ({ name }));
+        const layout = [
+            { fields: [{ field: "a" }] },
+            { id: "middle", title: "Middle", collapsible: true, rows: [{ fields: [{ field: "b" }] }] },
+            { fields: [{ field: "c" }] },
+            { id: "last", title: "Last", rows: [{ fields: [{ field: "d" }] }] }
+        ];
+        const form = new DataForm({ data: {}, fields, layout }); owned.push(form);
+        expect([...form.dom.querySelectorAll<HTMLElement>(".elg-data-form-field")].map(field => field.dataset.field)).toEqual(["a", "b", "c", "d"]);
+        const group = form.dom.querySelector("details")!;
+        expect(group.open).toBe(true);
+        group.open = false;
+        const replacement = new DataForm({ data: {}, fields, layout, groupState: form.getGroupState() }); owned.push(replacement);
+        expect(replacement.dom.querySelector("details")!.open).toBe(false);
+        expect(replacement.dom.querySelector('section[data-group="last"] h3')!.textContent).toBe("Last");
+    });
+    it("renders mixed rows in layout order and preserves direct action hosts", async () => {
+        const form = new DataForm({ data: { a: "A", b: "B" }, fields: [
+            { name: "a" }, { name: "b" }, { name: "actions", type: "buttons", buttons: [{ id: "go", text: "Go" }] }
+        ], layout: [
+            { display: "grid", labelPosition: "start", fields: [{ field: "b", span: 6 }, { field: "a", span: 6 }] },
+            { labelPosition: "none", fields: [{ field: "actions" }] }
+        ] });
+        owned.push(form); form.mount(document.body);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const rows = form.dom.querySelectorAll(".elg-data-form-layout-row");
+        expect(rows).toHaveLength(2);
+        expect([...form.dom.querySelectorAll<HTMLElement>(".elg-data-form-field")].map(row => row.dataset.field)).toEqual(["b", "a", "actions"]);
+        const host = rows[1].querySelector(".elg-data-form-buttons-host")!;
+        expect(host.querySelector(":scope > button")).not.toBeNull();
+        expect(rows[1].querySelector("label")).toBeNull();
+    });
     it("edits a plain object through its generated adapter", async () => {
         const order = { id: 1, name: "Initial" };
         const form = new DataForm({ data: order, fields: [{ name: "name", caption: "Name" }] });

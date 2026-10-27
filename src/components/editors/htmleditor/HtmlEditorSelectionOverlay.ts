@@ -30,6 +30,29 @@ export class HtmlEditorSelectionOverlay extends Component {
     private frame?: number;
     private host?: HTMLElement;
     private editorFocused = false;
+    private inspectorFocused = false;
+    private inspectionTargets?: () => readonly string[];
+
+    /** Outlines property targets while controls edit a collapsed selection, without changing its range. */
+    connectInspector(inspector: HTMLElement, targets: () => readonly string[]): void {
+        this.inspectionTargets = targets;
+        // Action buttons preserve the native editor range with preventDefault,
+        // so interaction must also be detected before their pointer handlers run.
+        const interact = (event: Event) => {
+            const target = event.target;
+            this.inspectorFocused = target instanceof Element && (inspector.contains(target)
+                || this.inspectorFocused && !!target.closest("[popover]"));
+            this.schedule();
+        };
+        this.listen(inspector.ownerDocument, "pointerdown", interact, { capture: true });
+        this.listen(inspector, "click", () => { this.inspectorFocused = true; this.schedule(); }, { capture: true });
+        this.listen(inspector.ownerDocument, "focusin", event => {
+            const target = event.target;
+            this.inspectorFocused = target instanceof Element && (inspector.contains(target)
+                || this.inspectorFocused && !!target.closest("[popover]"));
+            this.schedule();
+        });
+    }
 
     constructor(private readonly surface: HtmlEditorSurface) {
         super({ class: "elg-html-editor-selection-overlay", ariaHidden: "true" });
@@ -42,7 +65,7 @@ export class HtmlEditorSelectionOverlay extends Component {
     attach(host: HTMLElement): void {
         this.host = host;
         host.append(this.dom);
-        this.listen(this.surface.content, "focusin", () => { this.editorFocused = true; this.schedule(); });
+        this.listen(this.surface.content, "focusin", () => { this.editorFocused = true; this.inspectorFocused = false; this.schedule(); });
         this.listen(this.surface.content, "focusout", () => { this.editorFocused = false; this.schedule(); });
         this.listen(this.surface.content, "scroll", () => this.schedule(), { passive: true });
         this.listen(host.ownerDocument.defaultView!, "resize", () => this.schedule(), { passive: true });
@@ -64,15 +87,25 @@ export class HtmlEditorSelectionOverlay extends Component {
         const hostRect = host.getBoundingClientRect();
         const textLayer = e("div", { class: "elg-html-editor-text-selection-layer" });
         const containerLayer = e("div", { class: "elg-html-editor-container-selection-layer" });
-        const textRects = this.editorFocused ? [] : mergeTextRects(this.surface.selectionFlowRects());
+        const textRects = this.editorFocused && !this.inspectorFocused ? [] : mergeTextRects(this.surface.selectionFlowRects());
         textRects.forEach(rect => textLayer.append(e("span", { class: "elg-html-editor-selection-rect", style: {
             left: `${rect.left - hostRect.left}px`,
             top: `${rect.top - hostRect.top}px`,
             width: `${rect.width}px`, height: `${rect.height}px`
         } })));
         const containerRects = this.surface.selectionContainerClientRects();
+        const inspectionIds = new Set(this.inspectorFocused ? this.inspectionTargets?.() ?? [] : []);
+        const selection = this.surface.selection;
+        if (this.inspectorFocused && selection && selection.anchor.nodeId === selection.focus.nodeId
+            && selection.anchor.offset === selection.focus.offset) {
+            for (const target of this.surface.selectedNodeClientRects(this.inspectionTargets?.() ?? [])) {
+                if (!containerRects.some(existing => existing.nodeId === target.nodeId))
+                    containerRects.push({ ...target, kind: "selected" });
+            }
+        }
         containerRects.forEach(({ nodeId, rect, kind }) => containerLayer.append(e("span", {
             class: "elg-html-editor-container-selection-rect", "data-html-editor-node-id": nodeId,
+            "data-inspection-target": inspectionIds.has(nodeId) ? "true" : undefined,
             "data-html-editor-container-kind": kind,
             style: { left: `${rect.left - hostRect.left}px`, top: `${rect.top - hostRect.top}px`,
                 width: `${rect.width}px`, height: `${rect.height}px` }
@@ -86,5 +119,6 @@ export class HtmlEditorSelectionOverlay extends Component {
         this.frame = undefined;
         this.host = undefined;
         this.editorFocused = false;
+        this.inspectorFocused = false;
     }
 }

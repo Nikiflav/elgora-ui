@@ -10,6 +10,8 @@ export type { RemixIcon } from "../../core/RemixIcon";
 
 /** A declarative action, link, divider, or nested submenu entry. */
 export interface MenuItem {
+    /** CSS color shown as a swatch before the label; empty string indicates no explicit color. */
+    color?: string;
     /** Stable identity used by the VNode reconciler when menu items change. */
     key?: string | number;
     /** Visible item label. */
@@ -233,7 +235,10 @@ export class PopupMenu extends Component {
             const children = subItems || [];
             const hasSubmenu = subItems !== null;
             const open = this.openItems.has(id);
-            const icon = v("i", {
+            const icon = item.color !== undefined ? v("span", {
+                class: "elg-menu-color-swatch", ariaHidden: "true",
+                "data-empty": item.color === "", style: { backgroundColor: item.color || "transparent" }
+            }) : v("i", {
                 className: `elg-menu-item-icon${item.icon ? ` ${item.icon}` : ""}`,
                 ariaHidden: "true"
             } as any);
