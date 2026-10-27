@@ -14,7 +14,7 @@ import type { HtmlEditorElement, HtmlEditorNode, HtmlEditorText } from "./HtmlEd
 import type { HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { isAtomic } from "./HtmlEditorStructure";
 import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
-import type { HtmlEditorInspectionContext, HtmlEditorInspectionRow, HtmlEditorResolvedInspectorField } from "./HtmlEditorInspection";
+import type { HtmlEditorInspectionContext, HtmlEditorInspectionRow, HtmlEditorInspectorTargets, HtmlEditorResolvedInspectorField } from "./HtmlEditorInspection";
 
 
 /** Inspector scaffold owned by HtmlEditor. Targets are previews, not structural editor selections. */
@@ -39,12 +39,20 @@ export class HtmlEditorInspector extends Component {
     private inspectedIds: string[] = [];
     private basicRenderKey = "";
     private basicRefreshQueued = false;
+    private inspectionVersion = 0;
     private choiceMenu?: PopupMenu;
     /** User choices survive selection changes, including temporarily absent groups. */
     private readonly categoryState = new Map<string, boolean>();
 
     /** Current property targets, derived from the remembered editor selection. */
     get inspectedElements(): readonly string[] { return [...this.inspectedIds]; }
+    /** Monotonic version for consumers that render snapshot-based field states. */
+    get stateVersion(): number { return this.inspectionVersion; }
+    /** Resolves the same command-specific targets used by the inspector field. */
+    getCommandPreviewTargets(commandId: string): HtmlEditorInspectorTargets | undefined {
+        return this.commands.getInspectorFields(this.basicInspectionContext()).find(field => field.command.id === commandId)
+            ?.context.inspection.targets;
+    }
 
     /** Connects one surface to the element navigator and placeholder property tabs. */
     constructor(private readonly surface: HtmlEditorSurface, private readonly messages: LocalizedMessages,
@@ -72,28 +80,6 @@ export class HtmlEditorInspector extends Component {
         ] });
         this.panels = [this.tabView.getPanel("basic")!, this.tabView.getPanel("advanced")!];
         this.append([this.selectorRow, this.tabView]);
-        this.subscribe(surface.documentChanged, () => {
-            // DataForm may be inside an active commit. Let its editor close before
-            // replacing the binding with the next model generation.
-            queueMicrotask(() => {
-                if (this.disposed.Value) return;
-                this.basicRenderKey = "";
-                this.refreshDocument();
-            });
-        });
-        this.subscribe(surface.selectionChanged, () => {
-            // Surface gestures update the inspected elements and remembered text
-            // range together; moving focus to inspector controls preserves both.
-            this.followSelection();
-        });
-        this.subscribe(surface.selectedNodesChanged, ids => {
-            if (!ids.length) return;
-            this.inspectedIds = ids.filter(id => this.nodes.get(id)?.type === "element");
-            this.targetId = this.inspectedIds[0];
-            this.mixed = this.inspectedIds.length > 1;
-            this.update();
-        });
-        this.subscribe(surface.interactionChanged, () => this.update());
         this.refreshDocument();
     }
 
@@ -116,7 +102,9 @@ export class HtmlEditorInspector extends Component {
         return parts.length > 64 ? parts.slice(0, 63).join("") + "…" : full;
     }
 
-    private refreshDocument(): void {
+    /** Rebuilds the node index after the shared command-surface coordinator observes a model change. */
+    refreshDocument(): void {
+        this.inspectionVersion++;
         this.popup?.hide();
         this.nodes.clear(); this.parents.clear();
         const snapshot = this.surface.document;
@@ -127,10 +115,12 @@ export class HtmlEditorInspector extends Component {
         };
         snapshot.children.forEach(node => visit(node));
         this.roots = this.treeNodes(snapshot.children);
-        this.followSelection();
+        this.refreshSelection();
     }
 
-    private followSelection(): void {
+    /** Resolves the current remembered selection into inspector targets. */
+    refreshSelection(): void {
+        this.inspectionVersion++;
         const selection = this.surface.selection;
         const node = selection ? this.nodes.get(selection.focus.nodeId) : undefined;
         this.coverage = this.surface.getSelectionCoverage(selection);
@@ -171,6 +161,16 @@ export class HtmlEditorInspector extends Component {
             : node?.type === "element" ? node.id : node ? this.parents.get(node.id)?.id : undefined;
         this.inspectedIds = owners.size ? [...owners] : this.targetId ? [this.targetId] : [];
         this.updateTreeCoverage();
+        this.update();
+    }
+
+    /** Applies an explicit structural selection from the shared surface coordinator. */
+    refreshSelectedNodes(ids: readonly string[]): void {
+        if (!ids.length) return;
+        this.inspectionVersion++;
+        this.inspectedIds = ids.filter(id => this.nodes.get(id)?.type === "element");
+        this.targetId = this.inspectedIds[0];
+        this.mixed = this.inspectedIds.length > 1;
         this.update();
     }
 
@@ -310,8 +310,10 @@ export class HtmlEditorInspector extends Component {
         };
     }
 
-    private formField(binding: HtmlEditorResolvedInspectorField, row: HtmlEditorInspectionRow): DataViewField<HtmlEditorInspectionRow> {
+    private formField(binding: HtmlEditorResolvedInspectorField, row: HtmlEditorInspectionRow,
+        surface: "inspector" | "toolbar" = "inspector"): DataViewField<HtmlEditorInspectionRow> {
         const presentation = binding.definition.field ?? {};
+        const surfacePresentation = binding.definition.presentations?.[surface];
         const command = binding.command;
         const field: DataViewField<HtmlEditorInspectionRow> = {
             ...presentation,
@@ -333,21 +335,35 @@ export class HtmlEditorInspector extends Component {
                     icon: option.icon ?? ({ default: "ri-format-clear", start: "ri-align-left", center: "ri-align-center", end: "ri-align-right" } as Record<string, string>)[option.id],
                     appearance: option.icon || command.id === "block.align" ? "iconOnly" : "textOnly",
                     ui: "btn-ghost", pressed: value === option.id, disabled: !binding.enabled || option.disabled,
-                    onClick: () => { this.commands.executeInspectorField(binding, option.id); } }));
+                    onClick: () => {
+                        const toggleOff = command.id === "block.align" && value === option.id;
+                        this.commands.executeInspectorField(binding, toggleOff ? undefined : option.id);
+                    } }));
             } else {
                 const selected = command.options.find(option => option.id === value
                     || binding.value?.kind === "unset" && option.id === "default");
+                const isColor = command.options.some(option => option.color !== undefined);
+                const showValue = surfacePresentation?.showValue !== false;
+                const showArrow = surfacePresentation?.showArrow !== false;
+                const appearance = surfacePresentation?.appearance ?? "textAndIcon";
+                const tooltip = surfacePresentation?.tooltip === "caption" ? field.caption : surfacePresentation?.tooltip;
+                const icon = surfacePresentation?.icon ?? selected?.icon ?? (isColor ? "ri-font-color" : "ri-font-size");
                 field.buttons = [{ id: command.id, text: binding.value?.kind === "mixed"
                     ? this.messages.text("htmlEditorInspector.mixed") : selected?.text ?? String(value ?? "—"),
-                    icon: selected?.icon ?? "ri-arrow-down-s-line", appearance: "textAndIcon",
-                    render: command.options.some(option => option.color !== undefined) ? () => v("span", {
+                    icon, appearance,
+                    tooltip,
+                    render: isColor ? () => v("span", {
                         class: "elg-html-editor-color-choice"
-                    }, v("span", { class: "elg-menu-color-swatch", ariaHidden: "true",
-                        "data-empty": !selected?.color,
-                        style: { backgroundColor: selected?.color ?? (typeof value === "string" ? value : "transparent") }
-                    }), v("span", binding.value?.kind === "mixed" ? this.messages.text("htmlEditorInspector.mixed")
-                        : selected?.text ?? String(value ?? "—")),
-                    v("i", { class: "ri-arrow-down-s-line", ariaHidden: "true" })) : undefined,
+                    }, surfacePresentation?.showValue === false
+                        ? v("i", { class: icon, ariaHidden: "true",
+                            style: { color: selected?.color || undefined } })
+                        : v("span", { class: "elg-menu-color-swatch", ariaHidden: "true",
+                            "data-empty": !selected?.color,
+                            style: { backgroundColor: selected?.color ?? (typeof value === "string" ? value : "transparent") }
+                        }),
+                    showValue ? v("span", binding.value?.kind === "mixed" ? this.messages.text("htmlEditorInspector.mixed")
+                        : selected?.text ?? String(value ?? "—")) : undefined,
+                    showArrow ? v("i", { class: "ri-arrow-down-s-line", ariaHidden: "true" }) : undefined) : undefined,
                     disabled: !binding.enabled, onClick: async ({ owner }) => {
                         const form = owner as DataForm<HtmlEditorInspectionRow>;
                         const anchor = [...form.dom.querySelectorAll<HTMLElement>("[data-field]")]
@@ -385,6 +401,62 @@ export class HtmlEditorInspector extends Component {
             field.buttons = [button];
         }
         return field;
+    }
+
+    /**
+     * Creates the compact horizontal command form used by HtmlEditorToolbar.
+     * The toolbar intentionally reuses the inspector field factory so command
+     * state, option menus, tooltips and execution never diverge between views.
+     */
+    createToolbarForm(): DataForm<HtmlEditorInspectionRow> | undefined {
+        const context = this.basicInspectionContext();
+        const available = this.toolbarFields(context);
+        const order = ["block.heading", "block.align", "bold", "italic", "text.size", "text.color", "element.backgroundColor", "clear-formatting"];
+        const fields = order.map(id => available.find(field => field.command.id === id)).filter((field): field is HtmlEditorResolvedInspectorField => !!field);
+        if (!fields.length) return undefined;
+        const row: HtmlEditorInspectionRow = { context, fields: new Map(fields.map(field => [field.command.id, field])) };
+        const dataFields = fields.map(field => {
+            const result = this.formField(field, row, "toolbar");
+            result.hideLabel = true;
+            if (result.buttons) result.buttons.forEach(button => { button.ui = ["btn-ghost"]; });
+            return result;
+        });
+        const adapter: DataFormAdapter<HtmlEditorInspectionRow> = {
+            getValue: (_row, field) => this.inspectorValue(row.fields.get(field.name)! ),
+            getText: async (_row, field, value) => {
+                const binding = row.fields.get(field.name);
+                if (!binding?.value || binding.value.kind === "unset") return "—";
+                if (binding.value.kind === "mixed") return this.messages.text("htmlEditorInspector.mixed");
+                if (field.lookup) return field.lookup.getValueText(value, { row, field, value });
+                return String(value ?? "");
+            },
+            setValue: async (_row, field, value) => {
+                const binding = row.fields.get(field.name);
+                if (!binding || !this.commands.executeInspectorField(binding, value))
+                    throw new Error(this.messages.text("htmlEditorInspector.propertiesHint"));
+            }
+        };
+        return new DataForm({ data: row, fields: dataFields,
+            layout: [{ display: "flex", wrap: false, labelPosition: "none", ui: ["gap-0"],
+                fields: dataFields.map(field => ({ field: field.name, labelPosition: "none" })) }],
+            class: "elg-html-editor-toolbar-form", labelPosition: "none", surface: "none",
+            allowEdit: true, locale: this.localeOptions.locale, localization: this.localeOptions.localization, adapter });
+    }
+
+    /** Keeps the compact toolbar visible before a selection exists. */
+    private toolbarFields(context: HtmlEditorInspectionContext): HtmlEditorResolvedInspectorField[] {
+        const resolved = new Map(this.commands.getInspectorFields(context).map(field => [field.command.id, field]));
+        const toolbarCommands = this.commands.getCommands(this.commands.context(), true).flatMap(command => {
+            const definition = command.inspector;
+            if (!definition) return [];
+            const existing = resolved.get(command.id);
+            if (existing) return [existing];
+            const targets = definition.resolveTargets(context);
+            const commandContext = { ...context, inspection: { context, targets } };
+            if (!(command.isVisible?.(commandContext) ?? true)) return [];
+            return [{ command, definition, context: commandContext, enabled: false }];
+        });
+        return toolbarCommands;
     }
 
     private renderBasicCommands(): void {
@@ -472,7 +544,7 @@ export class HtmlEditorInspector extends Component {
         if (!this.mixed && target?.type === "element") this.renderNodeLabel(this.selector, target);
         else this.selector.replaceChildren(e("span", { class: "elg-html-editor-node-description" },
             this.messages.text(this.mixed ? "htmlEditorInspector.mixed" : "htmlEditorInspector.chooseElement")));
-        this.selector.title = this.selector.textContent;
+        this.selector.title = this.selector.textContent || "";
         this.selector.disabled = this.surface.content.getAttribute("aria-disabled") === "true";
         const coverage = !this.mixed && target ? this.coverage.get(target.id) ?? "none" : "none";
         this.selectorRow.dataset.htmlEditorCoverage = coverage;

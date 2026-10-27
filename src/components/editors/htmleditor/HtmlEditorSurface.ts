@@ -6,7 +6,7 @@ import { ObservableEvent } from "../../../core/ElgoraUI";
 import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorSelectionState, HtmlEditorStyle } from "./HtmlEditorModel";
 import { HtmlEditorDom } from "./HtmlEditorDom";
 import { readHtmlEditorSelection, restoreHtmlEditorSelection } from "./HtmlEditorSelection";
-import { applyHtmlEditorCommand, getHtmlEditorMarkState, getHtmlEditorTextStyleValues, type HtmlEditorCommand, type HtmlEditorMarkState, type HtmlEditorState } from "./HtmlEditorCommands";
+import { applyHtmlEditorCommand, getHtmlEditorMarkState, getHtmlEditorTextStyleValues, type HtmlEditorCommand, type HtmlEditorMarkState, type HtmlEditorState, type HtmlEditorTextMark } from "./HtmlEditorCommands";
 import { normalizeHtmlEditorState } from "./HtmlEditorNormalize";
 import { extractHtmlEditorRange, getHtmlEditorRangeCoverage, type HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { htmlEditorFragmentText } from "./HtmlEditorClipboard";
@@ -181,14 +181,28 @@ export class HtmlEditorSurface extends Component {
         };
         return visit(this.documentModel.children);
     }
+    /** Finds an authored element and its outer-to-inner element path without cloning the model. */
+    findElementPath(nodeId: string | undefined): readonly HtmlEditorElement[] | undefined {
+        if (!nodeId) return;
+        const visit = (nodes: readonly HtmlEditorNode[], parents: HtmlEditorElement[] = []): HtmlEditorElement[] | undefined => {
+            for (const node of nodes) {
+                if (node.id === nodeId) return node.type === "element" ? [...parents, node] : parents;
+                if (node.type === "element") {
+                    const path = visit(node.children, [...parents, node]);
+                    if (path) return path;
+                }
+            }
+        };
+        return visit(this.documentModel.children);
+    }
     /** Structural node selection, independent from the remembered text range. */
     get selectedNodes(): readonly string[] { return [...this.selectedNodeIds]; }
     /** Detached node coverage for a range, sharing Copy/Delete rules without cloning the document. */
     getSelectionCoverage(selection: HtmlEditorSelectionState | undefined = this.selection): ReadonlyMap<string, HtmlEditorNodeCoverage> {
         return selection ? getHtmlEditorRangeCoverage(this.documentModel, this.domMap.rootId, selection) : new Map();
     }
-    /** Returns the aggregate Bold/Italic state for the current selected fragments. */
-    getMarkState(mark: "bold" | "italic", selection: HtmlEditorSelectionState | undefined = this.selection): HtmlEditorMarkState {
+    /** Returns the aggregate inline-mark state for the current selected fragments. */
+    getMarkState(mark: HtmlEditorTextMark, selection: HtmlEditorSelectionState | undefined = this.selection): HtmlEditorMarkState {
         return getHtmlEditorMarkState(this.documentModel, this.domMap.rootId, selection, mark, this.typingMarks);
     }
     /** Reads authored text style values over the same fragments used by text formatting. */

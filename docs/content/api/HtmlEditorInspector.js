@@ -21,6 +21,110 @@ export default {
       "kind": "property"
     },
     {
+      "name": "stateVersion",
+      "type": "number",
+      "description": "Monotonic version for consumers that render snapshot-based field states.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "kind": "property"
+    },
+    {
+      "name": "getCommandPreviewTargets",
+      "type": "(commandId: string) => HtmlEditorInspectorTargets | undefined",
+      "description": "Resolves the same command-specific targets used by the inspector field.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "parameters": [
+        {
+          "name": "commandId",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorInspectorTargets | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(commandId: string) => HtmlEditorInspectorTargets | undefined"
+    },
+    {
+      "name": "refreshDocument",
+      "type": "() => void",
+      "description": "Rebuilds the node index after the shared command-surface coordinator observes a model change.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "parameters": [],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => void"
+    },
+    {
+      "name": "refreshSelection",
+      "type": "() => void",
+      "description": "Resolves the current remembered selection into inspector targets.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "parameters": [],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => void"
+    },
+    {
+      "name": "refreshSelectedNodes",
+      "type": "(ids: readonly string[]) => void",
+      "description": "Applies an explicit structural selection from the shared surface coordinator.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "readonly string[]",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "void",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(ids: readonly string[]) => void"
+    },
+    {
+      "name": "createToolbarForm",
+      "type": "() => DataForm<HtmlEditorInspectionRow> | undefined",
+      "description": "Creates the compact horizontal command form used by HtmlEditorToolbar.\nThe toolbar intentionally reuses the inspector field factory so command\nstate, option menus, tooltips and execution never diverge between views.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "parameters": [],
+      "returns": {
+        "type": "DataForm<HtmlEditorInspectionRow> | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => DataForm<HtmlEditorInspectionRow> | undefined"
+    },
+    {
       "name": "update",
       "type": "() => void",
       "description": "Updates labels/availability without cloning the document or moving DOM focus.",

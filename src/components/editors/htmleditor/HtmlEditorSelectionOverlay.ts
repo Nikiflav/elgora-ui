@@ -1,6 +1,7 @@
 import { Component } from "../../../core/Component";
 import { e } from "../../../core/e";
 import type { HtmlEditorSelectionFlowRect, HtmlEditorSurface } from "./HtmlEditorSurface";
+import type { HtmlEditorInspectorTargets } from "./HtmlEditorInspection";
 
 interface SelectionLine { rect: DOMRect; flowNode: Element; }
 
@@ -31,27 +32,72 @@ export class HtmlEditorSelectionOverlay extends Component {
     private host?: HTMLElement;
     private editorFocused = false;
     private inspectorFocused = false;
+    private commandSurfaceHovered = false;
+    private commandSurfaceFocused = false;
+    private activeCommandTargets?: HtmlEditorInspectorTargets;
     private inspectionTargets?: () => readonly string[];
+    private commandPreviewTargets?: (commandId: string) => HtmlEditorInspectorTargets | undefined;
+    private commandSurfaces: HTMLElement[] = [];
 
     /** Outlines property targets while controls edit a collapsed selection, without changing its range. */
-    connectInspector(inspector: HTMLElement, targets: () => readonly string[]): void {
+    connectInspector(inspector: HTMLElement, targets: () => readonly string[], toolbar?: HTMLElement,
+        commandPreviewTargets?: (commandId: string) => HtmlEditorInspectorTargets | undefined): void {
         this.inspectionTargets = targets;
+        this.commandPreviewTargets = commandPreviewTargets;
+        this.commandSurfaces = [toolbar, inspector].filter((item): item is HTMLElement => !!item);
+        const isCommandSurface = (target: EventTarget | null): boolean => target instanceof Node
+            && this.commandSurfaces.some(surface => surface.contains(target));
+        const commandField = (target: EventTarget | null): HTMLElement | undefined => target instanceof Element
+            ? target.closest<HTMLElement>("[data-field]") ?? undefined : undefined;
+        const updateCommandTargets = (target: EventTarget | null): void => {
+            const field = commandField(target);
+            this.activeCommandTargets = field?.dataset.field ? this.commandPreviewTargets?.(field.dataset.field) : undefined;
+        };
         // Action buttons preserve the native editor range with preventDefault,
         // so interaction must also be detected before their pointer handlers run.
         const interact = (event: Event) => {
             const target = event.target;
             this.inspectorFocused = target instanceof Element && (inspector.contains(target)
                 || this.inspectorFocused && !!target.closest("[popover]"));
+            updateCommandTargets(target);
             this.schedule();
         };
         this.listen(inspector.ownerDocument, "pointerdown", interact, { capture: true });
-        this.listen(inspector, "click", () => { this.inspectorFocused = true; this.schedule(); }, { capture: true });
+        this.listen(inspector, "click", event => { this.inspectorFocused = true; updateCommandTargets(event.target); this.schedule(); }, { capture: true });
         this.listen(inspector.ownerDocument, "focusin", event => {
             const target = event.target;
+            this.commandSurfaceFocused = isCommandSurface(target);
             this.inspectorFocused = target instanceof Element && (inspector.contains(target)
                 || this.inspectorFocused && !!target.closest("[popover]"));
+            updateCommandTargets(target);
             this.schedule();
         });
+        this.listen(inspector.ownerDocument, "focusout", event => {
+            const relatedTarget = (event as FocusEvent).relatedTarget;
+            if (isCommandSurface(relatedTarget)) {
+                this.commandSurfaceFocused = true;
+                updateCommandTargets(relatedTarget);
+            } else {
+                this.commandSurfaceFocused = false;
+                if (!this.inspectorFocused) this.activeCommandTargets = undefined;
+            }
+            this.schedule();
+        });
+        this.listen(inspector.ownerDocument, "pointerover", event => {
+            if (!isCommandSurface(event.target)) return;
+            updateCommandTargets(event.target);
+            this.commandSurfaceHovered = !!(event.target instanceof Element && event.target.closest("[data-field]"));
+            this.schedule();
+        }, { capture: true });
+        this.listen(inspector.ownerDocument, "pointerout", event => {
+            if (!isCommandSurface(event.target)) return;
+            const relatedTarget = (event as PointerEvent).relatedTarget;
+            const relatedField = relatedTarget instanceof Element ? relatedTarget.closest("[data-field]") : undefined;
+            this.commandSurfaceHovered = isCommandSurface(relatedTarget) && !!relatedField;
+            if (this.commandSurfaceHovered) updateCommandTargets(relatedTarget);
+            else if (!this.commandSurfaceFocused) this.activeCommandTargets = undefined;
+            this.schedule();
+        }, { capture: true });
     }
 
     constructor(private readonly surface: HtmlEditorSurface) {
@@ -87,16 +133,24 @@ export class HtmlEditorSelectionOverlay extends Component {
         const hostRect = host.getBoundingClientRect();
         const textLayer = e("div", { class: "elg-html-editor-text-selection-layer" });
         const containerLayer = e("div", { class: "elg-html-editor-container-selection-layer" });
-        const textRects = this.editorFocused && !this.inspectorFocused ? [] : mergeTextRects(this.surface.selectionFlowRects());
+        const inspectionActive = this.inspectorFocused || this.commandSurfaceHovered || this.commandSurfaceFocused;
+        const textCommand = inspectionActive && this.activeCommandTargets?.kind === "text";
+        const elementTargets = inspectionActive && this.activeCommandTargets?.kind === "elements" ? this.activeCommandTargets : undefined;
+        const elementCommand = !!elementTargets;
+        const textRects = this.editorFocused && !inspectionActive || elementCommand
+            ? [] : mergeTextRects(this.surface.selectionFlowRects());
         textRects.forEach(rect => textLayer.append(e("span", { class: "elg-html-editor-selection-rect", style: {
             left: `${rect.left - hostRect.left}px`,
             top: `${rect.top - hostRect.top}px`,
             width: `${rect.width}px`, height: `${rect.height}px`
         } })));
-        const containerRects = this.surface.selectionContainerClientRects();
-        const inspectionIds = new Set(this.inspectorFocused ? this.inspectionTargets?.() ?? [] : []);
+        const containerRects = textCommand ? [] : elementCommand
+            ? this.surface.selectedNodeClientRects(elementTargets.nodeIds).map(target => ({ ...target, kind: "selected" as const }))
+            : this.surface.selectionContainerClientRects();
+        const inspectionIds = new Set(elementCommand ? elementTargets.nodeIds
+            : inspectionActive ? this.inspectionTargets?.() ?? [] : []);
         const selection = this.surface.selection;
-        if (this.inspectorFocused && selection && selection.anchor.nodeId === selection.focus.nodeId
+        if (!textCommand && !elementCommand && inspectionActive && selection && selection.anchor.nodeId === selection.focus.nodeId
             && selection.anchor.offset === selection.focus.offset) {
             for (const target of this.surface.selectedNodeClientRects(this.inspectionTargets?.() ?? [])) {
                 if (!containerRects.some(existing => existing.nodeId === target.nodeId))
@@ -120,5 +174,10 @@ export class HtmlEditorSelectionOverlay extends Component {
         this.host = undefined;
         this.editorFocused = false;
         this.inspectorFocused = false;
+        this.commandSurfaceHovered = false;
+        this.commandSurfaceFocused = false;
+        this.activeCommandTargets = undefined;
+        this.commandPreviewTargets = undefined;
+        this.commandSurfaces = [];
     }
 }

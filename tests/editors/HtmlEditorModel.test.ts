@@ -50,6 +50,30 @@ describe("HtmlEditor authored HTML model", () => {
         expect(section.children.map(node => node.type === "element" ? node.tag : node.text)).toEqual(["p", "p"]);
     });
 
+    it("merges adjacent inline elements only when their authored presentation is identical", () => {
+        create('<p><strong>A</strong><strong>B</strong><em>C</em><em>D</em><strong class="same">E</strong><strong class="same">F</strong><strong class="different">G</strong><span data-kind="same">H</span><span data-kind="same">I</span><span data-kind="other">J</span></p>');
+        expect((root().children as HtmlEditorElement[]).map(node => `${node.tag}:${node.children.map(child => child.type === "text" ? child.text : child.tag).join("")}`)).toEqual([
+            "strong:AB", "em:CD", "strong:EF", "strong:G", "span:HI", "span:J"
+        ]);
+        expect(root().children).toHaveLength(6);
+    });
+
+    it("remaps a selection from a merged inline element and its text leaf", () => {
+        const document: HtmlEditorDocument = { type: "document", children: [{ id: "p", type: "element", tag: "p",
+            classes: [], attributes: {}, styles: [], children: [
+                { id: "first", type: "element", tag: "strong", classes: [], attributes: {}, styles: [], children: [{ id: "first-text", type: "text", text: "A" }] },
+                { id: "second", type: "element", tag: "strong", classes: [], attributes: {}, styles: [], children: [{ id: "second-text", type: "text", text: "B" }] }
+            ] }] };
+        const state: HtmlEditorState = { document, selection: {
+            anchor: { nodeId: "second-text", offset: 1 }, focus: { nodeId: "second", offset: 1 }
+        } };
+        normalizeHtmlEditorState(state, "root", () => "generated");
+        expect((state.document.children[0] as HtmlEditorElement).children).toEqual([{
+            id: "first", type: "element", tag: "strong", classes: [], attributes: {}, styles: [], children: [{ id: "first-text", type: "text", text: "AB" }]
+        }]);
+        expect(state.selection).toEqual({ anchor: { nodeId: "first-text", offset: 2 }, focus: { nodeId: "first", offset: 2 } });
+    });
+
     it("retains shorthand order, duplicate declarations and priorities through HTML round trips", () => {
         create('<div style="margin-left:20px; margin:0; color:red!important; color:blue">Text</div>');
         const styles = root().styles;

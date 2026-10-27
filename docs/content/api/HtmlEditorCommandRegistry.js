@@ -98,7 +98,7 @@ export default {
     {
       "name": "getInspectorFields",
       "type": "(context?: HtmlEditorInspectionContext) => HtmlEditorResolvedInspectorField[]",
-      "description": "Resolves registered contributions. Element-area fields must cover every\ninspected element; text-area fields use the independent range. Every command\nchooses its own eligible targets, so alignment may bind blocks while Bold\nbinds text fragments. Empty scopes are omitted; disabled fields stay visible.\nNo built-in contributions are migrated automatically by this scaffold.\nCapture fresh bindings after an accepted model change; do not recreate them\nhalfway through an active property edit or read them as mutable node objects.",
+      "description": "Resolves registered contributions. Element-area fields must cover every\ninspected node directly or through an ancestor owner; text-area fields use\nthe independent range. Every command\nchooses its own eligible targets, so alignment may bind blocks while Bold\nbinds text fragments. Empty scopes are omitted; disabled fields stay visible.\nNo built-in contributions are migrated automatically by this scaffold.\nCapture fresh bindings after an accepted model change; do not recreate them\nhalfway through an active property edit or read them as mutable node objects.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -150,7 +150,7 @@ export default {
     },
     {
       "name": "getCommands",
-      "type": "(context?: HtmlEditorCommandContext) => HtmlEditorUiCommand[]",
+      "type": "(context?: HtmlEditorCommandContext, includeHidden?: boolean) => HtmlEditorUiCommand[]",
       "description": "Resolves visible commands and their current enabled state for a UI surface.",
       "tags": [],
       "topics": [],
@@ -163,6 +163,13 @@ export default {
           "optional": true,
           "defaultValue": "this.context()",
           "description": ""
+        },
+        {
+          "name": "includeHidden",
+          "type": "boolean",
+          "optional": true,
+          "defaultValue": "false",
+          "description": ""
         }
       ],
       "returns": {
@@ -170,7 +177,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(context?: HtmlEditorCommandContext) => HtmlEditorUiCommand[]"
+      "signature": "(context?: HtmlEditorCommandContext, includeHidden?: boolean) => HtmlEditorUiCommand[]"
     },
     {
       "name": "execute",

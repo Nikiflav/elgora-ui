@@ -1,8 +1,9 @@
 import { e } from "../../../core/e";
 import { ValueEditor, type ValueEditorOptions } from "../ValueEditor";
 import { HtmlEditorSurface } from "./HtmlEditorSurface";
-import { HtmlEditorToolbar } from "./HtmlEditorToolbar";
-import { HtmlEditorInspector } from "./HtmlEditorInspector";
+import type { HtmlEditorToolbar } from "./HtmlEditorToolbar";
+import type { HtmlEditorInspector } from "./HtmlEditorInspector";
+import { HtmlEditorUiCommandController } from "./HtmlEditorUiCommandController";
 import type { HtmlEditorCommand } from "./HtmlEditorCommands";
 import type { HtmlEditorSelectionState } from "./HtmlEditorModel";
 import { HtmlEditorCommandRegistry, type HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
@@ -41,6 +42,7 @@ export class HtmlEditor extends ValueEditor<string> {
     /** Context menu backed by the same registry as the toolbar and inspector. */
     private commandMenu?: HtmlEditorCommandMenu;
     private readonly selectionOverlay: HtmlEditorSelectionOverlay;
+    private readonly commandController?: HtmlEditorUiCommandController;
     private baselineHtml = "";
     private commandToast?: HTMLElement;
     private commandToastTimer?: ReturnType<typeof setTimeout>;
@@ -79,17 +81,17 @@ export class HtmlEditor extends ValueEditor<string> {
             this.draft = html === this.baselineHtml ? this.accepted : html;
             this.notifyInput();
         });
-        if (toolbar) {
-            this.toolbar = new HtmlEditorToolbar(this.commandRegistry, this.messages);
-            this.append(this.toolbar);
-            this.dom.insertBefore(this.toolbar.dom, body);
+        if (toolbar || inspector) {
+            this.commandController = new HtmlEditorUiCommandController(this.surface, this.messages, this.commandRegistry,
+                { toolbar, inspector, locale: this.locale, localization: options.localization });
+            this.commandController.mountSurfaces(this.dom, body);
+            this.addCleanup(this.commandController);
+            this.toolbar = this.commandController.toolbar;
+            this.inspector = this.commandController.inspector;
         }
-        if (inspector) {
-            this.inspector = new HtmlEditorInspector(this.surface, this.messages, this.commandRegistry,
-                { locale: this.locale, localization: options.localization });
-            this.inspector.mount(body);
-            this.selectionOverlay.connectInspector(this.inspector.dom, () => this.inspector!.inspectedElements);
-            body.classList.add("elg-html-editor-with-inspector");
+        if (this.inspector) {
+            this.selectionOverlay.connectInspector(this.inspector.dom, () => this.inspector!.inspectedElements,
+                this.toolbar?.dom, commandId => this.inspector?.getCommandPreviewTargets(commandId));
         }
         this.baselineHtml = this.html;
         this.syncControl();

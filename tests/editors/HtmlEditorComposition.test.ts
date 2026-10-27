@@ -18,7 +18,12 @@ const select = (editor: HtmlEditor, text = editor.content.querySelector("p")!.fi
     document.getSelection()!.setBaseAndExtent(text, start, text, end);
     document.dispatchEvent(new Event("selectionchange"));
 };
-const command = (editor: HtmlEditor, label: string) => [...editor.toolbar!.dom.querySelectorAll<HTMLButtonElement>("button")].find(button => button.textContent === label)!;
+const command = (editor: HtmlEditor, label: string) => {
+    const id = label.toLowerCase();
+    return editor.toolbar!.dom.querySelector<HTMLButtonElement>(`[data-field="${id}"] button`)
+        ?? [...editor.toolbar!.dom.querySelectorAll<HTMLButtonElement>("button")].find(button =>
+            button.getAttribute("aria-label") === label || button.textContent === label)!;
+};
 
 beforeEach(() => {
     const matches = HTMLElement.prototype.matches;
@@ -156,6 +161,10 @@ describe("HtmlEditor composition", () => {
         select(editor);
         expect(editor.inspector!.dom.querySelector('[data-field="block.heading"]')).not.toBeNull();
         expect(editor.inspector!.dom.querySelector('[data-field="bold"]')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="underline"]')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="strikethrough"]')).not.toBeNull();
+        expect(editor.toolbar!.dom.querySelector('[data-field="underline"]')).toBeNull();
+        expect(editor.toolbar!.dom.querySelector('[data-field="strikethrough"]')).toBeNull();
         const paragraphs = editor.content.querySelectorAll("p");
         document.getSelection()!.setBaseAndExtent(paragraphs[0].firstChild!, 1, paragraphs[1].firstChild!, 2);
         document.dispatchEvent(new Event("selectionchange"));
@@ -343,6 +352,51 @@ describe("HtmlEditor composition", () => {
         expect(overlay.querySelector(".elg-html-editor-container-selection-rect")?.getAttribute("data-html-editor-node-id")).toBe(sectionId);
     });
 
+    it("previews only the targets of the focused command", async () => {
+        const editor = create({ value: "<p>Hello world</p>" });
+        const paragraphId = editor.document.children[0].id;
+        const paragraph = editor.content.querySelector("p")!;
+        vi.spyOn(editor.surface, "selectionFlowRects").mockReturnValue([
+            { rect: new DOMRect(0, 0, 24, 12), flowNode: paragraph }
+        ]);
+        vi.spyOn(editor.surface, "selectionContainerClientRects").mockReturnValue([
+            { nodeId: paragraphId, rect: new DOMRect(0, 0, 100, 24), kind: "selected" }
+        ]);
+        vi.spyOn(editor.surface, "selectedNodeClientRects").mockReturnValue([
+            { nodeId: paragraphId, rect: new DOMRect(0, 0, 100, 24) }
+        ]);
+        select(editor, paragraph.firstChild!, 0, 5);
+        const overlay = editor.dom.querySelector<HTMLElement>(".elg-html-editor-selection-overlay")!;
+        const focusCommand = async (id: string) => {
+            editor.inspector!.dom.querySelector<HTMLButtonElement>(`[data-field="${id}"] button`)!.focus();
+            await frame();
+        };
+
+        await focusCommand("bold");
+        expect(overlay.querySelectorAll(".elg-html-editor-text-selection-layer .elg-html-editor-selection-rect")).toHaveLength(1);
+        expect(overlay.querySelectorAll(".elg-html-editor-container-selection-layer .elg-html-editor-container-selection-rect")).toHaveLength(0);
+
+        await focusCommand("block.heading");
+        expect(overlay.querySelectorAll(".elg-html-editor-text-selection-layer .elg-html-editor-selection-rect")).toHaveLength(0);
+        expect(overlay.querySelectorAll(".elg-html-editor-container-selection-layer .elg-html-editor-container-selection-rect")).toHaveLength(1);
+        expect(overlay.querySelector(".elg-html-editor-container-selection-rect")?.dataset.htmlEditorNodeId).toBe(paragraphId);
+    });
+
+    it("does not activate the inspection preview over an empty command-surface area", async () => {
+        const editor = create({ value: "<section><p>Hello world</p></section>" });
+        const sectionId = editor.document.children[0].id;
+        vi.spyOn(editor.surface, "selectionContainerClientRects").mockReturnValue([
+            { nodeId: sectionId, rect: new DOMRect(0, 0, 100, 24), kind: "selected" }
+        ]);
+        select(editor, editor.content.querySelector("p")!.firstChild!, 0, 5);
+        editor.content.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+        await frame();
+        editor.toolbar!.dom.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+        await frame();
+        const overlay = editor.dom.querySelector<HTMLElement>(".elg-html-editor-selection-overlay")!;
+        expect(overlay.querySelector('[data-inspection-target="true"]')).toBeNull();
+    });
+
     it("outlines direct grid items as separate grid cells", () => {
         const editor = create({ value: '<div style="display:grid"><div>Grid A</div><div>Grid B</div><div>Grid C</div></div>' });
         const grid = editor.content.firstElementChild!;
@@ -445,15 +499,45 @@ describe("HtmlEditor composition", () => {
 
     it("reports formatting state for full and mixed selections", () => {
         const editor = create({ value: "<p><strong>Bold</strong></p><p>Plain</p>" });
-        const bold = command(editor, "Bold"), italic = command(editor, "Italic");
         const formatted = editor.content.querySelector("strong")!.firstChild!;
         select(editor, formatted, 0, 4);
-        expect(bold.getAttribute("aria-pressed")).toBe("true");
-        expect(italic.getAttribute("aria-pressed")).toBe("false");
+        const currentBold = command(editor, "Bold");
+        const currentItalic = command(editor, "Italic");
+        expect(currentBold.getAttribute("aria-pressed")).toBe("true");
+        expect(currentItalic.getAttribute("aria-pressed")).toBe("false");
         const plain = editor.content.querySelectorAll("p")[1].firstChild!;
         document.getSelection()!.setBaseAndExtent(formatted, 1, plain, 2);
         document.dispatchEvent(new Event("selectionchange"));
-        expect(bold.getAttribute("aria-pressed")).toBe("mixed");
+        expect(command(editor, "Bold").getAttribute("aria-pressed")).toBe("mixed");
+        const mixedInspectorButton = editor.inspector!.dom.querySelector<HTMLButtonElement>('[data-field="bold"] button')!;
+        expect(mixedInspectorButton.getAttribute("aria-pressed")).toBe("mixed");
+    });
+
+    it("refreshes toolbar formatting state when selection moves within the same element", () => {
+        const editor = create({ value: "<p><strong>Bold</strong> plain</p>" });
+        const strongText = editor.content.querySelector("strong")!.firstChild!;
+        const paragraphText = editor.content.querySelector("p")!.lastChild!;
+        select(editor, strongText, 0, 4);
+        expect(command(editor, "Bold").getAttribute("aria-pressed")).toBe("true");
+        select(editor, paragraphText, 1, 5);
+        expect(command(editor, "Bold").getAttribute("aria-pressed")).toBe("false");
+    });
+
+    it("uses compact icon presentations in the toolbar while keeping inspector values", () => {
+        const editor = create();
+        select(editor);
+        const toolbarColor = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="text.color"] button')!;
+        const toolbarSize = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="text.size"] button')!;
+        const toolbarBackground = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="element.backgroundColor"] button')!;
+        expect(toolbarColor.title).toBe("Text color");
+        expect(toolbarSize.title).toBe("Text size");
+        expect(toolbarBackground.title).toBe("Background");
+        expect(toolbarColor.textContent).toBe("");
+        expect(toolbarSize.textContent).toBe("");
+        expect(toolbarBackground.textContent).toBe("");
+        expect(toolbarBackground.querySelector("i")?.className).toContain("ri-paint-fill");
+        expect(editor.inspector!.dom.querySelector<HTMLButtonElement>('[data-field="text.color"] button')!.textContent).toContain("—");
+        expect(editor.inspector!.dom.querySelector<HTMLButtonElement>('[data-field="text.size"] button')!.textContent).toContain("—");
     });
 
     it("reports formatting state across independent container parents", () => {
@@ -499,6 +583,19 @@ describe("HtmlEditor composition", () => {
         expect(document.activeElement).toBe(tabs[1]); expect(tabs[1].getAttribute("aria-selected")).toBe("true");
         expect(editor.inspector!.dom.querySelectorAll<HTMLElement>('[role="tabpanel"]')[0].hidden).toBe(true);
         expect(editor.modified).toBe(false); expect(editor.canUndo).toBe(false);
+    });
+
+    it("renders toolbar controls through the shared inspector fields and toggles properties", () => {
+        const editor = create();
+        expect(editor.toolbar!.dom.querySelector('[data-field="bold"]')).not.toBeNull();
+        expect(editor.toolbar!.dom.querySelector('[data-field="block.heading"]')).not.toBeNull();
+        const properties = editor.toolbar!.dom.querySelector<HTMLButtonElement>(".elg-html-editor-toolbar-properties")!;
+        expect(properties.getAttribute("aria-pressed")).toBe("true");
+        properties.click();
+        expect(editor.inspector!.dom.hidden).toBe(true);
+        expect(properties.getAttribute("aria-pressed")).toBe("false");
+        properties.click();
+        expect(editor.inspector!.dom.hidden).toBe(false);
     });
 
     it("previews tree targets without replacing the caret or creating history", async () => {

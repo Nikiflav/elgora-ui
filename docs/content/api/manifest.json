@@ -1199,12 +1199,21 @@
       "module": "./content/api/HtmlEditorText.js"
     },
     {
+      "name": "HtmlEditorTextMark",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorTextMark",
+      "description": "Semantic inline marks supported by the Basic inspector.",
+      "module": "./content/api/HtmlEditorTextMark.js"
+    },
+    {
       "name": "HtmlEditorToolbar",
       "kind": "class",
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorToolbar",
-      "description": "Initial command toolbar. Created, placed and disposed by HtmlEditor, not by the surface.",
+      "description": "Compact command toolbar backed by the inspector's shared DataForm field renderer.",
       "module": "./content/api/HtmlEditorToolbar.js"
     },
     {

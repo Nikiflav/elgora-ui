@@ -10,14 +10,26 @@ export type HtmlEditorCommand =
     | { type: "textStyle"; property: "color" | "background-color" | "font-size"; value: string }
     | { type: "insertText"; text: string }
     | { type: "insertHtml"; html: string }
-    | { type: "deleteBackward" | "deleteForward" | "insertParagraph" | "insertLineBreak" | "indent" | "outdent" | "bold" | "italic" | "undo" | "redo" };
+    | { type: "deleteBackward" | "deleteForward" | "insertParagraph" | "insertLineBreak" | "indent" | "outdent" | "bold" | "italic" | "underline" | "strikethrough" | "clearFormatting" | "undo" | "redo" };
+
+/** Semantic inline marks supported by the Basic inspector. */
+export type HtmlEditorTextMark = "bold" | "italic" | "underline" | "strikethrough";
+
+const markDefinition = (mark: HtmlEditorTextMark): { tag: string; aliases: readonly string[] } => {
+    switch (mark) {
+        case "bold": return { tag: "strong", aliases: ["strong", "b"] };
+        case "italic": return { tag: "em", aliases: ["em", "i"] };
+        case "underline": return { tag: "u", aliases: ["u"] };
+        case "strikethrough": return { tag: "s", aliases: ["s", "del"] };
+    }
+};
 
 /** A document and directed selection are committed/restored as one history entry. */
 export interface HtmlEditorState {
     document: HtmlEditorDocument;
     selection?: HtmlEditorSelectionState;
     /** Explicit typing-format overrides at a collapsed caret. */
-    marks?: { bold?: boolean; italic?: boolean;
+    marks?: Partial<Record<HtmlEditorTextMark, boolean>> & {
         /** Explicit text styles for subsequent typing; empty values remove inline overrides. */
         styles?: Partial<Record<"color" | "background-color" | "font-size", string>> };
 }
@@ -158,13 +170,13 @@ export function getHtmlEditorTextStyleValues(document: HtmlEditorDocument, rootI
 
 /** Computes formatting state from the same selected inline fragments used by formatting commands. */
 export function getHtmlEditorMarkState(document: HtmlEditorDocument, rootId: string,
-    selection: HtmlEditorSelectionState | undefined, mark: "bold" | "italic",
+    selection: HtmlEditorSelectionState | undefined, mark: HtmlEditorTextMark,
     marks?: HtmlEditorState["marks"]): HtmlEditorMarkState {
     if (!selection) return "off";
     let nextId = 0;
     const prepared = formattingSelection(document, rootId, selection, () => `state-fragment-${nextId++}`);
     if (!prepared) return "off";
-    const tags = mark === "bold" ? ["strong", "b"] : ["em", "i"];
+    const tags = markDefinition(mark).aliases;
     if (prepared.collapsed) {
         const location = find(prepared.document, prepared.selection.anchor.nodeId);
         const inherited = location && [...location.ancestors, ...(location.node.type === "element" ? [location.node] : [])]
@@ -188,10 +200,9 @@ export function getHtmlEditorMarkState(document: HtmlEditorDocument, rootId: str
     return "mixed";
 }
 
-function applyFormatting(selection: FormattingSelection, command: "bold" | "italic", id: () => string): HtmlEditorState {
+function applyFormatting(selection: FormattingSelection, command: HtmlEditorTextMark, id: () => string): HtmlEditorState {
     const document = selection.document;
-    const tag = command === "bold" ? "strong" : "em";
-    const alias = command === "bold" ? "b" : "i";
+    const { tag, aliases } = markDefinition(command);
     const sameMark = (left: HtmlEditorElement, right: HtmlEditorElement): boolean =>
         left.tag === right.tag && JSON.stringify(left.classes) === JSON.stringify(right.classes)
         && JSON.stringify(left.attributes) === JSON.stringify(right.attributes)
@@ -203,19 +214,19 @@ function applyFormatting(selection: FormattingSelection, command: "bold" | "ital
             const previous = normalized[normalized.length - 1];
             if (previous?.type === "text" && next.type === "text") previous.text += next.text;
             else if (previous?.type === "element" && next.type === "element"
-                && (previous.tag === tag || previous.tag === alias) && (next.tag === tag || next.tag === alias)
+                && aliases.includes(previous.tag) && aliases.includes(next.tag)
                 && sameMark(previous, next)) previous.children.push(...next.children);
             else normalized.push(next);
         }
         return normalized;
     };
     const formatted = (node: HtmlEditorNode): boolean => node.type === "element"
-        && (node.tag === tag || node.tag === alias || (node.children.length > 0 && node.children.every(formatted)));
+        && (aliases.includes(node.tag) || (node.children.length > 0 && node.children.every(formatted)));
     const unwrap = (node: HtmlEditorNode): HtmlEditorNode[] => node.type === "text" ? [node]
-        : node.tag === tag || node.tag === alias ? node.children.flatMap(unwrap)
+        : aliases.includes(node.tag) ? node.children.flatMap(unwrap)
             : [{ ...node, children: node.children.flatMap(unwrap) }];
     const apply = (node: HtmlEditorNode): HtmlEditorNode[] => node.type === "text" ? [node]
-        : node.tag === tag || node.tag === alias ? node.children.flatMap(apply)
+        : aliases.includes(node.tag) ? node.children.flatMap(apply)
             : [{ ...node, children: normalizeMarks(node.children.flatMap(apply)) }];
     const pieces = selection.ranges.filter(range => range.from < range.to)
         .map(range => ({ range, nodes: slice(range.block.children, range.from, range.to, true, id) }));
@@ -226,6 +237,42 @@ function applyFormatting(selection: FormattingSelection, command: "bold" | "ital
         const replacement = remove ? nodes.flatMap(unwrap) : [element(tag, id, nodes.flatMap(apply))];
         range.block.children = normalizeMarks([...prefix, ...replacement, ...suffix]);
     });
+    const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
+    const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
+    return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
+}
+
+/** Removes inline marks and authored text styles while preserving document structure. */
+function clearFormatting(selection: FormattingSelection, id: () => string): HtmlEditorState {
+    const document = selection.document;
+    const marks = new Set(["strong", "b", "em", "i", "u", "s", "del"]);
+    const textStyles = new Set(["color", "background-color", "font-size"]);
+    const normalize = (nodes: HtmlEditorNode[]): HtmlEditorNode[] => {
+        const result: HtmlEditorNode[] = [];
+        for (const node of nodes) {
+            const next = node.type === "element" ? { ...node, children: normalize(node.children) } : node;
+            const previous = result[result.length - 1];
+            if (previous?.type === "text" && next.type === "text") previous.text += next.text;
+            else result.push(next);
+        }
+        return result;
+    };
+    const strip = (node: HtmlEditorNode): HtmlEditorNode[] => {
+        if (node.type === "text" || isAtomic(node)) return [node];
+        const children = node.children.flatMap(strip);
+        if (marks.has(node.tag)) return children;
+        const styles = node.styles.filter(style => !textStyles.has(style.name));
+        if (node.tag === "span" && !styles.length && !node.classes.length && !Object.keys(node.attributes).length)
+            return children;
+        return [{ ...node, styles, children }];
+    };
+    for (const range of selection.ranges) {
+        if (range.from >= range.to) continue;
+        const prefix = slice(range.block.children, 0, range.from, false, id);
+        const middle = slice(range.block.children, range.from, range.to, true, id).flatMap(strip);
+        const suffix = slice(range.block.children, range.to, size(range.block), true, id);
+        range.block.children = normalize([...prefix, ...middle, ...suffix]);
+    }
     const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
     const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
     return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
@@ -417,6 +464,15 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         return { document: formatting.document, selection: { anchor: formatting.reversed ? right : left,
             focus: formatting.reversed ? left : right }, marks: state.marks };
     }
+    if (command.type === "clearFormatting") {
+        const formatting = formattingSelection(document, rootId, selection, id);
+        if (!formatting) return;
+        if (formatting.collapsed) return { document, selection,
+            marks: { ...state.marks, bold: false, italic: false, underline: false, strikethrough: false,
+                styles: { ...state.marks?.styles, color: "", "background-color": "", "font-size": "" } } };
+        if (!formatting.ranges.some(range => range.to > range.from)) return;
+        return clearFormatting(formatting, id);
+    }
     const pre = editPre(document, selection, command, id);
     if (pre) return { ...pre, marks: state.marks };
     // Indentation is currently defined only inside one preformatted area.
@@ -435,10 +491,10 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
     // whole paragraph). Formatting operates on text-bearing blocks, so map
     // those structural boundaries to the corresponding block edges. Deletion
     // deliberately keeps its original structural range semantics.
-    if (!originallyCollapsed && (command.type === "bold" || command.type === "italic")) {
+    if (!originallyCollapsed && ["bold", "italic", "underline", "strikethrough"].includes(command.type)) {
         const formatting = formattingSelection(document, rootId, selection, id);
         if (!formatting || !formatting.ranges.length) return;
-        return applyFormatting(formatting, command.type, id);
+        return applyFormatting(formatting, command.type as HtmlEditorTextMark, id);
     }
     const anchorScope = blockAt(document, selection.anchor), focusScope = blockAt(document, selection.focus);
     const collapsed = originallyCollapsed || !!(anchorScope && focusScope && anchorScope.block === focusScope.block && anchorScope.offset === focusScope.offset);
@@ -446,7 +502,7 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         const quote = leaveQuote(document, selection, command, id);
         if (quote) return { ...quote, marks: state.marks };
     }
-    if (!originallyCollapsed && !["bold", "italic"].includes(command.type)) {
+    if (!originallyCollapsed && !["bold", "italic", "underline", "strikethrough"].includes(command.type)) {
         if (command.type === "insertHtml" && !fragment?.children.length) return;
         const point = deleteHtmlEditorRange(document, rootId, selection);
         if (point) {
@@ -522,11 +578,12 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
             }
         }
     }
-    if (collapsed && (command.type === "bold" || command.type === "italic")) {
+    if (collapsed && ["bold", "italic", "underline", "strikethrough"].includes(command.type)) {
+        const mark = command.type as HtmlEditorTextMark;
         const location = find(document, selection.anchor.nodeId);
-        const aliases = command.type === "bold" ? ["strong", "b"] : ["em", "i"];
+        const aliases = markDefinition(mark).aliases;
         const inherited = location && [...location.ancestors, ...(location.node.type === "element" ? [location.node] : [])].some(node => aliases.includes(node.tag));
-        return { document, selection: structuredClone(selection), marks: { ...state.marks, [command.type]: !(state.marks?.[command.type] ?? inherited) } };
+        return { document, selection: structuredClone(selection), marks: { ...state.marks, [mark]: !(state.marks?.[mark] ?? inherited) } };
     }
     // Ordinary typing/replacement updates one existing text node, preserving its
     // identity and wrappers rather than producing a new node for each character.
@@ -534,8 +591,10 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         const location = find(document, selection.anchor.nodeId);
         if (location?.node.type === "text") {
             const tags = location.ancestors.map(node => node.tag);
-            const matches = (state.marks?.bold === undefined || state.marks.bold === tags.some(tag => ["strong", "b"].includes(tag)))
-                && (state.marks?.italic === undefined || state.marks.italic === tags.some(tag => ["em", "i"].includes(tag)))
+            const matches = (["bold", "italic", "underline", "strikethrough"] as HtmlEditorTextMark[]).every(mark => {
+                const requested = state.marks?.[mark];
+                return requested === undefined || requested === tags.some(tag => markDefinition(mark).aliases.includes(tag));
+            })
                 && Object.entries(state.marks?.styles ?? {}).every(([property, value]) => {
                     let inherited: string | undefined;
                     for (const parent of location.ancestors)
@@ -643,10 +702,9 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
     const before = slice(start.block.children, 0, start.offset, false, id);
     const after = slice(end.block.children, end.offset, size(end.block), true, id);
     const startIndex = siblings.indexOf(start.block), endIndex = siblings.indexOf(end.block);
-    if (command.type === "bold" || command.type === "italic") {
+    if (["bold", "italic", "underline", "strikethrough"].includes(command.type)) {
         if (collapsed) return;
-        const tag = command.type === "bold" ? "strong" : "em";
-        const alias = command.type === "bold" ? "b" : "i";
+        const { tag, aliases } = markDefinition(command.type as HtmlEditorTextMark);
         const sameMark = (left: HtmlEditorElement, right: HtmlEditorElement): boolean =>
             left.tag === right.tag && JSON.stringify(left.classes) === JSON.stringify(right.classes)
             && JSON.stringify(left.attributes) === JSON.stringify(right.attributes)
@@ -659,17 +717,16 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
                 const previous = normalized[normalized.length - 1];
                 if (previous?.type === "text" && next.type === "text") previous.text += next.text;
                 else if (previous?.type === "element" && next.type === "element"
-                    && (previous.tag === tag || previous.tag === alias)
-                    && (next.tag === tag || next.tag === alias) && sameMark(previous, next)) {
+                    && aliases.includes(previous.tag) && aliases.includes(next.tag) && sameMark(previous, next)) {
                     previous.children.push(...next.children);
                 } else normalized.push(next);
             }
             return normalized;
         };
-        const formatted = (node: HtmlEditorNode): boolean => node.type === "element" && (node.tag === tag || node.tag === alias || (node.children.length > 0 && node.children.every(formatted)));
-        const unwrap = (node: HtmlEditorNode): HtmlEditorNode[] => node.type === "text" ? [node] : node.tag === tag || node.tag === alias ? node.children.flatMap(unwrap) : [{ ...node, children: node.children.flatMap(unwrap) }];
+        const formatted = (node: HtmlEditorNode): boolean => node.type === "element" && (aliases.includes(node.tag) || (node.children.length > 0 && node.children.every(formatted)));
+        const unwrap = (node: HtmlEditorNode): HtmlEditorNode[] => node.type === "text" ? [node] : aliases.includes(node.tag) ? node.children.flatMap(unwrap) : [{ ...node, children: node.children.flatMap(unwrap) }];
         const apply = (node: HtmlEditorNode): HtmlEditorNode[] => node.type === "text" ? [node]
-            : node.tag === tag || node.tag === alias ? node.children.flatMap(apply)
+            : aliases.includes(node.tag) ? node.children.flatMap(apply)
                 : [{ ...node, children: normalizeMarks(node.children.flatMap(apply)) }];
         const scopes = siblings.slice(startIndex, endIndex + 1);
         if (!scopes.every((node): node is HtmlEditorElement => node.type === "element" && blockAt(document, positionAt(node, 0))?.block === node)) return;
@@ -699,7 +756,9 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         const location = find(document, insertionPoint.nodeId);
         const inline = location ? [...location.ancestors, ...(location.node.type === "text" ? [] : [location.node])] : [];
         const blockIndex = inline.findIndex(node => node.id === start.block.id);
-        const wrappers = inline.slice(blockIndex + 1).filter(node => !(state.marks?.bold === false && ["strong", "b"].includes(node.tag)) && !(state.marks?.italic === false && ["em", "i"].includes(node.tag)));
+        const marks: HtmlEditorTextMark[] = ["bold", "italic", "underline", "strikethrough"];
+        const wrappers = inline.slice(blockIndex + 1).filter(node => !marks.some(mark =>
+            state.marks?.[mark] === false && markDefinition(mark).aliases.includes(node.tag)));
         for (const wrapper of wrappers.reverse()) {
             const copy = { ...structuredClone(wrapper), id: id(), children: inserted };
             copy.styles = copy.styles.filter(style => state.marks?.styles?.[style.name as "color" | "background-color" | "font-size"] === undefined);
@@ -708,6 +767,11 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         }
         if (state.marks?.bold && !wrappers.some(node => ["strong", "b"].includes(node.tag))) inserted = [element("strong", id, inserted)];
         if (state.marks?.italic && !wrappers.some(node => ["em", "i"].includes(node.tag))) inserted = [element("em", id, inserted)];
+        for (const mark of ["underline", "strikethrough"] as const) {
+            const definition = markDefinition(mark);
+            if (state.marks?.[mark] && !wrappers.some(node => definition.aliases.includes(node.tag)))
+                inserted = [element(definition.tag, id, inserted)];
+        }
         const styles = Object.entries(state.marks?.styles ?? {}).filter(([, value]) => !!value)
             .map(([name, value]) => ({ name, value: value! }));
         if (styles.length) {

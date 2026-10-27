@@ -1,4 +1,5 @@
-import type { DataViewField } from "../../../data/DataViewField";
+import type { DataViewButtonAppearance, DataViewField } from "../../../data/DataViewField";
+import type { RemixIcon } from "../../../core/RemixIcon";
 import type { HtmlEditorCommandContext, HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
 import type { HtmlEditorNodeId, HtmlEditorSelectionState } from "./HtmlEditorModel";
 
@@ -73,6 +74,20 @@ export interface HtmlEditorInspectionRow {
 export type HtmlEditorInspectorFieldPresentation = Omit<DataViewField<HtmlEditorInspectionRow>,
     "name" | "type" | "buttons" | "getValue" | "getText" | "showInRow">;
 
+/** Surface-specific visual overrides for a shared inspector field. */
+export interface HtmlEditorInspectorSurfacePresentation {
+    /** Button content arrangement for menu-backed fields. */
+    readonly appearance?: DataViewButtonAppearance;
+    /** Optional surface-specific trigger icon. */
+    readonly icon?: RemixIcon;
+    /** Whether the selected value is shown in the trigger button. */
+    readonly showValue?: boolean;
+    /** Whether the trigger button shows the popup chevron. */
+    readonly showArrow?: boolean;
+    /** Tooltip source; caption keeps the label localized with the field. */
+    readonly tooltip?: "caption" | string;
+}
+
 /** Shared declaration for an inspector contribution attached to one registry command. */
 interface HtmlEditorInspectorFieldBase {
     /** Explicit choice presentation. Defaults to lookup for data contributions. */
@@ -85,6 +100,8 @@ interface HtmlEditorInspectorFieldBase {
     readonly order?: number;
     /** Shared editor, lookup, validation and formatting metadata. */
     readonly field?: HtmlEditorInspectorFieldPresentation;
+    /** Optional visual variants; command state and execution remain shared. */
+    readonly presentations?: Partial<Record<"inspector" | "toolbar", HtmlEditorInspectorSurfacePresentation>>;
     /** Pure resolver; determine eligible targets without changing selection, DOM, model or history. */
     resolveTargets(context: HtmlEditorInspectionContext): HtmlEditorInspectorTargets;
 }

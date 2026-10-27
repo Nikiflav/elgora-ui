@@ -114,6 +114,29 @@ export default {
       "signature": "(nodeId: string | undefined) => HtmlEditorElement | undefined"
     },
     {
+      "name": "findElementPath",
+      "type": "(nodeId: string | undefined) => readonly HtmlEditorElement[] | undefined",
+      "description": "Finds an authored element and its outer-to-inner element path without cloning the model.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "nodeId",
+          "type": "string | undefined",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "readonly HtmlEditorElement[] | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(nodeId: string | undefined) => readonly HtmlEditorElement[] | undefined"
+    },
+    {
       "name": "selectedNodes",
       "type": "readonly string[]",
       "description": "Structural node selection, independent from the remembered text range.",
@@ -149,8 +172,8 @@ export default {
     },
     {
       "name": "getMarkState",
-      "type": "(mark: \"bold\" | \"italic\", selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState",
-      "description": "Returns the aggregate Bold/Italic state for the current selected fragments.",
+      "type": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState",
+      "description": "Returns the aggregate inline-mark state for the current selected fragments.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -158,7 +181,7 @@ export default {
       "parameters": [
         {
           "name": "mark",
-          "type": "\"bold\" | \"italic\"",
+          "type": "HtmlEditorTextMark",
           "optional": false,
           "description": ""
         },
@@ -175,7 +198,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(mark: \"bold\" | \"italic\", selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState"
+      "signature": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState"
     },
     {
       "name": "getTextStyleValues",

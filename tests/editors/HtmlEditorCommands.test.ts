@@ -94,6 +94,26 @@ describe("HtmlEditor transactions", () => {
         expect(editor.content.innerHTML).toBe("<p><em><strong>Hello</strong></em></p><p>Next</p>");
     });
 
+    it.each([["underline", "u"], ["strikethrough", "s"]] as const)("applies and toggles the %s semantic mark", (type, tag) => {
+        create("<p>Hello world</p>");
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(text, 0, text, 5);
+        expect(editor.execute({ type })).toBe(true);
+        expect(editor.content.querySelector(`${tag}`)?.textContent).toBe("Hello");
+        expect(editor.execute({ type })).toBe(true);
+        expect(editor.content.querySelector(tag)).toBeNull();
+    });
+
+    it("clears inline formatting without removing links or block structure", () => {
+        create('<p><a href="/docs"><strong><em style="color:red;font-size:2em">Hello</em></strong></a></p>');
+        const text = editor.content.querySelector("em")!.firstChild!;
+        select(text, 0, text, 5);
+        expect(editor.execute({ type: "clearFormatting" })).toBe(true);
+        expect(editor.content.innerHTML).toBe('<p><a href="/docs">Hello</a></p>');
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.querySelector("strong em")).not.toBeNull();
+    });
+
     it("formats independent text areas across different container parents", () => {
         create('<div style="display:grid"><div>Grid A</div><div>Grid B</div><div>Grid C</div></div>');
         const cells = [...editor.content.firstElementChild!.children];
@@ -372,7 +392,7 @@ describe("HtmlEditor transactions", () => {
     it("merges adjacent text nodes after removing a mark", () => {
         create("<p><strong>A</strong><strong>B</strong></p>");
         const paragraph = editor.content.firstElementChild!;
-        select(paragraph.querySelector("strong")!.firstChild!, 0, paragraph.querySelectorAll("strong")[1].firstChild!, 1);
+        select(paragraph.querySelector("strong")!.firstChild!, 0, paragraph.querySelector("strong")!.firstChild!, 2);
         expect(editor.execute({ type: "bold" })).toBe(true);
         expect(editor.content.innerHTML).toBe("<p>AB</p>");
         expect(editor.document.children[0].children).toHaveLength(1);

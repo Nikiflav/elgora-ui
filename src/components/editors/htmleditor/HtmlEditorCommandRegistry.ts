@@ -6,6 +6,7 @@ import type { HtmlEditorSurface } from "./HtmlEditorSurface";
 import type { HtmlEditorElement } from "./HtmlEditorModel";
 import { ObservableEvent } from "../../../core/ElgoraUI";
 import { getHtmlEditorStyle } from "./HtmlEditorStyles";
+import { getHtmlEditorElementBehavior, isAtomic } from "./HtmlEditorStructure";
 import { aggregateHtmlEditorInspectorValues, type HtmlEditorInspectionContext, type HtmlEditorInspectorCommandContext,
     type HtmlEditorInspectorField, type HtmlEditorInspectorValue, type HtmlEditorResolvedInspection,
     type HtmlEditorResolvedInspectorField } from "./HtmlEditorInspection";
@@ -102,7 +103,8 @@ export class HtmlEditorCommandRegistry {
     }
     /**
      * Resolves registered contributions. Element-area fields must cover every
-     * inspected element; text-area fields use the independent range. Every command
+     * inspected node directly or through an ancestor owner; text-area fields use
+     * the independent range. Every command
      * chooses its own eligible targets, so alignment may bind blocks while Bold
      * binds text fragments. Empty scopes are omitted; disabled fields stay visible.
      * No built-in contributions are migrated automatically by this scaffold.
@@ -118,7 +120,8 @@ export class HtmlEditorCommandRegistry {
             const targets = structuredClone(definition.resolveTargets(context));
             if (targets.kind === "elements" ? !targets.nodeIds.length : !targets.ranges.length) continue;
             if (definition.area === "elements" && (targets.kind !== "elements"
-                || context.nodeIds.some(id => !targets.nodeIds.includes(id)))) continue;
+                || context.nodeIds.some(id => !targets.nodeIds.includes(id)
+                    && !targets.nodeIds.some(targetId => this.surface.findElementPath(id)?.some(node => node.id === targetId))))) continue;
             const resolved: HtmlEditorInspectorCommandContext = {
                 ...context, inspection: { context, targets }
             };
@@ -164,8 +167,8 @@ export class HtmlEditorCommandRegistry {
             && context.modelVersion === this.surface.modelVersion;
     }
     /** Resolves visible commands and their current enabled state for a UI surface. */
-    getCommands(context: HtmlEditorCommandContext = this.context()): HtmlEditorUiCommand[] {
-        return [...this.commands.values()].filter(command => command.isVisible?.(context) ?? true);
+    getCommands(context: HtmlEditorCommandContext = this.context(), includeHidden = false): HtmlEditorUiCommand[] {
+        return [...this.commands.values()].filter(command => includeHidden || (command.isVisible?.(context) ?? true));
     }
     /** Executes one command by id using the same registry as every menu surface. */
     execute(id: string, context: HtmlEditorCommandContext = this.context(), value?: HtmlEditorInspectorValue): boolean {
@@ -211,16 +214,43 @@ export class HtmlEditorCommandRegistry {
                 const item = this.surface.findElement(id); return !!item && (!allowed || allowed(item));
             })
         });
-        const textAction = (type: Extract<HtmlEditorCommand["type"], "bold" | "italic">): Partial<HtmlEditorUiCommand> => ({
-            inspector: { type: "buttons", area: "text", group: "text", order: type === "bold" ? 10 : 20, resolveTargets: selectionTargets }
+        /**
+         * Resolves inline inspection targets to their nearest editable block owner.
+         * Block commands must not create authored styles on a span/strong merely
+         * because the caret currently lives inside that inline element.
+         */
+        const blockTargets = (context: HtmlEditorInspectionContext, allowed?: (item: HtmlEditorElement) => boolean) => {
+            const ids = new Set<string>();
+            for (const id of context.nodeIds) {
+                const path = this.surface.findElementPath(id);
+                const inspected = path?.[path.length - 1];
+                if (!inspected || isAtomic(inspected)) continue;
+                const owner = [...path ?? []].reverse().find(item => {
+                    const kind = getHtmlEditorElementBehavior(item).kind;
+                    return ["textBlock", "listItem", "cell", "container"].includes(kind)
+                        && (!allowed || allowed(item));
+                });
+                if (owner) ids.add(owner.id);
+            }
+            return { kind: "elements" as const, nodeIds: [...ids] };
+        };
+        const textAction = (type: Extract<HtmlEditorCommand["type"], "bold" | "italic" | "underline" | "strikethrough">): Partial<HtmlEditorUiCommand> => ({
+            inspector: { type: "buttons", area: "text", group: "text", order: ({ bold: 10, italic: 20, underline: 30, strikethrough: 40 })[type], resolveTargets: selectionTargets }
         });
-        const edit = (type: Extract<HtmlEditorCommand["type"], "bold" | "italic">): HtmlEditorUiCommand => ({
-            id: type, label: `htmlEditorToolbar.${type}`, icon: type === "bold" ? "ri-bold" : "ri-italic",
+        const edit = (type: Extract<HtmlEditorCommand["type"], "bold" | "italic" | "underline" | "strikethrough">): HtmlEditorUiCommand => ({
+            id: type, label: `htmlEditorToolbar.${type}`, icon: ({ bold: "ri-bold", italic: "ri-italic", underline: "ri-underline", strikethrough: "ri-strikethrough" })[type],
             isEnabled: context => context.surface.editable && !!context.selection,
             getState: context => context.surface.getMarkState(type, context.selection),
             execute: context => context.surface.execute({ type }, context.selection), ...textAction(type)
         });
         this.register(edit("bold")); this.register(edit("italic"));
+        this.register(edit("underline")); this.register(edit("strikethrough"));
+        this.register({
+            id: "clear-formatting", label: "htmlEditorToolbar.clearFormatting", icon: "ri-eraser-fill",
+            isEnabled: context => context.surface.editable && !!context.selection,
+            execute: context => context.surface.execute({ type: "clearFormatting" }, context.selection),
+            inspector: { type: "buttons", area: "text", group: "text", order: 50, resolveTargets: selectionTargets }
+        });
         for (const type of ["undo", "redo"] as const) this.register({
             id: type, label: `htmlEditorToolbar.${type}`, icon: type === "undo" ? "ri-arrow-go-back-line" : "ri-arrow-go-forward-line",
             isEnabled: context => type === "undo" ? context.surface.canUndo : context.surface.canRedo,
@@ -263,25 +293,46 @@ export class HtmlEditorCommandRegistry {
                     : !!target(context)),
                 getValue: readLegacy,
                 execute: (context, value) => {
-                    if (textStyle) return typeof value === "string" && value in values
-                        && context.surface.execute({ type: "textStyle", property: property as "color" | "font-size" | "background-color", value: values[value] }, context.selection);
+                    if (textStyle) {
+                        if (typeof value !== "string" || !(value in values)) return false;
+                        const current = readState(context);
+                        const nextValue = current?.kind === "value" && current.value === value ? "" : values[value];
+                        return context.surface.execute({ type: "textStyle", property: property as "color" | "font-size" | "background-color", value: nextValue }, context.selection);
+                    }
+                    if (value === undefined && property === "text-align") {
+                        const ids = context.inspection?.targets.kind === "elements"
+                            ? context.inspection.targets.nodeIds : context.targetId ? [context.targetId] : [];
+                        return ids.length > 0 && context.surface.updateElements(ids.map(nodeId => ({ nodeId, patch: {
+                            styles: (context.surface.findElement(nodeId)?.styles ?? []).filter(entry => entry.name !== property)
+                        } })));
+                    }
                     if (typeof value !== "string" || !value || !(value in values) || !context.targetId) return false;
                     const ids = context.inspection?.targets.kind === "elements"
                         ? context.inspection.targets.nodeIds : [context.targetId];
+                    const clear = ids.length > 0 && ids.every(nodeId => {
+                        const item = context.surface.findElement(nodeId);
+                        return !!item && getHtmlEditorStyle(item.styles, property)?.value === values[value];
+                    });
                     const updates: { nodeId: string; patch: { styles: { name: string; value: string }[] } }[] = [];
                     ids.forEach(nodeId => {
                         const item = context.surface.findElement(nodeId); if (!item) return;
                         const styles = item.styles.filter(entry => entry.name !== property);
-                        if (value !== "default") styles.push({ name: property, value: values[value] });
+                        if (!clear) styles.push({ name: property, value: values[value] });
                         updates.push({ nodeId, patch: { styles } });
                     });
                     return updates.length > 0 && context.surface.updateElements(updates);
                 },
                 inspector: { type: "data", area: textStyle ? "text" : "elements", group: property === "text-align" ? "block" : property === "font-size" ? "format" : "appearance",
                     presentation: property === "text-align" ? "buttons" : "menu",
+                    presentations: ["text.color", "text.size", "element.backgroundColor"].includes(id) ? {
+                        toolbar: { appearance: "iconOnly", showValue: false, showArrow: false, tooltip: "caption",
+                            icon: id === "element.backgroundColor" ? "ri-paint-fill"
+                                : id === "text.color" ? "ri-font-color" : undefined }
+                    } : undefined,
                     order: property === "text-align" ? 10 : property === "color" ? 30 : 40,
                     field: { dataType: "string" },
-                    resolveTargets: context => textStyle ? selectionTargets(context) : elementTargets(context, item => item.tag !== "img"),
+                    resolveTargets: context => textStyle ? selectionTargets(context)
+                        : property === "text-align" ? blockTargets(context) : elementTargets(context, item => item.tag !== "img"),
                     getValue: context => readState(context) ?? { kind: "unset" } }
             };
         };
@@ -307,34 +358,31 @@ export class HtmlEditorCommandRegistry {
                 const ids = context.inspection?.targets.kind === "elements" ? context.inspection.targets.nodeIds : [context.targetId];
                 return context.surface.updateElements(ids.map(nodeId => ({ nodeId, patch: { tag: value } })));
             },
-            inspector: { type: "data", area: "elements", group: "block", order: 0, field: { dataType: "string" },
+                inspector: { type: "data", area: "elements", group: "block", order: 0, field: { dataType: "string" },
                 presentation: "menu",
-                resolveTargets: context => elementTargets(context, item => ["p", "h1", "h2", "h3", "h4", "h5", "h6"].includes(item.tag)),
+                resolveTargets: context => blockTargets(context, item => ["p", "h1", "h2", "h3", "h4", "h5", "h6"].includes(item.tag)),
                 getValue: context => headingState(context) ?? { kind: "unset" } }
         });
         const colors = ["primary", "accent", "neutral", "success", "warning", "danger", "muted"];
         this.register(styleCommand("text.color", "htmlEditorBasic.textColor", "color", [
-            { id: "default", text: "Default", icon: "ri-font-color", color: "" },
             ...colors.map(id => ({ id, text: id[0].toUpperCase() + id.slice(1), icon: "ri-palette-line" as const,
                 color: id === "muted" ? "var(--elg-text-muted)" : `var(--elg-${id}-color)` }))
-        ], { default: "", ...Object.fromEntries(colors.map(id => [id,
-            id === "muted" ? "var(--elg-text-muted)" : `var(--elg-${id}-color)`])) }));
+        ], Object.fromEntries(colors.map(id => [id,
+            id === "muted" ? "var(--elg-text-muted)" : `var(--elg-${id}-color)`]))));
         const sizes = [60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 200];
         this.register(styleCommand("element.backgroundColor", "htmlEditorBasic.backgroundColor", "background-color", [
-            { id: "default", text: "Default", icon: "ri-format-clear", color: "" },
             ...colors.map(id => ({ id, text: id[0].toUpperCase() + id.slice(1), icon: "ri-palette-line" as const,
                 color: id === "muted" ? "var(--elg-text-muted)" : `var(--elg-${id}-color)` }))
-        ], { default: "", ...Object.fromEntries(colors.map(id => [id,
-            id === "muted" ? "var(--elg-text-muted)" : `var(--elg-${id}-color)`])) }));
+        ], Object.fromEntries(colors.map(id => [id,
+            id === "muted" ? "var(--elg-text-muted)" : `var(--elg-${id}-color)`]))));
         this.register(styleCommand("text.size", "htmlEditorBasic.textSize", "font-size", [
-            { id: "default", text: "Default", icon: "ri-font-size" },
             { id: "small", text: "Small (87.5%)", icon: "ri-font-size" },
             { id: "large", text: "Large (125%)", icon: "ri-font-size" },
             ...sizes.map(size => ({ id: `fs-${size}`, text: `${size}%`, icon: "ri-font-size" as const }))
-        ], { default: "", small: "0.875em", large: "1.25em",
+        ], { small: "0.875em", large: "1.25em",
             ...Object.fromEntries(sizes.map(size => [`fs-${size}`, `${size}%`])) }));
         this.register(styleCommand("block.align", "htmlEditorBasic.align", "text-align", [
-            { id: "default", text: "Default" }, { id: "start", text: "Start" }, { id: "center", text: "Center" }, { id: "end", text: "End" }
-        ], { default: "", start: "start", center: "center", end: "end" }));
+            { id: "start", text: "Start" }, { id: "center", text: "Center" }, { id: "end", text: "End" }
+        ], { start: "start", center: "center", end: "end" }));
     }
 }

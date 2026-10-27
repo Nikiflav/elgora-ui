@@ -6,8 +6,8 @@ import { aggregateHtmlEditorInspectorValues, type HtmlEditorInspectionContext,
 import { Localization } from "../../src/localization/Localization";
 
 const surfaces: HtmlEditorSurface[] = [];
-function setup() {
-    const surface = new HtmlEditorSurface({ html: "<p>First</p><p>Second</p>" });
+function setup(html = "<p>First</p><p>Second</p>") {
+    const surface = new HtmlEditorSurface({ html });
     surfaces.push(surface); surface.mount(document.body);
     const registry = new HtmlEditorCommandRegistry(surface, Localization.resolveMessages());
     const ids = surface.document.children.map(node => node.id);
@@ -54,7 +54,9 @@ describe("HtmlEditor inspector framework", () => {
         document.dispatchEvent(new Event("selectionchange"));
         const context = registry.inspectionContext(ids);
         const fields = registry.getInspectorFields(context);
-        expect(fields.map(field => field.command.id)).toEqual(expect.arrayContaining(["bold", "italic", "block.heading", "block.align"]));
+        expect(fields.map(field => field.command.id)).toEqual(expect.arrayContaining(["bold", "italic", "underline", "strikethrough", "block.heading", "block.align"]));
+        expect(fields.map(field => field.command.id).filter(id => ["bold", "italic", "underline", "strikethrough"].includes(id)))
+            .toEqual(["bold", "italic", "underline", "strikethrough"]);
         const alignment = fields.find(field => field.command.id === "block.align")!;
         const saved = surface.html;
         expect(registry.executeInspectorField(alignment, "center")).toBe(true);
@@ -62,6 +64,27 @@ describe("HtmlEditor inspector framework", () => {
         expect(surface.execute({ type: "undo" })).toBe(true);
         expect(surface.html).toBe(saved);
         expect(surface.canUndo).toBe(false);
+    });
+
+    it("resolves block commands to the enclosing block instead of an inline caret element", () => {
+        const { surface, registry } = setup("<p>Before <span><strong>inside</strong></span> after</p>");
+        const strongText = surface.content.querySelector("strong")!.firstChild!;
+        document.getSelection()!.setBaseAndExtent(strongText, 2, strongText, 2);
+        document.dispatchEvent(new Event("selectionchange"));
+        const paragraphId = surface.document.children[0].id;
+        const strongId = (surface.document.children[0].type === "element"
+            && surface.document.children[0].children[1].type === "element"
+            && surface.document.children[0].children[1].children[0].type === "element")
+            ? surface.document.children[0].children[1].children[0].id : "";
+        const context = registry.inspectionContext([strongId]);
+        const fields = registry.getInspectorFields(context);
+        const alignment = fields.find(field => field.command.id === "block.align")!;
+        const heading = fields.find(field => field.command.id === "block.heading")!;
+        expect(alignment.context.inspection.targets).toEqual({ kind: "elements", nodeIds: [paragraphId] });
+        expect(heading.context.inspection.targets).toEqual({ kind: "elements", nodeIds: [paragraphId] });
+        expect(registry.executeInspectorField(alignment, "center")).toBe(true);
+        expect(surface.content.querySelector("p")!.style.textAlign).toBe("center");
+        expect(surface.content.querySelector("strong")!.style.textAlign).toBe("");
     });
 
     it("omits element fields unsupported by any inspected target and preserves a remembered text range", () => {

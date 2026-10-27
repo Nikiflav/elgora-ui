@@ -13,7 +13,43 @@
 .elg-html-editor-container-selection-rect[data-inspection-target="true"] { background: var(--elg-html-editor-inspection-bg, rgb(236 72 153 / 8%)); }
 .elg-html-editor-container-selection-rect[data-html-editor-container-kind="table"],
 .elg-html-editor-container-selection-rect[data-html-editor-container-kind="cell"] { border-color: color-mix(in srgb, var(--elg-warning-border, #ffc107) 72%, transparent); }
-.elg-html-editor-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px 6px; background: var(--elg-surface-color); border: 1px solid var(--elg-border-color); }
+.elg-html-editor-toolbar { display: flex; align-items: center; gap: 2px; min-width: 0; min-height: 34px; padding: 2px 6px; overflow: hidden; background: var(--elg-surface-color); border: 1px solid var(--elg-border-color); }
+.elg-html-editor-toolbar-form-host { display: flex; flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; }
+.elg-html-editor-toolbar-form { display: flex; flex: 0 0 auto; width: max-content; max-width: none; min-width: max-content; gap: 0; padding: 0; border: 0; background: transparent; }
+.elg-html-editor-toolbar-form .elg-data-form-layout-row { flex-wrap: nowrap; gap: 2px; min-width: max-content; }
+.elg-html-editor-toolbar-form .elg-data-form-field,
+.elg-html-editor-toolbar-form .elg-data-form-layout-row > .elg-data-form-field { flex: 0 0 auto; width: max-content; max-width: none; min-width: 0; }
+.elg-html-editor-toolbar-form .elg-data-form-value { width: max-content; max-width: none; height: 28px; min-width: 28px; padding: 0; border-color: transparent; background: transparent; }
+.elg-html-editor-toolbar-form .elg-data-form-value:hover,
+.elg-html-editor-toolbar-form .elg-data-form-value:focus-visible { border-color: var(--elg-border-color); background: var(--elg-hover-bg); }
+.elg-html-editor-toolbar-form .elg-data-form-buttons-host { width: auto; height: 28px; padding: 0; gap: 2px; border: 0; background: transparent; }
+.elg-html-editor-toolbar-form .elg-data-form-buttons { display: flex; height: 28px; gap: 2px; }
+.elg-html-editor-toolbar-form .elg-data-form-action-button { width: 28px; min-width: 28px; height: 28px; padding: 0; }
+.elg-html-editor-toolbar-form .elg-data-form-action-button > span { justify-content: center; }
+.elg-html-editor-toolbar-form [data-field="block.heading"] .elg-data-form-action-button,
+.elg-html-editor-toolbar-form [data-field="text.color"] .elg-data-form-action-button,
+.elg-html-editor-toolbar-form [data-field="text.size"] .elg-data-form-action-button,
+.elg-html-editor-toolbar-form [data-field="element.backgroundColor"] .elg-data-form-action-button { width: max-content; min-width: max-content; padding-inline: 8px; }
+.elg-html-editor-toolbar-form [data-field="block.heading"] .elg-data-form-action-button { min-width: 96px; }
+.elg-html-editor-toolbar-form [data-field="block.heading"] .elg-data-form-action-button > span,
+.elg-html-editor-toolbar-form [data-field="text.color"] .elg-data-form-action-button > span,
+.elg-html-editor-toolbar-form [data-field="text.size"] .elg-data-form-action-button > span,
+.elg-html-editor-toolbar-form [data-field="element.backgroundColor"] .elg-data-form-action-button > span { justify-content: space-between; gap: 6px; white-space: nowrap; }
+.elg-html-editor-toolbar-form .elg-data-form-action-button[aria-pressed="true"] { background: var(--elg-selection-bg); color: var(--elg-selection-text); }
+.elg-html-editor-toolbar-form .elg-data-form-action-button[aria-pressed="mixed"] { background: var(--elg-selection-bg); text-decoration: underline dotted; text-underline-offset: 3px; }
+.elg-html-editor-toolbar-form [data-field="bold"] .elg-data-form-action-button[aria-pressed="mixed"],
+.elg-html-editor-toolbar-form [data-field="italic"] .elg-data-form-action-button[aria-pressed="mixed"],
+.elg-html-editor-basic-form [data-field="bold"] .elg-data-form-action-button[aria-pressed="mixed"],
+.elg-html-editor-basic-form [data-field="italic"] .elg-data-form-action-button[aria-pressed="mixed"],
+.elg-html-editor-basic-form [data-field="underline"] .elg-data-form-action-button[aria-pressed="mixed"],
+.elg-html-editor-basic-form [data-field="strikethrough"] .elg-data-form-action-button[aria-pressed="mixed"] {
+  background: transparent;
+  color: var(--elg-text-color);
+  border: 1px dotted color-mix(in srgb, var(--elg-primary-border, #86b7fe) 72%, transparent);
+  text-decoration: none;
+}
+.elg-html-editor-toolbar-properties { flex: 0 0 28px; width: 28px; height: 28px; padding: 0; }
+.elg-html-editor-toolbar-properties[aria-pressed="true"] { background: var(--elg-selection-bg); color: var(--elg-selection-text); }
 .elg-html-editor-command-toast { position: absolute; inset-inline-end: 12px; bottom: 12px; z-index: 5; max-width: min(360px, calc(100% - 24px)); padding: 7px 10px; border: 1px solid color-mix(in srgb, var(--elg-danger-border, #dc3545) 42%, transparent); border-radius: 6px; background: color-mix(in srgb, var(--elg-danger-bg, #f8d7da) 88%, var(--elg-surface-color, #fff)); color: var(--elg-danger-text, #842029); box-shadow: 0 4px 14px color-mix(in srgb, #000 12%, transparent); font-size: .875em; opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity 140ms ease, transform 140ms ease; }
 .elg-html-editor-command-toast[data-visible="true"] { opacity: 1; transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) { .elg-html-editor-command-toast { transition: none; } }
@@ -21,6 +57,7 @@
 .elg-html-editor-command-menu [data-command-state="on"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 .elg-html-editor-toolbar [data-command-state="mixed"],
 .elg-html-editor-command-menu [data-command-state="mixed"] { text-decoration: underline dotted; text-underline-offset: 3px; }
+.elg-html-editor-toolbar [data-command-state="mixed"] { background: transparent; color: var(--elg-text-color); border: 1px dotted color-mix(in srgb, var(--elg-primary-border, #86b7fe) 72%, transparent); text-decoration: none; }
 .elg-html-editor-inspector { display: flex; flex-direction: column; contain: size; min-width: 0; min-height: 0; overflow: hidden; padding: 8px; box-sizing: border-box; border: 1px solid var(--elg-border-color); background: var(--elg-surface-color-2); }
 .elg-html-editor-inspector > button { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
 .elg-html-editor-inspector > .elg-tab-view { flex: 1; margin-top: 6px; --elg-tab-panel-bg: var(--elg-surface-color); }

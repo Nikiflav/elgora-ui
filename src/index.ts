@@ -81,5 +81,5 @@ export type { HtmlEditorInspectorValue, HtmlEditorInspectorValueState, HtmlEdito
 export type { HtmlEditorNodeCoverage } from './components/editors/htmleditor/HtmlEditorRange';
 export type { HtmlEditorNode, HtmlEditorNodeId, HtmlEditorText, HtmlEditorElement, HtmlEditorStyle, HtmlEditorDocument, HtmlEditorPositionState, HtmlEditorSelectionState } from './components/editors/htmleditor/HtmlEditorModel';
 export { getHtmlEditorStyle, setHtmlEditorStyle, removeHtmlEditorStyle } from './components/editors/htmleditor/HtmlEditorStyles';
-export type { HtmlEditorCommand, HtmlEditorState } from './components/editors/htmleditor/HtmlEditorCommands';
+export type { HtmlEditorCommand, HtmlEditorState, HtmlEditorTextMark } from './components/editors/htmleditor/HtmlEditorCommands';
 export { getHtmlEditorElementBehavior, type HtmlEditorElementBehavior, type HtmlEditorElementKind } from './components/editors/htmleditor/HtmlEditorStructure';
