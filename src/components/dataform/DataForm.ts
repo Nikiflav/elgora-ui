@@ -157,6 +157,20 @@ export class DataForm<TRow> extends Component {
     /** Whether a field editor is currently accepting or cancelling a value. */
     get isEditing(): boolean { return !!this.active; }
 
+    /** Starts editing a visible field programmatically, preserving normal DataForm editor behavior. */
+    async beginEditField(name: string, initialText?: string): Promise<boolean> {
+        const fields = this.visibleFields();
+        const field = fields.find(item => item.name === name);
+        return field ? this.beginEdit(field, fields.indexOf(field), initialText) : false;
+    }
+
+    /** Refreshes one displayed field after a local form value changes. */
+    async refreshField(name: string): Promise<void> {
+        const field = this.visibleFields().find(item => item.name === name);
+        const host = field ? this.fieldRows.get(field.name) : undefined;
+        if (field && host) await this.updateDisplay(field, host);
+    }
+
     /** Snapshot of current disclosure states, suitable for a replacement form's groupState option. */
     getGroupState(): ReadonlyMap<string, boolean> {
         return new Map([...this.groups].map(([id, element]) => [id, !element.open]));
@@ -238,13 +252,14 @@ export class DataForm<TRow> extends Component {
                 "data-field": buttonField ? field.name : undefined,
                 tabIndex: buttonField ? -1 : (this.options.allowEdit === false || field.readonly ? -1 : 0),
                 role: buttonField ? undefined : "button", ariaLabel: field.caption ?? field.name,
+                title: field.tooltip,
                 onclick: () => {
                     if (buttonField) return;
                     // The display host keeps its handler after the editor is
                     // mounted. Do not restart the same edit when a picker
                     // trigger or input click bubbles from the active editor.
                     if (this.active?.host === value) return;
-                    void this.beginEdit(field, index);
+                    void this.beginEdit(field, index, undefined, true);
                 },
                 onkeydown: (event: KeyboardEvent) => {
                     if (buttonField) return;
@@ -347,7 +362,7 @@ export class DataForm<TRow> extends Component {
         return buttons;
     }
 
-    private async beginEdit(field: DataViewField<TRow>, index: number, initialText?: string): Promise<boolean> {
+    private async beginEdit(field: DataViewField<TRow>, index: number, initialText?: string, openOnClick = false): Promise<boolean> {
         if (this.options.allowEdit === false || field.readonly || field.type === "buttons" || this.disposed.Value) return false;
         if (this.active && !(await this.finishEdit())) return false;
         const host = this.fieldRows.get(field.name); if (!host) return false;
@@ -362,6 +377,7 @@ export class DataForm<TRow> extends Component {
             }
         } as FieldEditContext<TRow> & { onCommit: (value: any) => Promise<void> });
         host.replaceChildren(editor.dom); host.classList.add("elg-data-form-value-editing");
+        if (field.tooltip) editor.dom.title = field.tooltip;
         const active: ActiveEdit<TRow> = {
             field, editor, host, index,
             committed: editor.committed.subscribe(() => {
@@ -412,6 +428,12 @@ export class DataForm<TRow> extends Component {
                 input.value = initialText;
                 input.dispatchEvent(new Event("input", { bubbles: true }));
             }
+        }
+        if (openOnClick && editor instanceof PopoverEditor && editor.openOnInputClick) {
+            // The original click targeted the display host, which was replaced
+            // by the editor during this handler. Open immediately after focus;
+            // keyboard activation does not pass openOnClick.
+            if (this.active?.editor === editor) await editor.open();
         }
         return true;
     }

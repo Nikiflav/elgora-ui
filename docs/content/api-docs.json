@@ -6,25 +6,42 @@
   "exports": [
     {
       "name": "aggregateHtmlEditorInspectorValues",
-      "kind": "function",
-      "type": "(values: readonly (HtmlEditorInspectorValue | undefined)[]) => HtmlEditorInspectorValueState | undefined",
-      "description": "Aggregates per-target authored values with Object.is. Undefined means unset;\nempty text, zero, false and null remain real values. Empty input has no applicable\ntargets and returns undefined, so the caller can omit that field entirely.",
-      "tags": [],
+      "kind": "variable",
+      "type": "(values: readonly (HtmlEditorUiCommandValue | undefined)[]) => HtmlEditorUiCommandValueState | undefined",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use aggregateHtmlEditorUiCommandValues."
+        }
+      ],
       "topics": [],
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/aggregateHtmlEditorInspectorValues",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts"
+    },
+    {
+      "name": "aggregateHtmlEditorUiCommandValues",
+      "kind": "function",
+      "type": "(values: readonly (HtmlEditorUiCommandValue | undefined)[]) => HtmlEditorUiCommandValueState | undefined",
+      "description": "Aggregates authored values while preserving empty strings, zero and false.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/aggregateHtmlEditorUiCommandValues",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
       "parameters": [
         {
           "name": "values",
-          "type": "readonly (HtmlEditorInspectorValue | undefined)[]",
+          "type": "readonly (HtmlEditorUiCommandValue | undefined)[]",
           "optional": false,
           "description": ""
         }
       ],
       "returns": {
-        "type": "HtmlEditorInspectorValueState | undefined",
+        "type": "HtmlEditorUiCommandValueState | undefined",
         "description": ""
       }
     },
@@ -2153,6 +2170,58 @@
           "optional": false,
           "source": "src/components/dataform/DataForm.ts",
           "kind": "property"
+        },
+        {
+          "name": "beginEditField",
+          "type": "(name: string, initialText?: string) => Promise<boolean>",
+          "description": "Starts editing a visible field programmatically, preserving normal DataForm editor behavior.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "initialText",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<boolean>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(name: string, initialText?: string) => Promise<boolean>"
+        },
+        {
+          "name": "refreshField",
+          "type": "(name: string) => Promise<void>",
+          "description": "Refreshes one displayed field after a local form value changes.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/dataform/DataForm.ts",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise<void>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(name: string) => Promise<void>"
         },
         {
           "name": "getGroupState",
@@ -6668,6 +6737,16 @@
           "kind": "property"
         },
         {
+          "name": "tooltip",
+          "type": "string | undefined",
+          "description": "Optional short hint rendered as the native tooltip of the field control.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/data/DataViewField.ts",
+          "kind": "property"
+        },
+        {
           "name": "userState",
           "type": "any",
           "description": "Opaque, caller-defined presentation metadata (not used internally).",
@@ -6942,6 +7021,16 @@
       "path": "/api-reference/DateEditor",
       "source": "src/components/editors/DateEditor.ts",
       "members": [
+        {
+          "name": "openOnInputClick",
+          "type": "boolean",
+          "description": "A click on the active date input opens the calendar; focus alone does not.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/DateEditor.ts",
+          "kind": "property"
+        },
         {
           "name": "resolveText",
           "type": "(text: string) => Promise<string | null>",
@@ -7342,6 +7431,16 @@
       "source": "src/components/editors/DateTimeEditor.ts",
       "members": [
         {
+          "name": "openOnInputClick",
+          "type": "boolean",
+          "description": "A click on the active date-time input opens the picker; focus alone does not.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/DateTimeEditor.ts",
+          "kind": "property"
+        },
+        {
           "name": "resolveText",
           "type": "(text: string) => Promise<string | null>",
           "description": "Resolves and validates a local canonical date-time.",
@@ -7527,7 +7626,7 @@
     {
       "name": "enMessages",
       "kind": "variable",
-      "type": "{ readonly \"htmlEditorToolbar.label\": \"HTML editing commands\"; readonly \"htmlEditorToolbar.bold\": \"Bold\"; readonly \"htmlEditorToolbar.italic\": \"Italic\"; readonly \"htmlEditorToolbar.underline\": \"Underline\"; readonly \"htmlEditorToolbar.strikethrough\": \"Strikethrough\"; readonly \"htmlEditorToolbar.clearFormatting\": \"Clear formatting\"; readonly \"htmlEditorToolbar.undo\": \"Undo\"; readonly \"htmlEditorToolbar.redo\": \"Redo\"; readonly \"htmlEditorCommand.failed\": \"This command cannot be executed in the current context.\"; readonly \"htmlEditorInspector.label\": \"Element inspector\"; readonly \"htmlEditorInspector.elementsArea\": \"Elements\"; readonly \"htmlEditorInspector.textArea\": \"Text selection\"; readonly \"htmlEditorInspector.formatCategory\": \"Format\"; readonly \"htmlEditorInspector.typographyCategory\": \"Typography\"; readonly \"htmlEditorInspector.paragraphCategory\": \"Paragraph\"; readonly \"htmlEditorInspector.appearanceCategory\": \"Appearance\"; readonly \"htmlEditorInspector.chooseElement\": \"Choose an element…\"; readonly \"htmlEditorInspector.elements\": \"HTML elements\"; readonly \"htmlEditorInspector.properties\": \"Properties\"; readonly \"htmlEditorInspector.advanced\": \"Advanced\"; readonly \"htmlEditorInspector.propertiesHint\": \"Choose a Basic command for the selected element.\"; readonly \"htmlEditorInspector.advancedHint\": \"Advanced attributes, classes and styles will be grouped here. This panel does not modify HTML yet.\"; readonly \"htmlEditorBasic.heading\": \"Block\"; readonly \"htmlEditorBasic.textColor\": \"Text color\"; readonly \"htmlEditorBasic.backgroundColor\": \"Background\"; readonly \"htmlEditorBasic.textSize\": \"Text size\"; readonly \"htmlEditorBasic.align\": \"Alignment\"; readonly \"htmlEditorInspector.empty\": \"Empty\"; readonly \"htmlEditorInspector.ancestors\": \"Element ancestors\"; readonly \"htmlEditorInspector.moreAncestors\": \"More ancestors\"; readonly \"htmlEditorInspector.inspectAncestor\": \"Inspect {tag}\"; readonly \"htmlEditorInspector.mixed\": \"Mixed\"; readonly \"htmlEditorInspector.fullySelected\": \"Fully selected\"; readonly \"htmlEditorInspector.partiallySelected\": \"Partially selected\"; readonly \"htmlEditorInspector.notSelected\": \"Not selected\"; readonly \"htmlEditorInspector.keyboardFocus\": \"Keyboard focus\"; readonly \"htmlEditorInspector.selectElement\": \"Select element\"; readonly \"htmlEditorInspector.moreActions\": \"More actions\"; readonly \"htmlEditorInspector.notSelectedHint\": \"Not selected — click to select element\"; readonly \"htmlEditorInspector.partiallySelectedHint\": \"Partially selected — click to select the entire element\"; readonly \"treeView.loading\": \"Loading…\"; readonly \"treeView.loadError\": \"Could not load this branch.\"; readonly \"treeView.retry\": \"Retry\"; readonly \"datePicker.today\": \"Today\"; readonly \"datePicker.selectToday\": \"Select today\"; readonly \"datePicker.chooseMonth\": \"Choose month\"; readonly \"datePicker.chooseYear\": \"Choose year\"; readonly \"datePicker.previousPeriod\": \"Previous period\"; readonly \"datePicker.nextPeriod\": \"Next period\"; readonly \"datePicker.chooseDate\": \"Choose date\"; readonly \"datePicker.invalidDate\": \"Failed to read calendar date. Use a valid YYYY-MM-DD date.\"; readonly \"datePicker.outOfRange\": \"Failed to set calendar date. The date is outside the allowed range.\"; readonly \"valueEditor.required\": \"A value is required.\"; readonly \"valueEditor.validationError\": \"Validation error: {message}\"; readonly \"numberEditor.invalidNumber\": \"Failed to confirm number. Enter a valid number.\"; readonly \"numberEditor.finiteNumber\": \"Failed to confirm number. Enter a finite number.\"; readonly \"booleanEditor.invalidBoolean\": \"Failed to resolve boolean text. Enter true/false, yes/no or 1/0.\"; readonly \"toggleEditor.label\": \"Toggle\"; readonly \"dateEditor.open\": \"Open date picker\"; readonly \"dateEditor.popup\": \"{label} calendar\"; readonly \"dateEditor.label\": \"Date\"; readonly \"dateEditor.outOfRange\": \"Failed to resolve date. The date is outside the allowed range.\"; readonly \"dateFormatter.invalidDate\": \"Failed to parse date. Use a valid {pattern} date.\"; readonly \"dateFormatter.invalidValue\": \"Failed to format date. Use a valid YYYY-MM-DD value.\"; readonly \"timeEditor.open\": \"Open time picker\"; readonly \"timeEditor.label\": \"Time\"; readonly \"timeEditor.popup\": \"{label} picker\"; readonly \"timeFormatter.invalidTime\": \"Failed to parse time. Use a valid {pattern} value.\"; readonly \"timeFormatter.invalidValue\": \"Failed to format time. Use a valid HH:mm or HH:mm:ss value.\"; readonly \"dateTimeEditor.open\": \"Open date and time picker\"; readonly \"dateTimeEditor.label\": \"Date and time\"; readonly \"dateTimeEditor.popup\": \"{label} picker\"; readonly \"dateTimeEditor.invalidInput\": \"Failed to parse date-time. Use {pattern}.\"; readonly \"dateTimeEditor.invalidValue\": \"Failed to resolve date-time. Use a canonical date-time value.\"; readonly \"lookupEditor.open\": \"Open lookup\"; readonly \"lookupEditor.label\": \"Lookup\"; readonly \"lookupEditor.popup\": \"{label} results\"; readonly \"lookupEditor.loading\": \"Loading…\"; readonly \"lookupEditor.noResults\": \"No matching items\"; readonly \"lookupEditor.matches.one\": \"{count} match\"; readonly \"lookupEditor.matches.other\": \"{count} matches\"; readonly \"lookupEditor.loadFailed\": \"Failed to load lookup items.\"; readonly \"lookupEditor.notFound\": \"Failed to resolve lookup text. No matching item was found.\"; readonly \"lookupEditor.ambiguous\": \"Failed to resolve lookup text. More than one item matches.\"; readonly \"lookupEditor.missingItem\": \"Failed to resolve lookup text. The matching item was not returned.\"; readonly \"dataGrid.newRow\": \"New row\"; readonly \"dataGrid.groupPanelEmpty\": \"Drag a column here to group\"; readonly \"dataGrid.sortAscending\": \"Sort Ascending\"; readonly \"dataGrid.sortDescending\": \"Sort Descending\"; readonly \"dataGrid.clearSorting\": \"Clear sorting\"; readonly \"dataGrid.pinColumn\": \"Pin Column\"; readonly \"dataGrid.noPin\": \"No Pin\"; readonly \"dataGrid.pinLeft\": \"Pin Left\"; readonly \"dataGrid.pinRight\": \"Pin Right\"; readonly \"dataGrid.autosizeColumn\": \"Autosize This Column\"; readonly \"dataGrid.autosizeAll\": \"Autosize All Columns\"; readonly \"dataGrid.groupBy\": \"Group by {column}\"; readonly \"dataGrid.ungroup\": \"Ungroup {column}\"; readonly \"dataGrid.grouping\": \"Grouping\"; readonly \"dataGrid.interval\": \"Interval\"; readonly \"dataGrid.exactValue\": \"Exact value\"; readonly \"dataGrid.expandToLevel\": \"Expand to this level\"; readonly \"dataGrid.collapseLevel\": \"Collapse this level\"; readonly \"dataGrid.summary\": \"Summary\"; readonly \"dataGrid.summary.none\": \"None\"; readonly \"dataGrid.summary.count\": \"Count\"; readonly \"dataGrid.summary.sum\": \"Sum\"; readonly \"dataGrid.summary.avg\": \"Average\"; readonly \"dataGrid.summary.min\": \"Minimum\"; readonly \"dataGrid.summary.max\": \"Maximum\"; readonly \"dataGrid.summary.distinct\": \"Distinct\"; readonly \"dataGrid.cancelNewRow\": \"Cancel new row\"; readonly \"dataGrid.copy\": \"Copy selected cells\"; readonly \"dataGrid.copyWithHeaders\": \"Copy selected cells with headers\"; readonly \"dataGrid.paste\": \"Paste\"; readonly \"dataGrid.selectRow\": \"Select row\"; readonly \"dataGrid.clearSelection\": \"Clear selection\"; readonly \"dataGrid.sortPriority\": \"Sort priority {priority}\"; readonly \"dataGrid.sortedAscending\": \"Sorted ascending\"; readonly \"dataGrid.sortedDescending\": \"Sorted descending\"; readonly \"dataGrid.editFilter\": \"Edit filter\"; readonly \"dataGrid.addFilter\": \"Add filter\"; readonly \"dataGrid.editFilterExpression\": \"Edit filter: {filter}\"; readonly \"dataGrid.filterColumn\": \"Filter {column}\"; readonly \"dataGrid.clearColumnFilter\": \"Clear filter {column}\"; readonly \"dataGrid.acceptFailed\": \"Failed to accept cell input.\"; readonly \"dataGrid.displayValueFailed\": \"Could not format cell value: {message}\"; readonly \"dataGrid.clipboardUnavailable\": \"Clipboard reading is unavailable.\"; readonly \"dataGrid.clipboardFailed\": \"Failed to read clipboard. {message}\"; readonly \"dataGrid.pastePrompt\": \"Paste text below, then choose Paste.\"; readonly \"dataGrid.pasteText\": \"Paste tabular text\"; readonly \"dataGrid.cancel\": \"Cancel\"; readonly \"dataGrid.interval.year\": \"Year\"; readonly \"dataGrid.interval.yearQuarter\": \"Year-quarter\"; readonly \"dataGrid.interval.quarter\": \"Quarter\"; readonly \"dataGrid.interval.yearMonth\": \"Year-month\"; readonly \"dataGrid.interval.month\": \"Month\"; readonly \"dataGrid.interval.week\": \"ISO week\"; readonly \"dataGrid.interval.day\": \"Day\"; readonly \"dataGrid.interval.dayOfWeek\": \"Day of week\"; readonly \"dataGrid.interval.hour\": \"Hour\"; readonly \"dataGrid.interval.minute\": \"Minute\"; readonly \"dataGrid.interval.second\": \"Second\"; readonly \"dataGrid.interval.firstChar\": \"First character\"; readonly \"filterEditor.apply\": \"Apply Filter\"; readonly \"filterEditor.clear\": \"Clear\"; readonly \"filterEditor.and\": \"And\"; readonly \"filterEditor.or\": \"Or\"; readonly \"filterEditor.addCondition\": \"Add condition\"; readonly \"filterEditor.addGroup\": \"Add group\"; readonly \"filterEditor.removeCondition\": \"Remove condition\"; readonly \"filterEditor.removeGroup\": \"Remove group\"; readonly \"filterEditor.empty\": \"(empty)\"; readonly \"filterEditor.value\": \"Value\"; readonly \"filterEditor.operator.contains\": \"contains\"; readonly \"filterEditor.operator.notcontains\": \"notcontains\"; readonly \"filterEditor.operator.startswith\": \"startswith\"; readonly \"filterEditor.operator.endswith\": \"endswith\"; readonly \"numberFormatter.invalidNumber\": \"Failed to parse number. Use the '{pattern}' format.\"; readonly \"dataGrid.clipboardHint\": \"Return to grid and press Ctrl+V / Command+V\"; readonly \"dataGrid.clipboardMalformed\": \"The pasted text contains an unterminated quoted value.\"; readonly \"dataGrid.pasteBlocked\": \"Pasting is unavailable while editing is disabled or another row operation is running.\"; readonly \"dataGrid.pasteEditInProgress\": \"Finish or cancel the active cell edit before pasting.\"; readonly \"dataGrid.pasteReadOnlyRow\": \"The pasted range includes a group or summary row that cannot be edited.\"; readonly \"dataGrid.pasteCreateUnavailable\": \"The data source does not support creating rows for the pasted data.\"; readonly \"dataGrid.newRowOperationInProgress\": \"Finish the current editing operation before creating a new row.\"; readonly \"dataGrid.newRowUnavailable\": \"Row creation is unavailable because grid editing or source row creation is disabled.\"; readonly \"dataGrid.newRowCreationInProgress\": \"A new row is already being created.\"; readonly \"dataGrid.pasteRowFailed\": \"Failed to create pasted row {row}. {message}\"; readonly \"dataGrid.summaryLabel.count\": \"count\"; readonly \"dataGrid.summaryLabel.sum\": \"sum\"; readonly \"dataGrid.summaryLabel.avg\": \"avg\"; readonly \"dataGrid.summaryLabel.min\": \"min\"; readonly \"dataGrid.summaryLabel.max\": \"max\"; readonly \"dataGrid.summaryLabel.distinct\": \"distinct\"; }",
+      "type": "{ readonly \"htmlEditorToolbar.label\": \"HTML editing commands\"; readonly \"htmlEditorToolbar.bold\": \"Bold\"; readonly \"htmlEditorToolbar.italic\": \"Italic\"; readonly \"htmlEditorToolbar.underline\": \"Underline\"; readonly \"htmlEditorToolbar.strikethrough\": \"Strikethrough\"; readonly \"htmlEditorToolbar.clearFormatting\": \"Clear formatting\"; readonly \"htmlEditorToolbar.link\": \"Link\"; readonly \"htmlEditorToolbar.undo\": \"Undo\"; readonly \"htmlEditorToolbar.redo\": \"Redo\"; readonly \"htmlEditorCommand.failed\": \"This command cannot be executed in the current context.\"; readonly \"htmlEditorInspector.label\": \"Element inspector\"; readonly \"htmlEditorInspector.elementsArea\": \"Elements\"; readonly \"htmlEditorInspector.textArea\": \"Text selection\"; readonly \"htmlEditorInspector.formatCategory\": \"Format\"; readonly \"htmlEditorInspector.linkCategory\": \"Link\"; readonly \"htmlEditorInspector.typographyCategory\": \"Typography\"; readonly \"htmlEditorInspector.paragraphCategory\": \"Paragraph\"; readonly \"htmlEditorInspector.appearanceCategory\": \"Appearance\"; readonly \"htmlEditorInspector.chooseElement\": \"Choose an element…\"; readonly \"htmlEditorInspector.elements\": \"HTML elements\"; readonly \"htmlEditorInspector.properties\": \"Properties\"; readonly \"htmlEditorInspector.advanced\": \"Advanced\"; readonly \"htmlEditorInspector.propertiesHint\": \"Choose a Basic command for the selected element.\"; readonly \"htmlEditorInspector.advancedHint\": \"Advanced attributes, classes and styles will be grouped here. This panel does not modify HTML yet.\"; readonly \"htmlEditorBasic.heading\": \"Block\"; readonly \"htmlEditorBasic.textColor\": \"Text color\"; readonly \"htmlEditorBasic.backgroundColor\": \"Background\"; readonly \"htmlEditorBasic.textSize\": \"Text size\"; readonly \"htmlEditorBasic.align\": \"Alignment\"; readonly \"htmlEditorBasic.linkUrl\": \"URL\"; readonly \"htmlEditorBasic.linkTarget\": \"Target\"; readonly \"htmlEditorBasic.linkTitle\": \"Title\"; readonly \"htmlEditorBasic.unlink\": \"Unlink\"; readonly \"htmlEditorBasic.unlinkTooltip\": \"Remove link\"; readonly \"htmlEditorBasic.linkTargetSelf\": \"Same window\"; readonly \"htmlEditorBasic.linkTargetBlank\": \"New tab\"; readonly \"htmlEditorBasic.linkApply\": \"Set link\"; readonly \"htmlEditorBasic.invalidUrl\": \"Enter a valid URL (http, https, mailto, tel or a relative path).\"; readonly \"htmlEditorInspector.empty\": \"Empty\"; readonly \"htmlEditorInspector.ancestors\": \"Element ancestors\"; readonly \"htmlEditorInspector.moreAncestors\": \"More ancestors\"; readonly \"htmlEditorInspector.inspectAncestor\": \"Inspect {tag}\"; readonly \"htmlEditorInspector.mixed\": \"Mixed\"; readonly \"htmlEditorInspector.fullySelected\": \"Fully selected\"; readonly \"htmlEditorInspector.partiallySelected\": \"Partially selected\"; readonly \"htmlEditorInspector.notSelected\": \"Not selected\"; readonly \"htmlEditorInspector.keyboardFocus\": \"Keyboard focus\"; readonly \"htmlEditorInspector.selectElement\": \"Select element\"; readonly \"htmlEditorInspector.moreActions\": \"More actions\"; readonly \"htmlEditorInspector.notSelectedHint\": \"Not selected — click to select element\"; readonly \"htmlEditorInspector.partiallySelectedHint\": \"Partially selected — click to select the entire element\"; readonly \"treeView.loading\": \"Loading…\"; readonly \"treeView.loadError\": \"Could not load this branch.\"; readonly \"treeView.retry\": \"Retry\"; readonly \"datePicker.today\": \"Today\"; readonly \"datePicker.selectToday\": \"Select today\"; readonly \"datePicker.chooseMonth\": \"Choose month\"; readonly \"datePicker.chooseYear\": \"Choose year\"; readonly \"datePicker.previousPeriod\": \"Previous period\"; readonly \"datePicker.nextPeriod\": \"Next period\"; readonly \"datePicker.chooseDate\": \"Choose date\"; readonly \"datePicker.invalidDate\": \"Failed to read calendar date. Use a valid YYYY-MM-DD date.\"; readonly \"datePicker.outOfRange\": \"Failed to set calendar date. The date is outside the allowed range.\"; readonly \"valueEditor.required\": \"A value is required.\"; readonly \"valueEditor.validationError\": \"Validation error: {message}\"; readonly \"numberEditor.invalidNumber\": \"Failed to confirm number. Enter a valid number.\"; readonly \"numberEditor.finiteNumber\": \"Failed to confirm number. Enter a finite number.\"; readonly \"booleanEditor.invalidBoolean\": \"Failed to resolve boolean text. Enter true/false, yes/no or 1/0.\"; readonly \"toggleEditor.label\": \"Toggle\"; readonly \"dateEditor.open\": \"Open date picker\"; readonly \"dateEditor.popup\": \"{label} calendar\"; readonly \"dateEditor.label\": \"Date\"; readonly \"dateEditor.outOfRange\": \"Failed to resolve date. The date is outside the allowed range.\"; readonly \"dateFormatter.invalidDate\": \"Failed to parse date. Use a valid {pattern} date.\"; readonly \"dateFormatter.invalidValue\": \"Failed to format date. Use a valid YYYY-MM-DD value.\"; readonly \"timeEditor.open\": \"Open time picker\"; readonly \"timeEditor.label\": \"Time\"; readonly \"timeEditor.popup\": \"{label} picker\"; readonly \"timeFormatter.invalidTime\": \"Failed to parse time. Use a valid {pattern} value.\"; readonly \"timeFormatter.invalidValue\": \"Failed to format time. Use a valid HH:mm or HH:mm:ss value.\"; readonly \"dateTimeEditor.open\": \"Open date and time picker\"; readonly \"dateTimeEditor.label\": \"Date and time\"; readonly \"dateTimeEditor.popup\": \"{label} picker\"; readonly \"dateTimeEditor.invalidInput\": \"Failed to parse date-time. Use {pattern}.\"; readonly \"dateTimeEditor.invalidValue\": \"Failed to resolve date-time. Use a canonical date-time value.\"; readonly \"lookupEditor.open\": \"Open lookup\"; readonly \"lookupEditor.label\": \"Lookup\"; readonly \"lookupEditor.popup\": \"{label} results\"; readonly \"lookupEditor.loading\": \"Loading…\"; readonly \"lookupEditor.noResults\": \"No matching items\"; readonly \"lookupEditor.matches.one\": \"{count} match\"; readonly \"lookupEditor.matches.other\": \"{count} matches\"; readonly \"lookupEditor.loadFailed\": \"Failed to load lookup items.\"; readonly \"lookupEditor.notFound\": \"Failed to resolve lookup text. No matching item was found.\"; readonly \"lookupEditor.ambiguous\": \"Failed to resolve lookup text. More than one item matches.\"; readonly \"lookupEditor.missingItem\": \"Failed to resolve lookup text. The matching item was not returned.\"; readonly \"dataGrid.newRow\": \"New row\"; readonly \"dataGrid.groupPanelEmpty\": \"Drag a column here to group\"; readonly \"dataGrid.sortAscending\": \"Sort Ascending\"; readonly \"dataGrid.sortDescending\": \"Sort Descending\"; readonly \"dataGrid.clearSorting\": \"Clear sorting\"; readonly \"dataGrid.pinColumn\": \"Pin Column\"; readonly \"dataGrid.noPin\": \"No Pin\"; readonly \"dataGrid.pinLeft\": \"Pin Left\"; readonly \"dataGrid.pinRight\": \"Pin Right\"; readonly \"dataGrid.autosizeColumn\": \"Autosize This Column\"; readonly \"dataGrid.autosizeAll\": \"Autosize All Columns\"; readonly \"dataGrid.groupBy\": \"Group by {column}\"; readonly \"dataGrid.ungroup\": \"Ungroup {column}\"; readonly \"dataGrid.grouping\": \"Grouping\"; readonly \"dataGrid.interval\": \"Interval\"; readonly \"dataGrid.exactValue\": \"Exact value\"; readonly \"dataGrid.expandToLevel\": \"Expand to this level\"; readonly \"dataGrid.collapseLevel\": \"Collapse this level\"; readonly \"dataGrid.summary\": \"Summary\"; readonly \"dataGrid.summary.none\": \"None\"; readonly \"dataGrid.summary.count\": \"Count\"; readonly \"dataGrid.summary.sum\": \"Sum\"; readonly \"dataGrid.summary.avg\": \"Average\"; readonly \"dataGrid.summary.min\": \"Minimum\"; readonly \"dataGrid.summary.max\": \"Maximum\"; readonly \"dataGrid.summary.distinct\": \"Distinct\"; readonly \"dataGrid.cancelNewRow\": \"Cancel new row\"; readonly \"dataGrid.copy\": \"Copy selected cells\"; readonly \"dataGrid.copyWithHeaders\": \"Copy selected cells with headers\"; readonly \"dataGrid.paste\": \"Paste\"; readonly \"dataGrid.selectRow\": \"Select row\"; readonly \"dataGrid.clearSelection\": \"Clear selection\"; readonly \"dataGrid.sortPriority\": \"Sort priority {priority}\"; readonly \"dataGrid.sortedAscending\": \"Sorted ascending\"; readonly \"dataGrid.sortedDescending\": \"Sorted descending\"; readonly \"dataGrid.editFilter\": \"Edit filter\"; readonly \"dataGrid.addFilter\": \"Add filter\"; readonly \"dataGrid.editFilterExpression\": \"Edit filter: {filter}\"; readonly \"dataGrid.filterColumn\": \"Filter {column}\"; readonly \"dataGrid.clearColumnFilter\": \"Clear filter {column}\"; readonly \"dataGrid.acceptFailed\": \"Failed to accept cell input.\"; readonly \"dataGrid.displayValueFailed\": \"Could not format cell value: {message}\"; readonly \"dataGrid.clipboardUnavailable\": \"Clipboard reading is unavailable.\"; readonly \"dataGrid.clipboardFailed\": \"Failed to read clipboard. {message}\"; readonly \"dataGrid.pastePrompt\": \"Paste text below, then choose Paste.\"; readonly \"dataGrid.pasteText\": \"Paste tabular text\"; readonly \"dataGrid.cancel\": \"Cancel\"; readonly \"dataGrid.interval.year\": \"Year\"; readonly \"dataGrid.interval.yearQuarter\": \"Year-quarter\"; readonly \"dataGrid.interval.quarter\": \"Quarter\"; readonly \"dataGrid.interval.yearMonth\": \"Year-month\"; readonly \"dataGrid.interval.month\": \"Month\"; readonly \"dataGrid.interval.week\": \"ISO week\"; readonly \"dataGrid.interval.day\": \"Day\"; readonly \"dataGrid.interval.dayOfWeek\": \"Day of week\"; readonly \"dataGrid.interval.hour\": \"Hour\"; readonly \"dataGrid.interval.minute\": \"Minute\"; readonly \"dataGrid.interval.second\": \"Second\"; readonly \"dataGrid.interval.firstChar\": \"First character\"; readonly \"filterEditor.apply\": \"Apply Filter\"; readonly \"filterEditor.clear\": \"Clear\"; readonly \"filterEditor.and\": \"And\"; readonly \"filterEditor.or\": \"Or\"; readonly \"filterEditor.addCondition\": \"Add condition\"; readonly \"filterEditor.addGroup\": \"Add group\"; readonly \"filterEditor.removeCondition\": \"Remove condition\"; readonly \"filterEditor.removeGroup\": \"Remove group\"; readonly \"filterEditor.empty\": \"(empty)\"; readonly \"filterEditor.value\": \"Value\"; readonly \"filterEditor.operator.contains\": \"contains\"; readonly \"filterEditor.operator.notcontains\": \"notcontains\"; readonly \"filterEditor.operator.startswith\": \"startswith\"; readonly \"filterEditor.operator.endswith\": \"endswith\"; readonly \"numberFormatter.invalidNumber\": \"Failed to parse number. Use the '{pattern}' format.\"; readonly \"dataGrid.clipboardHint\": \"Return to grid and press Ctrl+V / Command+V\"; readonly \"dataGrid.clipboardMalformed\": \"The pasted text contains an unterminated quoted value.\"; readonly \"dataGrid.pasteBlocked\": \"Pasting is unavailable while editing is disabled or another row operation is running.\"; readonly \"dataGrid.pasteEditInProgress\": \"Finish or cancel the active cell edit before pasting.\"; readonly \"dataGrid.pasteReadOnlyRow\": \"The pasted range includes a group or summary row that cannot be edited.\"; readonly \"dataGrid.pasteCreateUnavailable\": \"The data source does not support creating rows for the pasted data.\"; readonly \"dataGrid.newRowOperationInProgress\": \"Finish the current editing operation before creating a new row.\"; readonly \"dataGrid.newRowUnavailable\": \"Row creation is unavailable because grid editing or source row creation is disabled.\"; readonly \"dataGrid.newRowCreationInProgress\": \"A new row is already being created.\"; readonly \"dataGrid.pasteRowFailed\": \"Failed to create pasted row {row}. {message}\"; readonly \"dataGrid.summaryLabel.count\": \"count\"; readonly \"dataGrid.summaryLabel.sum\": \"sum\"; readonly \"dataGrid.summaryLabel.avg\": \"avg\"; readonly \"dataGrid.summaryLabel.min\": \"min\"; readonly \"dataGrid.summaryLabel.max\": \"max\"; readonly \"dataGrid.summaryLabel.distinct\": \"distinct\"; }",
       "description": "Canonical English messages; the source of key and named-parameter types.",
       "tags": [],
       "topics": [],
@@ -8451,7 +8550,7 @@
         },
         {
           "name": "selectionChanged",
-          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<HtmlEditorSelectionState | undefined>",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<HtmlEditorSelectionRange | undefined>",
           "description": "Same event as surface.selectionChanged; no second selection state is maintained.",
           "tags": [],
           "topics": [],
@@ -8501,7 +8600,7 @@
         },
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "description": "Remembered text selection, retained while surrounding controls have focus.",
           "tags": [],
           "topics": [],
@@ -8521,7 +8620,7 @@
         },
         {
           "name": "restoreSelection",
-          "type": "(state?: HtmlEditorSelectionState | undefined) => boolean",
+          "type": "(state?: HtmlEditorSelectionRange | undefined) => boolean",
           "description": "Restores a valid runtime text bookmark and focuses the surface.",
           "tags": [],
           "topics": [],
@@ -8530,7 +8629,7 @@
           "parameters": [
             {
               "name": "state",
-              "type": "HtmlEditorSelectionState | undefined",
+              "type": "HtmlEditorSelectionRange | undefined",
               "optional": true,
               "defaultValue": "this.selection",
               "description": ""
@@ -8541,7 +8640,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(state?: HtmlEditorSelectionState | undefined) => boolean"
+          "signature": "(state?: HtmlEditorSelectionRange | undefined) => boolean"
         },
         {
           "name": "html",
@@ -8617,7 +8716,7 @@
         },
         {
           "name": "execute",
-          "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean",
+          "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean",
           "description": "Applies a command to the surface's single model/history.",
           "tags": [],
           "topics": [],
@@ -8632,7 +8731,7 @@
             },
             {
               "name": "selection",
-              "type": "HtmlEditorSelectionState | undefined",
+              "type": "HtmlEditorSelectionRange | undefined",
               "optional": true,
               "defaultValue": "this.selection",
               "description": ""
@@ -8643,7 +8742,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean"
+          "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean"
         },
         {
           "name": "canUndo",
@@ -8710,61 +8809,25 @@
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorCommand",
       "source": "src/components/editors/htmleditor/HtmlEditorCommands.ts",
-      "definition": "| { type: \"textStyle\"; property: \"color\" | \"background-color\" | \"font-size\"; value: string }\n    | { type: \"insertText\"; text: string }\n    | { type: \"insertHtml\"; html: string }\n    | { type: \"deleteBackward\" | \"deleteForward\" | \"insertParagraph\" | \"insertLineBreak\" | \"indent\" | \"outdent\" | \"bold\" | \"italic\" | \"underline\" | \"strikethrough\" | \"clearFormatting\" | \"undo\" | \"redo\" }"
+      "definition": "| { type: \"textStyle\"; property: \"color\" | \"background-color\" | \"font-size\"; value: string; nodeIds?: readonly string[] }\n    | { type: \"insertText\"; text: string }\n    | { type: \"insertHtml\"; html: string }\n    | { type: \"link\"; property: \"href\" | \"target\" | \"title\" | \"remove\"; value?: string }\n    | { type: \"link\"; property: \"update\"; href: string; target: string; title: string }\n    | { type: \"deleteBackward\" | \"deleteForward\" | \"insertParagraph\" | \"insertLineBreak\" | \"indent\" | \"outdent\" | \"bold\" | \"italic\" | \"underline\" | \"strikethrough\" | \"clearFormatting\" | \"undo\" | \"redo\" }"
     },
     {
       "name": "HtmlEditorCommandContext",
-      "kind": "interface",
-      "type": "HtmlEditorCommandContext",
-      "description": "Context supplied to every HTML editor command surface.",
-      "tags": [],
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandContext."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorCommandContext",
       "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-      "members": [
-        {
-          "name": "surface",
-          "type": "HtmlEditorSurface",
-          "description": "The authoritative model-backed editing surface.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-          "kind": "property"
-        },
-        {
-          "name": "targetId",
-          "type": "string | undefined",
-          "description": "The inspector node currently under the command surface, when applicable.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-          "kind": "property"
-        },
-        {
-          "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
-          "description": "The remembered text selection at the time the command was requested.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-          "kind": "property"
-        },
-        {
-          "name": "inspection",
-          "type": "HtmlEditorResolvedInspection | undefined",
-          "description": "Resolved Basic property scope, when invoked through the inspector framework.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-          "kind": "property"
-        }
-      ]
+      "definition": "HtmlEditorUiCommandContext"
     },
     {
       "name": "HtmlEditorCommandMenu",
@@ -8780,7 +8843,7 @@
       "members": [
         {
           "name": "showAt",
-          "type": "(x: number, y: number, context?: HtmlEditorCommandContext) => void",
+          "type": "(x: number, y: number, context?: HtmlEditorUiCommandContext) => void",
           "description": "Shows the same filtered registry commands at a viewport point.",
           "tags": [],
           "topics": [],
@@ -8801,7 +8864,7 @@
             },
             {
               "name": "context",
-              "type": "HtmlEditorCommandContext",
+              "type": "HtmlEditorUiCommandContext",
               "optional": true,
               "defaultValue": "this.registry.context()",
               "description": ""
@@ -8812,7 +8875,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(x: number, y: number, context?: HtmlEditorCommandContext) => void"
+          "signature": "(x: number, y: number, context?: HtmlEditorUiCommandContext) => void"
         },
         {
           "name": "hide",
@@ -8889,7 +8952,7 @@
         },
         {
           "name": "context",
-          "type": "(targetId?: string) => HtmlEditorCommandContext",
+          "type": "(targetId?: string) => HtmlEditorUiCommandContext",
           "description": "Returns the current command context without copying the document.",
           "tags": [],
           "topics": [],
@@ -8904,20 +8967,20 @@
             }
           ],
           "returns": {
-            "type": "HtmlEditorCommandContext",
+            "type": "HtmlEditorUiCommandContext",
             "description": ""
           },
           "kind": "method",
-          "signature": "(targetId?: string) => HtmlEditorCommandContext"
+          "signature": "(targetId?: string) => HtmlEditorUiCommandContext"
         },
         {
-          "name": "inspectionContext",
-          "type": "(nodeIds?: readonly string[]) => HtmlEditorInspectionContext",
+          "name": "uiCommandTargetContext",
+          "type": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext",
           "description": "Captures inspection intent without cloning the document or changing focus.\nInspected element IDs and the remembered text range coexist. Tree navigation\ncan change the inspected elements without widening the remembered range.",
           "tags": [
             {
               "name": "example",
-              "text": "const context = registry.inspectionContext([imageId]);\nconst fields = registry.getInspectorFields(context);\n// A DataForm adapter retains a field binding until commit/cancel, then\n// submits a user-chosen value with registry.executeInspectorField(binding, value)."
+              "text": "const context = registry.uiCommandTargetContext([imageId]);\nconst fields = registry.getUiCommandFields(context);\n// A DataForm adapter retains a field binding until commit/cancel, then\n// submits a user-chosen value with registry.executeUiCommandField(binding, value)."
             }
           ],
           "topics": [],
@@ -8925,24 +8988,53 @@
           "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
           "parameters": [
             {
-              "name": "nodeIds",
-              "type": "readonly string[]",
+              "name": "nodeInfos",
+              "type": "readonly (string | HtmlEditorUiCommandNodeInfo)[]",
               "optional": true,
               "defaultValue": "[]",
               "description": ""
             }
           ],
           "returns": {
-            "type": "HtmlEditorInspectionContext",
+            "type": "HtmlEditorUiCommandTargetContext",
             "description": ""
           },
           "kind": "method",
-          "signature": "(nodeIds?: readonly string[]) => HtmlEditorInspectionContext"
+          "signature": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext"
         },
         {
-          "name": "getInspectorFields",
-          "type": "(context?: HtmlEditorInspectionContext) => HtmlEditorResolvedInspectorField[]",
-          "description": "Resolves registered contributions. Element-area fields must cover every\ninspected node directly or through an ancestor owner; text-area fields use\nthe independent range. Every command\nchooses its own eligible targets, so alignment may bind blocks while Bold\nbinds text fragments. Empty scopes are omitted; disabled fields stay visible.\nNo built-in contributions are migrated automatically by this scaffold.\nCapture fresh bindings after an accepted model change; do not recreate them\nhalfway through an active property edit or read them as mutable node objects.",
+          "name": "inspectionContext",
+          "type": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext",
+          "description": "",
+          "tags": [
+            {
+              "name": "deprecated",
+              "text": "Use uiCommandTargetContext."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "nodeInfos",
+              "type": "readonly (string | HtmlEditorUiCommandNodeInfo)[]",
+              "optional": true,
+              "defaultValue": "[]",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorUiCommandTargetContext",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext"
+        },
+        {
+          "name": "getUiCommandFields",
+          "type": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]",
+          "description": "Resolves registered command fields. Each resolver declares its own\napplication units, so alignment may bind blocks while Bold binds text\nfragments. Incomplete target sets are omitted; disabled fields stay visible.\nNo built-in contributions are migrated automatically by this scaffold.\nCapture fresh bindings after an accepted model change; do not recreate them\nhalfway through an active property edit or read them as mutable node objects.",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -8950,22 +9042,81 @@
           "parameters": [
             {
               "name": "context",
-              "type": "HtmlEditorInspectionContext",
+              "type": "HtmlEditorUiCommandTargetContext",
               "optional": true,
-              "defaultValue": "this.inspectionContext()",
+              "defaultValue": "this.uiCommandTargetContext()",
               "description": ""
             }
           ],
           "returns": {
-            "type": "HtmlEditorResolvedInspectorField[]",
+            "type": "HtmlEditorResolvedUiCommandField[]",
             "description": ""
           },
           "kind": "method",
-          "signature": "(context?: HtmlEditorInspectionContext) => HtmlEditorResolvedInspectorField[]"
+          "signature": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]"
         },
         {
-          "name": "executeInspectorField",
-          "type": "(field: HtmlEditorResolvedInspectorField, value?: HtmlEditorInspectorValue) => boolean",
+          "name": "resolveUiCommandTargets",
+          "type": "(commandId: string, context?: HtmlEditorUiCommandTargetContext) => HtmlEditorUiCommandTargets | undefined",
+          "description": "Resolves preview targets for any command surface, independently of the\npresentation slot in which the command field is visible. This is used\nby overlays so a toolbar command previews its own targets rather than\nfalling back to the enclosing inspected node.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "commandId",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "context",
+              "type": "HtmlEditorUiCommandTargetContext",
+              "optional": true,
+              "defaultValue": "this.uiCommandTargetContext()",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorUiCommandTargets | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(commandId: string, context?: HtmlEditorUiCommandTargetContext) => HtmlEditorUiCommandTargets | undefined"
+        },
+        {
+          "name": "getInspectorFields",
+          "type": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]",
+          "description": "",
+          "tags": [
+            {
+              "name": "deprecated",
+              "text": "Use getUiCommandFields."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "context",
+              "type": "HtmlEditorUiCommandTargetContext",
+              "optional": true,
+              "defaultValue": "this.uiCommandTargetContext()",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorResolvedUiCommandField[]",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]"
+        },
+        {
+          "name": "executeUiCommandField",
+          "type": "(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue) => boolean",
           "description": "Submits a captured binding through the same command dispatcher as menus and\ntoolbar. Rejects replaced definitions, stale documents and lost edit permission.\nOne command must apply all captured targets in one model transaction; never\nimplement a multi-target command as repeated calls to updateElement().",
           "tags": [],
           "topics": [],
@@ -8974,13 +9125,13 @@
           "parameters": [
             {
               "name": "field",
-              "type": "HtmlEditorResolvedInspectorField",
+              "type": "HtmlEditorResolvedUiCommandField",
               "optional": false,
               "description": ""
             },
             {
               "name": "value",
-              "type": "HtmlEditorInspectorValue | undefined",
+              "type": "HtmlEditorUiCommandValue | undefined",
               "optional": true,
               "description": ""
             }
@@ -8990,11 +9141,45 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(field: HtmlEditorResolvedInspectorField, value?: HtmlEditorInspectorValue) => boolean"
+          "signature": "(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue) => boolean"
+        },
+        {
+          "name": "executeInspectorField",
+          "type": "(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue) => boolean",
+          "description": "",
+          "tags": [
+            {
+              "name": "deprecated",
+              "text": "Use executeUiCommandField."
+            }
+          ],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "field",
+              "type": "HtmlEditorResolvedUiCommandField",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "HtmlEditorUiCommandValue | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue) => boolean"
         },
         {
           "name": "getCommands",
-          "type": "(context?: HtmlEditorCommandContext, includeHidden?: boolean) => HtmlEditorUiCommand[]",
+          "type": "(context?: HtmlEditorUiCommandContext, includeHidden?: boolean) => HtmlEditorUiCommand[]",
           "description": "Resolves visible commands and their current enabled state for a UI surface.",
           "tags": [],
           "topics": [],
@@ -9003,7 +9188,7 @@
           "parameters": [
             {
               "name": "context",
-              "type": "HtmlEditorCommandContext",
+              "type": "HtmlEditorUiCommandContext",
               "optional": true,
               "defaultValue": "this.context()",
               "description": ""
@@ -9021,11 +9206,11 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(context?: HtmlEditorCommandContext, includeHidden?: boolean) => HtmlEditorUiCommand[]"
+          "signature": "(context?: HtmlEditorUiCommandContext, includeHidden?: boolean) => HtmlEditorUiCommand[]"
         },
         {
           "name": "execute",
-          "type": "(id: string, context?: HtmlEditorCommandContext, value?: HtmlEditorInspectorValue) => boolean",
+          "type": "(id: string, context?: HtmlEditorUiCommandContext, value?: HtmlEditorUiCommandValue) => boolean",
           "description": "Executes one command by id using the same registry as every menu surface.",
           "tags": [],
           "topics": [],
@@ -9040,14 +9225,14 @@
             },
             {
               "name": "context",
-              "type": "HtmlEditorCommandContext",
+              "type": "HtmlEditorUiCommandContext",
               "optional": true,
               "defaultValue": "this.context()",
               "description": ""
             },
             {
               "name": "value",
-              "type": "HtmlEditorInspectorValue | undefined",
+              "type": "HtmlEditorUiCommandValue | undefined",
               "optional": true,
               "description": ""
             }
@@ -9057,7 +9242,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(id: string, context?: HtmlEditorCommandContext, value?: HtmlEditorInspectorValue) => boolean"
+          "signature": "(id: string, context?: HtmlEditorUiCommandContext, value?: HtmlEditorUiCommandValue) => boolean"
         },
         {
           "name": "label",
@@ -9083,8 +9268,31 @@
           "signature": "(command: HtmlEditorUiCommand) => string"
         },
         {
+          "name": "tooltip",
+          "type": "(command: HtmlEditorUiCommand) => string",
+          "description": "Returns the command tooltip, falling back to its visible label.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "command",
+              "type": "HtmlEditorUiCommand",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(command: HtmlEditorUiCommand) => string"
+        },
+        {
           "name": "enabled",
-          "type": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => boolean",
+          "type": "(command: HtmlEditorUiCommand, context: HtmlEditorUiCommandContext) => boolean",
           "description": "Returns whether a command is currently enabled in a context.",
           "tags": [],
           "topics": [],
@@ -9099,7 +9307,7 @@
             },
             {
               "name": "context",
-              "type": "HtmlEditorCommandContext",
+              "type": "HtmlEditorUiCommandContext",
               "optional": false,
               "description": ""
             }
@@ -9109,11 +9317,11 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => boolean"
+          "signature": "(command: HtmlEditorUiCommand, context: HtmlEditorUiCommandContext) => boolean"
         },
         {
           "name": "state",
-          "type": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => HtmlEditorMarkState | undefined",
+          "type": "(command: HtmlEditorUiCommand, context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandState | undefined",
           "description": "Returns the command's aggregate visual state.",
           "tags": [],
           "topics": [],
@@ -9128,17 +9336,17 @@
             },
             {
               "name": "context",
-              "type": "HtmlEditorCommandContext",
+              "type": "HtmlEditorUiCommandContext",
               "optional": false,
               "description": ""
             }
           ],
           "returns": {
-            "type": "HtmlEditorMarkState | undefined",
+            "type": "HtmlEditorUiCommandState | undefined",
             "description": ""
           },
           "kind": "method",
-          "signature": "(command: HtmlEditorUiCommand, context: HtmlEditorCommandContext) => HtmlEditorMarkState | undefined"
+          "signature": "(command: HtmlEditorUiCommand, context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandState | undefined"
         }
       ]
     },
@@ -9319,71 +9527,39 @@
     },
     {
       "name": "HtmlEditorInspectionContext",
-      "kind": "interface",
-      "type": "HtmlEditorInspectionContext",
-      "description": "Captured inspected elements and remembered text range, independent of DOM focus.\nBoth scopes coexist. Tree navigation changes the elements without widening the\ntext range. A gesture in the surface updates both from its model selection.\nCapture once when a field starts editing and retain it until commit/cancel.",
-      "tags": [],
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandTargetContext."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectionContext",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "members": [
-        {
-          "name": "modelVersion",
-          "type": "number",
-          "description": "Surface model generation at capture time; later generations invalidate this context.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-          "kind": "property"
-        },
-        {
-          "name": "nodeIds",
-          "type": "readonly string[]",
-          "description": "Inspected element IDs in document order; text selection is independently available.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-          "kind": "property"
-        }
-      ]
+      "definition": "HtmlEditorUiCommandTargetContext"
     },
     {
       "name": "HtmlEditorInspectionRow",
-      "kind": "interface",
-      "type": "HtmlEditorInspectionRow",
-      "description": "Virtual DataForm row. Its fields describe editor operations rather than node\nmembers. A future DataFormAdapter reads each binding's state and submits through\nexecuteInspectorField; mutating this row must never mutate the HTML model.",
-      "tags": [],
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandFormRow."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectionRow",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "members": [
-        {
-          "name": "context",
-          "type": "HtmlEditorInspectionContext",
-          "description": "Context pinned for the currently displayed form.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-          "kind": "property"
-        },
-        {
-          "name": "fields",
-          "type": "ReadonlyMap<string, HtmlEditorResolvedInspectorField>",
-          "description": "Fields keyed by command ID; Mixed/Unset metadata stays outside editor values.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-          "kind": "property"
-        }
-      ]
+      "definition": "HtmlEditorUiCommandFormRow"
     },
     {
       "name": "HtmlEditorInspector",
@@ -9419,7 +9595,7 @@
         },
         {
           "name": "getCommandPreviewTargets",
-          "type": "(commandId: string) => HtmlEditorInspectorTargets | undefined",
+          "type": "(commandId: string) => HtmlEditorUiCommandTargets | undefined",
           "description": "Resolves the same command-specific targets used by the inspector field.",
           "tags": [],
           "topics": [],
@@ -9434,11 +9610,11 @@
             }
           ],
           "returns": {
-            "type": "HtmlEditorInspectorTargets | undefined",
+            "type": "HtmlEditorUiCommandTargets | undefined",
             "description": ""
           },
           "kind": "method",
-          "signature": "(commandId: string) => HtmlEditorInspectorTargets | undefined"
+          "signature": "(commandId: string) => HtmlEditorUiCommandTargets | undefined"
         },
         {
           "name": "refreshDocument",
@@ -9496,20 +9672,20 @@
           "signature": "(ids: readonly string[]) => void"
         },
         {
-          "name": "createToolbarForm",
-          "type": "() => DataForm<HtmlEditorInspectionRow> | undefined",
-          "description": "Creates the compact horizontal command form used by HtmlEditorToolbar.\nThe toolbar intentionally reuses the inspector field factory so command\nstate, option menus, tooltips and execution never diverge between views.",
+          "name": "refreshLocalization",
+          "type": "() => void",
+          "description": "Rebuilds localized command fields while preserving disclosure state.",
           "tags": [],
           "topics": [],
           "optional": false,
           "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
           "parameters": [],
           "returns": {
-            "type": "DataForm<HtmlEditorInspectionRow> | undefined",
+            "type": "void",
             "description": ""
           },
           "kind": "method",
-          "signature": "() => DataForm<HtmlEditorInspectionRow> | undefined"
+          "signature": "() => void"
         },
         {
           "name": "update",
@@ -9547,92 +9723,111 @@
     },
     {
       "name": "HtmlEditorInspectorCommandContext",
-      "kind": "interface",
-      "type": "HtmlEditorInspectorCommandContext",
-      "description": "Command context after target resolution; shared by all entry points into an inspector command.",
-      "tags": [],
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandExecutionContext."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorCommandContext",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "members": [
-        {
-          "name": "inspection",
-          "type": "HtmlEditorResolvedInspection",
-          "description": "Captured targets; command handlers must use these rather than the current browser selection.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-          "kind": "property"
-        }
-      ]
+      "definition": "HtmlEditorUiCommandExecutionContext"
     },
     {
       "name": "HtmlEditorInspectorField",
       "kind": "type",
       "type": "any",
-      "description": "Optional Basic-tab declaration on a shared command. Register role-based commands\nsuch as text.color or block.align; keep these declarations out of node instances.\nA data contribution becomes a DataForm value field; a buttons contribution becomes\nan action using the command's label/icon/state. Execution always stays in the registry.",
-      "tags": [],
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandField."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorField",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "definition": "HtmlEditorInspectorFieldBase & (\n    | {\n        /** Value control; values are read from all resolved targets. */\n        readonly type: \"data\";\n        /** Pure aggregate read, using the same target scope that execute receives. */\n        getValue(context: HtmlEditorInspectorCommandContext): HtmlEditorInspectorValueState;\n    }\n    | {\n        /** Action control, e.g. Bold/Italic; active/mixed state uses command.getState. */\n        readonly type: \"buttons\";\n    }\n)"
+      "definition": "HtmlEditorUiCommandField"
     },
     {
       "name": "HtmlEditorInspectorFieldPresentation",
       "kind": "type",
       "type": "any",
-      "description": "Existing DataViewField presentation reused by the inspector. The command ID\nsupplies name; the adapter owns reads and Mixed labels. Lookup uses the shared\nfield.lookup contract, so no second editor-type or allowed-values system exists.",
-      "tags": [],
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandFieldPresentation."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorFieldPresentation",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "definition": "Omit<DataViewField<HtmlEditorInspectionRow>,\n    \"name\" | \"type\" | \"buttons\" | \"getValue\" | \"getText\" | \"showInRow\">"
+      "definition": "HtmlEditorUiCommandFieldPresentation"
     },
     {
       "name": "HtmlEditorInspectorTargets",
       "kind": "type",
       "type": "any",
-      "description": "Command-specific application units. A resolver maps a selection to eligible\ntext fragments or element owners (e.g. paragraphs for alignment), deduplicates\nthem, and excludes structural shells that the command cannot safely change.\nAn empty list makes the field inapplicable. Resolve once and use the same units\nfor state, permissions and execution; never widen a range inside a UI adapter.",
-      "tags": [],
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandTargets."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorTargets",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "definition": "| { readonly kind: \"elements\"; readonly nodeIds: readonly HtmlEditorNodeId[] }\n    | { readonly kind: \"text\"; readonly ranges: readonly HtmlEditorSelectionState[] }"
+      "definition": "HtmlEditorUiCommandTargets"
     },
     {
       "name": "HtmlEditorInspectorValue",
       "kind": "type",
       "type": "any",
-      "description": "Values accepted by Basic properties. Undefined requests reset; it is never the Mixed marker.",
-      "tags": [],
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandValue."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorValue",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "definition": "string | number | boolean | null"
+      "definition": "HtmlEditorUiCommandValue"
     },
     {
       "name": "HtmlEditorInspectorValueState",
       "kind": "type",
       "type": "any",
-      "description": "Aggregated authored value of a property. Unset means every target uses its default;\nMixed means targets disagree. Neither state is a value to persist into HTML.\nA concrete value outside a lookup's options remains a value, not Unset.",
-      "tags": [],
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandValueState."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorValueState",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "definition": "| { readonly kind: \"value\"; readonly value: HtmlEditorInspectorValue }\n    | { readonly kind: \"unset\" }\n    | { readonly kind: \"mixed\" }"
+      "definition": "HtmlEditorUiCommandValueState"
     },
     {
       "name": "HtmlEditorNode",
@@ -9773,54 +9968,56 @@
     },
     {
       "name": "HtmlEditorResolvedInspection",
-      "kind": "interface",
-      "type": "HtmlEditorResolvedInspection",
-      "description": "A resolved scope passed to the shared command's enabled/state/execute callbacks.",
-      "tags": [],
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorUiCommandResolution."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorResolvedInspection",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "members": [
-        {
-          "name": "context",
-          "type": "HtmlEditorInspectionContext",
-          "description": "Original inspection intent and model generation.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-          "kind": "property"
-        },
-        {
-          "name": "targets",
-          "type": "HtmlEditorInspectorTargets",
-          "description": "Eligible application units resolved by this particular command.",
-          "tags": [],
-          "topics": [],
-          "optional": false,
-          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-          "kind": "property"
-        }
-      ]
+      "definition": "HtmlEditorUiCommandResolution"
     },
     {
       "name": "HtmlEditorResolvedInspectorField",
-      "kind": "interface",
-      "type": "HtmlEditorResolvedInspectorField",
-      "description": "One resolved field, identified by command.id. Reuse this binding during a field\nedit; refreshing the form creates new bindings only after that edit has settled.\nThe declaration's group/order are presentation metadata, never HTML properties.",
-      "tags": [],
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorResolvedUiCommandField."
+        }
+      ],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorResolvedInspectorField",
       "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "HtmlEditorResolvedUiCommandField"
+    },
+    {
+      "name": "HtmlEditorResolvedUiCommandField",
+      "kind": "interface",
+      "type": "HtmlEditorResolvedUiCommandField",
+      "description": "Field binding captured for one DataForm presentation.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorResolvedUiCommandField",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
       "members": [
         {
           "name": "command",
           "type": "HtmlEditorUiCommand",
-          "description": "Registered command; also the canonical identity of this inspector field.",
+          "description": "",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9829,8 +10026,8 @@
         },
         {
           "name": "definition",
-          "type": "HtmlEditorInspectorField",
-          "description": "UI declaration that supplied the field and its target resolver.",
+          "type": "HtmlEditorUiCommandField",
+          "description": "",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9839,8 +10036,8 @@
         },
         {
           "name": "context",
-          "type": "HtmlEditorInspectorCommandContext",
-          "description": "Captured, command-specific target scope.",
+          "type": "HtmlEditorUiCommandExecutionContext",
+          "description": "",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9849,8 +10046,8 @@
         },
         {
           "name": "value",
-          "type": "HtmlEditorInspectorValueState | undefined",
-          "description": "Aggregate value for data fields; absent for action fields.",
+          "type": "HtmlEditorUiCommandValueState | undefined",
+          "description": "",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -9860,7 +10057,7 @@
         {
           "name": "enabled",
           "type": "boolean",
-          "description": "Availability at resolution time. Execution rechecks permissions before applying a change.",
+          "description": "",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -9870,15 +10067,15 @@
       ]
     },
     {
-      "name": "HtmlEditorSelectionState",
+      "name": "HtmlEditorSelectionRange",
       "kind": "interface",
-      "type": "HtmlEditorSelectionState",
+      "type": "HtmlEditorSelectionRange",
       "description": "Directed range: anchor is the fixed endpoint and focus is the moving endpoint.",
       "tags": [],
       "topics": [],
       "group": "types",
       "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorSelectionState",
+      "path": "/api-reference/HtmlEditorSelectionRange",
       "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
       "members": [
         {
@@ -9904,6 +10101,24 @@
       ]
     },
     {
+      "name": "HtmlEditorSelectionState",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [
+        {
+          "name": "deprecated",
+          "text": "Use HtmlEditorSelectionRange."
+        }
+      ],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSelectionState",
+      "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
+      "definition": "HtmlEditorSelectionRange"
+    },
+    {
       "name": "HtmlEditorState",
       "kind": "interface",
       "type": "HtmlEditorState",
@@ -9927,7 +10142,7 @@
         },
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "description": "",
           "tags": [],
           "topics": [],
@@ -10045,7 +10260,7 @@
         },
         {
           "name": "selectionChanged",
-          "type": "ObservableEvent<HtmlEditorSelectionState | undefined>",
+          "type": "ObservableEvent<HtmlEditorSelectionRange | undefined>",
           "description": "Detached remembered text selection, retained while surrounding controls have focus.",
           "tags": [],
           "topics": [],
@@ -10141,7 +10356,7 @@
         },
         {
           "name": "getSelectionCoverage",
-          "type": "(selection?: HtmlEditorSelectionState | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>",
+          "type": "(selection?: HtmlEditorSelectionRange | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>",
           "description": "Detached node coverage for a range, sharing Copy/Delete rules without cloning the document.",
           "tags": [],
           "topics": [],
@@ -10150,7 +10365,7 @@
           "parameters": [
             {
               "name": "selection",
-              "type": "HtmlEditorSelectionState | undefined",
+              "type": "HtmlEditorSelectionRange | undefined",
               "optional": true,
               "defaultValue": "this.selection",
               "description": ""
@@ -10161,11 +10376,11 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(selection?: HtmlEditorSelectionState | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>"
+          "signature": "(selection?: HtmlEditorSelectionRange | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>"
         },
         {
           "name": "getMarkState",
-          "type": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState",
+          "type": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorMarkState",
           "description": "Returns the aggregate inline-mark state for the current selected fragments.",
           "tags": [],
           "topics": [],
@@ -10180,7 +10395,7 @@
             },
             {
               "name": "selection",
-              "type": "HtmlEditorSelectionState | undefined",
+              "type": "HtmlEditorSelectionRange | undefined",
               "optional": true,
               "defaultValue": "this.selection",
               "description": ""
@@ -10191,11 +10406,11 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState"
+          "signature": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorMarkState"
         },
         {
           "name": "getTextStyleValues",
-          "type": "(property: string, selection?: HtmlEditorSelectionState | undefined) => (string | undefined)[]",
+          "type": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]",
           "description": "Reads authored text style values over the same fragments used by text formatting.",
           "tags": [],
           "topics": [],
@@ -10210,7 +10425,7 @@
             },
             {
               "name": "selection",
-              "type": "HtmlEditorSelectionState | undefined",
+              "type": "HtmlEditorSelectionRange | undefined",
               "optional": true,
               "defaultValue": "this.selection",
               "description": ""
@@ -10221,7 +10436,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(property: string, selection?: HtmlEditorSelectionState | undefined) => (string | undefined)[]"
+          "signature": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]"
         },
         {
           "name": "selectNode",
@@ -10330,7 +10545,7 @@
         },
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "description": "Last selection inside this editor, retained while focus moves to a toolbar or inspector.",
           "tags": [],
           "topics": [],
@@ -10422,7 +10637,7 @@
         },
         {
           "name": "restoreSelection",
-          "type": "(state?: HtmlEditorSelectionState | undefined) => boolean",
+          "type": "(state?: HtmlEditorSelectionRange | undefined) => boolean",
           "description": "Restores a saved selection. Returns false for removed nodes or a replaced document.",
           "tags": [],
           "topics": [],
@@ -10431,7 +10646,7 @@
           "parameters": [
             {
               "name": "state",
-              "type": "HtmlEditorSelectionState | undefined",
+              "type": "HtmlEditorSelectionRange | undefined",
               "optional": true,
               "defaultValue": "this.selection",
               "description": ""
@@ -10442,7 +10657,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(state?: HtmlEditorSelectionState | undefined) => boolean"
+          "signature": "(state?: HtmlEditorSelectionRange | undefined) => boolean"
         },
         {
           "name": "html",
@@ -10492,7 +10707,7 @@
         },
         {
           "name": "execute",
-          "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean",
+          "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean",
           "description": "Applies a supported operation to the model and selection in one undoable transaction.",
           "tags": [],
           "topics": [],
@@ -10507,7 +10722,7 @@
             },
             {
               "name": "selection",
-              "type": "HtmlEditorSelectionState | undefined",
+              "type": "HtmlEditorSelectionRange | undefined",
               "optional": true,
               "defaultValue": "this.selection",
               "description": ""
@@ -10518,7 +10733,7 @@
             "description": ""
           },
           "kind": "method",
-          "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean"
+          "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean"
         },
         {
           "name": "canUndo",
@@ -10729,7 +10944,7 @@
       "name": "HtmlEditorToolbar",
       "kind": "class",
       "type": "HtmlEditorToolbar",
-      "description": "Compact command toolbar backed by the inspector's shared DataForm field renderer.",
+      "description": "Compact command toolbar backed exclusively by the shared DataForm field service.",
       "tags": [],
       "topics": [],
       "group": "components",
@@ -10740,7 +10955,7 @@
         {
           "name": "setInspector",
           "type": "(inspector: HtmlEditorInspector) => void",
-          "description": "Installs the shared inspector field form once the editor has created it.",
+          "description": "",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10761,9 +10976,25 @@
           "signature": "(inspector: HtmlEditorInspector) => void"
         },
         {
+          "name": "refreshLocalization",
+          "type": "() => void",
+          "description": "Rebuilds localized field captions and labels without changing editor state.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorToolbar.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
           "name": "update",
           "type": "() => void",
-          "description": "Refreshes the shared field form and fallback commands without changing document focus.",
+          "description": "",
           "tags": [],
           "topics": [],
           "optional": false,
@@ -10811,6 +11042,16 @@
           "kind": "property"
         },
         {
+          "name": "tooltip",
+          "type": "string | undefined",
+          "description": "Optional localization key or literal tooltip; defaults to the label.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
           "name": "icon",
           "type": "string | undefined",
           "description": "Optional Remix Icon class.",
@@ -10822,7 +11063,7 @@
         },
         {
           "name": "isVisible",
-          "type": "((context: HtmlEditorCommandContext) => boolean) | undefined",
+          "type": "((context: HtmlEditorUiCommandContext) => boolean) | undefined",
           "description": "Whether the command belongs in the current surface.",
           "tags": [],
           "topics": [],
@@ -10832,7 +11073,7 @@
         },
         {
           "name": "isEnabled",
-          "type": "((context: HtmlEditorCommandContext) => boolean) | undefined",
+          "type": "((context: HtmlEditorUiCommandContext) => boolean) | undefined",
           "description": "Whether the command can currently be executed.",
           "tags": [],
           "topics": [],
@@ -10842,7 +11083,7 @@
         },
         {
           "name": "getState",
-          "type": "((context: HtmlEditorCommandContext) => HtmlEditorMarkState) | undefined",
+          "type": "((context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandState) | undefined",
           "description": "Aggregate visual state, independent from whether the command is executable.",
           "tags": [],
           "topics": [],
@@ -10852,8 +11093,8 @@
         },
         {
           "name": "options",
-          "type": "readonly HtmlEditorCommandOption[] | undefined",
-          "description": "Optional compact lookup choices rendered by the Basic Inspector.",
+          "type": "readonly HtmlEditorUiCommandOption[] | undefined",
+          "description": "Optional lookup choices rendered by a command field.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -10862,7 +11103,7 @@
         },
         {
           "name": "getValue",
-          "type": "((context: HtmlEditorCommandContext) => HtmlEditorCommandValueState) | undefined",
+          "type": "((context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandValueState | undefined) | undefined",
           "description": "Current lookup value; mixed means compatible targets have different values.",
           "tags": [],
           "topics": [],
@@ -10871,8 +11112,8 @@
           "kind": "property"
         },
         {
-          "name": "inspector",
-          "type": "HtmlEditorInspectorField | undefined",
+          "name": "field",
+          "type": "HtmlEditorUiCommandField | undefined",
           "description": "Optional DataForm contribution; node roles and target resolution belong here, not in the view.",
           "tags": [],
           "topics": [],
@@ -10882,7 +11123,7 @@
         },
         {
           "name": "execute",
-          "type": "(context: HtmlEditorCommandContext, value?: HtmlEditorInspectorValue) => boolean | void",
+          "type": "(context: HtmlEditorUiCommandContext, value?: HtmlEditorUiCommandValue) => boolean | void",
           "description": "Executes the command against the shared editor context.",
           "tags": [],
           "topics": [],
@@ -10891,6 +11132,681 @@
           "kind": "property"
         }
       ]
+    },
+    {
+      "name": "HtmlEditorUiCommandContext",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandContext",
+      "description": "Context supplied to every HTML editor command surface.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandContext",
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "members": [
+        {
+          "name": "surface",
+          "type": "HtmlEditorSurface",
+          "description": "The authoritative model-backed editing surface.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "targetId",
+          "type": "string | undefined",
+          "description": "The node currently under the command surface, when applicable.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "selection",
+          "type": "HtmlEditorSelectionRange | undefined",
+          "description": "The remembered text selection at the time the command was requested.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "resolution",
+          "type": "HtmlEditorUiCommandResolution | undefined",
+          "description": "Resolved property scope, when invoked through a command field surface.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandControl",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandControl",
+      "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+      "definition": "\"data\" | \"buttons\""
+    },
+    {
+      "name": "HtmlEditorUiCommandDensity",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandDensity",
+      "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+      "definition": "\"full\" | \"compact\""
+    },
+    {
+      "name": "HtmlEditorUiCommandExecutionContext",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandExecutionContext",
+      "description": "Context passed to command visibility, state and execution after target resolution.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandExecutionContext",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "members": [
+        {
+          "name": "resolution",
+          "type": "HtmlEditorUiCommandResolution",
+          "description": "Resolved property scope, when invoked through a command field surface.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandField",
+      "kind": "type",
+      "type": "any",
+      "description": "A value field or action field contributed by a UI command.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandField",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "HtmlEditorUiCommandFieldBase & (\n    | {\n        readonly type: \"data\";\n        getValue(context: HtmlEditorUiCommandExecutionContext): HtmlEditorUiCommandValueState;\n    }\n    | {\n        readonly type: \"buttons\";\n    }\n)"
+    },
+    {
+      "name": "HtmlEditorUiCommandFieldDefinition",
+      "kind": "type",
+      "type": "any",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFieldDefinition",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "HtmlEditorUiCommandField"
+    },
+    {
+      "name": "HtmlEditorUiCommandFieldPresentation",
+      "kind": "type",
+      "type": "any",
+      "description": "DataForm metadata shared by every command presentation.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFieldPresentation",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "Omit<DataViewField<HtmlEditorUiCommandFormRow>,\n    \"name\" | \"type\" | \"buttons\" | \"getValue\" | \"getText\" | \"showInRow\" | \"hideLabel\" | \"labelPosition\">"
+    },
+    {
+      "name": "HtmlEditorUiCommandFieldService",
+      "kind": "class",
+      "type": "HtmlEditorUiCommandFieldService",
+      "description": "Shared field projection used by every HtmlEditor DataForm surface.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFieldService",
+      "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+      "members": [
+        {
+          "name": "hideMenus",
+          "type": "() => void",
+          "description": "Closes the active option menu without ending its current form lifecycle.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "disposeMenus",
+          "type": "() => void",
+          "description": "Releases the option menu before its owning DataForm is disposed.\n\nThe menu is mounted into the active form so native popover light-dismiss\nremains local to that surface. DataForm recursively disposes mounted\ncomponents, therefore the service must release its reference before the\nform is replaced; the next button click creates a fresh menu instance.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+          "parameters": [],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => void"
+        },
+        {
+          "name": "resolve",
+          "type": "(context: HtmlEditorUiCommandTargetContext, presentation: HtmlEditorUiCommandPresentationKind) => HtmlEditorResolvedUiCommandField[]",
+          "description": "Resolves fields for a presentation slot; surfaces may then choose a subset/order.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+          "parameters": [
+            {
+              "name": "context",
+              "type": "HtmlEditorUiCommandTargetContext",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "presentation",
+              "type": "HtmlEditorUiCommandPresentationKind",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorResolvedUiCommandField[]",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(context: HtmlEditorUiCommandTargetContext, presentation: HtmlEditorUiCommandPresentationKind) => HtmlEditorResolvedUiCommandField[]"
+        },
+        {
+          "name": "field",
+          "type": "(binding: HtmlEditorResolvedUiCommandField, row: HtmlEditorUiCommandFormRow, presentation?: HtmlEditorUiCommandPresentationKind, action?: (commandId: string, anchor: HTMLButtonElement) => boolean) => DataViewField<HtmlEditorUiCommandFormRow>",
+          "description": "Converts one resolved command field into the shared DataViewField contract.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+          "parameters": [
+            {
+              "name": "binding",
+              "type": "HtmlEditorResolvedUiCommandField",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "row",
+              "type": "HtmlEditorUiCommandFormRow",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "presentation",
+              "type": "HtmlEditorUiCommandPresentationKind",
+              "optional": true,
+              "defaultValue": "\"basic\"",
+              "description": ""
+            },
+            {
+              "name": "action",
+              "type": "((commandId: string, anchor: HTMLButtonElement) => boolean) | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataViewField<HtmlEditorUiCommandFormRow>",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(binding: HtmlEditorResolvedUiCommandField, row: HtmlEditorUiCommandFormRow, presentation?: HtmlEditorUiCommandPresentationKind, action?: (commandId: string, anchor: HTMLButtonElement) => boolean) => DataViewField<HtmlEditorUiCommandFormRow>"
+        },
+        {
+          "name": "createToolbarForm",
+          "type": "(context: HtmlEditorUiCommandTargetContext, action?: (commandId: string, anchor: HTMLButtonElement) => boolean) => DataForm<HtmlEditorUiCommandFormRow> | undefined",
+          "description": "Creates the horizontal toolbar form from the same command field service.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+          "parameters": [
+            {
+              "name": "context",
+              "type": "HtmlEditorUiCommandTargetContext",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "action",
+              "type": "((commandId: string, anchor: HTMLButtonElement) => boolean) | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "DataForm<HtmlEditorUiCommandFormRow> | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(context: HtmlEditorUiCommandTargetContext, action?: (commandId: string, anchor: HTMLButtonElement) => boolean) => DataForm<HtmlEditorUiCommandFormRow> | undefined"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandFormRow",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandFormRow",
+      "description": "Virtual row used by DataForm projections of command fields.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFormRow",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "members": [
+        {
+          "name": "context",
+          "type": "HtmlEditorUiCommandTargetContext",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "fields",
+          "type": "ReadonlyMap<string, HtmlEditorResolvedUiCommandField>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandNodeInfo",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandNodeInfo",
+      "description": "Read-only metadata for an inspected model node. The model remains the source of truth.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandNodeInfo",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "members": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "parentId",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "pathIds",
+          "type": "readonly string[]",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "nodeType",
+          "type": "\"text\" | \"element\"",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "role",
+          "type": "\"container\" | \"grid\" | \"table\" | \"text\" | \"block\" | \"inline\" | \"inlineBlock\" | \"atomic\" | \"tableRow\" | \"tableCell\" | \"gridItem\" | \"list\" | \"listItem\"",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "tag",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandOption",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandOption",
+      "description": "One compact lookup choice exposed by a UI command.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandOption",
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "members": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Stable value used by the command; also suitable for persistence.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Localized text shown in the lookup editor.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "icon",
+          "type": "RemixIcon | undefined",
+          "description": "Optional icon for menus and segmented choice buttons.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "color",
+          "type": "string | undefined",
+          "description": "Optional CSS color preview; empty string represents the default/inherited color.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "description": "Retains the choice in the list while preventing it from being applied.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandPresentation",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandPresentation",
+      "description": "Surface-specific visual projection of one command field.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandPresentation",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "members": [
+        {
+          "name": "control",
+          "type": "\"data\" | \"buttons\" | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "density",
+          "type": "\"compact\" | \"full\" | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "appearance",
+          "type": "DataViewButtonAppearance | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "icon",
+          "type": "RemixIcon | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "showValue",
+          "type": "boolean | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "showArrow",
+          "type": "boolean | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "tooltip",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "showLabel",
+          "type": "boolean | undefined",
+          "description": "Surface-owned visual label policy; command fields only provide captions.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandPresentationKind",
+      "kind": "type",
+      "type": "any",
+      "description": "Presentation slots shared by inspector, toolbar and focused command surfaces.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandPresentationKind",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "\"basic\" | \"advanced\" | \"toolbar\" | \"focused\""
+    },
+    {
+      "name": "HtmlEditorUiCommandResolution",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandResolution",
+      "description": "Resolved application scope for one command.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandResolution",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "members": [
+        {
+          "name": "context",
+          "type": "HtmlEditorUiCommandTargetContext",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "targets",
+          "type": "HtmlEditorUiCommandTargets",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandTargetContext",
+      "kind": "interface",
+      "type": "HtmlEditorUiCommandTargetContext",
+      "description": "Captured user intent: selected nodes and remembered text range coexist.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandTargetContext",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "members": [
+        {
+          "name": "modelVersion",
+          "type": "number",
+          "description": "Surface model generation at capture time; later generations invalidate this context.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        },
+        {
+          "name": "nodeInfos",
+          "type": "readonly HtmlEditorUiCommandNodeInfo[]",
+          "description": "Read-only node metadata captured in document order.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorUiCommandTargets",
+      "kind": "type",
+      "type": "any",
+      "description": "Command-specific application units resolved from the captured intent.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandTargets",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "| { readonly kind: \"nodes\"; readonly nodeInfos: readonly HtmlEditorUiCommandNodeInfo[]; readonly complete?: boolean }\n    | { readonly kind: \"text\"; readonly ranges: readonly HtmlEditorSelectionRange[]; readonly complete?: boolean }"
+    },
+    {
+      "name": "HtmlEditorUiCommandValue",
+      "kind": "type",
+      "type": "any",
+      "description": "Values accepted by a UI command field. Undefined means reset/inherit.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandValue",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "string | number | boolean | null"
+    },
+    {
+      "name": "HtmlEditorUiCommandValueState",
+      "kind": "type",
+      "type": "any",
+      "description": "Aggregated authored value of a command property.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandValueState",
+      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
+      "definition": "| { readonly kind: \"value\"; readonly value: HtmlEditorUiCommandValue }\n    | { readonly kind: \"unset\" }\n    | { readonly kind: \"mixed\" }"
     },
     {
       "name": "KeyMapping",
@@ -11487,6 +12403,16 @@
           "kind": "property"
         },
         {
+          "name": "openOnInputClick",
+          "type": "boolean",
+          "description": "Clicking a closed lookup search field explicitly opens its results.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/LookupEditor.ts",
+          "kind": "property"
+        },
+        {
           "name": "resolveText",
           "type": "(text: string) => Promise<TValue>",
           "description": "Resolves external text only when the complete result contains one match.\nDoes not open the popup, change state, emit events, validate or save.",
@@ -12005,7 +12931,7 @@
             },
             {
               "name": "args",
-              "type": "MessageArguments<Extract<`${N}.${K}`, \"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\">>",
+              "type": "MessageArguments<Extract<`${N}.${K}`, \"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.link\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.linkCategory\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorBasic.linkUrl\" | \"htmlEditorBasic.linkTarget\" | \"htmlEditorBasic.linkTitle\" | \"htmlEditorBasic.unlink\" | \"htmlEditorBasic.unlinkTooltip\" | \"htmlEditorBasic.linkTargetSelf\" | \"htmlEditorBasic.linkTargetBlank\" | \"htmlEditorBasic.linkApply\" | \"htmlEditorBasic.invalidUrl\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\">>",
               "optional": false,
               "description": ""
             }
@@ -12526,6 +13452,26 @@
       "source": "src/components/popup/popover.ts",
       "members": [
         {
+          "name": "opened",
+          "type": "ObservableEvent<PopoverStateEvent>",
+          "description": "Emitted after the native popover has become visible.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "closed",
+          "type": "ObservableEvent<PopoverStateEvent>",
+          "description": "Emitted after the native popover has become hidden.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
           "name": "setAnchor",
           "type": "(anchor: HTMLElement) => void",
           "description": "Changes the element used as the popup's positioning anchor.",
@@ -12769,6 +13715,16 @@
           "kind": "property"
         },
         {
+          "name": "openOnInputClick",
+          "type": "boolean",
+          "description": "Whether a click on the active input explicitly opens the picker.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/PopoverEditor.ts",
+          "kind": "property"
+        },
+        {
           "name": "open",
           "type": "() => Promise<void>",
           "description": "Opens explicitly without accepting or saving the draft.",
@@ -12961,16 +13917,6 @@
           "optional": true,
           "source": "src/components/popup/popover.ts",
           "kind": "property"
-        },
-        {
-          "name": "onclose",
-          "type": "((event: Event, popup: Popover) => void) | undefined",
-          "description": "Called when the native popup closes.",
-          "tags": [],
-          "topics": [],
-          "optional": true,
-          "source": "src/components/popup/popover.ts",
-          "kind": "property"
         }
       ]
     },
@@ -13022,6 +13968,40 @@
       ]
     },
     {
+      "name": "PopoverStateEvent",
+      "kind": "interface",
+      "type": "PopoverStateEvent",
+      "description": "Payload emitted after a popover has changed its visible state.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopoverStateEvent",
+      "source": "src/components/popup/popover.ts",
+      "members": [
+        {
+          "name": "popover",
+          "type": "Popover",
+          "description": "Popover whose state changed.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        },
+        {
+          "name": "source",
+          "type": "Element | null | undefined",
+          "description": "Native invoker when the browser supplied one.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/popup/popover.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
       "name": "PopoverTextEditorOptions",
       "kind": "interface",
       "type": "PopoverTextEditorOptions<T>",
@@ -13055,7 +14035,7 @@
         },
         {
           "name": "triggerMessage",
-          "type": "\"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\" | undefined",
+          "type": "\"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.link\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.linkCategory\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorBasic.linkUrl\" | \"htmlEditorBasic.linkTarget\" | \"htmlEditorBasic.linkTitle\" | \"htmlEditorBasic.unlink\" | \"htmlEditorBasic.unlinkTooltip\" | \"htmlEditorBasic.linkTargetSelf\" | \"htmlEditorBasic.linkTargetBlank\" | \"htmlEditorBasic.linkApply\" | \"htmlEditorBasic.invalidUrl\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\" | undefined",
           "description": "Optional built-in message key; custom triggerLabel is otherwise retained verbatim.",
           "tags": [],
           "topics": [],

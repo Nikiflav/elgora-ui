@@ -85,6 +85,12 @@
 .elg-html-editor-basic-form .elg-data-form-buttons-host { border-color: transparent; background: transparent; padding: 0; }
 .elg-html-editor-basic-form .elg-data-form-buttons { display: flex; gap: 2px; }
 .elg-html-editor-basic-form .elg-data-form-action-button { width: 28px; min-width: 28px; height: 28px; }
+.elg-html-editor-basic-form [data-field="link.remove"] .elg-data-form-action-button {
+    width: max-content;
+    min-width: max-content;
+    padding-inline: 6px;
+    white-space: nowrap;
+}
 .elg-html-editor-basic-form .elg-data-form-action-button.elg-w-100 { width: 100%; display: flex; text-align: start; padding-inline: 6px; }
 .elg-html-editor-basic-form .elg-data-form-action-button.elg-w-100 > span { width: 100%; justify-content: space-between; }
 .elg-html-editor-basic-form .elg-data-form-field[data-label-position="start"] { grid-template-columns: 80px minmax(0, 1fr); }
@@ -171,3 +177,14 @@
 .elg-html-editor-selector-row .elg-html-editor-node-description { white-space: nowrap; text-overflow: ellipsis; }
 .elg-html-editor-selector-row[data-html-editor-coverage="full"] > .elg-html-editor-node-coverage { color: var(--elg-primary-color); }
 .elg-html-editor-selector-row[data-html-editor-coverage="partial"] > .elg-html-editor-node-coverage { color: var(--elg-primary-color); }
+.elg-html-editor-link-editor-form-host { min-width: 240px; padding: 8px; }
+.elg-html-editor-link-editor-form-host .elg-data-form { gap: 8px; }
+.elg-html-editor-link-editor-form-host .elg-data-form-label { color: var(--elg-text-muted); font-size: .8125rem; font-weight: 400; }
+.elg-html-editor-link-editor-form-host .elg-data-form-value { height: 30px; }
+.elg-html-editor-link-editor-form-host .elg-data-form-value-editing input,
+.elg-html-editor-link-editor-form-host .elg-data-form-value-editing select { box-sizing: border-box; width: 100%; height: 100%; margin: 0; padding-inline: 8px; font: inherit; color: var(--elg-text-color, #212529); background: var(--elg-field-bg, #fff); border: 0; border-radius: 4px; }
+.elg-html-editor-link-editor-form-host .elg-data-form-value-editing input:focus-visible,
+.elg-html-editor-link-editor-form-host .elg-data-form-value-editing select:focus-visible { outline: 1px solid var(--elg-primary-border, #86b7fe); outline-offset: -1px; }
+.elg-html-editor-link-editor-form-host .elg-data-form-value-editing input[aria-invalid="true"] { border-color: var(--elg-danger-border, #dc3545); }
+.elg-html-editor-link-editor-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 2px; }
+.elg-html-editor-link-editor-hint { font-size: .75rem; color: var(--elg-danger-color, #dc3545); }

@@ -89,16 +89,6 @@ export default {
       "optional": true,
       "source": "src/components/popup/popover.ts",
       "kind": "property"
-    },
-    {
-      "name": "onclose",
-      "type": "((event: Event, popup: Popover) => void) | undefined",
-      "description": "Called when the native popup closes.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/components/popup/popover.ts",
-      "kind": "property"
     }
   ]
 };

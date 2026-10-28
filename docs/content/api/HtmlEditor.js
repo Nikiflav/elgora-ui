@@ -32,7 +32,7 @@ export default {
     },
     {
       "name": "selectionChanged",
-      "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<HtmlEditorSelectionState | undefined>",
+      "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<HtmlEditorSelectionRange | undefined>",
       "description": "Same event as surface.selectionChanged; no second selection state is maintained.",
       "tags": [],
       "topics": [],
@@ -82,7 +82,7 @@ export default {
     },
     {
       "name": "selection",
-      "type": "HtmlEditorSelectionState | undefined",
+      "type": "HtmlEditorSelectionRange | undefined",
       "description": "Remembered text selection, retained while surrounding controls have focus.",
       "tags": [],
       "topics": [],
@@ -102,7 +102,7 @@ export default {
     },
     {
       "name": "restoreSelection",
-      "type": "(state?: HtmlEditorSelectionState | undefined) => boolean",
+      "type": "(state?: HtmlEditorSelectionRange | undefined) => boolean",
       "description": "Restores a valid runtime text bookmark and focuses the surface.",
       "tags": [],
       "topics": [],
@@ -111,7 +111,7 @@ export default {
       "parameters": [
         {
           "name": "state",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "optional": true,
           "defaultValue": "this.selection",
           "description": ""
@@ -122,7 +122,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(state?: HtmlEditorSelectionState | undefined) => boolean"
+      "signature": "(state?: HtmlEditorSelectionRange | undefined) => boolean"
     },
     {
       "name": "html",
@@ -198,7 +198,7 @@ export default {
     },
     {
       "name": "execute",
-      "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean",
+      "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean",
       "description": "Applies a command to the surface's single model/history.",
       "tags": [],
       "topics": [],
@@ -213,7 +213,7 @@ export default {
         },
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "optional": true,
           "defaultValue": "this.selection",
           "description": ""
@@ -224,7 +224,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean"
+      "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean"
     },
     {
       "name": "canUndo",

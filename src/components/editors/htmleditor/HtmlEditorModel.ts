@@ -36,9 +36,11 @@ export interface HtmlEditorDocument { type: "document"; children: HtmlEditorNode
 /** Text offsets count UTF-16 units; element/root offsets count supported model children. */
 export interface HtmlEditorPositionState { nodeId: HtmlEditorNodeId; offset: number; }
 /** Directed range: anchor is the fixed endpoint and focus is the moving endpoint. */
-export interface HtmlEditorSelectionState { anchor: HtmlEditorPositionState; focus: HtmlEditorPositionState; }
+export interface HtmlEditorSelectionRange { anchor: HtmlEditorPositionState; focus: HtmlEditorPositionState; }
+/** @deprecated Use HtmlEditorSelectionRange. */
+export type HtmlEditorSelectionState = HtmlEditorSelectionRange;
 export function cloneHtmlEditorDocument(document: HtmlEditorDocument): HtmlEditorDocument { return structuredClone(document); }
-export function cloneHtmlEditorSelection(selection?: HtmlEditorSelectionState): HtmlEditorSelectionState | undefined { return selection ? structuredClone(selection) : undefined; }
+export function cloneHtmlEditorSelection(selection?: HtmlEditorSelectionRange): HtmlEditorSelectionRange | undefined { return selection ? structuredClone(selection) : undefined; }
 
 // Editing structure follows HTML semantics, independently of inline/computed CSS display.
 const blockTags = new Set("address article aside blockquote div dl dt dd fieldset figure figcaption footer form h1 h2 h3 h4 h5 h6 header hr li main nav ol p pre section table thead tbody tfoot tr td th caption colgroup col ul details summary".split(" "));

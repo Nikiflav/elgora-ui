@@ -52,7 +52,7 @@ export default {
     },
     {
       "name": "selectionChanged",
-      "type": "ObservableEvent<HtmlEditorSelectionState | undefined>",
+      "type": "ObservableEvent<HtmlEditorSelectionRange | undefined>",
       "description": "Detached remembered text selection, retained while surrounding controls have focus.",
       "tags": [],
       "topics": [],
@@ -148,7 +148,7 @@ export default {
     },
     {
       "name": "getSelectionCoverage",
-      "type": "(selection?: HtmlEditorSelectionState | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>",
+      "type": "(selection?: HtmlEditorSelectionRange | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>",
       "description": "Detached node coverage for a range, sharing Copy/Delete rules without cloning the document.",
       "tags": [],
       "topics": [],
@@ -157,7 +157,7 @@ export default {
       "parameters": [
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "optional": true,
           "defaultValue": "this.selection",
           "description": ""
@@ -168,11 +168,11 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(selection?: HtmlEditorSelectionState | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>"
+      "signature": "(selection?: HtmlEditorSelectionRange | undefined) => ReadonlyMap<string, HtmlEditorNodeCoverage>"
     },
     {
       "name": "getMarkState",
-      "type": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState",
+      "type": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorMarkState",
       "description": "Returns the aggregate inline-mark state for the current selected fragments.",
       "tags": [],
       "topics": [],
@@ -187,7 +187,7 @@ export default {
         },
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "optional": true,
           "defaultValue": "this.selection",
           "description": ""
@@ -198,11 +198,11 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionState | undefined) => HtmlEditorMarkState"
+      "signature": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorMarkState"
     },
     {
       "name": "getTextStyleValues",
-      "type": "(property: string, selection?: HtmlEditorSelectionState | undefined) => (string | undefined)[]",
+      "type": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]",
       "description": "Reads authored text style values over the same fragments used by text formatting.",
       "tags": [],
       "topics": [],
@@ -217,7 +217,7 @@ export default {
         },
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "optional": true,
           "defaultValue": "this.selection",
           "description": ""
@@ -228,7 +228,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(property: string, selection?: HtmlEditorSelectionState | undefined) => (string | undefined)[]"
+      "signature": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]"
     },
     {
       "name": "selectNode",
@@ -337,7 +337,7 @@ export default {
     },
     {
       "name": "selection",
-      "type": "HtmlEditorSelectionState | undefined",
+      "type": "HtmlEditorSelectionRange | undefined",
       "description": "Last selection inside this editor, retained while focus moves to a toolbar or inspector.",
       "tags": [],
       "topics": [],
@@ -429,7 +429,7 @@ export default {
     },
     {
       "name": "restoreSelection",
-      "type": "(state?: HtmlEditorSelectionState | undefined) => boolean",
+      "type": "(state?: HtmlEditorSelectionRange | undefined) => boolean",
       "description": "Restores a saved selection. Returns false for removed nodes or a replaced document.",
       "tags": [],
       "topics": [],
@@ -438,7 +438,7 @@ export default {
       "parameters": [
         {
           "name": "state",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "optional": true,
           "defaultValue": "this.selection",
           "description": ""
@@ -449,7 +449,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(state?: HtmlEditorSelectionState | undefined) => boolean"
+      "signature": "(state?: HtmlEditorSelectionRange | undefined) => boolean"
     },
     {
       "name": "html",
@@ -499,7 +499,7 @@ export default {
     },
     {
       "name": "execute",
-      "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean",
+      "type": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean",
       "description": "Applies a supported operation to the model and selection in one undoable transaction.",
       "tags": [],
       "topics": [],
@@ -514,7 +514,7 @@ export default {
         },
         {
           "name": "selection",
-          "type": "HtmlEditorSelectionState | undefined",
+          "type": "HtmlEditorSelectionRange | undefined",
           "optional": true,
           "defaultValue": "this.selection",
           "description": ""
@@ -525,7 +525,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionState | undefined) => boolean"
+      "signature": "(command: HtmlEditorCommand, selection?: HtmlEditorSelectionRange | undefined) => boolean"
     },
     {
       "name": "canUndo",

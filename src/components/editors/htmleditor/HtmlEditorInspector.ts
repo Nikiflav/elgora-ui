@@ -1,20 +1,18 @@
 import { Component } from "../../../core/Component";
-import { e, v } from "../../../core/e";
+import { e } from "../../../core/e";
 import type { LocalizedMessages } from "../../../localization/Messages";
 import type { LocaleOptions } from "../../../localization/Localization";
 import { Popover } from "../../popup/popover";
-import { PopupMenu } from "../../popup/PopupMenu";
 import { TreeView } from "../../tree-view/TreeView";
 import { TabView } from "../../tab-view/TabView";
 import { DataForm, type DataFormAdapter, type DataFormLayoutGroup, type DataFormLayoutRow } from "../../dataform/DataForm";
-import type { DataViewField, DataViewButton, FieldLookup } from "../../../data/DataViewField";
-import type { LookupQuery } from "../LookupEditor";
 import type { HtmlEditorSurface } from "./HtmlEditorSurface";
 import type { HtmlEditorElement, HtmlEditorNode, HtmlEditorText } from "./HtmlEditorModel";
 import type { HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { isAtomic } from "./HtmlEditorStructure";
 import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
-import type { HtmlEditorInspectionContext, HtmlEditorInspectionRow, HtmlEditorInspectorTargets, HtmlEditorResolvedInspectorField } from "./HtmlEditorInspection";
+import { HtmlEditorUiCommandFieldService } from "./HtmlEditorUiCommandFieldService";
+import type { HtmlEditorUiCommandTargetContext, HtmlEditorUiCommandFormRow, HtmlEditorUiCommandTargets, HtmlEditorResolvedUiCommandField } from "./HtmlEditorInspection";
 
 
 /** Inspector scaffold owned by HtmlEditor. Targets are previews, not structural editor selections. */
@@ -35,12 +33,12 @@ export class HtmlEditorInspector extends Component {
     private popup?: Popover;
     private commandPopup?: Popover;
     private readonly basicPanel: HTMLElement;
-    private basicForm?: DataForm<HtmlEditorInspectionRow>;
+    private basicForm?: DataForm<HtmlEditorUiCommandFormRow>;
     private inspectedIds: string[] = [];
     private basicRenderKey = "";
     private basicRefreshQueued = false;
     private inspectionVersion = 0;
-    private choiceMenu?: PopupMenu;
+    private readonly fieldService: HtmlEditorUiCommandFieldService;
     /** User choices survive selection changes, including temporarily absent groups. */
     private readonly categoryState = new Map<string, boolean>();
 
@@ -49,16 +47,18 @@ export class HtmlEditorInspector extends Component {
     /** Monotonic version for consumers that render snapshot-based field states. */
     get stateVersion(): number { return this.inspectionVersion; }
     /** Resolves the same command-specific targets used by the inspector field. */
-    getCommandPreviewTargets(commandId: string): HtmlEditorInspectorTargets | undefined {
-        return this.commands.getInspectorFields(this.basicInspectionContext()).find(field => field.command.id === commandId)
-            ?.context.inspection.targets;
+    getCommandPreviewTargets(commandId: string): HtmlEditorUiCommandTargets | undefined {
+        return this.commands.resolveUiCommandTargets(commandId, this.basicInspectionContext());
     }
 
     /** Connects one surface to the element navigator and placeholder property tabs. */
-    constructor(private readonly surface: HtmlEditorSurface, private readonly messages: LocalizedMessages,
+    constructor(private readonly surface: HtmlEditorSurface,
+        private readonly messages: LocalizedMessages,
         private readonly commands: HtmlEditorCommandRegistry,
-        private readonly localeOptions: LocaleOptions = {}) {
+        private readonly localeOptions: LocaleOptions = {},
+        fieldService?: HtmlEditorUiCommandFieldService) {
         super({ class: "elg-html-editor-inspector", role: "complementary" });
+        this.fieldService = fieldService ?? new HtmlEditorUiCommandFieldService(commands, messages, localeOptions);
         this.selector = e("button", { type: "button", class: "elg-html-editor-node-selector",
             ui: ["elg", "btn", "neutral", "btn-ghost"], onclick: () => { void this.openElements(); } });
         this.selector.setAttribute("aria-haspopup", "dialog");
@@ -211,9 +211,7 @@ export class HtmlEditorInspector extends Component {
         this.surface.selectNode(item.id);
         this.update();
         this.selector.focus();
-    }
-
-
+}
     private openCommandMenu(anchor: HTMLButtonElement, item: HtmlEditorElement): void {
         if (this.disposed.Value) return;
         if (this.commandPopup?.isOpen()) { this.commandPopup.hide(); return; }
@@ -280,202 +278,39 @@ export class HtmlEditorInspector extends Component {
     }
 
 
-    private basicContext() { return this.commands.context(this.targetId); }
-
-    private basicInspectionContext(): HtmlEditorInspectionContext {
-        return this.commands.inspectionContext(this.inspectedIds);
+    /** Rebuilds localized command fields while preserving disclosure state. */
+    refreshLocalization(): void {
+        this.basicRenderKey = "";
+        this.update();
     }
 
-    private inspectorValue(binding: HtmlEditorResolvedInspectorField): any {
-        const value = binding.value;
-        return value?.kind === "value" ? value.value : value?.kind === "mixed" ? null : undefined;
-    }
-
-    private optionsLookup(binding: HtmlEditorResolvedInspectorField): FieldLookup<HtmlEditorInspectionRow> | undefined {
-        const options = binding.command.options;
-        if (!options?.length) return undefined;
-        return {
-            loadItems: async (query: LookupQuery) => {
-                const search = query.search.trim().toLocaleLowerCase();
-                const items = options.filter(option => !search || option.text.toLocaleLowerCase().includes(search));
-                const skip = query.skip ?? 0, top = query.top ?? items.length;
-                return { items: items.slice(skip, skip + top), totalCount: items.length };
-            },
-            getItemValue: item => item.id,
-            getItemText: item => item.text,
-            getValueText: value => options.find(option => option.id === value)?.text ?? String(value ?? ""),
-            popupWidth: 220,
-            popupHeight: 220,
-            resizable: false
-        };
-    }
-
-    private formField(binding: HtmlEditorResolvedInspectorField, row: HtmlEditorInspectionRow,
-        surface: "inspector" | "toolbar" = "inspector"): DataViewField<HtmlEditorInspectionRow> {
-        const presentation = binding.definition.field ?? {};
-        const surfacePresentation = binding.definition.presentations?.[surface];
-        const command = binding.command;
-        const field: DataViewField<HtmlEditorInspectionRow> = {
-            ...presentation,
-            name: command.id,
-            type: binding.definition.type,
-            hideLabel: binding.definition.type === "buttons" ? true : presentation.hideLabel,
-            caption: presentation.caption?.startsWith("htmlEditor")
-                ? this.messages.text(presentation.caption as never) : presentation.caption ?? this.commands.label(command),
-            readonly: presentation.readonly || !binding.enabled,
-            showInRow: () => true
-        };
-        if (binding.definition.type === "data" && binding.definition.presentation
-            && binding.definition.presentation !== "lookup" && command.options?.length) {
-            field.type = "buttons";
-            const value = binding.value?.kind === "value" ? binding.value.value : undefined;
-            if (binding.definition.presentation === "buttons") {
-                field.hideLabel = true;
-                field.buttons = command.options.map(option => ({ id: option.id, text: option.text,
-                    icon: option.icon ?? ({ default: "ri-format-clear", start: "ri-align-left", center: "ri-align-center", end: "ri-align-right" } as Record<string, string>)[option.id],
-                    appearance: option.icon || command.id === "block.align" ? "iconOnly" : "textOnly",
-                    ui: "btn-ghost", pressed: value === option.id, disabled: !binding.enabled || option.disabled,
-                    onClick: () => {
-                        const toggleOff = command.id === "block.align" && value === option.id;
-                        this.commands.executeInspectorField(binding, toggleOff ? undefined : option.id);
-                    } }));
-            } else {
-                const selected = command.options.find(option => option.id === value
-                    || binding.value?.kind === "unset" && option.id === "default");
-                const isColor = command.options.some(option => option.color !== undefined);
-                const showValue = surfacePresentation?.showValue !== false;
-                const showArrow = surfacePresentation?.showArrow !== false;
-                const appearance = surfacePresentation?.appearance ?? "textAndIcon";
-                const tooltip = surfacePresentation?.tooltip === "caption" ? field.caption : surfacePresentation?.tooltip;
-                const icon = surfacePresentation?.icon ?? selected?.icon ?? (isColor ? "ri-font-color" : "ri-font-size");
-                field.buttons = [{ id: command.id, text: binding.value?.kind === "mixed"
-                    ? this.messages.text("htmlEditorInspector.mixed") : selected?.text ?? String(value ?? "—"),
-                    icon, appearance,
-                    tooltip,
-                    render: isColor ? () => v("span", {
-                        class: "elg-html-editor-color-choice"
-                    }, surfacePresentation?.showValue === false
-                        ? v("i", { class: icon, ariaHidden: "true",
-                            style: { color: selected?.color || undefined } })
-                        : v("span", { class: "elg-menu-color-swatch", ariaHidden: "true",
-                            "data-empty": !selected?.color,
-                            style: { backgroundColor: selected?.color ?? (typeof value === "string" ? value : "transparent") }
-                        }),
-                    showValue ? v("span", binding.value?.kind === "mixed" ? this.messages.text("htmlEditorInspector.mixed")
-                        : selected?.text ?? String(value ?? "—")) : undefined,
-                    showArrow ? v("i", { class: "ri-arrow-down-s-line", ariaHidden: "true" }) : undefined) : undefined,
-                    disabled: !binding.enabled, onClick: async ({ owner }) => {
-                        const form = owner as DataForm<HtmlEditorInspectionRow>;
-                        const anchor = [...form.dom.querySelectorAll<HTMLElement>("[data-field]")]
-                            .find(host => host.dataset.field === command.id)?.querySelector<HTMLButtonElement>("button");
-                        if (!anchor) return;
-                        if (!this.choiceMenu) {
-                            this.choiceMenu = new PopupMenu({ density: "compact" });
-                            this.choiceMenu.mount(this.dom.ownerDocument.body);
-                            this.addCleanup(this.choiceMenu);
-                        }
-                        await this.choiceMenu.show({ anchor, items: command.options!.map(option => ({ key: option.id,
-                            text: option.text, icon: option.icon, color: option.color, disabled: option.disabled,
-                            checked: () => selected?.id === option.id,
-                            action: () => { this.commands.executeInspectorField(binding, option.id); } })) });
-                    } }];
-            }
-        } else if (binding.definition.type === "data") {
-            field.lookup = presentation.lookup ?? this.optionsLookup(binding);
-            field.getValue = () => this.inspectorValue(row.fields.get(command.id)!);
-        } else {
-            const state = this.commands.state(command, binding.context);
-            const button: DataViewButton<HtmlEditorInspectionRow> = {
-                id: command.id,
-                text: this.commands.label(command),
-                icon: command.icon,
-                appearance: "iconOnly",
-                ui: "btn-ghost",
-                tooltip: this.commands.label(command),
-                pressed: state === "mixed" ? "mixed" : state === "on",
-                disabled: !binding.enabled,
-                onClick: async () => {
-                    this.commands.executeInspectorField(binding);
-                }
-            };
-            field.buttons = [button];
-        }
-        return field;
-    }
-
-    /**
-     * Creates the compact horizontal command form used by HtmlEditorToolbar.
-     * The toolbar intentionally reuses the inspector field factory so command
-     * state, option menus, tooltips and execution never diverge between views.
-     */
-    createToolbarForm(): DataForm<HtmlEditorInspectionRow> | undefined {
-        const context = this.basicInspectionContext();
-        const available = this.toolbarFields(context);
-        const order = ["block.heading", "block.align", "bold", "italic", "text.size", "text.color", "element.backgroundColor", "clear-formatting"];
-        const fields = order.map(id => available.find(field => field.command.id === id)).filter((field): field is HtmlEditorResolvedInspectorField => !!field);
-        if (!fields.length) return undefined;
-        const row: HtmlEditorInspectionRow = { context, fields: new Map(fields.map(field => [field.command.id, field])) };
-        const dataFields = fields.map(field => {
-            const result = this.formField(field, row, "toolbar");
-            result.hideLabel = true;
-            if (result.buttons) result.buttons.forEach(button => { button.ui = ["btn-ghost"]; });
-            return result;
-        });
-        const adapter: DataFormAdapter<HtmlEditorInspectionRow> = {
-            getValue: (_row, field) => this.inspectorValue(row.fields.get(field.name)! ),
-            getText: async (_row, field, value) => {
-                const binding = row.fields.get(field.name);
-                if (!binding?.value || binding.value.kind === "unset") return "—";
-                if (binding.value.kind === "mixed") return this.messages.text("htmlEditorInspector.mixed");
-                if (field.lookup) return field.lookup.getValueText(value, { row, field, value });
-                return String(value ?? "");
-            },
-            setValue: async (_row, field, value) => {
-                const binding = row.fields.get(field.name);
-                if (!binding || !this.commands.executeInspectorField(binding, value))
-                    throw new Error(this.messages.text("htmlEditorInspector.propertiesHint"));
-            }
-        };
-        return new DataForm({ data: row, fields: dataFields,
-            layout: [{ display: "flex", wrap: false, labelPosition: "none", ui: ["gap-0"],
-                fields: dataFields.map(field => ({ field: field.name, labelPosition: "none" })) }],
-            class: "elg-html-editor-toolbar-form", labelPosition: "none", surface: "none",
-            allowEdit: true, locale: this.localeOptions.locale, localization: this.localeOptions.localization, adapter });
-    }
-
-    /** Keeps the compact toolbar visible before a selection exists. */
-    private toolbarFields(context: HtmlEditorInspectionContext): HtmlEditorResolvedInspectorField[] {
-        const resolved = new Map(this.commands.getInspectorFields(context).map(field => [field.command.id, field]));
-        const toolbarCommands = this.commands.getCommands(this.commands.context(), true).flatMap(command => {
-            const definition = command.inspector;
-            if (!definition) return [];
-            const existing = resolved.get(command.id);
-            if (existing) return [existing];
-            const targets = definition.resolveTargets(context);
-            const commandContext = { ...context, inspection: { context, targets } };
-            if (!(command.isVisible?.(commandContext) ?? true)) return [];
-            return [{ command, definition, context: commandContext, enabled: false }];
-        });
-        return toolbarCommands;
+    private basicInspectionContext(): HtmlEditorUiCommandTargetContext {
+        return this.commands.uiCommandTargetContext(this.inspectedIds);
     }
 
     private renderBasicCommands(): void {
-        this.choiceMenu?.hide();
+        this.fieldService.disposeMenus();
         for (const [id, collapsed] of this.basicForm?.getGroupState() ?? []) this.categoryState.set(id, collapsed);
         this.basicForm?.dispose(); this.basicForm = undefined;
         this.basicPanel.replaceChildren();
         const context = this.basicInspectionContext();
-        const fields = this.commands.getInspectorFields(context);
+        const resolvedFields = this.commands.getUiCommandFields(context);
+        const linkContext = [...this.coverage.keys(), context.selection?.anchor.nodeId, context.selection?.focus.nodeId, this.targetId]
+            .filter((id): id is string => !!id)
+            .some(id => this.elementPath(id).some(node => node.tag === "a"));
+        const fields = resolvedFields.filter(field => field.definition.group !== "link" || linkContext);
         if (!fields.length) {
             this.basicPanel.append(e("span", { class: "elg-html-editor-inspector-empty" }, this.messages.text("htmlEditorInspector.propertiesHint")));
             return;
         }
-        const row: HtmlEditorInspectionRow = { context, fields: new Map(fields.map(field => [field.command.id, field])) };
-        const ordered = [...fields.filter(field => field.definition.area === "text"),
-            ...fields.filter(field => field.definition.area !== "text")];
-        const dataFields = ordered.map(field => this.formField(field, row));
-        const adapter: DataFormAdapter<HtmlEditorInspectionRow> = {
-            getValue: (_row, field) => this.inspectorValue(row.fields.get(field.name)!),
+        const row: HtmlEditorUiCommandFormRow = { context, fields: new Map(fields.map(field => [field.command.id, field])) };
+        const ordered = fields;
+        const dataFields = ordered.map(field => this.fieldService.field(field, row, "basic"));
+        const adapter: DataFormAdapter<HtmlEditorUiCommandFormRow> = {
+            getValue: (_row, field) => {
+                const value = row.fields.get(field.name)?.value;
+                return value?.kind === "value" ? value.value : value?.kind === "mixed" ? null : undefined;
+            },
             getText: async (_row, field, value) => {
                 const binding = row.fields.get(field.name);
                 if (!binding?.value || binding.value.kind === "unset") return "—";
@@ -485,25 +320,32 @@ export class HtmlEditorInspector extends Component {
             },
             setValue: async (_row, field, value) => {
                 const binding = row.fields.get(field.name);
-                if (!binding || !this.commands.executeInspectorField(binding, value))
+                if (!binding || !this.commands.executeUiCommandField(binding, value))
                     throw new Error(this.messages.text("htmlEditorInspector.propertiesHint"));
             }
         };
-        const category = (field: HtmlEditorResolvedInspectorField) => field.definition.type === "buttons" ? "format"
+        const category = (field: HtmlEditorResolvedUiCommandField) => field.definition.type === "buttons"
+            ? field.definition.group === "link" ? "link" : "format"
             : field.definition.group === "block" ? "paragraph" : field.definition.group ?? "appearance";
-        const groups = new Map<string, HtmlEditorResolvedInspectorField[]>();
+        const groups = new Map<string, HtmlEditorResolvedUiCommandField[]>();
         for (const field of ordered) {
             const key = category(field);
             groups.set(key, [...groups.get(key) ?? [], field]);
         }
         const labels: Record<string, string> = {
             format: this.messages.text("htmlEditorInspector.formatCategory"),
+            link: this.messages.text("htmlEditorInspector.linkCategory"),
             typography: this.messages.text("htmlEditorInspector.typographyCategory"),
             paragraph: this.messages.text("htmlEditorInspector.paragraphCategory"),
             appearance: this.messages.text("htmlEditorInspector.appearanceCategory")
         };
         const layout: DataFormLayoutGroup[] = [];
-        for (const [key, bindings] of groups) {
+        const groupOrder = linkContext
+            ? ["link", "format", "appearance", "paragraph", "typography"]
+            : ["format", "appearance", "paragraph", "link", "typography"];
+        for (const [key, bindings] of [...groups.entries()].sort(([left], [right]) =>
+            (groupOrder.indexOf(left) < 0 ? Number.MAX_SAFE_INTEGER : groupOrder.indexOf(left))
+            - (groupOrder.indexOf(right) < 0 ? Number.MAX_SAFE_INTEGER : groupOrder.indexOf(right)))) {
             const rows: DataFormLayoutRow[] = [];
             const actions: { field: string }[] = [];
             for (const binding of bindings) {
@@ -515,7 +357,7 @@ export class HtmlEditorInspector extends Component {
                         field.buttons?.forEach(button => button.ui = ["neutral", "w-100"]);
                     }
                     rows.push({ fields: [{ field: field.name, width: "100%",
-                        labelPosition: binding.command.id === "block.heading" || field.hideLabel ? "none" : "start" }] });
+                        labelPosition: field.hideLabel ? "none" : "start" }] });
                 }
             }
             if (actions.length) rows.push({ fields: actions, labelPosition: "none", ui: ["gap-0"] });
@@ -618,13 +460,12 @@ export class HtmlEditorInspector extends Component {
                 "aria-label": this.messages.text("htmlEditorInspector.elements"), children: this.tree,
                 style: { width: "420px", height: "300px", padding: "4px", overflow: "hidden" } });
             this.addCleanup(this.popup);
-            this.listen(this.popup.dom, "toggle", () => {
-                const open = this.popup!.isOpen();
-                this.selector.setAttribute("aria-expanded", String(open));
-                if (!open) {
-                    this.commandPopup?.hide();
-                    this.popup!.hide(); // release positioning listeners after native light-dismiss
-                }
+            this.subscribe(this.popup.opened, () => {
+                this.selector.setAttribute("aria-expanded", "true");
+            });
+            this.subscribe(this.popup.closed, () => {
+                this.selector.setAttribute("aria-expanded", "false");
+                this.commandPopup?.hide();
             });
             this.listen(this.popup.dom, "keydown", event => {
                 if ((event as KeyboardEvent).key === "Escape") { event.preventDefault(); this.popup!.hide(); this.selector.focus(); }
@@ -666,5 +507,5 @@ export class HtmlEditorInspector extends Component {
         if (!this.disposed.Value && this.popup.isOpen()) this.tree!.dom.querySelector<HTMLElement>('[role="tree"]')?.focus();
     }
 
-    protected override onUnmount(): void { this.basicForm?.dispose(); this.choiceMenu?.hide(); this.popup?.hide(); this.commandPopup?.hide(); }
+    protected override onUnmount(): void { this.fieldService.disposeMenus(); this.basicForm?.dispose(); this.popup?.hide(); this.commandPopup?.hide(); }
 }

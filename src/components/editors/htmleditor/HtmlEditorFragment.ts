@@ -1,4 +1,4 @@
-import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorPositionState, HtmlEditorSelectionState } from "./HtmlEditorModel";
+import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorPositionState, HtmlEditorSelectionRange } from "./HtmlEditorModel";
 import { canJoin, caretAt, editingScope, getHtmlEditorElementBehavior as behavior, isAtomic, isPhrasing, locate, nodeSize,
     replaceScopeRange, sliceInline, type HtmlEditorParent, type HtmlEditorScope } from "./HtmlEditorStructure";
 
@@ -68,8 +68,8 @@ function importNodes(document: HtmlEditorDocument, fragment: HtmlEditorDocument,
  * inside the current cell, list item or layout container. Invalid placements fail
  * before the caller publishes the working tree.
  */
-export function insertHtmlEditorFragment(document: HtmlEditorDocument, rootId: string, selection: HtmlEditorSelectionState,
-    fragment: HtmlEditorDocument | undefined, id: () => string): HtmlEditorSelectionState | undefined {
+export function insertHtmlEditorFragment(document: HtmlEditorDocument, rootId: string, selection: HtmlEditorSelectionRange,
+    fragment: HtmlEditorDocument | undefined, id: () => string): HtmlEditorSelectionRange | undefined {
     if (!fragment?.children.length) return;
     const make = (tag: string, children: HtmlEditorNode[] = []): HtmlEditorElement => ({ id: id(), type: "element", tag, classes: [], styles: [], attributes: {}, children });
     const incoming = importNodes(document, fragment, id);
@@ -221,3 +221,5 @@ export function insertHtmlEditorFragment(document: HtmlEditorDocument, rootId: s
     else siblings.splice(siblings.indexOf(start.block), siblings.indexOf(end.block) - siblings.indexOf(start.block) + 1, ...blocks);
     return { anchor: point, focus: point };
 }
+
+

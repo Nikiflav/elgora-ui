@@ -6,6 +6,7 @@ import { Component } from "../../src/core/Component";
 import { Localization } from "../../src/localization/Localization";
 import { bgMessages } from "../../src/locales/bg";
 import { deMessages } from "../../src/locales/de";
+import type { HtmlEditorElement, HtmlEditorNode } from "../../src/components/editors/htmleditor/HtmlEditorModel";
 
 const owned: Component[] = [];
 const frame = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
@@ -23,6 +24,14 @@ const command = (editor: HtmlEditor, label: string) => {
     return editor.toolbar!.dom.querySelector<HTMLButtonElement>(`[data-field="${id}"] button`)
         ?? [...editor.toolbar!.dom.querySelectorAll<HTMLButtonElement>("button")].find(button =>
             button.getAttribute("aria-label") === label || button.textContent === label)!;
+};
+const findElement = (nodes: readonly HtmlEditorNode[], tag: string): HtmlEditorElement | undefined => {
+    for (const node of nodes) {
+        if (node.type !== "element") continue;
+        if (node.tag === tag) return node;
+        const child = findElement(node.children, tag);
+        if (child) return child;
+    }
 };
 
 beforeEach(() => {
@@ -158,14 +167,25 @@ describe("HtmlEditor composition", () => {
     });
     it("updates common element fields from surface selection and keeps text commands during tree inspection", async () => {
         const editor = create();
-        select(editor);
+        const paragraphs = editor.content.querySelectorAll("p");
+        select(editor, paragraphs[0].firstChild!, 0, 5);
         expect(editor.inspector!.dom.querySelector('[data-field="block.heading"]')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="block.heading"] .elg-data-form-label')?.textContent).toBeTruthy();
+        expect(editor.inspector!.dom.querySelector('[data-field="text.color"] .elg-data-form-label')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="bold"] .elg-data-form-label')).toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="block.heading"] [title]')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="block.heading"] .elg-data-form-description')).toBeNull();
         expect(editor.inspector!.dom.querySelector('[data-field="bold"]')).not.toBeNull();
         expect(editor.inspector!.dom.querySelector('[data-field="underline"]')).not.toBeNull();
         expect(editor.inspector!.dom.querySelector('[data-field="strikethrough"]')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-field="link.href"]')).toBeNull();
         expect(editor.toolbar!.dom.querySelector('[data-field="underline"]')).toBeNull();
         expect(editor.toolbar!.dom.querySelector('[data-field="strikethrough"]')).toBeNull();
-        const paragraphs = editor.content.querySelectorAll("p");
+        const linkButton = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        expect(linkButton).not.toBeUndefined();
+        expect(linkButton.disabled).toBe(false);
+        select(editor, paragraphs[0].firstChild!, 1);
+        expect(editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!.disabled).toBe(true);
         document.getSelection()!.setBaseAndExtent(paragraphs[0].firstChild!, 1, paragraphs[1].firstChild!, 2);
         document.dispatchEvent(new Event("selectionchange"));
         expect(editor.inspector!.dom.querySelector('[data-field="block.align"]')).not.toBeNull();
@@ -176,6 +196,76 @@ describe("HtmlEditor composition", () => {
         select(editor, paragraphs[0].firstChild!, 1);
         expect(editor.inspector!.dom.querySelector('[data-field="block.heading"]')).not.toBeNull();
         await frame();
+    });
+
+    it("keeps text size, text color and background available for a selected table cell", async () => {
+        const editor = create({ value: "<table><tbody><tr><td>Cell text</td></tr></tbody></table>" });
+        const cell = findElement(editor.document.children, "td")!;
+        editor.surface.selectNode(cell.id);
+        await frame();
+
+        for (const fieldId of ["text.size", "text.color", "element.backgroundColor"]) {
+            const button = editor.inspector!.dom.querySelector<HTMLButtonElement>(`[data-field="${fieldId}"] button`)!;
+            expect(button).toBeDefined();
+            expect(button.disabled).toBe(false);
+        }
+    });
+
+    it("styles fully covered nodes directly and wraps only the partially selected text", () => {
+        const editor = create({ value: "<p><span class=\"keep\">Full</span> partial</p>" });
+        const paragraph = editor.content.querySelector("p")!;
+        document.getSelection()!.setBaseAndExtent(paragraph.querySelector("span")!.firstChild!, 0, paragraph.lastChild!, 3);
+        document.dispatchEvent(new Event("selectionchange"));
+        const context = editor.commandRegistry.uiCommandTargetContext(editor.inspector!.inspectedElements);
+        const field = editor.commandRegistry.getUiCommandFields(context).find(item => item.command.id === "text.color")!;
+        expect(field.enabled).toBe(true);
+        expect(editor.commandRegistry.executeUiCommandField(field, "danger")).toBe(true);
+
+        const spans = [...editor.content.querySelectorAll("span")];
+        expect(spans.map(span => span.textContent)).toEqual(["Full", " pa"]);
+        expect(spans[0].classList.contains("keep")).toBe(true);
+        expect(spans.every(span => span.style.color)).toBe(true);
+        expect(editor.content.textContent).toBe("Full partial");
+        expect(editor.surface.findElement(editor.selection?.anchor.nodeId)).toBeDefined();
+        expect(editor.surface.findElement(editor.selection?.focus.nodeId)).toBeDefined();
+    });
+
+    it("shows the Link section only for an existing link context", async () => {
+        const editor = create({ value: '<p>Read <a href="/docs">this</a></p>' });
+        const linkText = editor.content.querySelector("a")!.firstChild!;
+        select(editor, linkText, 0, 4);
+        await frame();
+        expect(editor.inspector!.dom.querySelector('[data-field="link.href"]')).not.toBeNull();
+        expect(editor.inspector!.dom.querySelector('[data-group="link"]')).not.toBeNull();
+        expect([...editor.inspector!.dom.querySelectorAll<HTMLElement>("details[data-group]")]
+            .map(section => section.dataset.group)).toEqual(["link", "format", "appearance", "paragraph"]);
+        const unlink = editor.inspector!.dom.querySelector<HTMLButtonElement>('[data-field="link.remove"] button')!;
+        expect(unlink.textContent).toContain("Unlink");
+        expect(unlink.title).toBe("Remove link");
+    });
+
+    it("recreates inspector option menus after closing one and changing selection", async () => {
+        const editor = create({ value: '<p><a href="/one">one</a> and <a href="/two" target="_blank">two</a></p>' });
+        const links = editor.content.querySelectorAll("a");
+        select(editor, links[0].firstChild!, 0, 3);
+        await frame();
+
+        const targetButton = () => editor.inspector!.dom.querySelector<HTMLButtonElement>('[data-field="link.target"] button')!;
+        targetButton().click();
+        await frame();
+        let menu = editor.inspector!.dom.querySelector<HTMLElement>(".elg-popup-menu")!;
+        expect(menu.matches(":popover-open")).toBe(true);
+        menu.querySelector<HTMLButtonElement>('[data-menu-key*=":_blank"]')!.click();
+        await frame();
+        expect(editor.inspector!.dom.querySelector<HTMLElement>(".elg-popup-menu")).toBeNull();
+
+        select(editor, links[1].firstChild!, 0, 3);
+        await frame();
+        targetButton().click();
+        await frame();
+        menu = editor.inspector!.dom.querySelector<HTMLElement>(".elg-popup-menu")!;
+        expect(menu.matches(":popover-open")).toBe(true);
+        expect(editor.inspector!.dom.querySelector('[data-field="link.target"]')).not.toBeNull();
     });
 
     it.each([false, true])("shows Mixed and shared full/partial coverage across table and list: backwards=%s", async backwards => {
@@ -380,6 +470,12 @@ describe("HtmlEditor composition", () => {
         expect(overlay.querySelectorAll(".elg-html-editor-text-selection-layer .elg-html-editor-selection-rect")).toHaveLength(0);
         expect(overlay.querySelectorAll(".elg-html-editor-container-selection-layer .elg-html-editor-container-selection-rect")).toHaveLength(1);
         expect(overlay.querySelector(".elg-html-editor-container-selection-rect")?.dataset.htmlEditorNodeId).toBe(paragraphId);
+
+        const linkButton = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        linkButton.focus();
+        await frame();
+        expect(overlay.querySelectorAll(".elg-html-editor-text-selection-layer .elg-html-editor-selection-rect")).toHaveLength(1);
+        expect(overlay.querySelectorAll(".elg-html-editor-container-selection-layer .elg-html-editor-container-selection-rect")).toHaveLength(0);
     });
 
     it("does not activate the inspection preview over an empty command-surface area", async () => {
@@ -652,5 +748,140 @@ describe("HtmlEditor composition", () => {
         expect(editor.inspector!.dom.querySelector('[role="tab"]')!.textContent).toBe(properties);
         localization.addMessages(locale, { "htmlEditorToolbar.bold": "Custom bold" });
         expect(command(editor, "Custom bold")).toBeDefined();
+    });
+});
+describe("HtmlEditor toolbar link editor", () => {
+    it("creates a link around the text selection when no inspector exists", async () => {
+        const editor = create({ inspector: false });
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(editor, text, 0, 5);
+        const button = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        button.click();
+        await frame();
+        const popup = document.querySelector<HTMLElement>(".elg-html-editor-link-editor-popover")!;
+        const url = popup.querySelector<HTMLInputElement>('[data-field="href"] input')!;
+        expect(url.value).toBe("");
+        expect(popup.querySelector('[data-field="target"]')).not.toBeNull();
+        expect(popup.querySelector('[data-field="target"] input')).toBeNull();
+        expect(popup.querySelector<HTMLButtonElement>('[data-field="target"] button')).not.toBeNull();
+        popup.querySelector<HTMLButtonElement>('[data-field="target"] button')!.click();
+        await frame();
+        const targetMenu = popup.querySelector<HTMLElement>(".elg-popup-menu")!;
+        targetMenu.querySelector<HTMLButtonElement>('[data-menu-key*=":_blank"]')!.click();
+        expect(popup.matches(":popover-open")).toBe(true);
+        expect(popup.querySelector<HTMLButtonElement>('[data-field="target"] button')?.textContent)
+            .toContain("New tab");
+        expect(popup.querySelector<HTMLElement>('[data-field="title"] .elg-data-form-value')?.tabIndex).toBe(0);
+        expect(popup.querySelector<HTMLButtonElement>('[data-action="remove"]')!.hidden).toBe(true);
+        url.value = "/docs";
+        url.dispatchEvent(new Event("input", { bubbles: true }));
+        popup.querySelector<HTMLButtonElement>('[data-action="apply"]')!.click();
+        await frame();
+        expect(editor.content.querySelectorAll("a")).toHaveLength(1);
+        expect(editor.content.querySelector("a")?.getAttribute("href")).toBe("/docs");
+        expect(editor.content.querySelector("a")?.getAttribute("target")).toBe("_blank");
+        expect(editor.content.querySelector("a")?.textContent).toBe("Hello");
+        expect(popup.matches(":popover-open")).toBe(false);
+    });
+
+    it("prefills and updates all existing link attributes in one toolbar transaction", async () => {
+        const editor = create({ inspector: false, value: '<p>Read <a href="/old" target="_blank" title="Docs">this</a> now</p>' });
+        const linkText = editor.content.querySelector("a")!.firstChild!;
+        select(editor, linkText, 1);
+        const button = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        expect(button.disabled).toBe(false);
+        button.click();
+        await frame();
+        const popup = document.querySelector<HTMLElement>(".elg-html-editor-link-editor-popover")!;
+        expect(popup.querySelector<HTMLInputElement>('[data-field="href"] input')!.value).toBe("/old");
+        expect(popup.querySelector('[data-field="target"]')).not.toBeNull();
+        expect(popup.querySelector('[data-field="title"]')).not.toBeNull();
+        popup.querySelector<HTMLButtonElement>('[data-field="target"] button')!.click();
+        await frame();
+        const targetMenu = popup.querySelector<HTMLElement>(".elg-popup-menu")!;
+        expect(targetMenu).not.toBeNull();
+        expect(popup.matches(":popover-open")).toBe(true);
+        targetMenu.querySelector<HTMLButtonElement>('[data-menu-key*=":_blank"]')!.click();
+        expect(popup.matches(":popover-open")).toBe(true);
+        const url = popup.querySelector<HTMLInputElement>('[data-field="href"] input')!;
+        url.value = "/new";
+        url.dispatchEvent(new Event("input", { bubbles: true }));
+        popup.querySelector<HTMLButtonElement>('[data-action="apply"]')!.click();
+        await frame();
+        const link = editor.content.querySelector("a")!;
+        expect(link.getAttribute("href")).toBe("/new");
+        expect(link.getAttribute("target")).toBe("_blank");
+        expect(link.getAttribute("title")).toBe("Docs");
+        expect(editor.content.querySelectorAll("a")).toHaveLength(1);
+        expect(editor.canUndo).toBe(true);
+        editor.execute({ type: "undo" });
+        expect(editor.content.querySelector("a")?.getAttribute("href")).toBe("/old");
+        expect(editor.content.querySelector("a")?.getAttribute("target")).toBe("_blank");
+        expect(editor.content.querySelector("a")?.getAttribute("title")).toBe("Docs");
+    });
+
+    it("rejects an unsafe URL and keeps the popover open without editing", async () => {
+        const editor = create({ inspector: false });
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(editor, text, 0, 5);
+        const button = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        button.click();
+        await frame();
+        const popup = document.querySelector<HTMLElement>(".elg-html-editor-link-editor-popover")!;
+        const url = popup.querySelector<HTMLInputElement>('[data-field="href"] input')!;
+        url.value = "javascript:alert(1)";
+        popup.querySelector<HTMLButtonElement>('[data-action="apply"]')!.click();
+        expect(editor.content.querySelector("a")).toBeNull();
+        expect(popup.matches(":popover-open")).toBe(true);
+        expect(popup.querySelector(".elg-html-editor-link-editor-hint")!.hidden).toBe(true);
+    });
+
+    it("removes the link through the toolbar editor", async () => {
+        const editor = create({ inspector: false, value: '<p>Read <a href="/old">this</a> now</p>' });
+        const linkText = editor.content.querySelector("a")!.firstChild!;
+        select(editor, linkText, 0, 4);
+        const button = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        button.click();
+        await frame();
+        const popup = document.querySelector<HTMLElement>(".elg-html-editor-link-editor-popover")!;
+        expect(popup.querySelector<HTMLInputElement>('[data-field="href"] input')!.value).toBe("/old");
+        popup.querySelector<HTMLButtonElement>('[data-action="remove"]')!.click();
+        expect(editor.content.querySelector("a")).toBeNull();
+        expect(editor.content.querySelector("p")?.textContent).toBe("Read this now");
+    });
+
+    it("closes the toolbar link editor on Escape without editing", async () => {
+        const editor = create({ inspector: false });
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(editor, text, 0, 5);
+        const button = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        button.click();
+        await frame();
+        const popup = document.querySelector<HTMLElement>(".elg-html-editor-link-editor-popover")!;
+        const url = popup.querySelector<HTMLInputElement>('[data-field="href"] input')!;
+        url.value = "/docs";
+        popup.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        expect(popup.matches(":popover-open")).toBe(false);
+        expect(editor.content.querySelector("a")).toBeNull();
+    });
+
+    it("opens the link dialog even when the inspector is enabled", async () => {
+        const editor = create({ value: '<p>Read <a href="/docs">this</a> now</p>' });
+        const linkText = editor.content.querySelector("a")!.firstChild!;
+        select(editor, linkText, 2);
+        await frame();
+        const button = editor.toolbar!.dom.querySelector<HTMLButtonElement>('[data-field="link"] button')!;
+        expect(button.disabled).toBe(false);
+        button.click();
+        await frame();
+        const popup = document.querySelector<HTMLElement>(".elg-html-editor-link-editor-popover")!;
+        expect(popup.querySelector<HTMLInputElement>('[data-field="href"] input')!.value).toBe("/docs");
+        popup.querySelector<HTMLButtonElement>('[data-field="target"] button')!.click();
+        await frame();
+        const targetMenu = popup.querySelector<HTMLElement>(".elg-popup-menu")!;
+        expect(targetMenu).not.toBeNull();
+        expect(targetMenu.matches(":popover-open")).toBe(true);
+        expect(popup.matches(":popover-open")).toBe(true);
+        expect(editor.inspector!.dom.querySelector('[data-field="link.href"]')).not.toBeNull();
     });
 });

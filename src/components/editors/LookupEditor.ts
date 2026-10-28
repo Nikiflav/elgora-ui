@@ -113,7 +113,7 @@ export class LookupEditor<TValue, TItem> extends PopoverEditor<TValue> {
     protected override onTextKeyDown(event: KeyboardEvent): void { this.keyDown(event); }
 
     /** Clicking a closed lookup search field explicitly opens its results. */
-    protected override get openOnInputClick(): boolean { return true; }
+    override get openOnInputClick(): boolean { return true; }
 
     /**
      * Resolves external text only when the complete result contains one match.

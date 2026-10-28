@@ -32,7 +32,7 @@ export default {
     },
     {
       "name": "getCommandPreviewTargets",
-      "type": "(commandId: string) => HtmlEditorInspectorTargets | undefined",
+      "type": "(commandId: string) => HtmlEditorUiCommandTargets | undefined",
       "description": "Resolves the same command-specific targets used by the inspector field.",
       "tags": [],
       "topics": [],
@@ -47,11 +47,11 @@ export default {
         }
       ],
       "returns": {
-        "type": "HtmlEditorInspectorTargets | undefined",
+        "type": "HtmlEditorUiCommandTargets | undefined",
         "description": ""
       },
       "kind": "method",
-      "signature": "(commandId: string) => HtmlEditorInspectorTargets | undefined"
+      "signature": "(commandId: string) => HtmlEditorUiCommandTargets | undefined"
     },
     {
       "name": "refreshDocument",
@@ -109,20 +109,20 @@ export default {
       "signature": "(ids: readonly string[]) => void"
     },
     {
-      "name": "createToolbarForm",
-      "type": "() => DataForm<HtmlEditorInspectionRow> | undefined",
-      "description": "Creates the compact horizontal command form used by HtmlEditorToolbar.\nThe toolbar intentionally reuses the inspector field factory so command\nstate, option menus, tooltips and execution never diverge between views.",
+      "name": "refreshLocalization",
+      "type": "() => void",
+      "description": "Rebuilds localized command fields while preserving disclosure state.",
       "tags": [],
       "topics": [],
       "optional": false,
       "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
       "parameters": [],
       "returns": {
-        "type": "DataForm<HtmlEditorInspectionRow> | undefined",
+        "type": "void",
         "description": ""
       },
       "kind": "method",
-      "signature": "() => DataForm<HtmlEditorInspectionRow> | undefined"
+      "signature": "() => void"
     },
     {
       "name": "update",

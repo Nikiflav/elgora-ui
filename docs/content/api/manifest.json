@@ -3,12 +3,21 @@
   "entries": [
     {
       "name": "aggregateHtmlEditorInspectorValues",
-      "kind": "function",
+      "kind": "variable",
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/aggregateHtmlEditorInspectorValues",
-      "description": "Aggregates per-target authored values with Object.is. Undefined means unset;\nempty text, zero, false and null remain real values. Empty input has no applicable\ntargets and returns undefined, so the caller can omit that field entirely.",
+      "description": "",
       "module": "./content/api/aggregateHtmlEditorInspectorValues.js"
+    },
+    {
+      "name": "aggregateHtmlEditorUiCommandValues",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/aggregateHtmlEditorUiCommandValues",
+      "description": "Aggregates authored values while preserving empty strings, zero and false.",
+      "module": "./content/api/aggregateHtmlEditorUiCommandValues.js"
     },
     {
       "name": "ArrayDataSource",
@@ -939,11 +948,11 @@
     },
     {
       "name": "HtmlEditorCommandContext",
-      "kind": "interface",
+      "kind": "type",
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorCommandContext",
-      "description": "Context supplied to every HTML editor command surface.",
+      "description": "",
       "module": "./content/api/HtmlEditorCommandContext.js"
     },
     {
@@ -1002,20 +1011,20 @@
     },
     {
       "name": "HtmlEditorInspectionContext",
-      "kind": "interface",
+      "kind": "type",
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectionContext",
-      "description": "Captured inspected elements and remembered text range, independent of DOM focus.\nBoth scopes coexist. Tree navigation changes the elements without widening the\ntext range. A gesture in the surface updates both from its model selection.\nCapture once when a field starts editing and retain it until commit/cancel.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectionContext.js"
     },
     {
       "name": "HtmlEditorInspectionRow",
-      "kind": "interface",
+      "kind": "type",
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectionRow",
-      "description": "Virtual DataForm row. Its fields describe editor operations rather than node\nmembers. A future DataFormAdapter reads each binding's state and submits through\nexecuteInspectorField; mutating this row must never mutate the HTML model.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectionRow.js"
     },
     {
@@ -1029,11 +1038,11 @@
     },
     {
       "name": "HtmlEditorInspectorCommandContext",
-      "kind": "interface",
+      "kind": "type",
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorCommandContext",
-      "description": "Command context after target resolution; shared by all entry points into an inspector command.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectorCommandContext.js"
     },
     {
@@ -1042,7 +1051,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorField",
-      "description": "Optional Basic-tab declaration on a shared command. Register role-based commands\nsuch as text.color or block.align; keep these declarations out of node instances.\nA data contribution becomes a DataForm value field; a buttons contribution becomes\nan action using the command's label/icon/state. Execution always stays in the registry.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectorField.js"
     },
     {
@@ -1051,7 +1060,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorFieldPresentation",
-      "description": "Existing DataViewField presentation reused by the inspector. The command ID\nsupplies name; the adapter owns reads and Mixed labels. Lookup uses the shared\nfield.lookup contract, so no second editor-type or allowed-values system exists.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectorFieldPresentation.js"
     },
     {
@@ -1060,7 +1069,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorTargets",
-      "description": "Command-specific application units. A resolver maps a selection to eligible\ntext fragments or element owners (e.g. paragraphs for alignment), deduplicates\nthem, and excludes structural shells that the command cannot safely change.\nAn empty list makes the field inapplicable. Resolve once and use the same units\nfor state, permissions and execution; never widen a range inside a UI adapter.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectorTargets.js"
     },
     {
@@ -1069,7 +1078,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorValue",
-      "description": "Values accepted by Basic properties. Undefined requests reset; it is never the Mixed marker.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectorValue.js"
     },
     {
@@ -1078,7 +1087,7 @@
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorInspectorValueState",
-      "description": "Aggregated authored value of a property. Unset means every target uses its default;\nMixed means targets disagree. Neither state is a value to persist into HTML.\nA concrete value outside a lookup's options remains a value, not Unset.",
+      "description": "",
       "module": "./content/api/HtmlEditorInspectorValueState.js"
     },
     {
@@ -1128,29 +1137,47 @@
     },
     {
       "name": "HtmlEditorResolvedInspection",
-      "kind": "interface",
+      "kind": "type",
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorResolvedInspection",
-      "description": "A resolved scope passed to the shared command's enabled/state/execute callbacks.",
+      "description": "",
       "module": "./content/api/HtmlEditorResolvedInspection.js"
     },
     {
       "name": "HtmlEditorResolvedInspectorField",
-      "kind": "interface",
+      "kind": "type",
       "group": "types",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorResolvedInspectorField",
-      "description": "One resolved field, identified by command.id. Reuse this binding during a field\nedit; refreshing the form creates new bindings only after that edit has settled.\nThe declaration's group/order are presentation metadata, never HTML properties.",
+      "description": "",
       "module": "./content/api/HtmlEditorResolvedInspectorField.js"
     },
     {
-      "name": "HtmlEditorSelectionState",
+      "name": "HtmlEditorResolvedUiCommandField",
       "kind": "interface",
       "group": "types",
       "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorSelectionState",
+      "path": "/api-reference/HtmlEditorResolvedUiCommandField",
+      "description": "Field binding captured for one DataForm presentation.",
+      "module": "./content/api/HtmlEditorResolvedUiCommandField.js"
+    },
+    {
+      "name": "HtmlEditorSelectionRange",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSelectionRange",
       "description": "Directed range: anchor is the fixed endpoint and focus is the moving endpoint.",
+      "module": "./content/api/HtmlEditorSelectionRange.js"
+    },
+    {
+      "name": "HtmlEditorSelectionState",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorSelectionState",
+      "description": "",
       "module": "./content/api/HtmlEditorSelectionState.js"
     },
     {
@@ -1213,7 +1240,7 @@
       "group": "components",
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorToolbar",
-      "description": "Compact command toolbar backed by the inspector's shared DataForm field renderer.",
+      "description": "Compact command toolbar backed exclusively by the shared DataForm field service.",
       "module": "./content/api/HtmlEditorToolbar.js"
     },
     {
@@ -1224,6 +1251,168 @@
       "path": "/api-reference/HtmlEditorUiCommand",
       "description": "A command exposed by a toolbar, context menu, or node action overlay.",
       "module": "./content/api/HtmlEditorUiCommand.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandContext",
+      "description": "Context supplied to every HTML editor command surface.",
+      "module": "./content/api/HtmlEditorUiCommandContext.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandControl",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandControl",
+      "description": "",
+      "module": "./content/api/HtmlEditorUiCommandControl.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandDensity",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandDensity",
+      "description": "",
+      "module": "./content/api/HtmlEditorUiCommandDensity.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandExecutionContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandExecutionContext",
+      "description": "Context passed to command visibility, state and execution after target resolution.",
+      "module": "./content/api/HtmlEditorUiCommandExecutionContext.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandField",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandField",
+      "description": "A value field or action field contributed by a UI command.",
+      "module": "./content/api/HtmlEditorUiCommandField.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandFieldDefinition",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFieldDefinition",
+      "description": "",
+      "module": "./content/api/HtmlEditorUiCommandFieldDefinition.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandFieldPresentation",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFieldPresentation",
+      "description": "DataForm metadata shared by every command presentation.",
+      "module": "./content/api/HtmlEditorUiCommandFieldPresentation.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandFieldService",
+      "kind": "class",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFieldService",
+      "description": "Shared field projection used by every HtmlEditor DataForm surface.",
+      "module": "./content/api/HtmlEditorUiCommandFieldService.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandFormRow",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandFormRow",
+      "description": "Virtual row used by DataForm projections of command fields.",
+      "module": "./content/api/HtmlEditorUiCommandFormRow.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandNodeInfo",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandNodeInfo",
+      "description": "Read-only metadata for an inspected model node. The model remains the source of truth.",
+      "module": "./content/api/HtmlEditorUiCommandNodeInfo.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandOption",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandOption",
+      "description": "One compact lookup choice exposed by a UI command.",
+      "module": "./content/api/HtmlEditorUiCommandOption.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandPresentation",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandPresentation",
+      "description": "Surface-specific visual projection of one command field.",
+      "module": "./content/api/HtmlEditorUiCommandPresentation.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandPresentationKind",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandPresentationKind",
+      "description": "Presentation slots shared by inspector, toolbar and focused command surfaces.",
+      "module": "./content/api/HtmlEditorUiCommandPresentationKind.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandResolution",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandResolution",
+      "description": "Resolved application scope for one command.",
+      "module": "./content/api/HtmlEditorUiCommandResolution.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandTargetContext",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandTargetContext",
+      "description": "Captured user intent: selected nodes and remembered text range coexist.",
+      "module": "./content/api/HtmlEditorUiCommandTargetContext.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandTargets",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandTargets",
+      "description": "Command-specific application units resolved from the captured intent.",
+      "module": "./content/api/HtmlEditorUiCommandTargets.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandValue",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandValue",
+      "description": "Values accepted by a UI command field. Undefined means reset/inherit.",
+      "module": "./content/api/HtmlEditorUiCommandValue.js"
+    },
+    {
+      "name": "HtmlEditorUiCommandValueState",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorUiCommandValueState",
+      "description": "Aggregated authored value of a command property.",
+      "module": "./content/api/HtmlEditorUiCommandValueState.js"
     },
     {
       "name": "KeyMapping",
@@ -1548,6 +1737,15 @@
       "path": "/api-reference/PopoverPoint",
       "description": "A viewport point used to position a popup without an anchor element.",
       "module": "./content/api/PopoverPoint.js"
+    },
+    {
+      "name": "PopoverStateEvent",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Popup",
+      "path": "/api-reference/PopoverStateEvent",
+      "description": "Payload emitted after a popover has changed its visible state.",
+      "module": "./content/api/PopoverStateEvent.js"
     },
     {
       "name": "PopoverTextEditorOptions",

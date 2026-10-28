@@ -45,6 +45,23 @@ afterEach(async () => {
 });
 
 describe("PopoverEditor lifecycle", () => {
+    it("emits opened and closed events through the component API", async () => {
+        const editor = create();
+        await editor.open();
+        const popup = (editor as any).popup as Popover;
+        const opened = vi.fn(), closed = vi.fn();
+        popup.opened.subscribe(opened);
+        popup.closed.subscribe(closed);
+
+        editor.close();
+        await editor.open();
+
+        expect(closed).toHaveBeenCalledTimes(1);
+        expect(opened).toHaveBeenCalledTimes(1);
+        expect(opened.mock.calls[0][0].popover).toBe(popup);
+        expect(closed.mock.calls[0][0].popover).toBe(popup);
+    });
+
     it("opens on the first focus click and closes on a later input click", async () => {
         const editor = create({ openOnFocus: true });
         const input = editor.dom.querySelector("input")!;

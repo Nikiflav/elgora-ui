@@ -114,6 +114,90 @@ describe("HtmlEditor transactions", () => {
         expect(editor.content.querySelector("strong em")).not.toBeNull();
     });
 
+    it("creates, updates and removes links without nesting anchors", () => {
+        create("<p>Read this</p>");
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(text, 5, text, 9);
+        expect(editor.execute({ type: "link", property: "href", value: "/docs" })).toBe(true);
+        expect(editor.content.querySelectorAll("a")).toHaveLength(1);
+        expect(editor.content.querySelector("a")?.textContent).toBe("this");
+        expect(editor.execute({ type: "link", property: "target", value: "_blank" })).toBe(true);
+        expect(editor.content.querySelector("a")?.getAttribute("target")).toBe("_blank");
+        const linkText = editor.content.querySelector("a")!.firstChild!;
+        select(linkText, 0, linkText, 4);
+        expect(editor.execute({ type: "link", property: "href", value: "/new" })).toBe(true);
+        expect(editor.content.querySelectorAll("a")).toHaveLength(1);
+        expect(editor.content.querySelector("a")?.getAttribute("href")).toBe("/new");
+        expect(editor.execute({ type: "link", property: "remove" })).toBe(true);
+        expect(editor.content.querySelector("a")).toBeNull();
+    });
+
+    it("updates all link attributes as one undoable transaction", () => {
+        create('<p><a href="/old" target="_blank" title="Docs">Link</a></p>');
+        const text = editor.content.querySelector("a")!.firstChild!;
+        select(text, 0, text, 4);
+        expect(editor.execute({ type: "link", property: "update", href: "/new", target: "_self", title: "Updated" })).toBe(true);
+        const link = editor.content.querySelector("a")!;
+        expect(link.getAttribute("href")).toBe("/new");
+        expect(link.getAttribute("target")).toBe("_self");
+        expect(link.getAttribute("title")).toBe("Updated");
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.querySelector("a")?.getAttribute("href")).toBe("/old");
+        expect(editor.content.querySelector("a")?.getAttribute("target")).toBe("_blank");
+        expect(editor.content.querySelector("a")?.getAttribute("title")).toBe("Docs");
+    });
+
+    it("expands an existing link across the selected inline area and merges adjacent links", () => {
+        create('<p><a href="/old">Read</a> more</p>');
+        const paragraph = editor.content.querySelector("p")!;
+        select(paragraph.querySelector("a")!.firstChild!, 0, paragraph.lastChild!, paragraph.lastChild!.textContent!.length);
+        expect(editor.execute({ type: "link", property: "href", value: "/new" })).toBe(true);
+        expect(editor.content.innerHTML).toBe('<p><a href="/new">Read more</a></p>');
+    });
+
+    it("creates separate links when a selection crosses block containers", () => {
+        create('<p><a href="/old">One</a></p><p>Two</p>');
+        const paragraphs = editor.content.querySelectorAll("p");
+        select(paragraphs[0].querySelector("a")!.firstChild!, 0, paragraphs[1].firstChild!, 3);
+        expect(editor.execute({ type: "link", property: "href", value: "/new" })).toBe(true);
+        expect(editor.content.querySelectorAll("a")).toHaveLength(2);
+        expect([...editor.content.querySelectorAll("a")].map(link => link.getAttribute("href"))).toEqual(["/new", "/new"]);
+        expect(editor.content.querySelector("p > a")?.textContent).toBe("One");
+        expect(editor.content.querySelector("a > p")?.textContent).toBe("Two");
+    });
+
+    it("keeps a fully selected block inside the link", () => {
+        create("<div><p>Whole paragraph</p><p>Other</p></div>");
+        const paragraph = editor.content.querySelector("p")!;
+        select(paragraph.firstChild!, 0, paragraph.firstChild!, paragraph.textContent!.length);
+        expect(editor.execute({ type: "link", property: "href", value: "/paragraph" })).toBe(true);
+        expect(editor.content.querySelector("a > p")?.textContent).toBe("Whole paragraph");
+        expect(editor.content.querySelector("a > p")?.parentElement?.tagName).toBe("A");
+        expect(editor.content.querySelector("div > p")?.textContent).toBe("Other");
+        const linkedText = editor.content.querySelector("a > p")!.firstChild!;
+        select(linkedText, 0, linkedText, linkedText.textContent!.length);
+        expect(editor.execute({ type: "link", property: "remove" })).toBe(true);
+        expect(editor.content.querySelector("a > p")).toBeNull();
+        expect(editor.content.querySelector("div > p")?.textContent).toBe("Whole paragraph");
+    });
+
+    it("keeps a partially selected block in place and links its selected atomic node", () => {
+        create('<p>Before<img src="image.png" alt="Image">After</p>');
+        const paragraph = editor.content.querySelector("p")!;
+        select(paragraph, 1, paragraph, 2);
+        expect(editor.execute({ type: "link", property: "href", value: "/image" })).toBe(true);
+        expect(editor.content.querySelector("p > a > img")?.getAttribute("alt")).toBe("Image");
+        expect(editor.content.querySelector("p")?.textContent).toBe("BeforeAfter");
+    });
+
+    it("allows a fully selected inline node to remain intact inside the link", () => {
+        create("<p><span class=\"badge\">Badge</span> tail</p>");
+        const text = editor.content.querySelector("span")!.firstChild!;
+        select(text, 0, text, 5);
+        expect(editor.execute({ type: "link", property: "href", value: "/badge" })).toBe(true);
+        expect(editor.content.querySelector("p > a > span.badge")?.textContent).toBe("Badge");
+    });
+
     it("formats independent text areas across different container parents", () => {
         create('<div style="display:grid"><div>Grid A</div><div>Grid B</div><div>Grid C</div></div>');
         const cells = [...editor.content.firstElementChild!.children];

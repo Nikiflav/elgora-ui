@@ -91,8 +91,8 @@ export abstract class PopoverEditor<T> extends TextEditor<T> {
     protected preparePopup(): void | Promise<void> {}
     /** Places focus after showing. Lookup editors may retain focus in the input. */
     protected focusPopup(): void {}
-    /** Lookup search fields can explicitly open the picker on an input click. */
-    protected get openOnInputClick(): boolean { return false; }
+    /** Whether a click on the active input explicitly opens the picker. */
+    get openOnInputClick(): boolean { return false; }
     /** Releases picker-specific searches or scheduled focus work before hiding. */
     protected onPopupClosing(): void {}
 
@@ -111,9 +111,14 @@ export abstract class PopoverEditor<T> extends TextEditor<T> {
             this.popup.mount(this.dom);
             this.control.setAttribute("aria-controls", this.popup.dom.id);
             this.listen(this.popup.dom, "keydown", event => this.handlePopupKey(event as KeyboardEvent));
-            this.listen(this.popup.dom, "toggle", () => {
-                if (!this.isOpen) { this.openingVersion++; this.removeOutside?.(); this.removeOutside = undefined; }
-                this.control.setAttribute("aria-expanded", String(this.isOpen));
+            this.subscribe(this.popup.opened, () => {
+                this.control.setAttribute("aria-expanded", "true");
+                this.render(this.renderTrigger);
+            });
+            this.subscribe(this.popup.closed, () => {
+                this.openingVersion++;
+                this.removeOutside?.(); this.removeOutside = undefined;
+                this.control.setAttribute("aria-expanded", "false");
                 this.render(this.renderTrigger);
             });
         }

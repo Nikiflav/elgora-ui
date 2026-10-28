@@ -11,6 +11,16 @@ export default {
   "source": "src/components/editors/DateTimeEditor.ts",
   "members": [
     {
+      "name": "openOnInputClick",
+      "type": "boolean",
+      "description": "A click on the active date-time input opens the picker; focus alone does not.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/DateTimeEditor.ts",
+      "kind": "property"
+    },
+    {
       "name": "resolveText",
       "type": "(text: string) => Promise<string | null>",
       "description": "Resolves and validates a local canonical date-time.",

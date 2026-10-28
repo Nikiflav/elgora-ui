@@ -1,9 +1,27 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DataForm } from "../../src/components/dataform/DataForm";
 import { DataSet } from "../../src/data/dataset/DataSet";
 
 const owned: DataForm<any>[] = [];
-afterEach(() => { owned.splice(0).forEach(form => form.dispose()); });
+beforeEach(() => {
+    vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
+    const matches = HTMLElement.prototype.matches;
+    vi.spyOn(HTMLElement.prototype, "matches").mockImplementation(function(this: HTMLElement, selector) {
+        return selector === ":popover-open" ? this.hasAttribute("data-test-open") : matches.call(this, selector);
+    });
+    Object.defineProperty(HTMLElement.prototype, "showPopover", { configurable: true, value: function(this: HTMLElement) {
+        this.setAttribute("data-test-open", ""); this.dispatchEvent(new Event("toggle"));
+    } });
+    Object.defineProperty(HTMLElement.prototype, "hidePopover", { configurable: true, value: function(this: HTMLElement) {
+        this.removeAttribute("data-test-open"); this.dispatchEvent(new Event("toggle"));
+    } });
+});
+afterEach(() => {
+    owned.splice(0).forEach(form => form.dispose());
+    vi.restoreAllMocks(); vi.unstubAllGlobals();
+    delete (HTMLElement.prototype as any).showPopover;
+    delete (HTMLElement.prototype as any).hidePopover;
+});
 
 describe("DataForm", () => {
     it("interleaves groups and rows and restores collapsed state by stable ID", () => {
@@ -79,6 +97,22 @@ describe("DataForm", () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         expect(form.dom.querySelector<HTMLInputElement>("input")?.value).toBe("14.10.2026");
         expect((form.value as any).deliveryDate).toBe("2026-10-14");
+    });
+
+    it("opens a lookup on the first value click without opening it from focus", async () => {
+        const form = new DataForm({ data: { customerId: 1 }, fields: [{ name: "customerId", caption: "Customer", lookup: {
+            columns: [{ name: "name" }],
+            loadItems: async () => ({ items: [{ id: 1, name: "Northwind" }], totalCount: 1 }),
+            getItemValue: item => item.id,
+            getItemText: item => item.name,
+            getValueText: () => "Northwind"
+        } }] });
+        owned.push(form); form.mount(document.body);
+        const value = form.dom.querySelector<HTMLElement>(".elg-data-form-value")!;
+        value.click();
+        await new Promise(resolve => setTimeout(resolve, 25));
+        const input = form.dom.querySelector<HTMLInputElement>("input")!;
+        expect(input.getAttribute("aria-expanded")).toBe("true");
     });
 
     it("commits and navigates with Enter/Tab, and cancels with Escape", async () => {

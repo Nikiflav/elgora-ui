@@ -1,4 +1,4 @@
-import type { HtmlEditorDocument, HtmlEditorNode, HtmlEditorPositionState, HtmlEditorSelectionState } from "./HtmlEditorModel";
+import type { HtmlEditorDocument, HtmlEditorNode, HtmlEditorPositionState, HtmlEditorSelectionRange } from "./HtmlEditorModel";
 import { isAtomic, isStructuralWhitespace, locate, validPosition, type HtmlEditorParent } from "./HtmlEditorStructure";
 
 /** A precomputed content interval. Empty elements and atoms occupy one unit so
@@ -20,7 +20,7 @@ interface RangeAnalysis {
 
 /** Index the snapshot once and normalize direction without changing either endpoint. */
 function analyzeRange(document: HtmlEditorDocument, rootId: string,
-    selection: HtmlEditorSelectionState): RangeAnalysis | undefined {
+    selection: HtmlEditorSelectionRange): RangeAnalysis | undefined {
     if (!validPosition(document, rootId, selection.anchor) || !validPosition(document, rootId, selection.focus)) return;
     const intervals = new Map<HtmlEditorParent | HtmlEditorNode, Interval>();
     let cursor = 0;
@@ -52,7 +52,7 @@ function analyzeRange(document: HtmlEditorDocument, rootId: string,
  * Includes text leaves and elements; a collapsed or invalid range returns an empty map.
  */
 export function getHtmlEditorRangeCoverage(document: HtmlEditorDocument, rootId: string,
-    selection: HtmlEditorSelectionState): ReadonlyMap<string, HtmlEditorNodeCoverage> {
+    selection: HtmlEditorSelectionRange): ReadonlyMap<string, HtmlEditorNodeCoverage> {
     const result = new Map<string, HtmlEditorNodeCoverage>();
     const range = analyzeRange(document, rootId, selection);
     if (!range) return result;
@@ -70,7 +70,7 @@ export function getHtmlEditorRangeCoverage(document: HtmlEditorDocument, rootId:
  * the selection to unselected cells. Complete tables retain their original spans.
  */
 export function extractHtmlEditorRange(document: HtmlEditorDocument, rootId: string,
-    selection: HtmlEditorSelectionState): HtmlEditorDocument | undefined {
+    selection: HtmlEditorSelectionRange): HtmlEditorDocument | undefined {
     const range = analyzeRange(document, rootId, selection);
     if (!range) return;
     const { intervals, from, to } = range;
@@ -110,7 +110,7 @@ export function extractHtmlEditorRange(document: HtmlEditorDocument, rootId: str
  * Returns the surviving start bookmark. Empty/invalid ranges make no changes.
  */
 export function deleteHtmlEditorRange(document: HtmlEditorDocument, rootId: string,
-    selection: HtmlEditorSelectionState): HtmlEditorPositionState | undefined {
+    selection: HtmlEditorSelectionRange): HtmlEditorPositionState | undefined {
     const range = analyzeRange(document, rootId, selection);
     if (!range) return;
     const { intervals, from, to, start } = range;
@@ -159,3 +159,5 @@ export function deleteHtmlEditorRange(document: HtmlEditorDocument, rootId: stri
         return { nodeId, offset: mappedGaps.get(node)?.[originalOffset] ?? 0 };
     }
 }
+
+

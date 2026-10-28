@@ -1,6 +1,6 @@
 import { isHtmlEditorBlock, type HtmlEditorDocument, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorPositionState } from "./HtmlEditorModel";
 import type { HtmlEditorState } from "./HtmlEditorCommands";
-import { getHtmlEditorElementBehavior, isAtomic, isStructuralWhitespace } from "./HtmlEditorStructure";
+import { getHtmlEditorElementBehavior, isAtomic, isInline, isStructuralWhitespace } from "./HtmlEditorStructure";
 
 const block = isHtmlEditorBlock;
 
@@ -23,6 +23,7 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
         !isAtomic(left) && !isAtomic(right)
         && getHtmlEditorElementBehavior(left).kind === "inline"
         && getHtmlEditorElementBehavior(right).kind === "inline"
+        && left.children.every(isInline) && right.children.every(isInline)
         && left.tag === right.tag
         && sameArray(left.classes, right.classes, (a, b) => a === b)
         && sameStyles(left.styles, right.styles)

@@ -22,7 +22,7 @@ export default {
     },
     {
       "name": "selection",
-      "type": "HtmlEditorSelectionState | undefined",
+      "type": "HtmlEditorSelectionRange | undefined",
       "description": "",
       "tags": [],
       "topics": [],

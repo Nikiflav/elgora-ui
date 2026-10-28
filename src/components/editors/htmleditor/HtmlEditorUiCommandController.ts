@@ -1,10 +1,12 @@
 import type { Disposable } from "../../../core/ElgoraUI";
 import type { LocalizedMessages } from "../../../localization/Messages";
 import type { LocaleOptions } from "../../../localization/Localization";
+import { Localization } from "../../../localization/Localization";
 import type { HtmlEditorSurface } from "./HtmlEditorSurface";
 import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
 import { HtmlEditorToolbar } from "./HtmlEditorToolbar";
 import { HtmlEditorInspector } from "./HtmlEditorInspector";
+import { HtmlEditorUiCommandFieldService } from "./HtmlEditorUiCommandFieldService";
 
 export interface HtmlEditorUiCommandControllerOptions extends LocaleOptions {
     toolbar?: boolean;
@@ -21,22 +23,29 @@ export interface HtmlEditorUiCommandControllerOptions extends LocaleOptions {
 export class HtmlEditorUiCommandController implements Disposable {
     readonly toolbar?: HtmlEditorToolbar;
     readonly inspector?: HtmlEditorInspector;
+    readonly fields: HtmlEditorUiCommandFieldService;
     private readonly subscriptions: Disposable[] = [];
     private disposed = false;
 
     constructor(private readonly surface: HtmlEditorSurface, messages: LocalizedMessages,
         registry: HtmlEditorCommandRegistry, options: HtmlEditorUiCommandControllerOptions = {}) {
+        this.fields = new HtmlEditorUiCommandFieldService(registry, messages, options);
         if (options.inspector) {
-            this.inspector = new HtmlEditorInspector(surface, messages, registry, options);
+            this.inspector = new HtmlEditorInspector(surface, messages, registry, options, this.fields);
         }
         if (options.toolbar) {
-            this.toolbar = new HtmlEditorToolbar(registry, messages);
+            this.toolbar = new HtmlEditorToolbar(registry, messages, this.fields);
             if (this.inspector) this.toolbar.setInspector(this.inspector);
         }
         this.subscriptions.push(surface.documentChanged.subscribe(() => this.refreshDocument()));
         this.subscriptions.push(surface.selectionChanged.subscribe(() => this.refreshSelection()));
         this.subscriptions.push(surface.selectedNodesChanged.subscribe(ids => this.refreshSelectedNodes(ids)));
         this.subscriptions.push(surface.interactionChanged.subscribe(() => this.refreshInteraction()));
+        const localization = options.localization;
+        if (localization) this.subscriptions.push(localization.messagesChanged.subscribe(() => this.refreshLocalization()));
+        if (localization && localization !== Localization.default)
+            this.subscriptions.push(Localization.default.messagesChanged.subscribe(() => this.refreshLocalization()));
+        if (!localization) this.subscriptions.push(Localization.default.messagesChanged.subscribe(() => this.refreshLocalization()));
     }
 
     /** Mounts both optional surfaces directly into their intended DOM locations. */
@@ -79,5 +88,10 @@ export class HtmlEditorUiCommandController implements Disposable {
     private refreshInteraction(): void {
         this.inspector?.update();
         this.toolbar?.update();
+    }
+
+    private refreshLocalization(): void {
+        this.inspector?.refreshLocalization();
+        this.toolbar?.refreshLocalization();
     }
 }

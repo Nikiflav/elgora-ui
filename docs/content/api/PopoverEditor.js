@@ -26,6 +26,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "openOnInputClick",
+      "type": "boolean",
+      "description": "Whether a click on the active input explicitly opens the picker.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/PopoverEditor.ts",
+      "kind": "property"
+    },
+    {
       "name": "open",
       "type": "() => Promise<void>",
       "description": "Opens explicitly without accepting or saving the draft.",

@@ -1,158 +1,144 @@
 import type { DataViewButtonAppearance, DataViewField } from "../../../data/DataViewField";
 import type { RemixIcon } from "../../../core/RemixIcon";
-import type { HtmlEditorCommandContext, HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
-import type { HtmlEditorNodeId, HtmlEditorSelectionState } from "./HtmlEditorModel";
+import type { HtmlEditorUiCommandContext, HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
+import type { HtmlEditorNodeId, HtmlEditorSelectionRange } from "./HtmlEditorModel";
 
-/** Values accepted by Basic properties. Undefined requests reset; it is never the Mixed marker. */
-export type HtmlEditorInspectorValue = string | number | boolean | null;
+/** Values accepted by a UI command field. Undefined means reset/inherit. */
+export type HtmlEditorUiCommandValue = string | number | boolean | null;
 
-/**
- * Aggregated authored value of a property. Unset means every target uses its default;
- * Mixed means targets disagree. Neither state is a value to persist into HTML.
- * A concrete value outside a lookup's options remains a value, not Unset.
- */
-export type HtmlEditorInspectorValueState =
-    | { readonly kind: "value"; readonly value: HtmlEditorInspectorValue }
+/** Aggregated authored value of a command property. */
+export type HtmlEditorUiCommandValueState =
+    | { readonly kind: "value"; readonly value: HtmlEditorUiCommandValue }
     | { readonly kind: "unset" }
     | { readonly kind: "mixed" };
 
-/**
- * Captured inspected elements and remembered text range, independent of DOM focus.
- * Both scopes coexist. Tree navigation changes the elements without widening the
- * text range. A gesture in the surface updates both from its model selection.
- * Capture once when a field starts editing and retain it until commit/cancel.
- */
-export interface HtmlEditorInspectionContext extends HtmlEditorCommandContext {
+/** Presentation slots shared by inspector, toolbar and focused command surfaces. */
+export type HtmlEditorUiCommandPresentationKind = "basic" | "advanced" | "toolbar" | "focused";
+
+/** Read-only metadata for an inspected model node. The model remains the source of truth. */
+export interface HtmlEditorUiCommandNodeInfo {
+    readonly id: HtmlEditorNodeId;
+    readonly parentId?: HtmlEditorNodeId;
+    readonly pathIds: readonly HtmlEditorNodeId[];
+    readonly nodeType: "element" | "text";
+    readonly role: "block" | "inline" | "inlineBlock" | "atomic" | "container" | "table"
+        | "tableRow" | "tableCell" | "grid" | "gridItem" | "list" | "listItem" | "text";
+    readonly tag?: string;
+}
+
+/** Captured user intent: selected nodes and remembered text range coexist. */
+export interface HtmlEditorUiCommandTargetContext extends HtmlEditorUiCommandContext {
     /** Surface model generation at capture time; later generations invalidate this context. */
     readonly modelVersion: number;
-    /** Inspected element IDs in document order; text selection is independently available. */
-    readonly nodeIds: readonly HtmlEditorNodeId[];
+    /** Read-only node metadata captured in document order. */
+    readonly nodeInfos: readonly HtmlEditorUiCommandNodeInfo[];
 }
 
-/**
- * Command-specific application units. A resolver maps a selection to eligible
- * text fragments or element owners (e.g. paragraphs for alignment), deduplicates
- * them, and excludes structural shells that the command cannot safely change.
- * An empty list makes the field inapplicable. Resolve once and use the same units
- * for state, permissions and execution; never widen a range inside a UI adapter.
- */
-export type HtmlEditorInspectorTargets =
-    | { readonly kind: "elements"; readonly nodeIds: readonly HtmlEditorNodeId[] }
-    | { readonly kind: "text"; readonly ranges: readonly HtmlEditorSelectionState[] };
+/** Command-specific application units resolved from the captured intent. */
+export type HtmlEditorUiCommandTargets =
+    | { readonly kind: "nodes"; readonly nodeInfos: readonly HtmlEditorUiCommandNodeInfo[]; readonly complete?: boolean }
+    | { readonly kind: "text"; readonly ranges: readonly HtmlEditorSelectionRange[]; readonly complete?: boolean };
 
-/** A resolved scope passed to the shared command's enabled/state/execute callbacks. */
-export interface HtmlEditorResolvedInspection {
-    /** Original inspection intent and model generation. */
-    readonly context: HtmlEditorInspectionContext;
-    /** Eligible application units resolved by this particular command. */
-    readonly targets: HtmlEditorInspectorTargets;
+/** Resolved application scope for one command. */
+export interface HtmlEditorUiCommandResolution {
+    readonly context: HtmlEditorUiCommandTargetContext;
+    readonly targets: HtmlEditorUiCommandTargets;
 }
 
-/** Command context after target resolution; shared by all entry points into an inspector command. */
-export interface HtmlEditorInspectorCommandContext extends HtmlEditorInspectionContext {
-    /** Captured targets; command handlers must use these rather than the current browser selection. */
-    readonly inspection: HtmlEditorResolvedInspection;
+/** Context passed to command visibility, state and execution after target resolution. */
+export interface HtmlEditorUiCommandExecutionContext extends HtmlEditorUiCommandTargetContext {
+    readonly resolution: HtmlEditorUiCommandResolution;
 }
 
-/**
- * Virtual DataForm row. Its fields describe editor operations rather than node
- * members. A future DataFormAdapter reads each binding's state and submits through
- * executeInspectorField; mutating this row must never mutate the HTML model.
- */
-export interface HtmlEditorInspectionRow {
-    /** Context pinned for the currently displayed form. */
-    readonly context: HtmlEditorInspectionContext;
-    /** Fields keyed by command ID; Mixed/Unset metadata stays outside editor values. */
-    readonly fields: ReadonlyMap<string, HtmlEditorResolvedInspectorField>;
+/** Virtual row used by DataForm projections of command fields. */
+export interface HtmlEditorUiCommandFormRow {
+    readonly context: HtmlEditorUiCommandTargetContext;
+    readonly fields: ReadonlyMap<string, HtmlEditorResolvedUiCommandField>;
 }
 
-/**
- * Existing DataViewField presentation reused by the inspector. The command ID
- * supplies name; the adapter owns reads and Mixed labels. Lookup uses the shared
- * field.lookup contract, so no second editor-type or allowed-values system exists.
- */
-export type HtmlEditorInspectorFieldPresentation = Omit<DataViewField<HtmlEditorInspectionRow>,
-    "name" | "type" | "buttons" | "getValue" | "getText" | "showInRow">;
+/** DataForm metadata shared by every command presentation. */
+export type HtmlEditorUiCommandFieldPresentation = Omit<DataViewField<HtmlEditorUiCommandFormRow>,
+    "name" | "type" | "buttons" | "getValue" | "getText" | "showInRow" | "hideLabel" | "labelPosition">;
 
-/** Surface-specific visual overrides for a shared inspector field. */
-export interface HtmlEditorInspectorSurfacePresentation {
-    /** Button content arrangement for menu-backed fields. */
+/** Surface-specific visual projection of one command field. */
+export interface HtmlEditorUiCommandPresentation {
+    readonly control?: "data" | "buttons";
+    readonly density?: "full" | "compact";
     readonly appearance?: DataViewButtonAppearance;
-    /** Optional surface-specific trigger icon. */
     readonly icon?: RemixIcon;
-    /** Whether the selected value is shown in the trigger button. */
     readonly showValue?: boolean;
-    /** Whether the trigger button shows the popup chevron. */
     readonly showArrow?: boolean;
-    /** Tooltip source; caption keeps the label localized with the field. */
     readonly tooltip?: "caption" | string;
+    /** Surface-owned visual label policy; command fields only provide captions. */
+    readonly showLabel?: boolean;
 }
 
-/** Shared declaration for an inspector contribution attached to one registry command. */
-interface HtmlEditorInspectorFieldBase {
-    /** Explicit choice presentation. Defaults to lookup for data contributions. */
+/** Shared field declaration owned by a UI command, not by a particular surface. */
+interface HtmlEditorUiCommandFieldBase {
     readonly presentation?: "lookup" | "menu" | "buttons";
-    /** Inspector area; element properties must apply to every inspected element. */
-    readonly area?: "elements" | "text";
-    /** Stable presentation group, e.g. typography or block; applications may define additional groups. */
     readonly group: string;
-    /** Sort position within a group. Registration order breaks ties; defaults to zero. */
     readonly order?: number;
-    /** Shared editor, lookup, validation and formatting metadata. */
-    readonly field?: HtmlEditorInspectorFieldPresentation;
-    /** Optional visual variants; command state and execution remain shared. */
-    readonly presentations?: Partial<Record<"inspector" | "toolbar", HtmlEditorInspectorSurfacePresentation>>;
-    /** Pure resolver; determine eligible targets without changing selection, DOM, model or history. */
-    resolveTargets(context: HtmlEditorInspectionContext): HtmlEditorInspectorTargets;
+    readonly field?: HtmlEditorUiCommandFieldPresentation;
+    readonly presentations?: Partial<Record<HtmlEditorUiCommandPresentationKind, HtmlEditorUiCommandPresentation>>;
+    readonly visibleIn?: readonly HtmlEditorUiCommandPresentationKind[];
+    resolveTargets(context: HtmlEditorUiCommandTargetContext): HtmlEditorUiCommandTargets;
 }
 
-/**
- * Optional Basic-tab declaration on a shared command. Register role-based commands
- * such as text.color or block.align; keep these declarations out of node instances.
- * A data contribution becomes a DataForm value field; a buttons contribution becomes
- * an action using the command's label/icon/state. Execution always stays in the registry.
- */
-export type HtmlEditorInspectorField = HtmlEditorInspectorFieldBase & (
+/** A value field or action field contributed by a UI command. */
+export type HtmlEditorUiCommandField = HtmlEditorUiCommandFieldBase & (
     | {
-        /** Value control; values are read from all resolved targets. */
         readonly type: "data";
-        /** Pure aggregate read, using the same target scope that execute receives. */
-        getValue(context: HtmlEditorInspectorCommandContext): HtmlEditorInspectorValueState;
+        getValue(context: HtmlEditorUiCommandExecutionContext): HtmlEditorUiCommandValueState;
     }
     | {
-        /** Action control, e.g. Bold/Italic; active/mixed state uses command.getState. */
         readonly type: "buttons";
     }
 );
 
-/**
- * One resolved field, identified by command.id. Reuse this binding during a field
- * edit; refreshing the form creates new bindings only after that edit has settled.
- * The declaration's group/order are presentation metadata, never HTML properties.
- */
-export interface HtmlEditorResolvedInspectorField {
-    /** Registered command; also the canonical identity of this inspector field. */
+/** Field binding captured for one DataForm presentation. */
+export interface HtmlEditorResolvedUiCommandField {
     readonly command: HtmlEditorUiCommand;
-    /** UI declaration that supplied the field and its target resolver. */
-    readonly definition: HtmlEditorInspectorField;
-    /** Captured, command-specific target scope. */
-    readonly context: HtmlEditorInspectorCommandContext;
-    /** Aggregate value for data fields; absent for action fields. */
-    readonly value?: HtmlEditorInspectorValueState;
-    /** Availability at resolution time. Execution rechecks permissions before applying a change. */
+    readonly definition: HtmlEditorUiCommandField;
+    readonly context: HtmlEditorUiCommandExecutionContext;
+    readonly value?: HtmlEditorUiCommandValueState;
     readonly enabled: boolean;
 }
 
-/**
- * Aggregates per-target authored values with Object.is. Undefined means unset;
- * empty text, zero, false and null remain real values. Empty input has no applicable
- * targets and returns undefined, so the caller can omit that field entirely.
- */
-export function aggregateHtmlEditorInspectorValues(
-    values: readonly (HtmlEditorInspectorValue | undefined)[]
-): HtmlEditorInspectorValueState | undefined {
+/** Aggregates authored values while preserving empty strings, zero and false. */
+export function aggregateHtmlEditorUiCommandValues(
+    values: readonly (HtmlEditorUiCommandValue | undefined)[]
+): HtmlEditorUiCommandValueState | undefined {
     if (!values.length) return undefined;
     const first = values[0];
     if (!values.every(value => Object.is(value, first))) return { kind: "mixed" };
     return first === undefined ? { kind: "unset" } : { kind: "value", value: first };
 }
+
+/* Compatibility aliases keep the public transition source-compatible for one release. */
+/** @deprecated Use HtmlEditorUiCommandValue. */
+export type HtmlEditorInspectorValue = HtmlEditorUiCommandValue;
+/** @deprecated Use HtmlEditorUiCommandValueState. */
+export type HtmlEditorInspectorValueState = HtmlEditorUiCommandValueState;
+/** @deprecated Use HtmlEditorUiCommandTargetContext. */
+export type HtmlEditorInspectionContext = HtmlEditorUiCommandTargetContext;
+/** @deprecated Use HtmlEditorUiCommandTargets. */
+export type HtmlEditorInspectorTargets = HtmlEditorUiCommandTargets;
+/** @deprecated Use HtmlEditorUiCommandResolution. */
+export type HtmlEditorResolvedInspection = HtmlEditorUiCommandResolution;
+/** @deprecated Use HtmlEditorUiCommandExecutionContext. */
+export type HtmlEditorInspectorCommandContext = HtmlEditorUiCommandExecutionContext;
+/** @deprecated Use HtmlEditorUiCommandFormRow. */
+export type HtmlEditorInspectionRow = HtmlEditorUiCommandFormRow;
+/** @deprecated Use HtmlEditorUiCommandFieldPresentation. */
+export type HtmlEditorInspectorFieldPresentation = HtmlEditorUiCommandFieldPresentation;
+/** @deprecated Use HtmlEditorUiCommandPresentation. */
+export type HtmlEditorInspectorSurfacePresentation = HtmlEditorUiCommandPresentation;
+/** @deprecated Use HtmlEditorUiCommandField. */
+export type HtmlEditorInspectorField = HtmlEditorUiCommandField;
+/** @deprecated Use HtmlEditorResolvedUiCommandField. */
+export type HtmlEditorResolvedInspectorField = HtmlEditorResolvedUiCommandField;
+
+/** @deprecated Use aggregateHtmlEditorUiCommandValues. */
+export const aggregateHtmlEditorInspectorValues = aggregateHtmlEditorUiCommandValues;
+
+export type HtmlEditorUiCommandFieldDefinition = HtmlEditorUiCommandField;

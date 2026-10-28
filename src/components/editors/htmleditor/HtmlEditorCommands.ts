@@ -1,4 +1,4 @@
-import { isHtmlEditorBlock, type HtmlEditorDocument, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorText, type HtmlEditorPositionState, type HtmlEditorSelectionState } from "./HtmlEditorModel";
+import { isHtmlEditorBlock, type HtmlEditorDocument, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorText, type HtmlEditorPositionState, type HtmlEditorSelectionRange } from "./HtmlEditorModel";
 import { getHtmlEditorElementBehavior as behavior, isAtomic, nodeSize as size, locate as find, editingScope as blockAt,
     caretAt as positionAt, resolveBoundary, canJoin, listEdge, deleteAtomicAtGap, splitScope, replaceScopeRange,
     validPosition, prepareEditingSelection, editableEdge, joinListBoundary, structuralNeighbor, isStructuralWhitespace, isInline, sliceInline as slice } from "./HtmlEditorStructure";
@@ -7,9 +7,11 @@ import { deleteHtmlEditorRange } from "./HtmlEditorRange";
 
 /** Operations currently supported by the rich-text command layer. */
 export type HtmlEditorCommand =
-    | { type: "textStyle"; property: "color" | "background-color" | "font-size"; value: string }
+    | { type: "textStyle"; property: "color" | "background-color" | "font-size"; value: string; nodeIds?: readonly string[] }
     | { type: "insertText"; text: string }
     | { type: "insertHtml"; html: string }
+    | { type: "link"; property: "href" | "target" | "title" | "remove"; value?: string }
+    | { type: "link"; property: "update"; href: string; target: string; title: string }
     | { type: "deleteBackward" | "deleteForward" | "insertParagraph" | "insertLineBreak" | "indent" | "outdent" | "bold" | "italic" | "underline" | "strikethrough" | "clearFormatting" | "undo" | "redo" };
 
 /** Semantic inline marks supported by the Basic inspector. */
@@ -27,7 +29,7 @@ const markDefinition = (mark: HtmlEditorTextMark): { tag: string; aliases: reado
 /** A document and directed selection are committed/restored as one history entry. */
 export interface HtmlEditorState {
     document: HtmlEditorDocument;
-    selection?: HtmlEditorSelectionState;
+    selection?: HtmlEditorSelectionRange;
     /** Explicit typing-format overrides at a collapsed caret. */
     marks?: Partial<Record<HtmlEditorTextMark, boolean>> & {
         /** Explicit text styles for subsequent typing; empty values remove inline overrides. */
@@ -35,7 +37,9 @@ export interface HtmlEditorState {
 }
 
 /** Aggregate formatting state used by toolbar and menu controls. */
-export type HtmlEditorMarkState = "off" | "on" | "mixed";
+export type HtmlEditorUiCommandState = "off" | "on" | "mixed";
+/** @deprecated Use HtmlEditorUiCommandState. */
+export type HtmlEditorMarkState = HtmlEditorUiCommandState;
 
 const blocks = { has: (tag: string) => ["textBlock", "listItem"].includes(behavior({ tag }).kind) };
 const atoms = { has: (tag: string) => behavior({ tag }).kind === "atomic" };
@@ -90,10 +94,18 @@ function plain(node: HtmlEditorNode): string { return node.type === "text" ? nod
 interface FormattingRange { block: HtmlEditorElement; from: number; to: number; }
 interface FormattingSelection {
     document: HtmlEditorDocument;
-    selection: HtmlEditorSelectionState;
+    selection: HtmlEditorSelectionRange;
     collapsed: boolean;
     ranges: FormattingRange[];
     reversed: boolean;
+}
+
+/** Result of splitting a live selection into independently editable fragments. */
+export interface HtmlEditorFragmentSelectionResult {
+    document: HtmlEditorDocument;
+    selection: HtmlEditorSelectionRange;
+    /** Outermost elements representing the selected fragments. */
+    fragmentIds: readonly string[];
 }
 
 function formattingBlocks(document: HtmlEditorDocument): HtmlEditorElement[] {
@@ -110,7 +122,7 @@ function formattingBlocks(document: HtmlEditorDocument): HtmlEditorElement[] {
     return result;
 }
 
-function formattingSelection(document: HtmlEditorDocument, rootId: string, selection: HtmlEditorSelectionState,
+function formattingSelection(document: HtmlEditorDocument, rootId: string, selection: HtmlEditorSelectionRange,
     id: () => string): FormattingSelection | undefined {
     if (!validPosition(document, rootId, selection.anchor) || !validPosition(document, rootId, selection.focus)) return;
     const prepared = structuredClone(document);
@@ -134,9 +146,75 @@ function formattingSelection(document: HtmlEditorDocument, rootId: string, selec
     return { document: prepared, selection: { anchor, focus }, collapsed, ranges, reversed };
 }
 
+/**
+ * Splits a prepared selection into editable fragments without applying any
+ * attributes. Text leaves receive the requested wrapper tag; partially
+ * selected elements are cloned by sliceInline and retained as fragment roots.
+ * Preserved nodes are complete selection targets and are not recursively
+ * fragmented. The returned selection points into the resulting document.
+ */
+export interface HtmlEditorFragmentSelectionOptions {
+    preserveIds?: ReadonlySet<string>;
+    /** Optional semantic transform used by mark commands before wrapping. */
+    transform?: (nodes: HtmlEditorNode[]) => HtmlEditorNode[];
+}
+
+export function fragmentSelection(selection: FormattingSelection, tagName: string, id: () => string,
+    options: HtmlEditorFragmentSelectionOptions = {}): HtmlEditorFragmentSelectionResult {
+    const preserveIds = options.preserveIds ?? new Set<string>();
+    const fragmentIds = new Set<string>();
+    const structuralRanges: { block: HtmlEditorElement; from: number; to: number }[] = [];
+    const addFragmentRoots = (nodes: readonly HtmlEditorNode[]): void => {
+        nodes.forEach(node => { if (node.type === "element") fragmentIds.add(node.id); });
+    };
+    const wrapText = (node: HtmlEditorNode): HtmlEditorNode[] => {
+        if (node.type === "text") {
+            const wrapper = element(tagName, id, [node]);
+            return [wrapper];
+        }
+        if (isAtomic(node) || preserveIds.has(node.id)) return [node];
+        return [{ ...node, children: node.children.flatMap(wrapText) }];
+    };
+    const hasPreservedAncestor = (node: HtmlEditorElement): boolean => {
+        const location = find(selection.document, node.id);
+        return !!location?.ancestors.some(ancestor => preserveIds.has(ancestor.id));
+    };
+    preserveIds.forEach(nodeId => {
+        const location = find(selection.document, nodeId);
+        if (location?.node.type === "element"
+            && !location.ancestors.some(ancestor => preserveIds.has(ancestor.id))) fragmentIds.add(nodeId);
+    });
+    for (const range of selection.ranges) {
+        if (range.from >= range.to || preserveIds.has(range.block.id) || hasPreservedAncestor(range.block)) continue;
+        const prefix = slice(range.block.children, 0, range.from, false, id);
+        const middle = slice(range.block.children, range.from, range.to, true, id, preserveIds);
+        const suffix = slice(range.block.children, range.to, size(range.block), true, id);
+        const replacement = options.transform ? options.transform(middle) : middle.flatMap(wrapText);
+        addFragmentRoots(replacement);
+        range.block.children = [...prefix, ...replacement, ...suffix];
+        structuralRanges.push({ block: range.block, from: prefix.length, to: prefix.length + replacement.length });
+    }
+    const first = structuralRanges[0], last = structuralRanges[structuralRanges.length - 1];
+    const left = first ? { nodeId: first.block.id, offset: first.from } : selection.selection.anchor;
+    const right = last ? { nodeId: last.block.id, offset: last.to } : selection.selection.focus;
+    return { document: selection.document,
+        selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right },
+        fragmentIds: [...fragmentIds] };
+}
+
+/** Applies one authored style declaration to the fragment roots only. */
+function applyFragmentStyle(document: HtmlEditorDocument, fragmentIds: readonly string[], property: string, value: string): void {
+    for (const nodeId of fragmentIds) {
+        const location = find(document, nodeId);
+        if (location?.node.type !== "element") continue;
+        location.node.styles = location.node.styles.filter(style => style.name !== property);
+        if (value) location.node.styles.push({ name: property, value });
+    }
+}
+
 /** Reads the same text fragments that textStyle modifies; undefined denotes inherited/default styling. */
 export function getHtmlEditorTextStyleValues(document: HtmlEditorDocument, rootId: string,
-    selection: HtmlEditorSelectionState | undefined, property: string, marks?: HtmlEditorState["marks"]): (string | undefined)[] {
+    selection: HtmlEditorSelectionRange | undefined, property: string, marks?: HtmlEditorState["marks"]): (string | undefined)[] {
     if (!selection) return [];
     let next = 0;
     const prepared = formattingSelection(document, rootId, selection, () => `style-read-${next++}`);
@@ -170,7 +248,7 @@ export function getHtmlEditorTextStyleValues(document: HtmlEditorDocument, rootI
 
 /** Computes formatting state from the same selected inline fragments used by formatting commands. */
 export function getHtmlEditorMarkState(document: HtmlEditorDocument, rootId: string,
-    selection: HtmlEditorSelectionState | undefined, mark: HtmlEditorTextMark,
+    selection: HtmlEditorSelectionRange | undefined, mark: HtmlEditorTextMark,
     marks?: HtmlEditorState["marks"]): HtmlEditorMarkState {
     if (!selection) return "off";
     let nextId = 0;
@@ -231,15 +309,19 @@ function applyFormatting(selection: FormattingSelection, command: HtmlEditorText
     const pieces = selection.ranges.filter(range => range.from < range.to)
         .map(range => ({ range, nodes: slice(range.block.children, range.from, range.to, true, id) }));
     const remove = pieces.length > 0 && pieces.every(piece => piece.nodes.length > 0 && piece.nodes.every(formatted));
-    pieces.forEach(({ range, nodes }) => {
-        const prefix = slice(range.block.children, 0, range.from, false, id);
-        const suffix = slice(range.block.children, range.to, size(range.block), true, id);
-        const replacement = remove ? nodes.flatMap(unwrap) : [element(tag, id, nodes.flatMap(apply))];
-        range.block.children = normalizeMarks([...prefix, ...replacement, ...suffix]);
+    if (remove) {
+        pieces.forEach(({ range, nodes }) => {
+            const prefix = slice(range.block.children, 0, range.from, false, id);
+            const suffix = slice(range.block.children, range.to, size(range.block), true, id);
+            range.block.children = normalizeMarks([...prefix, ...nodes.flatMap(unwrap), ...suffix]);
+        });
+        const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
+        const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
+        return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
+    }
+    return fragmentSelection(selection, tag, id, {
+        transform: nodes => [element(tag, id, normalizeMarks(nodes.flatMap(apply)))]
     });
-    const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
-    const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
-    return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
 }
 
 /** Removes inline marks and authored text styles while preserving document structure. */
@@ -278,10 +360,142 @@ function clearFormatting(selection: FormattingSelection, id: () => string): Html
     return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
 }
 
+const linkInteractiveTags = new Set(["a", "button", "input", "select", "textarea", "option", "details", "iframe", "object", "embed"]);
+const linkStructuralParents = new Set(["ul", "ol", "dl", "table", "thead", "tbody", "tfoot", "tr", "colgroup"]);
+
+/** Interactive descendants cannot be placed inside another link. */
+function isLinkInteractive(node: HtmlEditorElement): boolean {
+    return linkInteractiveTags.has(node.tag) || Object.prototype.hasOwnProperty.call(node.attributes, "tabindex");
+}
+
+function containsLink(node: HtmlEditorNode): boolean {
+    return node.type === "element" && (node.tag === "a" || node.children.some(containsLink));
+}
+
+function containsInteractive(node: HtmlEditorNode): boolean {
+    return node.type === "element" && (isLinkInteractive(node) || node.children.some(containsInteractive));
+}
+
+/** Structural nodes which cannot accept an anchor as a direct child. */
+function canParentContainLink(parent: HtmlEditorDocument | HtmlEditorElement): boolean {
+    return parent.type === "document" || !linkStructuralParents.has(parent.tag);
+}
+
+/** Applies one link attribute to selected node fragments without nesting anchors. */
+function applyLink(selection: FormattingSelection, command: Extract<HtmlEditorCommand, { type: "link" }>, id: () => string): HtmlEditorState | undefined {
+    if (command.property === "href" && !command.value)
+        return applyLink(selection, { type: "link", property: "remove" }, id);
+    const document = selection.document;
+    const update = (node: HtmlEditorElement): HtmlEditorElement => {
+        const attributes = { ...node.attributes };
+        if (command.property === "remove") delete attributes.href;
+        else if (command.property === "update") {
+            if (command.href) attributes.href = command.href;
+            else delete attributes.href;
+            if (command.target) attributes.target = command.target;
+            else delete attributes.target;
+            if (command.title) attributes.title = command.title;
+            else delete attributes.title;
+        } else if (command.value) attributes[command.property] = command.value;
+        else delete attributes[command.property];
+        return { ...node, attributes };
+    };
+    const canCreate = command.property === "href" || command.property === "update";
+    const href = command.property === "update" ? command.href : command.value;
+    const canWrap = (node: HtmlEditorNode, insideLink: boolean): boolean => {
+        if (insideLink || node.type !== "element" || node.tag === "a" || containsLink(node) || containsInteractive(node)) return false;
+        // source/col belong to media/table structures and must not become link content.
+        if (isAtomic(node) && ["source", "col"].includes(node.tag)) return false;
+        return true;
+    };
+    const visitRange = (nodes: HtmlEditorNode[], from: number, to: number, insideLink = false): HtmlEditorNode[] => {
+        const result: HtmlEditorNode[] = [];
+        let cursor = 0;
+        for (const source of nodes) {
+            const end = cursor + size(source);
+            if (end <= from || cursor >= to) { result.push(source); cursor = end; continue; }
+            const selectedFrom = Math.max(from, cursor), selectedTo = Math.min(to, end);
+            const full = selectedFrom === cursor && selectedTo === end;
+            if (source.type === "text") {
+                const left = source.text.slice(0, selectedFrom - cursor), selected = source.text.slice(selectedFrom - cursor, selectedTo - cursor);
+                const right = source.text.slice(selectedTo - cursor);
+                if (command.property === "remove" || !href || insideLink) {
+                    result.push(source);
+                } else {
+                    if (left) result.push(text(left, id));
+                    if (selected) result.push(update(element("a", id, [text(selected, id)])));
+                    if (right) result.push(text(right, id));
+                }
+                cursor = end;
+                continue;
+            }
+            if (source.tag === "a") {
+                if (command.property === "remove") result.push(...visitRange(source.children, 0, size(source), false));
+                else {
+                    const link = update(source);
+                    link.children = link.children.flatMap(child => visitRange([child], 0, size(child), true));
+                    result.push(link);
+                }
+            } else if (isLinkInteractive(source)) result.push(source);
+            else if (full && canWrap(source, insideLink)) {
+                result.push(update(element("a", id, [source])));
+            } else if (isAtomic(source)) result.push(source);
+            else {
+                const next = { ...source, children: visitRange(source.children, selectedFrom - cursor, selectedTo - cursor, insideLink) };
+                result.push(next);
+            }
+            cursor = end;
+        }
+        return result;
+    };
+    const updateCollapsed = (): boolean => {
+        if (!selection.collapsed) return false;
+        const location = find(document, selection.selection.anchor.nodeId);
+        const link = location && [...location.ancestors, ...(location.node.type === "element" ? [location.node] : [])]
+            .reverse().find(node => node.tag === "a");
+        if (!link) return false;
+        if (command.property === "remove") {
+            const parent = find(document, link.id)?.parent;
+            if (parent) parent.children = parent.children.flatMap(child => child.id === link.id ? link.children : [child]);
+        } else Object.assign(link, update(link));
+        return true;
+    };
+    if (updateCollapsed()) return { document, selection: structuredClone(selection.selection) };
+    if (selection.collapsed) return;
+    for (const range of selection.ranges) {
+        if (range.from >= range.to) continue;
+        const location = find(document, range.block.id);
+        const enclosingLink = location?.ancestors.slice().reverse().find(node => node.tag === "a");
+        if (enclosingLink) {
+            const linkLocation = find(document, enclosingLink.id);
+            if (command.property === "remove") {
+                if (linkLocation) linkLocation.parent.children.splice(linkLocation.parent.children.indexOf(enclosingLink), 1, ...enclosingLink.children);
+            } else Object.assign(enclosingLink, update(enclosingLink));
+            continue;
+        }
+        const fullNode = range.from === 0 && range.to === size(range.block);
+        const canWrapBlock = canCreate && !!href && fullNode && !containsLink(range.block)
+            && !containsInteractive(range.block) && canParentContainLink(location?.parent ?? document)
+            && !["li", "td", "th", "tr", "table", "thead", "tbody", "tfoot", "caption", "colgroup"].includes(range.block.tag);
+        if (canWrapBlock && location) {
+            const link = update(element("a", id, [range.block]));
+            location.parent.children.splice(location.parent.children.indexOf(range.block), 1, link);
+            continue;
+        }
+        const prefix = slice(range.block.children, 0, range.from, false, id);
+        const middle = visitRange(slice(range.block.children, range.from, range.to, true, id), 0, range.to - range.from);
+        const suffix = slice(range.block.children, range.to, size(range.block), true, id);
+        range.block.children = [...prefix, ...middle, ...suffix];
+    }
+    const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
+    const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
+    return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
+}
+
 /** Preformatted input edits literal text while retaining the pre/code shells.
  * Apply line edits backwards so original offsets and inline slices stay valid.
  */
-function editPre(document: HtmlEditorDocument, selection: HtmlEditorSelectionState, command: HtmlEditorCommand,
+function editPre(document: HtmlEditorDocument, selection: HtmlEditorSelectionRange, command: HtmlEditorCommand,
     id: () => string): HtmlEditorState | undefined {
     const anchor = blockAt(document, selection.anchor), focus = blockAt(document, selection.focus);
     if (!anchor || !focus || anchor.block !== focus.block || anchor.block.tag !== "pre") return;
@@ -332,7 +546,7 @@ function editPre(document: HtmlEditorDocument, selection: HtmlEditorSelectionSta
 /** Lift one direct text block out of its quote, splitting the quote if needed.
  * Nested quotes lift one level. Layout/cell/list descendants never escape here.
  */
-function leaveQuote(document: HtmlEditorDocument, selection: HtmlEditorSelectionState, command: HtmlEditorCommand,
+function leaveQuote(document: HtmlEditorDocument, selection: HtmlEditorSelectionRange, command: HtmlEditorCommand,
     id: () => string): HtmlEditorState | undefined {
     let scope = blockAt(document, selection.anchor);
     // Direct inline quote content is a text area too. Materialize a paragraph
@@ -440,29 +654,10 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         if (formatting.collapsed) return { document, selection, marks: { ...state.marks,
             styles: { ...state.marks?.styles, [command.property]: command.value } } };
         if (!formatting.ranges.some(range => range.to > range.from)) return;
-        const styleText = (node: HtmlEditorNode): HtmlEditorNode[] => {
-            if (node.type === "text") {
-                if (!command.value) return [node];
-                const wrapper = element("span", id, [node]);
-                wrapper.styles = [{ name: command.property, value: command.value }];
-                return [wrapper];
-            }
-            if (isAtomic(node)) return [node];
-            node.styles = node.styles.filter(style => style.name !== command.property);
-            node.children = node.children.flatMap(styleText);
-            return node.tag === "span" && !node.styles.length && !node.classes.length && !Object.keys(node.attributes).length
-                ? node.children : [node];
-        };
-        for (const range of formatting.ranges) {
-            const prefix = slice(range.block.children, 0, range.from, false, id);
-            const middle = slice(range.block.children, range.from, range.to, true, id).flatMap(styleText);
-            const suffix = slice(range.block.children, range.to, size(range.block), true, id);
-            range.block.children = [...prefix, ...middle, ...suffix];
-        }
-        const first = formatting.ranges[0], last = formatting.ranges[formatting.ranges.length - 1];
-        const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
-        return { document: formatting.document, selection: { anchor: formatting.reversed ? right : left,
-            focus: formatting.reversed ? left : right }, marks: state.marks };
+        const fullStyleNodes = new Set(command.nodeIds ?? []);
+        const fragmented = fragmentSelection(formatting, "span", id, { preserveIds: fullStyleNodes });
+        applyFragmentStyle(fragmented.document, fragmented.fragmentIds, command.property, command.value);
+        return { document: fragmented.document, selection: fragmented.selection, marks: state.marks };
     }
     if (command.type === "clearFormatting") {
         const formatting = formattingSelection(document, rootId, selection, id);
@@ -472,6 +667,11 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
                 styles: { ...state.marks?.styles, color: "", "background-color": "", "font-size": "" } } };
         if (!formatting.ranges.some(range => range.to > range.from)) return;
         return clearFormatting(formatting, id);
+    }
+    if (command.type === "link") {
+        const formatting = formattingSelection(document, rootId, selection, id);
+        if (!formatting) return;
+        return applyLink(formatting, command, id);
     }
     const pre = editPre(document, selection, command, id);
     if (pre) return { ...pre, marks: state.marks };
@@ -783,3 +983,5 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
     const caret = replaceScopeRange(start, end, before, inserted, after);
     return { document, selection: { anchor: caret, focus: caret }, marks: state.marks };
 }
+
+

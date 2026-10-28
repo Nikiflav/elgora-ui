@@ -60,6 +60,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "openOnInputClick",
+      "type": "boolean",
+      "description": "Clicking a closed lookup search field explicitly opens its results.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/LookupEditor.ts",
+      "kind": "property"
+    },
+    {
       "name": "resolveText",
       "type": "(text: string) => Promise<TValue>",
       "description": "Resolves external text only when the complete result contains one match.\nDoes not open the popup, change state, emit events, validate or save.",

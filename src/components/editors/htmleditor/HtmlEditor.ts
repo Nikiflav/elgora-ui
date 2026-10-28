@@ -5,7 +5,7 @@ import type { HtmlEditorToolbar } from "./HtmlEditorToolbar";
 import type { HtmlEditorInspector } from "./HtmlEditorInspector";
 import { HtmlEditorUiCommandController } from "./HtmlEditorUiCommandController";
 import type { HtmlEditorCommand } from "./HtmlEditorCommands";
-import type { HtmlEditorSelectionState } from "./HtmlEditorModel";
+import type { HtmlEditorSelectionRange } from "./HtmlEditorModel";
 import { HtmlEditorCommandRegistry, type HtmlEditorUiCommand } from "./HtmlEditorCommandRegistry";
 import { HtmlEditorCommandMenu } from "./HtmlEditorCommandMenu";
 import { HtmlEditorSelectionOverlay } from "./HtmlEditorSelectionOverlay";
@@ -104,7 +104,7 @@ export class HtmlEditor extends ValueEditor<string> {
     /** Live selection only when both endpoints belong to the surface. */
     get nativeSelection() { return this.surface.nativeSelection; }
     /** Restores a valid runtime text bookmark and focuses the surface. */
-    restoreSelection(state: HtmlEditorSelectionState | undefined = this.selection): boolean { return this.surface.restoreSelection(state); }
+    restoreSelection(state: HtmlEditorSelectionRange | undefined = this.selection): boolean { return this.surface.restoreSelection(state); }
     /** Current serialized HTML, excluding surrounding editor UI. */
     get html(): string { return this.surface.html; }
     /** Returns the current serialized draft. */
@@ -114,7 +114,7 @@ export class HtmlEditor extends ValueEditor<string> {
     /** Resolves external text without editing or saving. */
     override resolveText(text: string): string | Promise<string> { return this.editorOptions.resolveText?.(text) ?? text; }
     /** Applies a command to the surface's single model/history. */
-    execute(command: HtmlEditorCommand, selection: HtmlEditorSelectionState | undefined = this.selection): boolean { return this.surface.execute(command, selection); }
+    execute(command: HtmlEditorCommand, selection: HtmlEditorSelectionRange | undefined = this.selection): boolean { return this.surface.execute(command, selection); }
     /** Whether an operation can be undone in this document scope. */
     get canUndo(): boolean { return this.surface.canUndo; }
     /** Whether an undone operation can be reapplied. */
@@ -152,3 +152,5 @@ export class HtmlEditor extends ValueEditor<string> {
         }, 2400);
     }
 }
+
+

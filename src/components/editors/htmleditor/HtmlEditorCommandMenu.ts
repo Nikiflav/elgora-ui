@@ -1,7 +1,7 @@
 import { Component } from "../../../core/Component";
 import { e } from "../../../core/e";
 import { Popover } from "../../popup/popover";
-import type { HtmlEditorCommandContext, HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
+import type { HtmlEditorUiCommandContext, HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
 
 /** Shared command-menu renderer used for the editor context menu and future menu surfaces. */
 export class HtmlEditorCommandMenu extends Component {
@@ -15,7 +15,7 @@ export class HtmlEditorCommandMenu extends Component {
     }
 
     /** Shows the same filtered registry commands at a viewport point. */
-    showAt(x: number, y: number, context: HtmlEditorCommandContext = this.registry.context()): void {
+    showAt(x: number, y: number, context: HtmlEditorUiCommandContext = this.registry.context()): void {
         const buttons = this.registry.getCommands(context).map(command => {
             const button = e("button", { type: "button", class: "elg-html-editor-command-menu-item",
                 title: this.registry.label(command), disabled: !this.registry.enabled(command, context),

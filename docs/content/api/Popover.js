@@ -11,6 +11,26 @@ export default {
   "source": "src/components/popup/popover.ts",
   "members": [
     {
+      "name": "opened",
+      "type": "ObservableEvent<PopoverStateEvent>",
+      "description": "Emitted after the native popover has become visible.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/popup/popover.ts",
+      "kind": "property"
+    },
+    {
+      "name": "closed",
+      "type": "ObservableEvent<PopoverStateEvent>",
+      "description": "Emitted after the native popover has become hidden.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/popup/popover.ts",
+      "kind": "property"
+    },
+    {
       "name": "setAnchor",
       "type": "(anchor: HTMLElement) => void",
       "description": "Changes the element used as the popup's positioning anchor.",

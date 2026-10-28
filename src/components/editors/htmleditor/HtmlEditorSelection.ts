@@ -1,8 +1,8 @@
-import type { HtmlEditorSelectionState } from "./HtmlEditorModel";
+import type { HtmlEditorSelectionRange } from "./HtmlEditorModel";
 import type { HtmlEditorDom } from "./HtmlEditorDom";
 
 /** Converts both native endpoints, retaining the direction of the selection. */
-export function readHtmlEditorSelection(dom: HtmlEditorDom): HtmlEditorSelectionState | undefined {
+export function readHtmlEditorSelection(dom: HtmlEditorDom): HtmlEditorSelectionRange | undefined {
     const selection = dom.root.ownerDocument.getSelection();
     if (!selection?.rangeCount || !selection.anchorNode || !selection.focusNode) return undefined;
     const anchor = dom.position(selection.anchorNode, selection.anchorOffset);
@@ -11,7 +11,7 @@ export function readHtmlEditorSelection(dom: HtmlEditorDom): HtmlEditorSelection
 }
 
 /** Restores text or child-boundary endpoints, including backward ranges and empty blocks. */
-export function restoreHtmlEditorSelection(dom: HtmlEditorDom, state?: HtmlEditorSelectionState, focusEditor = true): boolean {
+export function restoreHtmlEditorSelection(dom: HtmlEditorDom, state?: HtmlEditorSelectionRange, focusEditor = true): boolean {
     if (!state) return false;
     const anchor = dom.resolve(state.anchor);
     const focus = dom.resolve(state.focus);
@@ -21,3 +21,5 @@ export function restoreHtmlEditorSelection(dom: HtmlEditorDom, state?: HtmlEdito
     selection.setBaseAndExtent(anchor.node, anchor.offset, focus.node, focus.offset);
     return true;
 }
+
+

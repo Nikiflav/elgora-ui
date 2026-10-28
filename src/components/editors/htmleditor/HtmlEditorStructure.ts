@@ -1,4 +1,4 @@
-import { isHtmlEditorBlock, type HtmlEditorDocument, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorPositionState, type HtmlEditorSelectionState } from "./HtmlEditorModel";
+import { isHtmlEditorBlock, type HtmlEditorDocument, type HtmlEditorElement, type HtmlEditorNode, type HtmlEditorPositionState, type HtmlEditorSelectionRange } from "./HtmlEditorModel";
 
 /** Structural editing policy, independent of CSS display and of the DOM renderer. */
 export type HtmlEditorElementKind = "inline" | "textBlock" | "container" | "list" | "listItem" | "cell" | "table" | "atomic";
@@ -90,7 +90,7 @@ export function validPosition(document: HtmlEditorDocument, rootId: string, poin
  * For example, div(A, p(B), C) becomes div(p(A), p(B), C) when editing A.
  * Endpoint IDs remain stable; parent child-index boundaries are remapped together.
  */
-export function prepareEditingSelection(document: HtmlEditorDocument, selection: HtmlEditorSelectionState, id: () => string): HtmlEditorSelectionState {
+export function prepareEditingSelection(document: HtmlEditorDocument, selection: HtmlEditorSelectionRange, id: () => string): HtmlEditorSelectionRange {
     const result = structuredClone(selection);
     for (const endpoint of ["anchor", "focus"] as const) {
         const point = result[endpoint], location = locate(document, point.nodeId);
@@ -276,22 +276,26 @@ export function replaceScopeRange(start: HtmlEditorScope, end: HtmlEditorScope, 
 }
 
 /** Slice inline content while retaining formatting; split suffixes receive fresh identities. */
-export function sliceInline(children: HtmlEditorNode[], from: number, to: number, fresh: boolean, id: () => string): HtmlEditorNode[] {
+export function sliceInline(children: HtmlEditorNode[], from: number, to: number, fresh: boolean, id: () => string,
+    preserveIds?: ReadonlySet<string>): HtmlEditorNode[] {
     const result: HtmlEditorNode[] = [];
     let cursor = 0;
     for (const source of children) {
         const end = cursor + nodeSize(source);
         if (end > from && cursor < to) {
             const node = structuredClone(source);
-            if (fresh) {
+            if (fresh && !preserveIds?.has(source.id)) {
                 node.id = id();
                 if (node.type === "element" && (cursor < from || end > to)) delete node.attributes.id;
             }
             if (node.type === "text") node.text = node.text.slice(Math.max(0, from - cursor), Math.min(nodeSize(source), to - cursor));
-            else if (!isAtomic(node)) node.children = sliceInline((source as HtmlEditorElement).children, Math.max(0, from - cursor), to - cursor, fresh, id);
+            else if (!isAtomic(node)) node.children = sliceInline((source as HtmlEditorElement).children,
+                Math.max(0, from - cursor), to - cursor, fresh, id, preserveIds);
             result.push(node);
         }
         cursor = end;
     }
     return result;
 }
+
+

@@ -12,7 +12,7 @@ export default {
   "members": [
     {
       "name": "showAt",
-      "type": "(x: number, y: number, context?: HtmlEditorCommandContext) => void",
+      "type": "(x: number, y: number, context?: HtmlEditorUiCommandContext) => void",
       "description": "Shows the same filtered registry commands at a viewport point.",
       "tags": [],
       "topics": [],
@@ -33,7 +33,7 @@ export default {
         },
         {
           "name": "context",
-          "type": "HtmlEditorCommandContext",
+          "type": "HtmlEditorUiCommandContext",
           "optional": true,
           "defaultValue": "this.registry.context()",
           "description": ""
@@ -44,7 +44,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(x: number, y: number, context?: HtmlEditorCommandContext) => void"
+      "signature": "(x: number, y: number, context?: HtmlEditorUiCommandContext) => void"
     },
     {
       "name": "hide",

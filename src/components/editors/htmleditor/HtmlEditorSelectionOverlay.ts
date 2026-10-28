@@ -1,7 +1,7 @@
 import { Component } from "../../../core/Component";
 import { e } from "../../../core/e";
 import type { HtmlEditorSelectionFlowRect, HtmlEditorSurface } from "./HtmlEditorSurface";
-import type { HtmlEditorInspectorTargets } from "./HtmlEditorInspection";
+import type { HtmlEditorUiCommandTargets } from "./HtmlEditorInspection";
 
 interface SelectionLine { rect: DOMRect; flowNode: Element; }
 
@@ -34,14 +34,15 @@ export class HtmlEditorSelectionOverlay extends Component {
     private inspectorFocused = false;
     private commandSurfaceHovered = false;
     private commandSurfaceFocused = false;
-    private activeCommandTargets?: HtmlEditorInspectorTargets;
+    private activeCommandId?: string;
+    private activeCommandTargets?: HtmlEditorUiCommandTargets;
     private inspectionTargets?: () => readonly string[];
-    private commandPreviewTargets?: (commandId: string) => HtmlEditorInspectorTargets | undefined;
+    private commandPreviewTargets?: (commandId: string) => HtmlEditorUiCommandTargets | undefined;
     private commandSurfaces: HTMLElement[] = [];
 
     /** Outlines property targets while controls edit a collapsed selection, without changing its range. */
     connectInspector(inspector: HTMLElement, targets: () => readonly string[], toolbar?: HTMLElement,
-        commandPreviewTargets?: (commandId: string) => HtmlEditorInspectorTargets | undefined): void {
+        commandPreviewTargets?: (commandId: string) => HtmlEditorUiCommandTargets | undefined): void {
         this.inspectionTargets = targets;
         this.commandPreviewTargets = commandPreviewTargets;
         this.commandSurfaces = [toolbar, inspector].filter((item): item is HTMLElement => !!item);
@@ -51,7 +52,8 @@ export class HtmlEditorSelectionOverlay extends Component {
             ? target.closest<HTMLElement>("[data-field]") ?? undefined : undefined;
         const updateCommandTargets = (target: EventTarget | null): void => {
             const field = commandField(target);
-            this.activeCommandTargets = field?.dataset.field ? this.commandPreviewTargets?.(field.dataset.field) : undefined;
+            this.activeCommandId = field?.dataset.field;
+            this.activeCommandTargets = this.activeCommandId ? this.commandPreviewTargets?.(this.activeCommandId) : undefined;
         };
         // Action buttons preserve the native editor range with preventDefault,
         // so interaction must also be detected before their pointer handlers run.
@@ -79,7 +81,10 @@ export class HtmlEditorSelectionOverlay extends Component {
                 updateCommandTargets(relatedTarget);
             } else {
                 this.commandSurfaceFocused = false;
-                if (!this.inspectorFocused) this.activeCommandTargets = undefined;
+                if (!this.inspectorFocused) {
+                    this.activeCommandId = undefined;
+                    this.activeCommandTargets = undefined;
+                }
             }
             this.schedule();
         });
@@ -95,7 +100,10 @@ export class HtmlEditorSelectionOverlay extends Component {
             const relatedField = relatedTarget instanceof Element ? relatedTarget.closest("[data-field]") : undefined;
             this.commandSurfaceHovered = isCommandSurface(relatedTarget) && !!relatedField;
             if (this.commandSurfaceHovered) updateCommandTargets(relatedTarget);
-            else if (!this.commandSurfaceFocused) this.activeCommandTargets = undefined;
+            else if (!this.commandSurfaceFocused) {
+                this.activeCommandId = undefined;
+                this.activeCommandTargets = undefined;
+            }
             this.schedule();
         }, { capture: true });
     }
@@ -134,23 +142,24 @@ export class HtmlEditorSelectionOverlay extends Component {
         const textLayer = e("div", { class: "elg-html-editor-text-selection-layer" });
         const containerLayer = e("div", { class: "elg-html-editor-container-selection-layer" });
         const inspectionActive = this.inspectorFocused || this.commandSurfaceHovered || this.commandSurfaceFocused;
-        const textCommand = inspectionActive && this.activeCommandTargets?.kind === "text";
-        const elementTargets = inspectionActive && this.activeCommandTargets?.kind === "elements" ? this.activeCommandTargets : undefined;
+        const commandPreviewActive = inspectionActive && this.activeCommandId !== undefined;
+        const textCommand = commandPreviewActive && this.activeCommandTargets?.kind === "text";
+        const elementTargets = commandPreviewActive && this.activeCommandTargets?.kind === "nodes" ? this.activeCommandTargets : undefined;
         const elementCommand = !!elementTargets;
-        const textRects = this.editorFocused && !inspectionActive || elementCommand
-            ? [] : mergeTextRects(this.surface.selectionFlowRects());
+        const textRects = commandPreviewActive ? textCommand ? mergeTextRects(this.surface.selectionFlowRects()) : []
+            : this.editorFocused && !inspectionActive || elementCommand ? [] : mergeTextRects(this.surface.selectionFlowRects());
         textRects.forEach(rect => textLayer.append(e("span", { class: "elg-html-editor-selection-rect", style: {
             left: `${rect.left - hostRect.left}px`,
             top: `${rect.top - hostRect.top}px`,
             width: `${rect.width}px`, height: `${rect.height}px`
         } })));
-        const containerRects = textCommand ? [] : elementCommand
-            ? this.surface.selectedNodeClientRects(elementTargets.nodeIds).map(target => ({ ...target, kind: "selected" as const }))
-            : this.surface.selectionContainerClientRects();
-        const inspectionIds = new Set(elementCommand ? elementTargets.nodeIds
+        const containerRects = commandPreviewActive ? textCommand ? [] : elementCommand
+            ? this.surface.selectedNodeClientRects(elementTargets.nodeInfos.map(info => info.id)).map(target => ({ ...target, kind: "selected" as const }))
+            : [] : this.surface.selectionContainerClientRects();
+        const inspectionIds = new Set(commandPreviewActive && elementCommand ? elementTargets.nodeInfos.map(info => info.id)
             : inspectionActive ? this.inspectionTargets?.() ?? [] : []);
         const selection = this.surface.selection;
-        if (!textCommand && !elementCommand && inspectionActive && selection && selection.anchor.nodeId === selection.focus.nodeId
+        if (!commandPreviewActive && !textCommand && !elementCommand && inspectionActive && selection && selection.anchor.nodeId === selection.focus.nodeId
             && selection.anchor.offset === selection.focus.offset) {
             for (const target of this.surface.selectedNodeClientRects(this.inspectionTargets?.() ?? [])) {
                 if (!containerRects.some(existing => existing.nodeId === target.nodeId))
@@ -176,6 +185,7 @@ export class HtmlEditorSelectionOverlay extends Component {
         this.inspectorFocused = false;
         this.commandSurfaceHovered = false;
         this.commandSurfaceFocused = false;
+        this.activeCommandId = undefined;
         this.activeCommandTargets = undefined;
         this.commandPreviewTargets = undefined;
         this.commandSurfaces = [];

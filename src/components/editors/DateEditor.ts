@@ -39,6 +39,9 @@ function checkValue(value: string | null, min?: string, max?: string): void {
  */
 export class DateEditor extends PopoverEditor<string | null> {
     private readonly dateOptions: DateEditorOptions;
+
+    /** A click on the active date input opens the calendar; focus alone does not. */
+    override get openOnInputClick(): boolean { return true; }
     private readonly formatDate: (value: string | null) => string;
     private datePicker?: DatePicker;
     private fieldset?: HTMLFieldSetElement;

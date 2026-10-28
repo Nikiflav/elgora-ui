@@ -31,6 +31,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "tooltip",
+      "type": "string | undefined",
+      "description": "Optional localization key or literal tooltip; defaults to the label.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "kind": "property"
+    },
+    {
       "name": "icon",
       "type": "string | undefined",
       "description": "Optional Remix Icon class.",
@@ -42,7 +52,7 @@ export default {
     },
     {
       "name": "isVisible",
-      "type": "((context: HtmlEditorCommandContext) => boolean) | undefined",
+      "type": "((context: HtmlEditorUiCommandContext) => boolean) | undefined",
       "description": "Whether the command belongs in the current surface.",
       "tags": [],
       "topics": [],
@@ -52,7 +62,7 @@ export default {
     },
     {
       "name": "isEnabled",
-      "type": "((context: HtmlEditorCommandContext) => boolean) | undefined",
+      "type": "((context: HtmlEditorUiCommandContext) => boolean) | undefined",
       "description": "Whether the command can currently be executed.",
       "tags": [],
       "topics": [],
@@ -62,7 +72,7 @@ export default {
     },
     {
       "name": "getState",
-      "type": "((context: HtmlEditorCommandContext) => HtmlEditorMarkState) | undefined",
+      "type": "((context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandState) | undefined",
       "description": "Aggregate visual state, independent from whether the command is executable.",
       "tags": [],
       "topics": [],
@@ -72,8 +82,8 @@ export default {
     },
     {
       "name": "options",
-      "type": "readonly HtmlEditorCommandOption[] | undefined",
-      "description": "Optional compact lookup choices rendered by the Basic Inspector.",
+      "type": "readonly HtmlEditorUiCommandOption[] | undefined",
+      "description": "Optional lookup choices rendered by a command field.",
       "tags": [],
       "topics": [],
       "optional": true,
@@ -82,7 +92,7 @@ export default {
     },
     {
       "name": "getValue",
-      "type": "((context: HtmlEditorCommandContext) => HtmlEditorCommandValueState) | undefined",
+      "type": "((context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandValueState | undefined) | undefined",
       "description": "Current lookup value; mixed means compatible targets have different values.",
       "tags": [],
       "topics": [],
@@ -91,8 +101,8 @@ export default {
       "kind": "property"
     },
     {
-      "name": "inspector",
-      "type": "HtmlEditorInspectorField | undefined",
+      "name": "field",
+      "type": "HtmlEditorUiCommandField | undefined",
       "description": "Optional DataForm contribution; node roles and target resolution belong here, not in the view.",
       "tags": [],
       "topics": [],
@@ -102,7 +112,7 @@ export default {
     },
     {
       "name": "execute",
-      "type": "(context: HtmlEditorCommandContext, value?: HtmlEditorInspectorValue) => boolean | void",
+      "type": "(context: HtmlEditorUiCommandContext, value?: HtmlEditorUiCommandValue) => boolean | void",
       "description": "Executes the command against the shared editor context.",
       "tags": [],
       "topics": [],

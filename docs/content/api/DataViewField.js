@@ -46,6 +46,16 @@ export default {
       "kind": "property"
     },
     {
+      "name": "tooltip",
+      "type": "string | undefined",
+      "description": "Optional short hint rendered as the native tooltip of the field control.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/data/DataViewField.ts",
+      "kind": "property"
+    },
+    {
       "name": "userState",
       "type": "any",
       "description": "Opaque, caller-defined presentation metadata (not used internally).",

@@ -3,7 +3,7 @@ import { Component, type ComponentOptions } from "../../../core/Component";
 import { HtmlEditorParser } from "./HtmlEditorParser";
 import { HtmlEditorRenderer } from "./HtmlEditorRenderer";
 import { ObservableEvent } from "../../../core/ElgoraUI";
-import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorSelectionState, HtmlEditorStyle } from "./HtmlEditorModel";
+import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorSelectionRange, HtmlEditorStyle } from "./HtmlEditorModel";
 import { HtmlEditorDom } from "./HtmlEditorDom";
 import { readHtmlEditorSelection, restoreHtmlEditorSelection } from "./HtmlEditorSelection";
 import { applyHtmlEditorCommand, getHtmlEditorMarkState, getHtmlEditorTextStyleValues, type HtmlEditorCommand, type HtmlEditorMarkState, type HtmlEditorState, type HtmlEditorTextMark } from "./HtmlEditorCommands";
@@ -52,13 +52,13 @@ export class HtmlEditorSurface extends Component {
     /** Interaction/composition availability changed, without a document edit. */
     readonly interactionChanged = new ObservableEvent<void>();
     /** Detached remembered text selection, retained while surrounding controls have focus. */
-    readonly selectionChanged = new ObservableEvent<HtmlEditorSelectionState | undefined>();
+    readonly selectionChanged = new ObservableEvent<HtmlEditorSelectionRange | undefined>();
     /** Structural HTML nodes selected independently from the text-flow selection. */
     readonly selectedNodesChanged = new ObservableEvent<readonly string[]>();
     private readOnly: boolean;
     private disabled: boolean;
     private readonly domMap: HtmlEditorDom;
-    private selectionState?: HtmlEditorSelectionState;
+    private selectionState?: HtmlEditorSelectionRange;
     private selectedNodeIds: string[] = [];
     private readonly parser = new HtmlEditorParser();
     private readonly renderer = new HtmlEditorRenderer();
@@ -198,11 +198,11 @@ export class HtmlEditorSurface extends Component {
     /** Structural node selection, independent from the remembered text range. */
     get selectedNodes(): readonly string[] { return [...this.selectedNodeIds]; }
     /** Detached node coverage for a range, sharing Copy/Delete rules without cloning the document. */
-    getSelectionCoverage(selection: HtmlEditorSelectionState | undefined = this.selection): ReadonlyMap<string, HtmlEditorNodeCoverage> {
+    getSelectionCoverage(selection: HtmlEditorSelectionRange | undefined = this.selection): ReadonlyMap<string, HtmlEditorNodeCoverage> {
         return selection ? getHtmlEditorRangeCoverage(this.documentModel, this.domMap.rootId, selection) : new Map();
     }
     /** Returns the aggregate inline-mark state for the current selected fragments. */
-    getMarkState(mark: HtmlEditorTextMark, selection: HtmlEditorSelectionState | undefined = this.selection): HtmlEditorMarkState {
+    getMarkState(mark: HtmlEditorTextMark, selection: HtmlEditorSelectionRange | undefined = this.selection): HtmlEditorMarkState {
         return getHtmlEditorMarkState(this.documentModel, this.domMap.rootId, selection, mark, this.typingMarks);
     }
     /** Reads authored text style values over the same fragments used by text formatting. */
@@ -212,7 +212,7 @@ export class HtmlEditorSurface extends Component {
     /** Selects a complete model node while retaining the same model/history contract as text selection. */
     selectNode(nodeId: string | undefined, extend = false): boolean {
         if (!nodeId || this.disposed.Value) return false;
-        let result: HtmlEditorSelectionState | undefined;
+        let result: HtmlEditorSelectionRange | undefined;
         const visit = (children: HtmlEditorDocument["children"], parentId: string): boolean => {
             const index = children.findIndex(child => child.id === nodeId);
             if (index >= 0) result = { anchor: { nodeId: parentId, offset: index }, focus: { nodeId: parentId, offset: index + 1 } };
@@ -221,7 +221,7 @@ export class HtmlEditorSurface extends Component {
         visit(this.documentModel.children, this.domMap.rootId);
         if (!result) return false;
         if (extend && this.selection) {
-            const rangeFor = (state: HtmlEditorSelectionState) => {
+            const rangeFor = (state: HtmlEditorSelectionRange) => {
                 const a = this.domMap.resolve(state.anchor), b = this.domMap.resolve(state.focus);
                 if (!a || !b) return undefined;
                 const range = this.content.ownerDocument.createRange();
@@ -287,7 +287,7 @@ export class HtmlEditorSurface extends Component {
         return true;
     }
     /** Last selection inside this editor, retained while focus moves to a toolbar or inspector. */
-    get selection(): HtmlEditorSelectionState | undefined {
+    get selection(): HtmlEditorSelectionRange | undefined {
         const state = this.disposed.Value ? undefined : readHtmlEditorSelection(this.domMap) ?? this.selectionState;
         return state ? structuredClone(state) : undefined;
     }
@@ -417,7 +417,7 @@ export class HtmlEditorSurface extends Component {
         return [...result.values()];
     }
     /** Restores a saved selection. Returns false for removed nodes or a replaced document. */
-    restoreSelection(state: HtmlEditorSelectionState | undefined = this.selection): boolean {
+    restoreSelection(state: HtmlEditorSelectionRange | undefined = this.selection): boolean {
         if (this.disposed.Value || this.composing || this.compositionPending || !restoreHtmlEditorSelection(this.domMap, state)) return false;
         this.captureSelection();
         return true;
@@ -431,7 +431,7 @@ export class HtmlEditorSurface extends Component {
     /** Returns serialized draft HTML. */
     getHtml(): string { return this.html; }
     /** Applies a supported operation to the model and selection in one undoable transaction. */
-    execute(command: HtmlEditorCommand, selection: HtmlEditorSelectionState | undefined = this.selection): boolean {
+    execute(command: HtmlEditorCommand, selection: HtmlEditorSelectionRange | undefined = this.selection): boolean {
         if (!this.canEdit() || this.composing || this.compositionPending || this.nativeBefore) return false;
         if (command.type === "undo" || command.type === "redo") return this.travel(command.type === "redo");
         if (!selection || !this.domMap.resolve(selection.anchor) || !this.domMap.resolve(selection.focus)) return false;
@@ -521,7 +521,7 @@ export class HtmlEditorSurface extends Component {
     }
 
     /** Permission lasts only through this native edit, not until some later unrelated input. */
-    private allowNativeInput(selection?: HtmlEditorSelectionState): void {
+    private allowNativeInput(selection?: HtmlEditorSelectionRange): void {
         const before = this.nativeBefore ?? this.snapshot();
         if (selection) before.selection = selection;
         this.nativeBefore = before;
@@ -569,7 +569,7 @@ export class HtmlEditorSurface extends Component {
         this.observer?.observe(this.content, { childList: true, characterData: true, attributes: true, subtree: true });
     }
 
-    private renderModel(selection?: HtmlEditorSelectionState, focusEditor = this.content.ownerDocument.activeElement === this.content): void {
+    private renderModel(selection?: HtmlEditorSelectionRange, focusEditor = this.content.ownerDocument.activeElement === this.content): void {
         this.observer?.disconnect();
         try {
             setElementProps(this.content, { vnodes: this.renderer.render(this.documentModel, false, true) });
@@ -601,7 +601,7 @@ export class HtmlEditorSurface extends Component {
         };
         // Autocorrect and word deletions may supply a range different from the visible selection.
         const target = event.getTargetRanges?.()[0];
-        let targetSelection: HtmlEditorSelectionState | undefined;
+        let targetSelection: HtmlEditorSelectionRange | undefined;
         if (target) {
             const anchor = this.domMap.position(target.startContainer, target.startOffset);
             const focus = this.domMap.position(target.endContainer, target.endOffset);
@@ -652,7 +652,7 @@ export class HtmlEditorSurface extends Component {
         }
     }
 
-    private updateSelection(state?: HtmlEditorSelectionState): void {
+    private updateSelection(state?: HtmlEditorSelectionRange): void {
         if (JSON.stringify(state) === JSON.stringify(this.selectionState)) return;
         this.typingMarks = undefined;
         this.selectionState = state ? structuredClone(state) : undefined;
@@ -701,3 +701,5 @@ export class HtmlEditorSurface extends Component {
         return host.innerHTML;
     }
 }
+
+

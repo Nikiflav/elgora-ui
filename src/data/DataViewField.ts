@@ -138,6 +138,8 @@ export interface DataViewField<TRow> extends DataField<TRow> {
     caption?: string;
     /** Field description, available to consumers as a tooltip or help text. */
     description?: string;
+    /** Optional short hint rendered as the native tooltip of the field control. */
+    tooltip?: string;
     /** Opaque, caller-defined presentation metadata (not used internally). */
     userState?: any;
     /** Prevents editing in consumers that honor this presentation flag. */

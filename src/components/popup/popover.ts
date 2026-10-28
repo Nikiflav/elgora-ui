@@ -1,4 +1,5 @@
 import { Component, ComponentChild, ComponentOptions } from "../../core/Component";
+import { ObservableEvent } from "../../core/ElgoraUI";
 import "./Popover.css";
 
 let popupId = 0;
@@ -17,8 +18,16 @@ export interface PopoverPoint {
     y: number;
 }
 
+/** Payload emitted after a popover has changed its visible state. */
+export interface PopoverStateEvent {
+    /** Popover whose state changed. */
+    popover: Popover;
+    /** Native invoker when the browser supplied one. */
+    source?: Element | null;
+}
+
 /** Configuration for a native Popover API popup. */
-export interface PopoverOptions extends Omit<ComponentOptions, "onclose"> {
+export interface PopoverOptions extends ComponentOptions {
     /** Element used as the popup's positioning reference. */
     anchorElement?: HTMLElement;
     /** Point used as the popup's positioning reference when no anchor exists. */
@@ -35,12 +44,14 @@ export interface PopoverOptions extends Omit<ComponentOptions, "onclose"> {
     closeMode?: PopoverCloseMode;
     /** Whether to bind the native `popovertarget` attribute to the anchor. */
     bindAnchorTarget?: boolean;
-    /** Called when the native popup closes. */
-    onclose?: (event: Event, popup: Popover) => void;
 }
 
 /** A native top-layer popup positioned relative to an anchor element. */
 export class Popover extends Component {
+    /** Emitted after the native popover has become visible. */
+    readonly opened = new ObservableEvent<PopoverStateEvent>();
+    /** Emitted after the native popover has become hidden. */
+    readonly closed = new ObservableEvent<PopoverStateEvent>();
     private anchor?: HTMLElement;
     private point?: PopoverPoint;
     private placement: PopoverPlacement;
@@ -54,7 +65,7 @@ export class Popover extends Component {
         if (!("showPopover" in HTMLElement.prototype))
             throw new Error("Popover requires the native Popover API.");
 
-        const { anchorElement, point, children, placement = "bottom-start", gap = 4, open, closeMode = "auto", bindAnchorTarget = true, onclose, ...rest } = options;
+        const { anchorElement, point, children, placement = "bottom-start", gap = 4, open, closeMode = "auto", bindAnchorTarget = true, ...rest } = options;
         if (!anchorElement && !point)
             throw new Error("Popover requires either anchorElement or point.");
         super({ ...rest, tag: options.tag || "div", children });
@@ -67,8 +78,9 @@ export class Popover extends Component {
         this.dom.id ||= `elg-popup-${++popupId}`;
         if (this.anchor && this.bindAnchorTarget) this.anchor.setAttribute("popovertarget", this.dom.id);
 
-        this.listen(this.dom, "close", event => onclose?.(event, this));
-        this.listen(this.dom, "toggle", this.reposition);
+        this.listen(this.dom, "toggle", event => this.handleToggle(event));
+        this.addCleanup(this.opened);
+        this.addCleanup(this.closed);
         if (open) this.show();
     }
 
@@ -119,8 +131,7 @@ export class Popover extends Component {
     /** Hides the popup using the native Popover API. */
     hide(): void {
         if ((this.dom as any).matches(":popover-open")) (this.dom as any).hidePopover();
-        removeEventListener("resize", this.reposition); removeEventListener("scroll", this.reposition, true);
-        this.anchor?.style.removeProperty("anchor-name");
+        this.releaseViewportTracking();
     }
     /** Toggles the popup between its open and closed states. */
     toggle(): void { this.isOpen() ? this.hide() : this.show(); }
@@ -135,6 +146,29 @@ export class Popover extends Component {
     public override dispose(): void {
         this.hide();
         super.dispose();
+    }
+
+    private handleToggle(event: Event): void {
+        const state = this.stateEvent(event);
+        if (this.isOpen()) {
+            this.updatePosition();
+            this.opened.invoke(state);
+        } else {
+            this.releaseViewportTracking();
+            this.closed.invoke(state);
+        }
+    }
+
+    private stateEvent(event: Event): PopoverStateEvent {
+        const source = "source" in event && event.source instanceof Element
+            ? event.source : undefined;
+        return { popover: this, source };
+    }
+
+    private releaseViewportTracking(): void {
+        removeEventListener("resize", this.reposition);
+        removeEventListener("scroll", this.reposition, true);
+        this.anchor?.style.removeProperty("anchor-name");
     }
 
     private updatePosition(): void {

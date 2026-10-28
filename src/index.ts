@@ -45,7 +45,7 @@ export { DataTransaction } from './data/dataset/DataTransaction';
 export { DataEditContext, type DataRowChangeEvent } from './data/dataset/DataEditContext';
 export { FilterEditor, type FilterEditorOptions, type FilterEditorColumn, type FilterEditorOperator } from './components/datagrid/FilterEditor';
 export { DataFilterRow, type DataFilterRowColumn, type DataFilterRowValue, type DataFilterRowOperator } from './components/datagrid/DataFilterRow';
-export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement, type PopoverCloseMode } from './components/popup/popover';
+export { Popover, type PopoverOptions, type PopoverPoint, type PopoverPlacement, type PopoverCloseMode, type PopoverStateEvent } from './components/popup/popover';
 export { PopupMenu, type PopupMenuOptions, type PopupMenuShowOptions, type MenuItem } from './components/popup/PopupMenu';
 export { Tooltip, type TooltipContent, type TooltipShowOptions } from './components/popup/Tooltip';
 export { ResizeHandle, type ResizeHandleOptions, type ResizeSize } from './components/resize/ResizeHandle';
@@ -69,17 +69,26 @@ export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
     type ValueEditorOptions, type TextEditorOptions, type NumberEditorOptions, type BooleanEditorOptions } from './components/editors/ValueEditor';
 export { HtmlEditor, type HtmlEditorOptions } from './components/editors/htmleditor/HtmlEditor';
 export { HtmlEditorCommandMenu } from './components/editors/htmleditor/HtmlEditorCommandMenu';
-export { HtmlEditorCommandRegistry, type HtmlEditorCommandContext, type HtmlEditorUiCommand } from './components/editors/htmleditor/HtmlEditorCommandRegistry';
+export { HtmlEditorCommandRegistry, type HtmlEditorUiCommandContext, type HtmlEditorCommandContext,
+    type HtmlEditorUiCommand, type HtmlEditorUiCommandOption } from './components/editors/htmleditor/HtmlEditorCommandRegistry';
 export { HtmlEditorSurface, type HtmlEditorSurfaceOptions } from './components/editors/htmleditor/HtmlEditorSurface';
 export { HtmlEditorToolbar } from './components/editors/htmleditor/HtmlEditorToolbar';
 export { HtmlEditorInspector } from './components/editors/htmleditor/HtmlEditorInspector';
-export { aggregateHtmlEditorInspectorValues } from './components/editors/htmleditor/HtmlEditorInspection';
-export type { HtmlEditorInspectorValue, HtmlEditorInspectorValueState, HtmlEditorInspectionContext,
+export { HtmlEditorUiCommandFieldService } from './components/editors/htmleditor/HtmlEditorUiCommandFieldService';
+export type { HtmlEditorUiCommandDensity, HtmlEditorUiCommandControl } from './components/editors/htmleditor/HtmlEditorUiCommandFieldService';
+export { aggregateHtmlEditorUiCommandValues, aggregateHtmlEditorInspectorValues } from './components/editors/htmleditor/HtmlEditorInspection';
+export type { HtmlEditorUiCommandValue, HtmlEditorUiCommandValueState, HtmlEditorUiCommandNodeInfo,
+    HtmlEditorUiCommandTargetContext, HtmlEditorUiCommandTargets, HtmlEditorUiCommandResolution,
+    HtmlEditorUiCommandExecutionContext, HtmlEditorUiCommandFormRow, HtmlEditorUiCommandFieldPresentation,
+    HtmlEditorUiCommandPresentation, HtmlEditorUiCommandPresentationKind, HtmlEditorUiCommandField,
+    HtmlEditorResolvedUiCommandField,
+    HtmlEditorInspectorValue, HtmlEditorInspectorValueState, HtmlEditorInspectionContext,
     HtmlEditorInspectorTargets, HtmlEditorResolvedInspection, HtmlEditorInspectorCommandContext,
     HtmlEditorInspectionRow, HtmlEditorInspectorFieldPresentation, HtmlEditorInspectorField,
-    HtmlEditorResolvedInspectorField } from './components/editors/htmleditor/HtmlEditorInspection';
+    HtmlEditorResolvedInspectorField, HtmlEditorUiCommandFieldDefinition } from './components/editors/htmleditor/HtmlEditorInspection';
 export type { HtmlEditorNodeCoverage } from './components/editors/htmleditor/HtmlEditorRange';
-export type { HtmlEditorNode, HtmlEditorNodeId, HtmlEditorText, HtmlEditorElement, HtmlEditorStyle, HtmlEditorDocument, HtmlEditorPositionState, HtmlEditorSelectionState } from './components/editors/htmleditor/HtmlEditorModel';
+export type { HtmlEditorNode, HtmlEditorNodeId, HtmlEditorText, HtmlEditorElement, HtmlEditorStyle, HtmlEditorDocument,
+    HtmlEditorPositionState, HtmlEditorSelectionRange, HtmlEditorSelectionState } from './components/editors/htmleditor/HtmlEditorModel';
 export { getHtmlEditorStyle, setHtmlEditorStyle, removeHtmlEditorStyle } from './components/editors/htmleditor/HtmlEditorStyles';
 export type { HtmlEditorCommand, HtmlEditorState, HtmlEditorTextMark } from './components/editors/htmleditor/HtmlEditorCommands';
 export { getHtmlEditorElementBehavior, type HtmlEditorElementBehavior, type HtmlEditorElementKind } from './components/editors/htmleditor/HtmlEditorStructure';

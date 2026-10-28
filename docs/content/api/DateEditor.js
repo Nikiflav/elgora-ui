@@ -16,6 +16,16 @@ export default {
   "source": "src/components/editors/DateEditor.ts",
   "members": [
     {
+      "name": "openOnInputClick",
+      "type": "boolean",
+      "description": "A click on the active date input opens the calendar; focus alone does not.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/DateEditor.ts",
+      "kind": "property"
+    },
+    {
       "name": "resolveText",
       "type": "(text: string) => Promise<string | null>",
       "description": "Resolves dateFormat input (empty means null), or uses a custom converter.\nThe result must remain a valid canonical date inside min/max. No saving occurs.",

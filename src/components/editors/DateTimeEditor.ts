@@ -29,6 +29,9 @@ export interface DateTimeEditorOptions extends TextEditorOptions<string | null>,
 /** Local date-time editor combining DatePicker and TimePicker in one popover. */
 export class DateTimeEditor extends PopoverEditor<string | null> {
     private readonly dateOptions: DateTimeEditorOptions;
+
+    /** A click on the active date-time input opens the picker; focus alone does not. */
+    override get openOnInputClick(): boolean { return true; }
     private readonly dateFormatter: DateFormatter;
     private readonly timeFormatter: TimeFormatter;
     private datePicker?: DatePicker;

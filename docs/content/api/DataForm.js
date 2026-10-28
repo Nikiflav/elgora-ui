@@ -41,6 +41,58 @@ export default {
       "kind": "property"
     },
     {
+      "name": "beginEditField",
+      "type": "(name: string, initialText?: string) => Promise<boolean>",
+      "description": "Starts editing a visible field programmatically, preserving normal DataForm editor behavior.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/dataform/DataForm.ts",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "initialText",
+          "type": "string | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<boolean>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(name: string, initialText?: string) => Promise<boolean>"
+    },
+    {
+      "name": "refreshField",
+      "type": "(name: string) => Promise<void>",
+      "description": "Refreshes one displayed field after a local form value changes.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/dataform/DataForm.ts",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "Promise<void>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(name: string) => Promise<void>"
+    },
+    {
       "name": "getGroupState",
       "type": "() => ReadonlyMap<string, boolean>",
       "description": "Snapshot of current disclosure states, suitable for a replacement form's groupState option.",
