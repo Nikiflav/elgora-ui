@@ -257,6 +257,13 @@ export class HtmlEditorCommandRegistry {
     private registerBuiltIns(): void {
         const selectionTargets = (context: HtmlEditorUiCommandTargetContext) => context.selection
             ? { kind: "text" as const, ranges: [context.selection] } : { kind: "text" as const, ranges: [] };
+        const clearFormattingTargets = (context: HtmlEditorUiCommandTargetContext) => {
+            const textTargets = selectionTargets(context);
+            if (!textTargets.ranges.length || !context.nodeInfos.length) return textTargets;
+            const coverage = this.surface.getSelectionCoverage(context.selection);
+            if (!context.nodeInfos.every(info => coverage.get(info.id) === "full")) return textTargets;
+            return { kind: "nodes" as const, complete: true, nodeInfos: context.nodeInfos };
+        };
         const linkIds = (context: HtmlEditorUiCommandContext): string[] => {
             const ids = new Set<string>();
             const addPath = (nodeId?: string) => this.surface.findElementPath(nodeId)?.filter(node => node.tag === "a")
@@ -373,8 +380,10 @@ export class HtmlEditorCommandRegistry {
         this.register({
             id: "clear-formatting", label: "htmlEditorToolbar.clearFormatting", icon: "ri-eraser-fill",
             isEnabled: context => context.surface.editable && !!context.selection,
-            execute: context => context.surface.execute({ type: "clearFormatting" }, context.selection),
-            field: { type: "buttons", group: "text", order: 50, resolveTargets: selectionTargets }
+            execute: context => context.surface.execute({ type: "clearFormatting",
+                nodeIds: context.resolution?.targets.kind === "nodes"
+                    ? context.resolution.targets.nodeInfos.map(info => info.id) : [] }, context.selection),
+            field: { type: "buttons", group: "text", order: 50, resolveTargets: clearFormattingTargets }
         });
         for (const type of ["undo", "redo"] as const) this.register({
             id: type, label: `htmlEditorToolbar.${type}`, icon: type === "undo" ? "ri-arrow-go-back-line" : "ri-arrow-go-forward-line",

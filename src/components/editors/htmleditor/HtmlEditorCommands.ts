@@ -12,7 +12,8 @@ export type HtmlEditorCommand =
     | { type: "insertHtml"; html: string }
     | { type: "link"; property: "href" | "target" | "title" | "remove"; value?: string }
     | { type: "link"; property: "update"; href: string; target: string; title: string }
-    | { type: "deleteBackward" | "deleteForward" | "insertParagraph" | "insertLineBreak" | "indent" | "outdent" | "bold" | "italic" | "underline" | "strikethrough" | "clearFormatting" | "undo" | "redo" };
+    | { type: "deleteBackward" | "deleteForward" | "insertParagraph" | "insertLineBreak" | "indent" | "outdent" | "bold" | "italic" | "underline" | "strikethrough" | "undo" | "redo" }
+    | { type: "clearFormatting"; nodeIds?: readonly string[] };
 
 /** Semantic inline marks supported by the Basic inspector. */
 export type HtmlEditorTextMark = "bold" | "italic" | "underline" | "strikethrough";
@@ -325,16 +326,22 @@ function applyFormatting(selection: FormattingSelection, command: HtmlEditorText
 }
 
 /** Removes inline marks and authored text styles while preserving document structure. */
-function clearFormatting(selection: FormattingSelection, id: () => string): HtmlEditorState {
+function clearFormatting(selection: FormattingSelection, id: () => string, nodeIds: readonly string[] = []): HtmlEditorState {
     const document = selection.document;
     const marks = new Set(["strong", "b", "em", "i", "u", "s", "del"]);
     const textStyles = new Set(["color", "background-color", "font-size"]);
+    const sameElement = (left: HtmlEditorElement, right: HtmlEditorElement): boolean => left.tag === right.tag
+        && JSON.stringify(left.classes) === JSON.stringify(right.classes)
+        && JSON.stringify(left.attributes) === JSON.stringify(right.attributes)
+        && JSON.stringify(left.styles) === JSON.stringify(right.styles);
     const normalize = (nodes: HtmlEditorNode[]): HtmlEditorNode[] => {
         const result: HtmlEditorNode[] = [];
         for (const node of nodes) {
             const next = node.type === "element" ? { ...node, children: normalize(node.children) } : node;
             const previous = result[result.length - 1];
             if (previous?.type === "text" && next.type === "text") previous.text += next.text;
+            else if (previous?.type === "element" && next.type === "element" && sameElement(previous, next))
+                previous.children = normalize([...previous.children, ...next.children]);
             else result.push(next);
         }
         return result;
@@ -348,8 +355,17 @@ function clearFormatting(selection: FormattingSelection, id: () => string): Html
             return children;
         return [{ ...node, styles, children }];
     };
+    const selected = new Set(nodeIds);
+    const selectedLocations = [...selected].map(nodeId => find(document, nodeId)).filter((location): location is NonNullable<ReturnType<typeof find>> =>
+        !!location && location.node.type === "element" && !location.ancestors.some(ancestor => selected.has(ancestor.id)));
+    selectedLocations.forEach(location => {
+        const index = location.parent.children.indexOf(location.node);
+        if (index < 0) return;
+        location.parent.children.splice(index, 1, ...strip(location.node));
+    });
     for (const range of selection.ranges) {
         if (range.from >= range.to) continue;
+        if (selected.has(range.block.id)) continue;
         const prefix = slice(range.block.children, 0, range.from, false, id);
         const middle = slice(range.block.children, range.from, range.to, true, id).flatMap(strip);
         const suffix = slice(range.block.children, range.to, size(range.block), true, id);
@@ -666,7 +682,7 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
             marks: { ...state.marks, bold: false, italic: false, underline: false, strikethrough: false,
                 styles: { ...state.marks?.styles, color: "", "background-color": "", "font-size": "" } } };
         if (!formatting.ranges.some(range => range.to > range.from)) return;
-        return clearFormatting(formatting, id);
+        return clearFormatting(formatting, id, command.nodeIds);
     }
     if (command.type === "link") {
         const formatting = formattingSelection(document, rootId, selection, id);

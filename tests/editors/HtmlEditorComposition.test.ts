@@ -132,6 +132,32 @@ describe("HtmlEditor composition", () => {
         expect(editor.execute({ type: "undo" })).toBe(true);
         expect(editor.html).toBe(before);
     });
+
+    it("clears formatting recursively for a fully selected node and preserves semantic attributes", async () => {
+        const editor = create({ value: '<p><a href="/docs" target="_blank"><span style="color:red"><strong><em style="background-color:yellow">Link</em></strong></span></a> tail</p>' });
+        const link = findElement(editor.surface.document.children, "a")!;
+        expect(editor.surface.selectNode(link.id)).toBe(true);
+        await frame();
+
+        const context = editor.commandRegistry.uiCommandTargetContext(editor.inspector!.inspectedElements);
+        const field = editor.commandRegistry.getUiCommandFields(context).find(item => item.command.id === "clear-formatting")!;
+        expect(field.enabled).toBe(true);
+        expect(editor.commandRegistry.executeUiCommandField(field)).toBe(true);
+
+        expect(editor.content.innerHTML).toBe('<p><a href="/docs" target="_blank">Link</a> tail</p>');
+    });
+
+    it("clears only the selected portion of nested formatting and normalizes adjacent fragments", () => {
+        const editor = create({ value: '<p><span style="color:red">before <strong style="font-size:2em">selected</strong> after</span></p>' });
+        const selected = editor.content.querySelector("strong")!.firstChild!;
+        select(editor, selected, 0, selected.textContent!.length);
+        expect(editor.execute({ type: "clearFormatting" })).toBe(true);
+
+        expect(editor.content.innerHTML).toBe('<p><span style="color: red;">before </span>selected<span style="color: red;"> after</span></p>');
+        expect(editor.content.querySelectorAll("strong")).toHaveLength(0);
+        expect(editor.content.querySelectorAll("span")).toHaveLength(2);
+    });
+
     it("opens a Basic choice menu in one click and applies its choice with undo", async () => {
         const editor = create();
         select(editor);
