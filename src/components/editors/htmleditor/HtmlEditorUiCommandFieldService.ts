@@ -130,8 +130,9 @@ export class HtmlEditorUiCommandFieldService {
         } else {
             const state = this.registry.state(command, binding.context);
             const button: DataViewButton<HtmlEditorUiCommandFormRow> = {
-                id: command.id, text: this.registry.label(command), icon: command.icon,
-                appearance: command.id === "link.remove" ? "iconAndText" : "iconOnly",
+                id: command.id, text: this.registry.label(command), icon: command.id === "image.lockAspect"
+                    ? state === "on" ? "ri-lock-line" : "ri-lock-unlock-line" : command.icon,
+                appearance: command.id === "link.remove" || command.id === "image.lockAspect" ? "iconAndText" : "iconOnly",
                 ui: "btn-ghost", tooltip: this.registry.tooltip(command),
                 pressed: state === "mixed" ? "mixed" : state === "on", disabled: !binding.enabled,
                 onClick: async ({ owner }) => {

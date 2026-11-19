@@ -70,6 +70,8 @@ export interface HtmlEditorUiCommand {
 
 /** Shared command registry owned by HtmlEditor and consumed by all its UI surfaces. */
 export class HtmlEditorCommandRegistry {
+    /** Inspector preference; never serialized into authored HTML. */
+    imageAspectLocked = false;
     /** Emitted when a requested command cannot be executed in its current context. */
     readonly commandFailed = new ObservableEvent<string>();
     private readonly commands = new Map<string, HtmlEditorUiCommand>();
@@ -328,6 +330,50 @@ export class HtmlEditorCommandRegistry {
                 const item = this.surface.findElement(info.id); return !!item && (!allowed || allowed(item));
             })
         });
+        const imageTargets = (context: HtmlEditorUiCommandTargetContext) => elementTargets(context, item => item.tag === "img");
+        const imageField = (property: "src" | "alt" | "width" | "height" | "title", label: string, order: number): HtmlEditorUiCommand => {
+            const valid = (value: string) => property === "src"
+                ? isSafeHtmlEditorHref(value.replace(/[\u0000-\u0020]/g, ""))
+                : property === "width" || property === "height" ? value === "" || /^[1-9]\d*$/.test(value) : true;
+            return {
+                id: `image.${property}`, label,
+                isEnabled: context => context.surface.editable,
+                execute: (context, value) => {
+                    if (typeof value !== "string" || !valid(value) || context.resolution?.targets.kind !== "nodes") return false;
+                    const updates = context.resolution.targets.nodeInfos.map(info => {
+                        const image = context.surface.findElement(info.id);
+                        if (!image || image.tag !== "img") return undefined;
+                        const attributes = { ...image.attributes };
+                        if (value === "" && property !== "alt") delete attributes[property];
+                        else attributes[property] = value;
+                        if (this.imageAspectLocked && value && (property === "width" || property === "height")) {
+                            const ratio = context.surface.imageAspectRatio(info.id);
+                            if (!ratio) return undefined;
+                            const other = property === "width" ? "height" : "width";
+                            attributes[other] = String(Math.max(1, Math.round(property === "width" ? Number(value) / ratio : Number(value) * ratio)));
+                        }
+                        return { nodeId: info.id, patch: { attributes } };
+                    });
+                    return updates.every(update => !!update) && context.surface.updateElements(updates.filter(update => !!update));
+                },
+                field: { type: "data", group: "image", order, visibleIn: ["basic"], resolveTargets: imageTargets,
+                    field: { dataType: "string", caption: label, validate: value => valid(String(value ?? ""))
+                        ? undefined : this.messages.text("htmlEditorBasic.invalidImageValue") },
+                    getValue: context => aggregateHtmlEditorUiCommandValues(context.resolution.targets.kind === "nodes"
+                        ? context.resolution.targets.nodeInfos.map(info => context.surface.findElement(info.id)?.attributes[property]) : []) ?? { kind: "unset" } }
+            };
+        };
+        this.register(imageField("src", "htmlEditorBasic.imageSource", 0));
+        this.register(imageField("alt", "htmlEditorBasic.imageAlt", 10));
+        this.register(imageField("width", "htmlEditorBasic.imageWidth", 20));
+        this.register(imageField("height", "htmlEditorBasic.imageHeight", 30));
+        this.register(imageField("title", "htmlEditorBasic.imageTitle", 40));
+        this.register({ id: "image.lockAspect", label: "htmlEditorBasic.imageLockAspect", icon: "ri-lock-line",
+            isEnabled: context => context.surface.editable && context.resolution?.targets.kind === "nodes"
+                && context.resolution.targets.nodeInfos.every(info => !!context.surface.imageAspectRatio(info.id)),
+            getState: () => this.imageAspectLocked ? "on" : "off",
+            execute: context => { this.imageAspectLocked = !this.imageAspectLocked; context.surface.interactionChanged.invoke(undefined); return true; },
+            field: { type: "buttons", group: "image", order: 15, visibleIn: ["basic"], resolveTargets: imageTargets } });
         /**
          * Text color/size normally operate on text fragments. A complete
          * element selection, such as a table cell selected from the inspector,

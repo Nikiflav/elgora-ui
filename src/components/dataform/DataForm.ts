@@ -290,7 +290,7 @@ export class DataForm<TRow> extends Component {
             return;
         }
         const value = await this.adapter.getValue(this.draft, field);
-        host.replaceChildren(document.createTextNode(await this.displayText(field, value)));
+        host.replaceChildren(e("span", { class: "elg-data-form-value-text" }, await this.displayText(field, value)));
         const visibility = field.editorButtonVisibility ?? "always";
         const button = visibility === "never" ? undefined : getFieldEditorButton(field, this.options);
         if (!button) return;
@@ -340,7 +340,7 @@ export class DataForm<TRow> extends Component {
                     appearance === "textAndIcon" ? text : icon,
                     appearance === "textAndIcon" ? icon : text);
             return v("button", {
-                key: button.id, type: "button", class: "elg-data-form-action-button",
+                key: button.id, type: "button", class: "elg-data-form-action-button", "data-appearance": appearance,
                 ui: ["elg", "btn", ...buttonUi, "p-0"], disabled,
                 ariaLabel: label, title: appearance === "iconOnly" ? label : button.tooltip,
                 ariaPressed: pressed === undefined ? undefined : String(pressed),

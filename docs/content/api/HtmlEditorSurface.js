@@ -231,6 +231,29 @@ export default {
       "signature": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]"
     },
     {
+      "name": "imageAspectRatio",
+      "type": "(nodeId: string) => number | undefined",
+      "description": "Aspect ratio from authored dimensions or the loaded image's intrinsic size.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "number | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(nodeId: string) => number | undefined"
+    },
+    {
       "name": "selectAllContent",
       "type": "() => boolean",
       "description": "Selects all document content without selecting the editor's root element.",

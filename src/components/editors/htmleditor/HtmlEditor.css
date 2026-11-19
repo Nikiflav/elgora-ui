@@ -86,6 +86,7 @@
 .elg-html-editor-basic-form .elg-data-form-buttons-host { border-color: transparent; background: transparent; padding: 0; }
 .elg-html-editor-basic-form .elg-data-form-buttons { display: flex; gap: 2px; }
 .elg-html-editor-basic-form .elg-data-form-action-button { width: 28px; min-width: 28px; height: 28px; }
+.elg-html-editor-basic-form .elg-data-form-action-button:not([data-appearance="iconOnly"]) { width: max-content; max-width: 100%; min-width: 0; padding-inline: 8px; }
 .elg-html-editor-basic-form [data-field="link.remove"] .elg-data-form-action-button {
     width: max-content;
     min-width: max-content;

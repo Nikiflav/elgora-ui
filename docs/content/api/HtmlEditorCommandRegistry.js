@@ -11,6 +11,16 @@ export default {
   "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
   "members": [
     {
+      "name": "imageAspectLocked",
+      "type": "boolean",
+      "description": "Inspector preference; never serialized into authored HTML.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "kind": "property"
+    },
+    {
       "name": "commandFailed",
       "type": "ObservableEvent<string>",
       "description": "Emitted when a requested command cannot be executed in its current context.",

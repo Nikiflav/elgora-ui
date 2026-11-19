@@ -209,6 +209,16 @@ export class HtmlEditorSurface extends Component {
     getTextStyleValues(property: string, selection = this.selection): (string | undefined)[] {
         return getHtmlEditorTextStyleValues(this.documentModel, this.domMap.rootId, selection, property, this.typingMarks);
     }
+    /** Aspect ratio from authored dimensions or the loaded image's intrinsic size. */
+    imageAspectRatio(nodeId: string): number | undefined {
+        const element = this.findElement(nodeId);
+        if (element?.tag !== "img") return undefined;
+        const width = Number(element.attributes.width), height = Number(element.attributes.height);
+        if (width > 0 && height > 0) return width / height;
+        const image = this.domMap.resolve({ nodeId, offset: 0 })?.node;
+        return image instanceof HTMLImageElement && image.naturalWidth > 0 && image.naturalHeight > 0
+            ? image.naturalWidth / image.naturalHeight : undefined;
+    }
     /** Selects all document content without selecting the editor's root element. */
     selectAllContent(): boolean {
         if (this.disposed.Value || !this.documentModel.children.length) return false;

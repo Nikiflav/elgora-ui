@@ -324,7 +324,7 @@ export class HtmlEditorInspector extends Component {
         const dataFields = ordered.map(field => this.fieldService.field(field, row, "basic"));
         const adapter = this.fieldService.createFormAdapter();
         const category = (field: HtmlEditorResolvedUiCommandField) => field.definition.type === "buttons"
-            ? field.definition.group === "link" ? "link" : "format"
+            ? field.definition.group === "link" ? "link" : field.definition.group === "image" ? "image" : "format"
             : field.definition.group === "block" ? "paragraph" : field.definition.group ?? "appearance";
         const groups = new Map<string, HtmlEditorResolvedUiCommandField[]>();
         for (const field of ordered) {
@@ -332,6 +332,7 @@ export class HtmlEditorInspector extends Component {
             groups.set(key, [...groups.get(key) ?? [], field]);
         }
         const labels: Record<string, string> = {
+            image: this.messages.text("htmlEditorInspector.imageCategory"),
             format: this.messages.text("htmlEditorInspector.formatCategory"),
             link: this.messages.text("htmlEditorInspector.linkCategory"),
             typography: this.messages.text("htmlEditorInspector.typographyCategory"),
@@ -340,8 +341,8 @@ export class HtmlEditorInspector extends Component {
         };
         const layout: DataFormLayoutGroup[] = [];
         const groupOrder = linkContext
-            ? ["link", "format", "appearance", "paragraph", "typography"]
-            : ["format", "appearance", "paragraph", "link", "typography"];
+            ? ["image", "link", "format", "appearance", "paragraph", "typography"]
+            : ["image", "format", "appearance", "paragraph", "link", "typography"];
         for (const [key, bindings] of [...groups.entries()].sort(([left], [right]) =>
             (groupOrder.indexOf(left) < 0 ? Number.MAX_SAFE_INTEGER : groupOrder.indexOf(left))
             - (groupOrder.indexOf(right) < 0 ? Number.MAX_SAFE_INTEGER : groupOrder.indexOf(right)))) {
@@ -352,6 +353,7 @@ export class HtmlEditorInspector extends Component {
                 if (binding.definition.type === "buttons") {
                     actions.push({ field: field.name });
                 } else {
+                    if (actions.length) rows.push({ fields: actions.splice(0), labelPosition: "none", ui: ["gap-0"] });
                     if (binding.definition.presentation === "menu") {
                         field.buttons?.forEach(button => button.ui = ["neutral", "w-100"]);
                     }
@@ -398,7 +400,7 @@ export class HtmlEditorInspector extends Component {
         if (this.selector.disabled) this.popup?.hide();
         this.tabView.setTabText("basic", this.messages.text("htmlEditorInspector.properties"));
         this.tabView.setTabText("advanced", this.messages.text("htmlEditorInspector.advanced"));
-        const basicKey = `${this.inspectedIds.join(",")}|${this.mixed}|${this.surface.modelVersion}|${JSON.stringify(this.surface.selection)}|${this.surface.editable}`;
+        const basicKey = `${this.inspectedIds.join(",")}|${this.mixed}|${this.surface.modelVersion}|${JSON.stringify(this.surface.selection)}|${this.surface.editable}|${this.commands.imageAspectLocked}`;
         if (basicKey !== this.basicRenderKey) {
             if (!this.basicForm?.isEditing) {
                 this.basicRenderKey = basicKey;
