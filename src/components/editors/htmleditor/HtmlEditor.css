@@ -9,7 +9,8 @@
 .elg-html-editor-container-selection-layer { z-index: 0; }
 .elg-html-editor-text-selection-layer { z-index: 1; }
 .elg-html-editor-selection-rect { position: absolute; box-sizing: border-box; background: color-mix(in srgb, var(--elg-selection-bg, #cfe2ff) 48%, transparent); }
-.elg-html-editor-container-selection-rect { position: absolute; box-sizing: border-box; border: 1px dashed color-mix(in srgb, var(--elg-primary-border, #86b7fe) 72%, transparent); border-radius: 2px; }
+.elg-html-editor-container-selection-rect { position: absolute; box-sizing: border-box; border: 1px dashed color-mix(in srgb, var(--elg-border-color, #adb5bd) 65%, transparent); border-radius: 2px; }
+.elg-html-editor-container-selection-rect[data-expansion-preview="true"] { border: 1px solid rgb(236 72 153 / 45%); background: var(--elg-html-editor-inspection-bg, rgb(236 72 153 / 8%)); }
 .elg-html-editor-container-selection-rect[data-inspection-target="true"] { background: var(--elg-html-editor-inspection-bg, rgb(236 72 153 / 8%)); }
 .elg-html-editor-container-selection-rect[data-html-editor-container-kind="table"],
 .elg-html-editor-container-selection-rect[data-html-editor-container-kind="cell"] { border-color: color-mix(in srgb, var(--elg-warning-border, #ffc107) 72%, transparent); }
@@ -173,6 +174,8 @@
 .elg-html-editor-color-choice { display: flex; align-items: center; gap: 6px; width: 100%; min-width: 0; }
 .elg-html-editor-color-choice > span:nth-child(2) { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .elg-html-editor-selector-row { display: flex; flex-shrink: 0; align-items: center; gap: 6px; min-width: 0; }
+.elg-html-editor-expand-selection { border: 0; background: transparent; color: var(--elg-text-muted); cursor: pointer; padding: 2px; }
+.elg-html-editor-expand-selection:disabled { opacity: .4; cursor: default; }
 .elg-html-editor-selector-row > .elg-html-editor-node-selector { flex: 1; min-width: 0; overflow: hidden; text-align: start; white-space: nowrap; flex-wrap: nowrap; }
 .elg-html-editor-selector-row .elg-html-editor-node-description { white-space: nowrap; text-overflow: ellipsis; }
 .elg-html-editor-selector-row[data-html-editor-coverage="full"] > .elg-html-editor-node-coverage { color: var(--elg-primary-color); }

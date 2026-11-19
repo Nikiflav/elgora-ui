@@ -109,6 +109,16 @@ export default {
       "signature": "(ids: readonly string[]) => void"
     },
     {
+      "name": "expandedSelectionPreview",
+      "type": "string | null | undefined",
+      "description": "Target preview for the selection expansion button; null denotes the document contents.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "kind": "property"
+    },
+    {
       "name": "refreshLocalization",
       "type": "() => void",
       "description": "Rebuilds localized command fields while preserving disclosure state.",

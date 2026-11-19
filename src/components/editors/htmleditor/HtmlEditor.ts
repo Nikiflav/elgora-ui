@@ -91,7 +91,8 @@ export class HtmlEditor extends ValueEditor<string> {
         }
         if (this.inspector) {
             this.selectionOverlay.connectInspector(this.inspector.dom, () => this.inspector!.inspectedElements,
-                this.toolbar?.dom, commandId => this.inspector?.getCommandPreviewTargets(commandId));
+                this.toolbar?.dom, commandId => this.inspector?.getCommandPreviewTargets(commandId),
+                () => this.inspector?.expandedSelectionPreview);
         }
         this.baselineHtml = this.html;
         this.syncControl();

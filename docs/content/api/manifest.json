@@ -2,15 +2,6 @@
   "schemaVersion": 1,
   "entries": [
     {
-      "name": "aggregateHtmlEditorInspectorValues",
-      "kind": "variable",
-      "group": "components",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/aggregateHtmlEditorInspectorValues",
-      "description": "",
-      "module": "./content/api/aggregateHtmlEditorInspectorValues.js"
-    },
-    {
       "name": "aggregateHtmlEditorUiCommandValues",
       "kind": "function",
       "group": "components",
@@ -947,15 +938,6 @@
       "module": "./content/api/HtmlEditorCommand.js"
     },
     {
-      "name": "HtmlEditorCommandContext",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorCommandContext",
-      "description": "",
-      "module": "./content/api/HtmlEditorCommandContext.js"
-    },
-    {
       "name": "HtmlEditorCommandMenu",
       "kind": "class",
       "group": "components",
@@ -1010,24 +992,6 @@
       "module": "./content/api/HtmlEditorElementKind.js"
     },
     {
-      "name": "HtmlEditorInspectionContext",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectionContext",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectionContext.js"
-    },
-    {
-      "name": "HtmlEditorInspectionRow",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectionRow",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectionRow.js"
-    },
-    {
       "name": "HtmlEditorInspector",
       "kind": "class",
       "group": "components",
@@ -1035,60 +999,6 @@
       "path": "/api-reference/HtmlEditorInspector",
       "description": "Inspector scaffold owned by HtmlEditor. Targets are previews, not structural editor selections.",
       "module": "./content/api/HtmlEditorInspector.js"
-    },
-    {
-      "name": "HtmlEditorInspectorCommandContext",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectorCommandContext",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectorCommandContext.js"
-    },
-    {
-      "name": "HtmlEditorInspectorField",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectorField",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectorField.js"
-    },
-    {
-      "name": "HtmlEditorInspectorFieldPresentation",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectorFieldPresentation",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectorFieldPresentation.js"
-    },
-    {
-      "name": "HtmlEditorInspectorTargets",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectorTargets",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectorTargets.js"
-    },
-    {
-      "name": "HtmlEditorInspectorValue",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectorValue",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectorValue.js"
-    },
-    {
-      "name": "HtmlEditorInspectorValueState",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorInspectorValueState",
-      "description": "",
-      "module": "./content/api/HtmlEditorInspectorValueState.js"
     },
     {
       "name": "HtmlEditorNode",
@@ -1136,24 +1046,6 @@
       "module": "./content/api/HtmlEditorPositionState.js"
     },
     {
-      "name": "HtmlEditorResolvedInspection",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorResolvedInspection",
-      "description": "",
-      "module": "./content/api/HtmlEditorResolvedInspection.js"
-    },
-    {
-      "name": "HtmlEditorResolvedInspectorField",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorResolvedInspectorField",
-      "description": "",
-      "module": "./content/api/HtmlEditorResolvedInspectorField.js"
-    },
-    {
       "name": "HtmlEditorResolvedUiCommandField",
       "kind": "interface",
       "group": "types",
@@ -1170,15 +1062,6 @@
       "path": "/api-reference/HtmlEditorSelectionRange",
       "description": "Directed range: anchor is the fixed endpoint and focus is the moving endpoint.",
       "module": "./content/api/HtmlEditorSelectionRange.js"
-    },
-    {
-      "name": "HtmlEditorSelectionState",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorSelectionState",
-      "description": "",
-      "module": "./content/api/HtmlEditorSelectionState.js"
     },
     {
       "name": "HtmlEditorState",
@@ -1262,24 +1145,6 @@
       "module": "./content/api/HtmlEditorUiCommandContext.js"
     },
     {
-      "name": "HtmlEditorUiCommandControl",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorUiCommandControl",
-      "description": "",
-      "module": "./content/api/HtmlEditorUiCommandControl.js"
-    },
-    {
-      "name": "HtmlEditorUiCommandDensity",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorUiCommandDensity",
-      "description": "",
-      "module": "./content/api/HtmlEditorUiCommandDensity.js"
-    },
-    {
       "name": "HtmlEditorUiCommandExecutionContext",
       "kind": "interface",
       "group": "types",
@@ -1296,15 +1161,6 @@
       "path": "/api-reference/HtmlEditorUiCommandField",
       "description": "A value field or action field contributed by a UI command.",
       "module": "./content/api/HtmlEditorUiCommandField.js"
-    },
-    {
-      "name": "HtmlEditorUiCommandFieldDefinition",
-      "kind": "type",
-      "group": "types",
-      "namespace": "Components.Editors",
-      "path": "/api-reference/HtmlEditorUiCommandFieldDefinition",
-      "description": "",
-      "module": "./content/api/HtmlEditorUiCommandFieldDefinition.js"
     },
     {
       "name": "HtmlEditorUiCommandFieldPresentation",

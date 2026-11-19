@@ -39,12 +39,29 @@ export class HtmlEditorSelectionOverlay extends Component {
     private inspectionTargets?: () => readonly string[];
     private commandPreviewTargets?: (commandId: string) => HtmlEditorUiCommandTargets | undefined;
     private commandSurfaces: HTMLElement[] = [];
+    private expansionPreview?: () => string | null | undefined;
+    private expansionHovered = false;
 
     /** Outlines property targets while controls edit a collapsed selection, without changing its range. */
     connectInspector(inspector: HTMLElement, targets: () => readonly string[], toolbar?: HTMLElement,
-        commandPreviewTargets?: (commandId: string) => HtmlEditorUiCommandTargets | undefined): void {
+        commandPreviewTargets?: (commandId: string) => HtmlEditorUiCommandTargets | undefined,
+        expansionPreview?: () => string | null | undefined): void {
         this.inspectionTargets = targets;
         this.commandPreviewTargets = commandPreviewTargets;
+        this.expansionPreview = expansionPreview;
+        const expansionButton = inspector.querySelector<HTMLButtonElement>(".elg-html-editor-expand-selection");
+        if (expansionButton) {
+            this.listen(expansionButton, "pointerenter", () => { this.expansionHovered = true; this.schedule(); });
+            this.listen(expansionButton, "pointerleave", () => { this.expansionHovered = false; this.schedule(); });
+            this.listen(expansionButton, "pointermove", event => {
+                const pointer = event as PointerEvent;
+                if (!this.expansionHovered && pointer.pointerType === "mouse" && (pointer.movementX || pointer.movementY)) {
+                    this.expansionHovered = true;
+                    this.schedule();
+                }
+            });
+            this.listen(expansionButton, "click", () => { this.expansionHovered = false; this.schedule(); });
+        }
         this.commandSurfaces = [toolbar, inspector].filter((item): item is HTMLElement => !!item);
         const isCommandSurface = (target: EventTarget | null): boolean => target instanceof Node
             && this.commandSurfaces.some(surface => surface.contains(target));
@@ -141,6 +158,21 @@ export class HtmlEditorSelectionOverlay extends Component {
         const hostRect = host.getBoundingClientRect();
         const textLayer = e("div", { class: "elg-html-editor-text-selection-layer" });
         const containerLayer = e("div", { class: "elg-html-editor-container-selection-layer" });
+        const expansionTarget = this.expansionHovered ? this.expansionPreview?.() : undefined;
+        if (expansionTarget !== undefined) {
+            const rects = expansionTarget === null
+                ? [this.surface.content.getBoundingClientRect()]
+                : this.surface.selectedNodeClientRects([expansionTarget]).map(target => target.rect);
+            rects.forEach(rect => containerLayer.append(e("span", {
+                class: "elg-html-editor-container-selection-rect", "data-expansion-preview": "true", style: {
+                    left: `${rect.left - hostRect.left}px`, top: `${rect.top - hostRect.top}px`,
+                    width: `${rect.width}px`, height: `${rect.height}px`
+                }
+            })));
+            this.dom.append(containerLayer, textLayer);
+            this.dom.hidden = rects.length === 0;
+            return;
+        }
         const inspectionActive = this.inspectorFocused || this.commandSurfaceHovered || this.commandSurfaceFocused;
         const commandPreviewActive = inspectionActive && this.activeCommandId !== undefined;
         const textCommand = commandPreviewActive && this.activeCommandTargets?.kind === "text";

@@ -32,6 +32,7 @@ Start with the basics, or choose a guide for what you want to build.
 | --- | --- | --- |
 | A form | [Value editors](?!=/components/value-editors) | [Confirmation callbacks](?!=/components/value-editors/lifecycle), [validation](?!=/components/value-editors/validation), [responsive layout](?!=/styles/layout) |
 | An editable table | [DataGrid overview](?!=/components/datagrid/overview) | [Connecting data](?!=/components/datagrid/data-sources), [cell editing](?!=/components/datagrid/editing), [new rows](?!=/components/datagrid/editing/new-rows) |
+| Rich HTML content | [HTML Editor](?!=/components/html-editor/overview) | [Architecture](?!=/components/html-editor/architecture), [document model](?!=/components/html-editor/model), [commands](?!=/components/html-editor/commands) |
 | A product website | [Forma example](?!=/styles/websites) | [Containers and typography](?!=/styles/containers), [gradients](?!=/styles/surfaces), [motion](?!=/styles/motion) |
 | A remote-data screen | [Custom remote source](?!=/data/data-source/remote) | [Query contract](?!=/data/data-source/queries), [filter expressions](?!=/data/filter) |
 | A batch-edit workspace | [Sales order example](?!=/data/dataset) | [Transactions and business rules](?!=/data/dataset/rules), [saving](?!=/data/dataset/saving) |

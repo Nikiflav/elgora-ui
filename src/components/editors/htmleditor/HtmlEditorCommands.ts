@@ -39,8 +39,6 @@ export interface HtmlEditorState {
 
 /** Aggregate formatting state used by toolbar and menu controls. */
 export type HtmlEditorUiCommandState = "off" | "on" | "mixed";
-/** @deprecated Use HtmlEditorUiCommandState. */
-export type HtmlEditorMarkState = HtmlEditorUiCommandState;
 
 const blocks = { has: (tag: string) => ["textBlock", "listItem"].includes(behavior({ tag }).kind) };
 const atoms = { has: (tag: string) => behavior({ tag }).kind === "atomic" };
@@ -250,7 +248,7 @@ export function getHtmlEditorTextStyleValues(document: HtmlEditorDocument, rootI
 /** Computes formatting state from the same selected inline fragments used by formatting commands. */
 export function getHtmlEditorMarkState(document: HtmlEditorDocument, rootId: string,
     selection: HtmlEditorSelectionRange | undefined, mark: HtmlEditorTextMark,
-    marks?: HtmlEditorState["marks"]): HtmlEditorMarkState {
+    marks?: HtmlEditorState["marks"]): HtmlEditorUiCommandState {
     if (!selection) return "off";
     let nextId = 0;
     const prepared = formattingSelection(document, rootId, selection, () => `state-fragment-${nextId++}`);
@@ -279,7 +277,8 @@ export function getHtmlEditorMarkState(document: HtmlEditorDocument, rootId: str
     return "mixed";
 }
 
-function applyFormatting(selection: FormattingSelection, command: HtmlEditorTextMark, id: () => string): HtmlEditorState {
+function applyFormatting(selection: FormattingSelection, command: HtmlEditorTextMark, id: () => string,
+    typingMarks?: HtmlEditorState["marks"]): HtmlEditorState {
     const document = selection.document;
     const { tag, aliases } = markDefinition(command);
     const sameMark = (left: HtmlEditorElement, right: HtmlEditorElement): boolean =>
@@ -318,15 +317,18 @@ function applyFormatting(selection: FormattingSelection, command: HtmlEditorText
         });
         const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
         const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
-        return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
+        return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right },
+            marks: { ...typingMarks, [command]: false } };
     }
-    return fragmentSelection(selection, tag, id, {
+    const result = fragmentSelection(selection, tag, id, {
         transform: nodes => [element(tag, id, normalizeMarks(nodes.flatMap(apply)))]
     });
+    return { ...result, marks: { ...typingMarks, [command]: true } };
 }
 
 /** Removes inline marks and authored text styles while preserving document structure. */
-function clearFormatting(selection: FormattingSelection, id: () => string, nodeIds: readonly string[] = []): HtmlEditorState {
+function clearFormatting(selection: FormattingSelection, id: () => string, nodeIds: readonly string[] = [],
+    typingMarks?: HtmlEditorState["marks"]): HtmlEditorState {
     const document = selection.document;
     const marks = new Set(["strong", "b", "em", "i", "u", "s", "del"]);
     const textStyles = new Set(["color", "background-color", "font-size"]);
@@ -373,7 +375,9 @@ function clearFormatting(selection: FormattingSelection, id: () => string, nodeI
     }
     const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
     const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
-    return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right } };
+    return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right },
+        marks: { ...typingMarks, bold: false, italic: false, underline: false, strikethrough: false,
+            styles: { ...typingMarks?.styles, color: "", "background-color": "", "font-size": "" } } };
 }
 
 const linkInteractiveTags = new Set(["a", "button", "input", "select", "textarea", "option", "details", "iframe", "object", "embed"]);
@@ -673,7 +677,8 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         const fullStyleNodes = new Set(command.nodeIds ?? []);
         const fragmented = fragmentSelection(formatting, "span", id, { preserveIds: fullStyleNodes });
         applyFragmentStyle(fragmented.document, fragmented.fragmentIds, command.property, command.value);
-        return { document: fragmented.document, selection: fragmented.selection, marks: state.marks };
+        return { document: fragmented.document, selection: fragmented.selection, marks: { ...state.marks,
+            styles: { ...state.marks?.styles, [command.property]: command.value } } };
     }
     if (command.type === "clearFormatting") {
         const formatting = formattingSelection(document, rootId, selection, id);
@@ -682,7 +687,7 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
             marks: { ...state.marks, bold: false, italic: false, underline: false, strikethrough: false,
                 styles: { ...state.marks?.styles, color: "", "background-color": "", "font-size": "" } } };
         if (!formatting.ranges.some(range => range.to > range.from)) return;
-        return clearFormatting(formatting, id, command.nodeIds);
+        return clearFormatting(formatting, id, command.nodeIds, state.marks);
     }
     if (command.type === "link") {
         const formatting = formattingSelection(document, rootId, selection, id);
@@ -710,7 +715,7 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
     if (!originallyCollapsed && ["bold", "italic", "underline", "strikethrough"].includes(command.type)) {
         const formatting = formattingSelection(document, rootId, selection, id);
         if (!formatting || !formatting.ranges.length) return;
-        return applyFormatting(formatting, command.type as HtmlEditorTextMark, id);
+        return applyFormatting(formatting, command.type as HtmlEditorTextMark, id, state.marks);
     }
     const anchorScope = blockAt(document, selection.anchor), focusScope = blockAt(document, selection.focus);
     const collapsed = originallyCollapsed || !!(anchorScope && focusScope && anchorScope.block === focusScope.block && anchorScope.offset === focusScope.offset);

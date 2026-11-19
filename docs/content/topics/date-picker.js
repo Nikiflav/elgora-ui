@@ -6,7 +6,7 @@ export default {
   "order": 20,
   "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
   "prev": "/components/time-editors",
-  "next": "/components/html-editor",
+  "next": "/components/data-form/layout",
   "toc": true,
   "api": [],
   "keywords": [],

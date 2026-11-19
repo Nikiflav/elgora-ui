@@ -1,10 +1,14 @@
 import { HtmlEditor, cdiv, e } from "../../../src/index";
 
 export default function demo(): void {
-    const initialHtml = `<h2>Field notes</h2>
-<p>A good page starts with a clear <strong>idea</strong> and a little room to explore.</p>
-<p>Edit this copy, select a phrase, and try <em>Ctrl+B</em> or <em>⌘B</em>.</p>
-<p>Before the image <img src="/docs/assets/elgora-mark.svg" alt="Elgora mark" width="36" height="36"> after the image.</p>
+    const initialHtml = `<p><img src="/docs/assets/elgora-mark.svg" alt="Elgora mark" width="36" height="36"> &nbsp; <strong>THE CREATIVE WORKSPACE</strong></p>
+<h1>Make room for good ideas.</h1>
+<p>Every great page starts with a thought. Give yours shape with <strong>clear words</strong>, <em>thoughtful details</em> and a little space to explore.</p>
+<blockquote><p>“The secret of getting ahead is getting started.”</p></blockquote>
+<h2>Start with what matters</h2>
+<p>Write freely, then select a phrase to try the toolbar. Add a link, change a color, or use the inspector to explore the structure of your page.</p>
+<p><img src="/docs/assets/products/lamp.svg" alt="A desk lamp" width="180" height="180"></p>
+<p>A little light and a comfortable space can make it easier to focus on your next idea.</p>
 <p>Emoji: 😀 · 👩‍💻 · 👨‍👩‍👧‍👦 · 👍🏽 · 🇧🇬</p>
 <p>Combining marks: Cafe&#x301; · a&#x308; · n&#x303;. Across formatting: <strong>e</strong><em>&#x301;</em> · <strong>👩</strong><em>&#x200D;💻</em>.</p>
 <p>Try Backspace/Delete beside an emoji, accented letter or image, then Undo.</p>
@@ -32,20 +36,6 @@ export default function demo(): void {
 console.log(message);</code></pre>
 <blockquote><p>A quoted paragraph. Try Backspace at its beginning to remove one quote level.</p><p></p></blockquote>
 <p>Continue editing below the table. The whole document is one model-managed draft.</p>`;
-    const samples = {
-        text: { title: "Rich text and lists", html: initialHtml },
-        layout: { title: "Containers and media", html: `<h2>Working with structure</h2>
-<section style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-<div style="padding:12px;border:1px solid var(--elg-border-color)"><p>First card</p><p>Split and join paragraphs inside this card.</p></div>
-<div style="padding:12px;border:1px solid var(--elg-border-color)">This card starts as direct text.</div>
-</section><p>Before the divider</p><hr><p>After the divider</p>
-<p>Before <img src="/docs/assets/elgora-mark.svg" alt="Elgora mark" width="28" height="28"> after</p>` },
-        table: { title: "Table cells", html: `<h2>Editing inside a table</h2>
-<table style="border-collapse:collapse"><tbody><tr><th style="border:1px solid var(--elg-border-color);padding:8px">Name</th><th style="border:1px solid var(--elg-border-color);padding:8px">Notes</th></tr>
-<tr><td style="border:1px solid var(--elg-border-color);padding:8px">First item</td><td style="border:1px solid var(--elg-border-color);padding:8px">Split this cell with Enter.</td></tr>
-<tr><td style="border:1px solid var(--elg-border-color);padding:8px">Second item</td><td style="border:1px solid var(--elg-border-color);padding:8px"><p>First paragraph</p><p>Second paragraph</p></td></tr></tbody></table>
-<p>Paragraph after the table</p>` }
-    };
     const saved = { html: initialHtml };
     const status = e("div", { ui: ["text-muted"], role: "status" }, "Draft is ready. Save to accept your changes.");
     const output = e("pre", {
@@ -58,7 +48,7 @@ console.log(message);</code></pre>
         inspector: true,
         label: "Page content",
         placeholder: "Write page content…",
-        minHeight: 350,
+        minHeight: 550,
         onCommit: async html => {
             status.textContent = "Saving…";
             await new Promise(resolve => setTimeout(resolve, 250));
@@ -68,13 +58,11 @@ console.log(message);</code></pre>
         }
     });
     editor.content.style.width = "100%";
-    editor.content.style.height = "350px";
+    editor.content.style.height = "550px";
     editor.content.style.boxSizing = "border-box";
     editor.input.subscribe(() => {
         status.textContent = editor.modified ? "Unsaved changes. Save to accept, or discard to restore." : "No pending changes.";
     });
-    const selectionState = e("pre", { ui: ["m-0"], style: { whiteSpace: "pre-wrap" } }, "Select text in the editor.");
-    editor.selectionChanged.subscribe(selection => { selectionState.textContent = JSON.stringify(selection, null, 2) ?? "No saved selection"; });
     const save = e("button", { type: "button", ui: ["elg", "btn", "primary"], onclick: async () => {
         const accepted = await editor.commit();
         if (!accepted && !editor.error) status.textContent = "Nothing was accepted. Review the editor state and retry.";
@@ -83,36 +71,15 @@ console.log(message);</code></pre>
         editor.cancel();
         status.textContent = "Draft discarded. Showing the last accepted HTML.";
     } }, "Discard");
-    const sample = e("select", { class: "elg", onchange: () => {
-        const selected = samples[sample.value as keyof typeof samples];
-        editor.setHtml(selected.html);
-        saved.html = selected.html;
-        output.textContent = selected.html;
-        status.textContent = "Sample loaded. Edit inside a card or cell, and try Enter, Backspace, Delete and Undo.";
-    } }, ...Object.entries(samples).map(([value, sample]) => e("option", { value }, sample.title)));
-    sample.setAttribute("aria-label", "Editor sample");
-    const fragments = {
-        inline: { title: "Formatted text", html: '<strong>Bold</strong> and <em>italic</em>' },
-        list: { title: "List", html: '<ul><li>First pasted item</li><li>Second pasted item</li></ul>' },
-        table: { title: "Table", html: '<table><tbody><tr><td>Left cell</td><td>Right cell</td></tr></tbody></table>' },
-        layout: { title: "Layout card", html: '<section style="padding:12px;border:1px solid var(--elg-border-color)"><h3>Pasted card</h3><p>The card keeps its structure.</p></section>' }
-    };
-    const fragment = e("select", { class: "elg" }, ...Object.entries(fragments).map(([value, sample]) => e("option", { value }, sample.title)));
-    fragment.setAttribute("aria-label", "HTML fragment");
-    const insert = e("button", { type: "button", ui: ["elg", "btn", "neutral"], onclick: () => {
-        const html = fragments[fragment.value as keyof typeof fragments].html;
-        status.textContent = editor.execute({ type: "insertHtml", html })
-            ? "Fragment inserted. Try Undo and Redo, or continue typing."
-            : "Place the caret inside the editor, or select content within one editable area.";
-    } }, "Insert HTML");
+    const chevron = e("i", { class: "ri-arrow-right-s-line", ariaHidden: "true" });
+    const acceptedHtml = e("details", { ontoggle: (_event, details) => {
+        chevron.className = details.open ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line";
+    } }, e("summary", { style: { display: "flex", alignItems: "center", cursor: "pointer" } },
+        chevron, e("strong", {}, "Last accepted HTML")), output);
     const root = cdiv({ ui: ["d-flex", "flex-col", "gap-2", "p-1"], style: { width: "100%", boxSizing: "border-box" } },
-        e("label", { ui: ["d-flex", "flex-wrap", "gap-1", "items-center"] }, "Sample", sample),
-        e("small", { ui: ["text-muted"] }, "Changing the sample replaces the current draft."),
         e("div", { ui: ["d-flex", "flex-wrap", "gap-1"] }, save, discard),
-        e("div", { ui: ["d-flex", "flex-wrap", "gap-1"] }, fragment, insert),
         editor,
         status,
-        e("details", {}, e("summary", {}, "Selection state"), selectionState),
-        e("div", {}, e("strong", {}, "Last accepted HTML"), output));
+        acceptedHtml);
     root.mount(document.body);
 }

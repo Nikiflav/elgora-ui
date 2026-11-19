@@ -6,12 +6,9 @@ import type { LookupQuery } from "../LookupEditor";
 import { PopupMenu } from "../../popup/PopupMenu";
 import { DataForm, type DataFormAdapter } from "../../dataform/DataForm";
 import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
-import type { HtmlEditorUiCommandTargetContext, HtmlEditorUiCommandExecutionContext, HtmlEditorUiCommandFormRow, HtmlEditorResolvedUiCommandField,
+import type { HtmlEditorUiCommandTargetContext, HtmlEditorUiCommandFormRow, HtmlEditorResolvedUiCommandField,
     HtmlEditorUiCommandPresentationKind } from "./HtmlEditorInspection";
 export type { HtmlEditorUiCommandPresentationKind } from "./HtmlEditorInspection";
-
-export type HtmlEditorUiCommandDensity = "full" | "compact";
-export type HtmlEditorUiCommandControl = "data" | "buttons";
 
 /** Shared field projection used by every HtmlEditor DataForm surface. */
 export class HtmlEditorUiCommandFieldService {
@@ -38,19 +35,26 @@ export class HtmlEditorUiCommandFieldService {
 
     /** Resolves fields for a presentation slot; surfaces may then choose a subset/order. */
     resolve(context: HtmlEditorUiCommandTargetContext, presentation: HtmlEditorUiCommandPresentationKind): HtmlEditorResolvedUiCommandField[] {
-        const result = new Map<string, HtmlEditorResolvedUiCommandField>();
-        this.registry.getUiCommandFields(context).forEach(field => result.set(field.command.id, field));
-        this.registry.getCommands(this.registry.context(), true).forEach(command => {
-            const definition = command.field;
-            if (!definition || !this.visible(definition, presentation) || result.has(command.id)) return;
-            const targets = definition.resolveTargets(context);
-            const commandContext: HtmlEditorUiCommandExecutionContext = { ...context, resolution: { context, targets } };
-            if (!(command.isVisible?.(commandContext) ?? true)) return;
-            result.set(command.id, { command, definition, context: commandContext,
-                value: definition.type === "data" ? definition.getValue(commandContext) : undefined,
-                enabled: this.registry.enabled(command, commandContext) });
-        });
-        return [...result.values()].filter(field => this.visible(field.definition, presentation));
+        return this.registry.getUiCommandFields(context, presentation);
+    }
+
+    /** Shares value display, lookup text and commit behavior across DataForm surfaces. */
+    createFormAdapter(): DataFormAdapter<HtmlEditorUiCommandFormRow> {
+        return {
+            getValue: (row, field) => this.fieldValue(row.fields.get(field.name)),
+            getText: async (row, field, value) => {
+                const binding = row.fields.get(field.name);
+                if (!binding?.value || binding.value.kind === "unset") return "—";
+                if (binding.value.kind === "mixed") return this.messages.text("htmlEditorInspector.mixed");
+                if (field.lookup) return field.lookup.getValueText(value, { row, field, value });
+                return String(value ?? "");
+            },
+            setValue: async (row, field, value) => {
+                const binding = row.fields.get(field.name);
+                if (!binding || !this.registry.executeUiCommandField(binding, value))
+                    throw new Error(this.messages.text("htmlEditorInspector.propertiesHint"));
+            }
+        };
     }
 
     /** Converts one resolved command field into the shared DataViewField contract. */
@@ -122,7 +126,7 @@ export class HtmlEditorUiCommandFieldService {
             }
         } else if (binding.definition.type === "data") {
             field.lookup = source.lookup ?? this.optionsLookup(binding);
-            field.getValue = () => this.inspectorValue(row.fields.get(command.id)!);
+            field.getValue = () => this.fieldValue(row.fields.get(command.id));
         } else {
             const state = this.registry.state(command, binding.context);
             const button: DataViewButton<HtmlEditorUiCommandFormRow> = {
@@ -151,28 +155,14 @@ export class HtmlEditorUiCommandFieldService {
         const available = new Map(this.resolve(context, "toolbar").map(field => [field.command.id, field]));
         const fields = order.map(id => available.get(id)).filter((field): field is HtmlEditorResolvedUiCommandField => !!field);
         if (!fields.length) return undefined;
-        const row: HtmlEditorUiCommandFormRow = { context, fields: new Map(fields.map(field => [field.command.id, field])) };
+        const row: HtmlEditorUiCommandFormRow = { fields: new Map(fields.map(field => [field.command.id, field])) };
         const dataFields = fields.map(field => {
             const result = this.field(field, row, "toolbar", action);
             result.hideLabel = true;
             if (result.buttons) result.buttons.forEach(button => { button.ui = ["btn-ghost"]; });
             return result;
         });
-        const adapter: DataFormAdapter<HtmlEditorUiCommandFormRow> = {
-            getValue: (_row, field) => this.inspectorValue(row.fields.get(field.name)! ),
-            getText: async (_row, field, value) => {
-                const binding = row.fields.get(field.name);
-                if (!binding?.value || binding.value.kind === "unset") return "—";
-                if (binding.value.kind === "mixed") return this.messages.text("htmlEditorInspector.mixed");
-                if (field.lookup) return field.lookup.getValueText(value, { row, field, value });
-                return String(value ?? "");
-            },
-            setValue: async (_row, field, value) => {
-                const binding = row.fields.get(field.name);
-                if (!binding || !this.registry.executeUiCommandField(binding, value))
-                    throw new Error(this.messages.text("htmlEditorInspector.propertiesHint"));
-            }
-        };
+        const adapter = this.createFormAdapter();
         return new DataForm<HtmlEditorUiCommandFormRow>({ data: row, fields: dataFields,
             layout: [{ display: "flex", wrap: false, labelPosition: "none", ui: ["gap-0"],
                 fields: dataFields.map(field => ({ field: field.name, labelPosition: "none" })) }],
@@ -180,14 +170,8 @@ export class HtmlEditorUiCommandFieldService {
             locale: this.localeOptions.locale, localization: this.localeOptions.localization, adapter });
     }
 
-    private visible(definition: any, presentation: HtmlEditorUiCommandPresentationKind): boolean {
-        if (definition.visibleIn) return definition.visibleIn.includes(presentation);
-        if (presentation === "basic" || presentation === "advanced") return !definition.toolbarOnly;
-        return presentation === "toolbar";
-    }
-
-    private inspectorValue(binding: HtmlEditorResolvedUiCommandField): any {
-        return binding.value?.kind === "value" ? binding.value.value : binding.value?.kind === "mixed" ? null : undefined;
+    private fieldValue(binding?: HtmlEditorResolvedUiCommandField): any {
+        return binding?.value?.kind === "value" ? binding.value.value : binding?.value?.kind === "mixed" ? null : undefined;
     }
 
     private optionsLookup(binding: HtmlEditorResolvedUiCommandField): FieldLookup<HtmlEditorUiCommandFormRow> | undefined {

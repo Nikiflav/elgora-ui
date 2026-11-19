@@ -103,6 +103,6 @@ text. Keep content non-interactive: TreeView owns disclosure, keyboard focus and
 selection. Always provide `getText` for the accessible label and type-ahead.
 This version uses fixed 30px, single-line rows; custom content must fit that height.
 
-The [HtmlEditor demo](?!=/components/html-editor) also uses TreeView to navigate
+The [HtmlEditor demo](?!=/components/html-editor/overview) also uses TreeView to navigate
 the editor's model elements. Structural element selection and the full property
 inspector are separate, later stages.

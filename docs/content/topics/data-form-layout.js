@@ -6,7 +6,7 @@ export default {
   "parent": "forms",
   "order": 20,
   "description": "Arrange fields in vertical forms, wrapping flex rows and twelve-column grids.",
-  "prev": "/components/html-editor",
+  "prev": "/components/date-picker",
   "next": "/components/filter-editor",
   "toc": true,
   "api": [],

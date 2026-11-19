@@ -5,7 +5,7 @@ import type { LocaleOptions } from "../../../localization/Localization";
 import { Popover } from "../../popup/popover";
 import { TreeView } from "../../tree-view/TreeView";
 import { TabView } from "../../tab-view/TabView";
-import { DataForm, type DataFormAdapter, type DataFormLayoutGroup, type DataFormLayoutRow } from "../../dataform/DataForm";
+import { DataForm, type DataFormLayoutGroup, type DataFormLayoutRow } from "../../dataform/DataForm";
 import type { HtmlEditorSurface } from "./HtmlEditorSurface";
 import type { HtmlEditorElement, HtmlEditorNode, HtmlEditorText } from "./HtmlEditorModel";
 import type { HtmlEditorNodeCoverage } from "./HtmlEditorRange";
@@ -63,15 +63,17 @@ export class HtmlEditorInspector extends Component {
             ui: ["elg", "btn", "neutral", "btn-ghost"], onclick: () => { void this.openElements(); } });
         this.selector.setAttribute("aria-haspopup", "dialog");
         this.selector.setAttribute("aria-expanded", "false");
-        this.selectorCoverage = e("button", { type: "button", class: "elg-html-editor-node-coverage",
+        this.selectorCoverage = e("button", { type: "button", class: "elg-html-editor-expand-selection",
             onpointerdown: event => event.preventDefault(), onmousedown: event => event.preventDefault(),
             onclick: event => {
                 event.stopPropagation();
-                if (!this.mixed && this.targetId && !this.selectorCoverage.disabled) {
-                    this.surface.selectNode(this.targetId);
+                if (!this.selectorCoverage.disabled) {
+                    const target = this.expandedSelectionTarget();
+                    if (target === null) this.surface.selectAllContent();
+                    else if (target) this.surface.selectNode(target);
                     this.selectorCoverage.focus();
                 }
-            } });
+            } }, e("i", { class: "ri-corner-left-up-line", ariaHidden: "true" }));
         this.selectorRow = e("div", { class: "elg-html-editor-selector-row" }, this.selectorCoverage, this.selector);
         this.basicPanel = e("div", { class: "elg-html-editor-basic-commands" });
         this.tabView = new TabView({ label: this.messages.text("htmlEditorInspector.label"), items: [
@@ -202,6 +204,20 @@ export class HtmlEditorInspector extends Component {
         return path;
     }
 
+    /** Next containing element, or null for all document content. */
+    private expandedSelectionTarget(): string | null | undefined {
+        if (!this.surface.selection || this.surface.allContentSelected) return undefined;
+        if (this.mixed) return this.commonAncestorId ?? null;
+        if (!this.targetId) return undefined;
+        return this.coverage.get(this.targetId) === "full"
+            ? this.parents.get(this.targetId)?.id ?? null : this.targetId;
+    }
+
+    /** Target preview for the selection expansion button; null denotes the document contents. */
+    get expandedSelectionPreview(): string | null | undefined {
+        return this.expandedSelectionTarget();
+    }
+
     private inspect(item: HtmlEditorElement): void {
         if (this.selector.disabled || this.disposed.Value || !this.nodes.has(item.id)) return;
         this.popup?.hide();
@@ -303,27 +319,10 @@ export class HtmlEditorInspector extends Component {
             this.basicPanel.append(e("span", { class: "elg-html-editor-inspector-empty" }, this.messages.text("htmlEditorInspector.propertiesHint")));
             return;
         }
-        const row: HtmlEditorUiCommandFormRow = { context, fields: new Map(fields.map(field => [field.command.id, field])) };
+        const row: HtmlEditorUiCommandFormRow = { fields: new Map(fields.map(field => [field.command.id, field])) };
         const ordered = fields;
         const dataFields = ordered.map(field => this.fieldService.field(field, row, "basic"));
-        const adapter: DataFormAdapter<HtmlEditorUiCommandFormRow> = {
-            getValue: (_row, field) => {
-                const value = row.fields.get(field.name)?.value;
-                return value?.kind === "value" ? value.value : value?.kind === "mixed" ? null : undefined;
-            },
-            getText: async (_row, field, value) => {
-                const binding = row.fields.get(field.name);
-                if (!binding?.value || binding.value.kind === "unset") return "—";
-                if (binding.value.kind === "mixed") return this.messages.text("htmlEditorInspector.mixed");
-                if (field.lookup) return field.lookup.getValueText(value, { row, field, value });
-                return String(value ?? "");
-            },
-            setValue: async (_row, field, value) => {
-                const binding = row.fields.get(field.name);
-                if (!binding || !this.commands.executeUiCommandField(binding, value))
-                    throw new Error(this.messages.text("htmlEditorInspector.propertiesHint"));
-            }
-        };
+        const adapter = this.fieldService.createFormAdapter();
         const category = (field: HtmlEditorResolvedUiCommandField) => field.definition.type === "buttons"
             ? field.definition.group === "link" ? "link" : "format"
             : field.definition.group === "block" ? "paragraph" : field.definition.group ?? "appearance";
@@ -390,10 +389,10 @@ export class HtmlEditorInspector extends Component {
         this.selector.disabled = this.surface.content.getAttribute("aria-disabled") === "true";
         const coverage = !this.mixed && target ? this.coverage.get(target.id) ?? "none" : "none";
         this.selectorRow.dataset.htmlEditorCoverage = coverage;
-        this.selectorCoverage.hidden = this.mixed || target?.type !== "element";
-        this.selectorCoverage.disabled = this.selector.disabled || !target;
-        const hint = this.messages.text(coverage === "full" ? "htmlEditorInspector.fullySelected"
-            : coverage === "partial" ? "htmlEditorInspector.partiallySelectedHint" : "htmlEditorInspector.notSelectedHint");
+        const nextTarget = this.expandedSelectionTarget();
+        this.selectorCoverage.disabled = this.selector.disabled || nextTarget === undefined;
+        const hint = this.messages.text(nextTarget === null ? "htmlEditorInspector.selectAllContent"
+            : this.mixed || coverage === "full" ? "htmlEditorInspector.selectParent" : "htmlEditorInspector.expandSelectElement");
         this.selectorCoverage.title = hint;
         this.selectorCoverage.setAttribute("aria-label", hint);
         if (this.selector.disabled) this.popup?.hide();

@@ -5,6 +5,7 @@
     { "group": "styles", "title": "Styling and layout" },
     { "group": "components", "title": "Components" },
     { "group": "datagrid", "title": "DataGrid" },
+    { "group": "html-editor", "title": "HTML Editor" },
     { "group": "data", "title": "Data" }
   ],
   "categories": [

@@ -21,16 +21,6 @@ export default {
       "kind": "property"
     },
     {
-      "name": "density",
-      "type": "\"compact\" | \"full\" | undefined",
-      "description": "",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "kind": "property"
-    },
-    {
       "name": "appearance",
       "type": "DataViewButtonAppearance | undefined",
       "description": "",

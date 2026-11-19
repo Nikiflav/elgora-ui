@@ -273,6 +273,47 @@
       "module": "./content/topics/datagrid-overview.js"
     },
     {
+      "id": "html-editor",
+      "title": "Overview",
+      "path": "/components/html-editor/overview",
+      "group": "html-editor",
+      "order": 10,
+      "description": "Edit rich HTML with one model, shared commands and host-controlled acceptance.",
+      "prev": "/docs",
+      "next": "/components/html-editor/architecture",
+      "toc": true,
+      "api": [
+        "HtmlEditor",
+        "HtmlEditorOptions",
+        "HtmlEditorSurface",
+        "HtmlEditorSurfaceOptions",
+        "HtmlEditorToolbar",
+        "HtmlEditorInspector"
+      ],
+      "keywords": [
+        "HTML",
+        "rich text",
+        "contenteditable",
+        "CMS"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "try-the-editor",
+          "title": "Try the editor"
+        },
+        {
+          "id": "add-the-editor-to-a-host-form",
+          "title": "Add the editor to a host form"
+        },
+        {
+          "id": "explore-html-editor",
+          "title": "Explore HTML Editor"
+        }
+      ],
+      "module": "./content/topics/html-editor.js"
+    },
+    {
       "id": "data-overview",
       "title": "Overview — choosing a model",
       "path": "/data/overview",
@@ -694,6 +735,47 @@
       "module": "./content/topics/time-editors.js"
     },
     {
+      "id": "html-editor-architecture",
+      "title": "Architecture",
+      "path": "/components/html-editor/architecture",
+      "group": "html-editor",
+      "order": 20,
+      "description": "Understand HtmlEditor ownership, command flow and the shared editing model.",
+      "prev": "/components/html-editor/overview",
+      "next": "/components/html-editor/model",
+      "toc": true,
+      "api": [
+        "HtmlEditor",
+        "HtmlEditorSurface",
+        "HtmlEditorCommandRegistry",
+        "HtmlEditorUiCommandFieldService",
+        "HtmlEditorToolbar",
+        "HtmlEditorInspector"
+      ],
+      "keywords": [
+        "architecture",
+        "components",
+        "command flow",
+        "model"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "component-responsibilities",
+          "title": "Component responsibilities"
+        },
+        {
+          "id": "update-and-command-flow",
+          "title": "Update and command flow"
+        },
+        {
+          "id": "lifecycle-boundary",
+          "title": "Lifecycle boundary"
+        }
+      ],
+      "module": "./content/topics/html-editor-architecture.js"
+    },
+    {
       "id": "semantic-colors",
       "title": "Colors and themes",
       "path": "/styles/semantic-colors",
@@ -784,7 +866,7 @@
       "order": 20,
       "description": "A standalone date-only calendar with month/year navigation and keyboard support.",
       "prev": "/components/time-editors",
-      "next": "/components/html-editor",
+      "next": "/components/data-form/layout",
       "toc": true,
       "api": [],
       "keywords": [],
@@ -843,81 +925,6 @@
       "module": "./content/topics/data-fields.js"
     },
     {
-      "id": "html-editor",
-      "title": "HTML",
-      "path": "/components/html-editor",
-      "group": "components",
-      "parent": "editors",
-      "order": 20,
-      "description": "Edit rich-text HTML as a draft and let the host accept or discard it.",
-      "prev": "/components/date-picker",
-      "next": "/components/data-form/layout",
-      "toc": true,
-      "api": [
-        "HtmlEditor",
-        "HtmlEditorOptions",
-        "HtmlEditorSurface",
-        "HtmlEditorSurfaceOptions",
-        "HtmlEditorToolbar",
-        "HtmlEditorInspector",
-        "ValueEditor"
-      ],
-      "keywords": [
-        "html",
-        "rich text",
-        "contenteditable",
-        "cms"
-      ],
-      "sectionRedirects": [],
-      "headings": [
-        {
-          "id": "edit-and-accept-content",
-          "title": "Edit and accept content"
-        },
-        {
-          "id": "surface-and-orchestration",
-          "title": "Surface and orchestration"
-        },
-        {
-          "id": "use-in-a-host-form",
-          "title": "Use in a host form"
-        },
-        {
-          "id": "html-node-model",
-          "title": "HTML node model"
-        },
-        {
-          "id": "commands-and-history",
-          "title": "Commands and history"
-        },
-        {
-          "id": "structural-editing-rules",
-          "title": "Structural editing rules"
-        },
-        {
-          "id": "preformatted-text-and-quotes",
-          "title": "Preformatted text and quotes"
-        },
-        {
-          "id": "list-shortcuts-and-boundaries",
-          "title": "List shortcuts and boundaries"
-        },
-        {
-          "id": "html-fragment-insertion-and-clipboard",
-          "title": "HTML fragment insertion and clipboard"
-        },
-        {
-          "id": "selection-and-focus",
-          "title": "Selection and focus"
-        },
-        {
-          "id": "api-reference",
-          "title": "API reference"
-        }
-      ],
-      "module": "./content/topics/html-editor.js"
-    },
-    {
       "id": "data-form-layout",
       "title": "Layout",
       "path": "/components/data-form/layout",
@@ -925,7 +932,7 @@
       "parent": "forms",
       "order": 20,
       "description": "Arrange fields in vertical forms, wrapping flex rows and twelve-column grids.",
-      "prev": "/components/html-editor",
+      "prev": "/components/date-picker",
       "next": "/components/filter-editor",
       "toc": true,
       "api": [],
@@ -1120,6 +1127,39 @@
         }
       ],
       "module": "./content/topics/datasource-overview.js"
+    },
+    {
+      "id": "html-editor-model",
+      "title": "Document model",
+      "path": "/components/html-editor/model",
+      "group": "html-editor",
+      "order": 30,
+      "description": "Learn how HTML nodes, authored styles and editor identities are represented.",
+      "prev": "/components/html-editor/architecture",
+      "next": "/components/html-editor/commands",
+      "toc": true,
+      "api": [
+        "HtmlEditorDocument",
+        "HtmlEditorNode",
+        "HtmlEditorNodeId",
+        "HtmlEditorText",
+        "HtmlEditorElement",
+        "HtmlEditorStyle",
+        "getHtmlEditorStyle",
+        "setHtmlEditorStyle",
+        "removeHtmlEditorStyle",
+        "getHtmlEditorElementBehavior"
+      ],
+      "keywords": [
+        "model",
+        "nodes",
+        "HTML",
+        "styles",
+        "attributes"
+      ],
+      "sectionRedirects": [],
+      "headings": [],
+      "module": "./content/topics/html-editor-model.js"
     },
     {
       "id": "data-form-editing",
@@ -1539,6 +1579,50 @@
       "module": "./content/topics/browser-router.js"
     },
     {
+      "id": "html-editor-commands",
+      "title": "Commands and formatting",
+      "path": "/components/html-editor/commands",
+      "group": "html-editor",
+      "order": 40,
+      "description": "Understand command definitions, target resolution, formatting and command execution.",
+      "prev": "/components/html-editor/model",
+      "next": "/components/html-editor/editing",
+      "toc": true,
+      "api": [
+        "HtmlEditorCommand",
+        "HtmlEditorUiCommand",
+        "HtmlEditorCommandRegistry",
+        "HtmlEditorUiCommandField",
+        "HtmlEditorUiCommandTargets",
+        "HtmlEditorUiCommandTargetContext",
+        "HtmlEditorUiCommandResolution",
+        "HtmlEditorResolvedUiCommandField"
+      ],
+      "keywords": [
+        "commands",
+        "formatting",
+        "targets",
+        "bold",
+        "text style"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "field-definitions-and-target-resolution",
+          "title": "Field definitions and target resolution"
+        },
+        {
+          "id": "applying-inline-formatting-and-styles",
+          "title": "Applying inline formatting and styles"
+        },
+        {
+          "id": "core-operations-and-history",
+          "title": "Core operations and history"
+        }
+      ],
+      "module": "./content/topics/html-editor-commands.js"
+    },
+    {
       "id": "style-containers",
       "title": "Containers and typography",
       "path": "/styles/containers",
@@ -1810,6 +1894,47 @@
         }
       ],
       "module": "./content/topics/dataset.js"
+    },
+    {
+      "id": "html-editor-editing",
+      "title": "Editing behavior",
+      "path": "/components/html-editor/editing",
+      "group": "html-editor",
+      "order": 50,
+      "description": "Explore structural editing rules, keyboard behavior, lists, quotes and history.",
+      "prev": "/components/html-editor/commands",
+      "next": "/components/html-editor/selection",
+      "toc": true,
+      "api": [
+        "HtmlEditor",
+        "HtmlEditorCommand",
+        "HtmlEditorElementBehavior",
+        "HtmlEditorElementKind"
+      ],
+      "keywords": [
+        "editing",
+        "keyboard",
+        "Enter",
+        "Backspace",
+        "lists",
+        "undo"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "structural-editing-rules",
+          "title": "Structural editing rules"
+        },
+        {
+          "id": "preformatted-text-and-quotes",
+          "title": "Preformatted text and quotes"
+        },
+        {
+          "id": "list-shortcuts-and-boundaries",
+          "title": "List shortcuts and boundaries"
+        }
+      ],
+      "module": "./content/topics/html-editor-editing.js"
     },
     {
       "id": "datagrid-keyboard-navigation",
@@ -2317,6 +2442,41 @@
       "module": "./content/topics/datagrid-editing.js"
     },
     {
+      "id": "html-editor-selection",
+      "title": "Selection and focus",
+      "path": "/components/html-editor/selection",
+      "group": "html-editor",
+      "order": 60,
+      "description": "Understand the remembered text range, node targets, focus and selection visualization.",
+      "prev": "/components/html-editor/editing",
+      "next": "/components/html-editor/ui-surfaces",
+      "toc": true,
+      "api": [
+        "HtmlEditorSelectionRange",
+        "HtmlEditorNodeCoverage",
+        "HtmlEditorSurface"
+      ],
+      "keywords": [
+        "selection",
+        "focus",
+        "overlay",
+        "inspector",
+        "range"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "text-selection-node-targets-and-focus",
+          "title": "Text selection, node targets and focus"
+        },
+        {
+          "id": "selection-overlay",
+          "title": "Selection overlay"
+        }
+      ],
+      "module": "./content/topics/html-editor-selection.js"
+    },
+    {
       "id": "datagrid-edit-validation",
       "title": "Validation and rejected input",
       "path": "/components/datagrid/editing/validation",
@@ -2443,6 +2603,52 @@
       "module": "./content/topics/datagrid-clipboard.js"
     },
     {
+      "id": "html-editor-ui-surfaces",
+      "title": "Inspector and toolbar",
+      "path": "/components/html-editor/ui-surfaces",
+      "group": "html-editor",
+      "order": 70,
+      "description": "Learn how the toolbar, inspector, tree and link dialog present shared editor state.",
+      "prev": "/components/html-editor/selection",
+      "next": "/components/html-editor/insertion-and-clipboard",
+      "toc": true,
+      "api": [
+        "HtmlEditorToolbar",
+        "HtmlEditorInspector",
+        "HtmlEditorUiCommandFieldService",
+        "HtmlEditorUiCommandPresentation",
+        "HtmlEditorUiCommandPresentationKind",
+        "HtmlEditorUiCommandFormRow"
+      ],
+      "keywords": [
+        "toolbar",
+        "inspector",
+        "DataForm",
+        "TreeView",
+        "link dialog"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "toolbar",
+          "title": "Toolbar"
+        },
+        {
+          "id": "inspector",
+          "title": "Inspector"
+        },
+        {
+          "id": "link-dialog-uses-a-staged-draft",
+          "title": "Link dialog uses a staged draft"
+        },
+        {
+          "id": "shared-field-presentation-contract",
+          "title": "Shared field presentation contract"
+        }
+      ],
+      "module": "./content/topics/html-editor-ui-surfaces.js"
+    },
+    {
       "id": "localization",
       "title": "Localization",
       "path": "/fundamentals/localization",
@@ -2530,6 +2736,36 @@
         }
       ],
       "module": "./content/topics/html-elements.js"
+    },
+    {
+      "id": "html-editor-insertion",
+      "title": "HTML insertion and clipboard",
+      "path": "/components/html-editor/insertion-and-clipboard",
+      "group": "html-editor",
+      "order": 80,
+      "description": "Learn how HTML fragments, paste, copy and cut preserve supported document structure.",
+      "prev": "/components/html-editor/ui-surfaces",
+      "toc": true,
+      "api": [
+        "HtmlEditor",
+        "HtmlEditorCommand",
+        "HtmlEditorSurface"
+      ],
+      "keywords": [
+        "paste",
+        "clipboard",
+        "insertHtml",
+        "copy",
+        "cut"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "try-html-insertion",
+          "title": "Try HTML insertion"
+        }
+      ],
+      "module": "./content/topics/html-editor-insertion.js"
     },
     {
       "id": "style-motion",

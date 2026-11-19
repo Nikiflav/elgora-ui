@@ -72,6 +72,22 @@ export default {
       "signature": "(context: HtmlEditorUiCommandTargetContext, presentation: HtmlEditorUiCommandPresentationKind) => HtmlEditorResolvedUiCommandField[]"
     },
     {
+      "name": "createFormAdapter",
+      "type": "() => DataFormAdapter<HtmlEditorUiCommandFormRow>",
+      "description": "Shares value display, lookup text and commit behavior across DataForm surfaces.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorUiCommandFieldService.ts",
+      "parameters": [],
+      "returns": {
+        "type": "DataFormAdapter<HtmlEditorUiCommandFormRow>",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => DataFormAdapter<HtmlEditorUiCommandFormRow>"
+    },
+    {
       "name": "field",
       "type": "(binding: HtmlEditorResolvedUiCommandField, row: HtmlEditorUiCommandFormRow, presentation?: HtmlEditorUiCommandPresentationKind, action?: (commandId: string, anchor: HTMLButtonElement) => boolean) => DataViewField<HtmlEditorUiCommandFormRow>",
       "description": "Converts one resolved command field into the shared DataViewField contract.",

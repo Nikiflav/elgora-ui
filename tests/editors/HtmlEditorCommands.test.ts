@@ -483,6 +483,66 @@ describe("HtmlEditor transactions", () => {
         expect(editor.document.children[0].children[0].type).toBe("text");
     });
 
+    it("uses the structural selection after formatting for typing replacement and history", () => {
+        create("<p>before middle after</p>");
+        const paragraph = editor.content.firstElementChild!;
+        const source = paragraph.firstChild!;
+        select(source, 7, source, 13);
+
+        expect(editor.execute({ type: "bold" })).toBe(true);
+        expect(editor.content.innerHTML).toBe("<p>before <strong>middle</strong> after</p>");
+        expect(editor.selection?.anchor.nodeId).toBe(paragraph.firstChild === null ? "" : editor.document.children[0].id);
+        expect(editor.selection?.focus.nodeId).toBe(editor.document.children[0].id);
+
+        input("insertText", "replacement");
+        expect(editor.content.innerHTML).toBe("<p>before <strong>replacement</strong> after</p>");
+        expect(editor.selection?.anchor).toEqual(editor.selection?.focus);
+
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.innerHTML).toBe("<p>before <strong>middle</strong> after</p>");
+        expect(editor.execute({ type: "redo" })).toBe(true);
+        expect(editor.content.innerHTML).toBe("<p>before <strong>replacement</strong> after</p>");
+    });
+
+    it("carries a selected text style into replacement typing", () => {
+        create("<p>before middle after</p>");
+        const text = editor.content.firstElementChild!.firstChild!;
+        select(text, 7, text, 13);
+        expect(editor.execute({ type: "textStyle", property: "color", value: "red" })).toBe(true);
+        expect(editor.content.querySelector("span")?.style.color).toBe("red");
+
+        input("insertText", "replacement");
+        expect(editor.content.innerHTML).toBe('<p>before <span style="color: red;">replacement</span> after</p>');
+    });
+
+    it.each(["deleteBackward", "deleteForward"] as const)("deletes a structurally selected formatted fragment: %s", type => {
+        create("<p>before middle after</p>");
+        const text = editor.content.firstElementChild!.firstChild!;
+        select(text, 7, text, 13);
+        expect(editor.execute({ type: "italic" })).toBe(true);
+        expect(editor.content.querySelector("em")?.textContent).toBe("middle");
+
+        input(type === "deleteBackward" ? "deleteContentBackward" : "deleteContentForward");
+        expect(editor.content.textContent).toBe("before  after");
+        expect(editor.content.querySelector("em")).toBeNull();
+        expect(editor.selection?.anchor).toEqual(editor.selection?.focus);
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.querySelector("em")?.textContent).toBe("middle");
+    });
+
+    it("leaves native arrow navigation available after a structural formatting selection", () => {
+        create("<p>before middle after</p>");
+        const text = editor.content.firstElementChild!.firstChild!;
+        select(text, 7, text, 13);
+        expect(editor.execute({ type: "bold" })).toBe(true);
+
+        for (const key of ["ArrowLeft", "ArrowRight", "Home", "End"]) {
+            const event = new KeyboardEvent("keydown", { key, cancelable: true });
+            editor.content.dispatchEvent(event);
+            expect(event.defaultPrevented).toBe(false);
+        }
+    });
+
     it("uses beforeinput target ranges for replacement rather than the visible caret", () => {
         create("<p>teh word</p>");
         const text = editor.content.firstChild!.firstChild!;

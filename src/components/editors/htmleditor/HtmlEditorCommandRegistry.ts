@@ -9,7 +9,8 @@ import { getHtmlEditorStyle } from "./HtmlEditorStyles";
 import { getHtmlEditorElementBehavior, isAtomic } from "./HtmlEditorStructure";
 import { aggregateHtmlEditorUiCommandValues, type HtmlEditorUiCommandTargetContext, type HtmlEditorUiCommandExecutionContext,
     type HtmlEditorUiCommandField, type HtmlEditorUiCommandValue, type HtmlEditorUiCommandValueState, type HtmlEditorUiCommandResolution,
-    type HtmlEditorResolvedUiCommandField, type HtmlEditorUiCommandNodeInfo, type HtmlEditorUiCommandTargets } from "./HtmlEditorInspection";
+    type HtmlEditorResolvedUiCommandField, type HtmlEditorUiCommandNodeInfo, type HtmlEditorUiCommandTargets,
+    type HtmlEditorUiCommandPresentationKind } from "./HtmlEditorInspection";
 
 /** Context supplied to every HTML editor command surface. */
 export interface HtmlEditorUiCommandContext {
@@ -37,9 +38,6 @@ export interface HtmlEditorUiCommandOption {
     disabled?: boolean;
 }
 
-/** @deprecated Use HtmlEditorUiCommandContext. */
-export type HtmlEditorCommandContext = HtmlEditorUiCommandContext;
-
 /** A URL is accepted when it has no scheme (relative/anchor) or uses an explicit safe scheme. */
 export function isSafeHtmlEditorHref(value: string): boolean {
     return !/^[a-z][a-z0-9+.-]*:/i.test(value) || /^(https?:|mailto:|tel:)/i.test(value);
@@ -63,8 +61,6 @@ export interface HtmlEditorUiCommand {
     getState?: (context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandState;
     /** Optional lookup choices rendered by a command field. */
     options?: readonly HtmlEditorUiCommandOption[];
-    /** Current lookup value; mixed means compatible targets have different values. */
-    getValue?: (context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandValueState | undefined;
     /** Optional DataForm contribution; node roles and target resolution belong here, not in the view. */
     field?: HtmlEditorUiCommandField;
     /** Executes the command against the shared editor context. */
@@ -91,9 +87,9 @@ export class HtmlEditorCommandRegistry {
         return { surface: this.surface, targetId, selection: this.surface.selection };
     }
     /**
-     * Captures inspection intent without cloning the document or changing focus.
-     * Inspected element IDs and the remembered text range coexist. Tree navigation
-     * can change the inspected elements without widening the remembered range.
+     * Captures target intent without cloning the document or changing focus.
+     * Target node IDs and the remembered text range coexist. Tree navigation
+     * can change the targeted elements without widening the remembered range.
      * @example
      * const context = registry.uiCommandTargetContext([imageId]);
      * const fields = registry.getUiCommandFields(context);
@@ -106,10 +102,6 @@ export class HtmlEditorCommandRegistry {
             return [id, typeof value === "string" ? this.nodeInfo(id) : value] as const;
         }))].map(([, info]) => info).filter((info): info is HtmlEditorUiCommandNodeInfo => !!info);
         return { ...this.context(infos[0]?.id), nodeInfos: infos, modelVersion: this.surface.modelVersion };
-    }
-    /** @deprecated Use uiCommandTargetContext. */
-    inspectionContext(nodeInfos: readonly (string | HtmlEditorUiCommandNodeInfo)[] = []): HtmlEditorUiCommandTargetContext {
-        return this.uiCommandTargetContext(nodeInfos);
     }
     private nodeInfo(id: string): HtmlEditorUiCommandNodeInfo | undefined {
         const item = this.surface.findElement(id);
@@ -127,26 +119,24 @@ export class HtmlEditorCommandRegistry {
      * Resolves registered command fields. Each resolver declares its own
      * application units, so alignment may bind blocks while Bold binds text
      * fragments. Incomplete target sets are omitted; disabled fields stay visible.
-     * No built-in contributions are migrated automatically by this scaffold.
      * Capture fresh bindings after an accepted model change; do not recreate them
      * halfway through an active property edit or read them as mutable node objects.
      */
-    getUiCommandFields(context: HtmlEditorUiCommandTargetContext = this.uiCommandTargetContext()): HtmlEditorResolvedUiCommandField[] {
-        if (!this.validInspectionContext(context)) return [];
+    getUiCommandFields(context: HtmlEditorUiCommandTargetContext = this.uiCommandTargetContext(),
+        presentation: HtmlEditorUiCommandPresentationKind = "basic"): HtmlEditorResolvedUiCommandField[] {
+        if (!this.validUiCommandTargetContext(context)) return [];
         const fields: HtmlEditorResolvedUiCommandField[] = [];
         for (const command of this.commands.values()) {
             const definition = command.field;
-            if (!definition || definition.visibleIn && !definition.visibleIn.includes("basic")) continue;
-            const targets = structuredClone(definition.resolveTargets(context));
-            if (targets.kind === "nodes" ? !targets.nodeInfos.length : !targets.ranges.length) continue;
-            if (targets.complete === false) continue;
-            const resolved: HtmlEditorUiCommandExecutionContext = {
-                ...context, resolution: { context, targets }
-            };
-            if (!(command.isVisible?.(resolved) ?? true)) continue;
-            fields.push({ command, definition, context: resolved,
-                value: definition.type === "data" ? definition.getValue(resolved) : undefined,
-                enabled: this.surface.editable && !definition.field?.readonly && this.enabled(command, resolved) });
+            if (!definition?.visibleIn.includes(presentation)) continue;
+            const binding = this.resolveUiCommandField(command, context);
+            if (!binding) continue;
+            // The inspector omits fields without a complete target set. Toolbar
+            // controls remain present and use command enabled state to show availability.
+            const targets = binding.context.resolution.targets;
+            const hasTargets = targets.kind === "nodes" ? targets.nodeInfos.length > 0 : targets.ranges.length > 0;
+            if (presentation === "basic" && (targets.complete === false || !hasTargets)) continue;
+            fields.push(binding);
         }
         // Preserve group registration order and then sort fields within each group.
         const groups = new Map<string, HtmlEditorResolvedUiCommandField[]>();
@@ -164,18 +154,32 @@ export class HtmlEditorCommandRegistry {
      */
     resolveUiCommandTargets(commandId: string,
         context: HtmlEditorUiCommandTargetContext = this.uiCommandTargetContext()): HtmlEditorUiCommandTargets | undefined {
-        if (!this.validInspectionContext(context)) return undefined;
-        const command = this.commands.get(commandId), definition = command?.field;
-        if (!command || !definition) return undefined;
-        const targets = structuredClone(definition.resolveTargets(context));
+        if (!this.validUiCommandTargetContext(context)) return undefined;
+        const command = this.commands.get(commandId);
+        if (!command) return undefined;
+        const resolved = this.resolveUiCommandContext(command, context);
+        if (!resolved) return undefined;
+        const targets = resolved.context.resolution.targets;
         if (targets.complete === false || targets.kind === "nodes" && !targets.nodeInfos.length
             || targets.kind === "text" && !targets.ranges.length) return undefined;
-        const resolved: HtmlEditorUiCommandExecutionContext = { ...context, resolution: { context, targets } };
-        return command.isVisible?.(resolved) === false ? undefined : targets;
+        return targets;
     }
-    /** @deprecated Use getUiCommandFields. */
-    getInspectorFields(context: HtmlEditorUiCommandTargetContext = this.uiCommandTargetContext()): HtmlEditorResolvedUiCommandField[] {
-        return this.getUiCommandFields(context);
+    private resolveUiCommandField(command: HtmlEditorUiCommand, context: HtmlEditorUiCommandTargetContext): HtmlEditorResolvedUiCommandField | undefined {
+        const resolved = this.resolveUiCommandContext(command, context);
+        if (!resolved) return undefined;
+        const { definition, context: commandContext } = resolved;
+        return { command, definition, context: commandContext,
+            value: definition.type === "data" ? definition.getValue(commandContext) : undefined,
+            enabled: this.surface.editable && !definition.field?.readonly && this.enabled(command, commandContext) };
+    }
+    private resolveUiCommandContext(command: HtmlEditorUiCommand, context: HtmlEditorUiCommandTargetContext):
+        { definition: HtmlEditorUiCommandField; context: HtmlEditorUiCommandExecutionContext } | undefined {
+        const definition = command.field;
+        if (!definition) return undefined;
+        const targets = structuredClone(definition.resolveTargets(context));
+        const resolved: HtmlEditorUiCommandExecutionContext = { ...context, resolution: { context, targets } };
+        if (!(command.isVisible?.(resolved) ?? true)) return undefined;
+        return { definition, context: resolved };
     }
     /**
      * Submits a captured binding through the same command dispatcher as menus and
@@ -185,7 +189,7 @@ export class HtmlEditorCommandRegistry {
      */
     executeUiCommandField(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue): boolean {
         const option = typeof value === "string" ? field.command.options?.find(item => item.id === value) : undefined;
-        if (!this.validInspectionContext(field.context) || !this.surface.editable
+        if (!this.validUiCommandTargetContext(field.context) || !this.surface.editable
             || field.definition.field?.readonly || this.commands.get(field.command.id) !== field.command
             || field.command.field !== field.definition || option?.disabled) {
             this.commandFailed.invoke(field.command.id);
@@ -200,12 +204,8 @@ export class HtmlEditorCommandRegistry {
             this.surface.content.scrollLeft = scrollLeft;
         }
     }
-    /** @deprecated Use executeUiCommandField. */
-    executeInspectorField(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue): boolean {
-        return this.executeUiCommandField(field, value);
-    }
     /** A document edit/Undo/setHtml invalidates pinned targets; moving focus or selection does not. */
-    private validInspectionContext(context: HtmlEditorUiCommandTargetContext): boolean {
+    private validUiCommandTargetContext(context: HtmlEditorUiCommandTargetContext): boolean {
         return context.surface === this.surface && !this.surface.disposed.Value
             && context.modelVersion === this.surface.modelVersion;
     }
@@ -219,7 +219,7 @@ export class HtmlEditorCommandRegistry {
         // A menu/toolbar may forward a resolved field context directly. Enforce
         // its generation/permission checks here as well as in the form entry point.
         const resolution = context.resolution;
-        if ((resolution && (!this.validInspectionContext(resolution.context)
+        if ((resolution && (!this.validUiCommandTargetContext(resolution.context)
             || !this.surface.editable || command?.field?.field?.readonly))
             || !command || (command.isVisible && !command.isVisible(context))
             || (command.isEnabled && !command.isEnabled(context))) {
@@ -283,7 +283,6 @@ export class HtmlEditorCommandRegistry {
             isVisible: context => !!context.selection,
             isEnabled: context => context.surface.editable
                 && (hasTextRange(context.selection) || linkIds(context).length > 0),
-            getValue: context => linkValue(context, property) ?? { kind: "unset" },
             execute: (context, value) => typeof value === "string" && (property !== "href" || (!!value && isSafeHtmlEditorHref(value)))
                 && (!options || options.some(option => option.id === value))
                 && context.surface.execute({ type: "link", property, value }, context.selection),
@@ -293,7 +292,8 @@ export class HtmlEditorCommandRegistry {
                     validate: property === "href" ? value => !value || isSafeHtmlEditorHref(String(value))
                         ? undefined : this.messages.text("htmlEditorBasic.invalidUrl") : undefined },
                 resolveTargets: selectionTargets,
-                getValue: context => linkValue(context, property) ?? { kind: "unset" } }
+                getValue: context => linkValue(context, property) ?? { kind: "unset" }
+                }
         });
         this.register({
             id: "link", label: "htmlEditorToolbar.link", icon: "ri-link",
@@ -367,7 +367,8 @@ export class HtmlEditorCommandRegistry {
                 nodeInfos: [...ids].map(id => this.nodeInfo(id)).filter((info): info is HtmlEditorUiCommandNodeInfo => !!info) };
         };
         const textAction = (type: Extract<HtmlEditorCommand["type"], "bold" | "italic" | "underline" | "strikethrough">): Partial<HtmlEditorUiCommand> => ({
-            field: { type: "buttons", group: "text", order: ({ bold: 10, italic: 20, underline: 30, strikethrough: 40 })[type], resolveTargets: selectionTargets }
+            field: { type: "buttons", group: "text", order: ({ bold: 10, italic: 20, underline: 30, strikethrough: 40 })[type],
+                visibleIn: ["basic", "advanced", "toolbar"], resolveTargets: selectionTargets }
         });
         const edit = (type: Extract<HtmlEditorCommand["type"], "bold" | "italic" | "underline" | "strikethrough">): HtmlEditorUiCommand => ({
             id: type, label: `htmlEditorToolbar.${type}`, icon: ({ bold: "ri-bold", italic: "ri-italic", underline: "ri-underline", strikethrough: "ri-strikethrough" })[type],
@@ -383,7 +384,8 @@ export class HtmlEditorCommandRegistry {
             execute: context => context.surface.execute({ type: "clearFormatting",
                 nodeIds: context.resolution?.targets.kind === "nodes"
                     ? context.resolution.targets.nodeInfos.map(info => info.id) : [] }, context.selection),
-            field: { type: "buttons", group: "text", order: 50, resolveTargets: clearFormattingTargets }
+            field: { type: "buttons", group: "text", order: 50,
+                visibleIn: ["basic", "advanced", "toolbar"], resolveTargets: clearFormattingTargets }
         });
         for (const type of ["undo", "redo"] as const) this.register({
             id: type, label: `htmlEditorToolbar.${type}`, icon: type === "undo" ? "ri-arrow-go-back-line" : "ri-arrow-go-forward-line",
@@ -423,7 +425,6 @@ export class HtmlEditorCommandRegistry {
                     ? context.surface.getTextStyleValues(property, context.selection).length > 0 : context.resolution
                     ? context.resolution.targets.kind === "nodes" && context.resolution.targets.nodeInfos.length > 0
                     : !!target(context)),
-                getValue: context => readState(context) ?? { kind: "unset" },
                 execute: (context, value) => {
                     if (textStyle && context.resolution?.targets.kind !== "nodes") {
                         if (typeof value !== "string" || !(value in values)) return false;
@@ -456,6 +457,7 @@ export class HtmlEditorCommandRegistry {
                     return updates.length > 0 && context.surface.updateElements(updates);
                 },
                 field: { type: "data", group: property === "text-align" ? "block" : property === "font-size" ? "format" : "appearance",
+                    visibleIn: ["basic", "advanced", "toolbar"],
                     presentation: property === "text-align" ? "buttons" : "menu",
                     presentations: ["text.color", "text.size", "element.backgroundColor"].includes(id) ? {
                         toolbar: { appearance: "iconOnly", showValue: false, showArrow: false, tooltip: "caption",
@@ -466,7 +468,8 @@ export class HtmlEditorCommandRegistry {
                     field: { dataType: "string" },
                     resolveTargets: context => textStyle ? textStyleTargets(context)
                         : property === "text-align" ? blockTargets(context) : elementTargets(context, item => item.tag !== "img"),
-                    getValue: context => readState(context) ?? { kind: "unset" } }
+                    getValue: context => readState(context) ?? { kind: "unset" }
+                    }
             };
         };
         const headingState = (context: HtmlEditorUiCommandContext) => {
@@ -480,16 +483,16 @@ export class HtmlEditorCommandRegistry {
                 icon: tag === "p" ? "ri-paragraph" as const : "ri-heading" as const })),
             isVisible: context => context.resolution ? !!context.resolution.targets : !!target(context),
             isEnabled: context => context.surface.editable && (context.resolution ? context.resolution.targets.kind === "nodes" && !!context.resolution.targets.nodeInfos.length : !!target(context)),
-            getValue: context => headingState(context) ?? { kind: "unset" },
             execute: (context, value) => {
                 if (typeof value !== "string" || !["p", "h1", "h2", "h3", "h4", "h5", "h6"].includes(value) || !context.targetId) return false;
                 const ids = context.resolution?.targets.kind === "nodes" ? context.resolution.targets.nodeInfos.map(info => info.id) : [context.targetId];
                 return context.surface.updateElements(ids.map(nodeId => ({ nodeId, patch: { tag: value } })));
             },
-                field: { type: "data", group: "block", order: 0, field: { dataType: "string" },
+                field: { type: "data", group: "block", order: 0, visibleIn: ["basic", "advanced", "toolbar"], field: { dataType: "string" },
                 presentation: "menu",
                 resolveTargets: context => blockTargets(context, item => ["p", "h1", "h2", "h3", "h4", "h5", "h6"].includes(item.tag)),
-                getValue: context => headingState(context) ?? { kind: "unset" } }
+                getValue: context => headingState(context) ?? { kind: "unset" }
+                }
         });
         const colors = ["primary", "accent", "neutral", "success", "warning", "danger", "muted"];
         this.register(styleCommand("text.color", "htmlEditorBasic.textColor", "color", [

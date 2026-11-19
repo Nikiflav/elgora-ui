@@ -11,16 +11,6 @@ export default {
   "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
   "members": [
     {
-      "name": "context",
-      "type": "HtmlEditorUiCommandTargetContext",
-      "description": "",
-      "tags": [],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/htmleditor/HtmlEditorInspection.ts",
-      "kind": "property"
-    },
-    {
       "name": "fields",
       "type": "ReadonlyMap<string, HtmlEditorResolvedUiCommandField>",
       "description": "",

@@ -69,7 +69,7 @@ export default {
     {
       "name": "uiCommandTargetContext",
       "type": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext",
-      "description": "Captures inspection intent without cloning the document or changing focus.\nInspected element IDs and the remembered text range coexist. Tree navigation\ncan change the inspected elements without widening the remembered range.",
+      "description": "Captures target intent without cloning the document or changing focus.\nTarget node IDs and the remembered text range coexist. Tree navigation\ncan change the targeted elements without widening the remembered range.",
       "tags": [
         {
           "name": "example",
@@ -96,38 +96,9 @@ export default {
       "signature": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext"
     },
     {
-      "name": "inspectionContext",
-      "type": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext",
-      "description": "",
-      "tags": [
-        {
-          "name": "deprecated",
-          "text": "Use uiCommandTargetContext."
-        }
-      ],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-      "parameters": [
-        {
-          "name": "nodeInfos",
-          "type": "readonly (string | HtmlEditorUiCommandNodeInfo)[]",
-          "optional": true,
-          "defaultValue": "[]",
-          "description": ""
-        }
-      ],
-      "returns": {
-        "type": "HtmlEditorUiCommandTargetContext",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "(nodeInfos?: readonly (string | HtmlEditorUiCommandNodeInfo)[]) => HtmlEditorUiCommandTargetContext"
-    },
-    {
       "name": "getUiCommandFields",
-      "type": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]",
-      "description": "Resolves registered command fields. Each resolver declares its own\napplication units, so alignment may bind blocks while Bold binds text\nfragments. Incomplete target sets are omitted; disabled fields stay visible.\nNo built-in contributions are migrated automatically by this scaffold.\nCapture fresh bindings after an accepted model change; do not recreate them\nhalfway through an active property edit or read them as mutable node objects.",
+      "type": "(context?: HtmlEditorUiCommandTargetContext, presentation?: HtmlEditorUiCommandPresentationKind) => HtmlEditorResolvedUiCommandField[]",
+      "description": "Resolves registered command fields. Each resolver declares its own\napplication units, so alignment may bind blocks while Bold binds text\nfragments. Incomplete target sets are omitted; disabled fields stay visible.\nCapture fresh bindings after an accepted model change; do not recreate them\nhalfway through an active property edit or read them as mutable node objects.",
       "tags": [],
       "topics": [],
       "optional": false,
@@ -139,6 +110,13 @@ export default {
           "optional": true,
           "defaultValue": "this.uiCommandTargetContext()",
           "description": ""
+        },
+        {
+          "name": "presentation",
+          "type": "HtmlEditorUiCommandPresentationKind",
+          "optional": true,
+          "defaultValue": "\"basic\"",
+          "description": ""
         }
       ],
       "returns": {
@@ -146,7 +124,7 @@ export default {
         "description": ""
       },
       "kind": "method",
-      "signature": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]"
+      "signature": "(context?: HtmlEditorUiCommandTargetContext, presentation?: HtmlEditorUiCommandPresentationKind) => HtmlEditorResolvedUiCommandField[]"
     },
     {
       "name": "resolveUiCommandTargets",
@@ -179,73 +157,10 @@ export default {
       "signature": "(commandId: string, context?: HtmlEditorUiCommandTargetContext) => HtmlEditorUiCommandTargets | undefined"
     },
     {
-      "name": "getInspectorFields",
-      "type": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]",
-      "description": "",
-      "tags": [
-        {
-          "name": "deprecated",
-          "text": "Use getUiCommandFields."
-        }
-      ],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-      "parameters": [
-        {
-          "name": "context",
-          "type": "HtmlEditorUiCommandTargetContext",
-          "optional": true,
-          "defaultValue": "this.uiCommandTargetContext()",
-          "description": ""
-        }
-      ],
-      "returns": {
-        "type": "HtmlEditorResolvedUiCommandField[]",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "(context?: HtmlEditorUiCommandTargetContext) => HtmlEditorResolvedUiCommandField[]"
-    },
-    {
       "name": "executeUiCommandField",
       "type": "(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue) => boolean",
       "description": "Submits a captured binding through the same command dispatcher as menus and\ntoolbar. Rejects replaced definitions, stale documents and lost edit permission.\nOne command must apply all captured targets in one model transaction; never\nimplement a multi-target command as repeated calls to updateElement().",
       "tags": [],
-      "topics": [],
-      "optional": false,
-      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-      "parameters": [
-        {
-          "name": "field",
-          "type": "HtmlEditorResolvedUiCommandField",
-          "optional": false,
-          "description": ""
-        },
-        {
-          "name": "value",
-          "type": "HtmlEditorUiCommandValue | undefined",
-          "optional": true,
-          "description": ""
-        }
-      ],
-      "returns": {
-        "type": "boolean",
-        "description": ""
-      },
-      "kind": "method",
-      "signature": "(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue) => boolean"
-    },
-    {
-      "name": "executeInspectorField",
-      "type": "(field: HtmlEditorResolvedUiCommandField, value?: HtmlEditorUiCommandValue) => boolean",
-      "description": "",
-      "tags": [
-        {
-          "name": "deprecated",
-          "text": "Use executeUiCommandField."
-        }
-      ],
       "topics": [],
       "optional": false,
       "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",

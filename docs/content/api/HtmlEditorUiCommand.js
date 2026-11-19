@@ -91,16 +91,6 @@ export default {
       "kind": "property"
     },
     {
-      "name": "getValue",
-      "type": "((context: HtmlEditorUiCommandContext) => HtmlEditorUiCommandValueState | undefined) | undefined",
-      "description": "Current lookup value; mixed means compatible targets have different values.",
-      "tags": [],
-      "topics": [],
-      "optional": true,
-      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
-      "kind": "property"
-    },
-    {
       "name": "field",
       "type": "HtmlEditorUiCommandField | undefined",
       "description": "Optional DataForm contribution; node roles and target resolution belong here, not in the view.",

@@ -69,26 +69,21 @@ export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
     type ValueEditorOptions, type TextEditorOptions, type NumberEditorOptions, type BooleanEditorOptions } from './components/editors/ValueEditor';
 export { HtmlEditor, type HtmlEditorOptions } from './components/editors/htmleditor/HtmlEditor';
 export { HtmlEditorCommandMenu } from './components/editors/htmleditor/HtmlEditorCommandMenu';
-export { HtmlEditorCommandRegistry, type HtmlEditorUiCommandContext, type HtmlEditorCommandContext,
+export { HtmlEditorCommandRegistry, type HtmlEditorUiCommandContext,
     type HtmlEditorUiCommand, type HtmlEditorUiCommandOption } from './components/editors/htmleditor/HtmlEditorCommandRegistry';
 export { HtmlEditorSurface, type HtmlEditorSurfaceOptions } from './components/editors/htmleditor/HtmlEditorSurface';
 export { HtmlEditorToolbar } from './components/editors/htmleditor/HtmlEditorToolbar';
 export { HtmlEditorInspector } from './components/editors/htmleditor/HtmlEditorInspector';
 export { HtmlEditorUiCommandFieldService } from './components/editors/htmleditor/HtmlEditorUiCommandFieldService';
-export type { HtmlEditorUiCommandDensity, HtmlEditorUiCommandControl } from './components/editors/htmleditor/HtmlEditorUiCommandFieldService';
-export { aggregateHtmlEditorUiCommandValues, aggregateHtmlEditorInspectorValues } from './components/editors/htmleditor/HtmlEditorInspection';
+export { aggregateHtmlEditorUiCommandValues } from './components/editors/htmleditor/HtmlEditorInspection';
 export type { HtmlEditorUiCommandValue, HtmlEditorUiCommandValueState, HtmlEditorUiCommandNodeInfo,
     HtmlEditorUiCommandTargetContext, HtmlEditorUiCommandTargets, HtmlEditorUiCommandResolution,
     HtmlEditorUiCommandExecutionContext, HtmlEditorUiCommandFormRow, HtmlEditorUiCommandFieldPresentation,
     HtmlEditorUiCommandPresentation, HtmlEditorUiCommandPresentationKind, HtmlEditorUiCommandField,
-    HtmlEditorResolvedUiCommandField,
-    HtmlEditorInspectorValue, HtmlEditorInspectorValueState, HtmlEditorInspectionContext,
-    HtmlEditorInspectorTargets, HtmlEditorResolvedInspection, HtmlEditorInspectorCommandContext,
-    HtmlEditorInspectionRow, HtmlEditorInspectorFieldPresentation, HtmlEditorInspectorField,
-    HtmlEditorResolvedInspectorField, HtmlEditorUiCommandFieldDefinition } from './components/editors/htmleditor/HtmlEditorInspection';
+    HtmlEditorResolvedUiCommandField } from './components/editors/htmleditor/HtmlEditorInspection';
 export type { HtmlEditorNodeCoverage } from './components/editors/htmleditor/HtmlEditorRange';
 export type { HtmlEditorNode, HtmlEditorNodeId, HtmlEditorText, HtmlEditorElement, HtmlEditorStyle, HtmlEditorDocument,
-    HtmlEditorPositionState, HtmlEditorSelectionRange, HtmlEditorSelectionState } from './components/editors/htmleditor/HtmlEditorModel';
+    HtmlEditorPositionState, HtmlEditorSelectionRange } from './components/editors/htmleditor/HtmlEditorModel';
 export { getHtmlEditorStyle, setHtmlEditorStyle, removeHtmlEditorStyle } from './components/editors/htmleditor/HtmlEditorStyles';
 export type { HtmlEditorCommand, HtmlEditorState, HtmlEditorTextMark } from './components/editors/htmleditor/HtmlEditorCommands';
 export { getHtmlEditorElementBehavior, type HtmlEditorElementBehavior, type HtmlEditorElementKind } from './components/editors/htmleditor/HtmlEditorStructure';

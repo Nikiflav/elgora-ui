@@ -37,8 +37,6 @@ export interface HtmlEditorDocument { type: "document"; children: HtmlEditorNode
 export interface HtmlEditorPositionState { nodeId: HtmlEditorNodeId; offset: number; }
 /** Directed range: anchor is the fixed endpoint and focus is the moving endpoint. */
 export interface HtmlEditorSelectionRange { anchor: HtmlEditorPositionState; focus: HtmlEditorPositionState; }
-/** @deprecated Use HtmlEditorSelectionRange. */
-export type HtmlEditorSelectionState = HtmlEditorSelectionRange;
 export function cloneHtmlEditorDocument(document: HtmlEditorDocument): HtmlEditorDocument { return structuredClone(document); }
 export function cloneHtmlEditorSelection(selection?: HtmlEditorSelectionRange): HtmlEditorSelectionRange | undefined { return selection ? structuredClone(selection) : undefined; }
 

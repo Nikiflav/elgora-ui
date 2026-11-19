@@ -52,7 +52,6 @@ export interface HtmlEditorUiCommandExecutionContext extends HtmlEditorUiCommand
 
 /** Virtual row used by DataForm projections of command fields. */
 export interface HtmlEditorUiCommandFormRow {
-    readonly context: HtmlEditorUiCommandTargetContext;
     readonly fields: ReadonlyMap<string, HtmlEditorResolvedUiCommandField>;
 }
 
@@ -63,7 +62,6 @@ export type HtmlEditorUiCommandFieldPresentation = Omit<DataViewField<HtmlEditor
 /** Surface-specific visual projection of one command field. */
 export interface HtmlEditorUiCommandPresentation {
     readonly control?: "data" | "buttons";
-    readonly density?: "full" | "compact";
     readonly appearance?: DataViewButtonAppearance;
     readonly icon?: RemixIcon;
     readonly showValue?: boolean;
@@ -80,7 +78,7 @@ interface HtmlEditorUiCommandFieldBase {
     readonly order?: number;
     readonly field?: HtmlEditorUiCommandFieldPresentation;
     readonly presentations?: Partial<Record<HtmlEditorUiCommandPresentationKind, HtmlEditorUiCommandPresentation>>;
-    readonly visibleIn?: readonly HtmlEditorUiCommandPresentationKind[];
+    readonly visibleIn: readonly HtmlEditorUiCommandPresentationKind[];
     resolveTargets(context: HtmlEditorUiCommandTargetContext): HtmlEditorUiCommandTargets;
 }
 
@@ -113,32 +111,3 @@ export function aggregateHtmlEditorUiCommandValues(
     if (!values.every(value => Object.is(value, first))) return { kind: "mixed" };
     return first === undefined ? { kind: "unset" } : { kind: "value", value: first };
 }
-
-/* Compatibility aliases keep the public transition source-compatible for one release. */
-/** @deprecated Use HtmlEditorUiCommandValue. */
-export type HtmlEditorInspectorValue = HtmlEditorUiCommandValue;
-/** @deprecated Use HtmlEditorUiCommandValueState. */
-export type HtmlEditorInspectorValueState = HtmlEditorUiCommandValueState;
-/** @deprecated Use HtmlEditorUiCommandTargetContext. */
-export type HtmlEditorInspectionContext = HtmlEditorUiCommandTargetContext;
-/** @deprecated Use HtmlEditorUiCommandTargets. */
-export type HtmlEditorInspectorTargets = HtmlEditorUiCommandTargets;
-/** @deprecated Use HtmlEditorUiCommandResolution. */
-export type HtmlEditorResolvedInspection = HtmlEditorUiCommandResolution;
-/** @deprecated Use HtmlEditorUiCommandExecutionContext. */
-export type HtmlEditorInspectorCommandContext = HtmlEditorUiCommandExecutionContext;
-/** @deprecated Use HtmlEditorUiCommandFormRow. */
-export type HtmlEditorInspectionRow = HtmlEditorUiCommandFormRow;
-/** @deprecated Use HtmlEditorUiCommandFieldPresentation. */
-export type HtmlEditorInspectorFieldPresentation = HtmlEditorUiCommandFieldPresentation;
-/** @deprecated Use HtmlEditorUiCommandPresentation. */
-export type HtmlEditorInspectorSurfacePresentation = HtmlEditorUiCommandPresentation;
-/** @deprecated Use HtmlEditorUiCommandField. */
-export type HtmlEditorInspectorField = HtmlEditorUiCommandField;
-/** @deprecated Use HtmlEditorResolvedUiCommandField. */
-export type HtmlEditorResolvedInspectorField = HtmlEditorResolvedUiCommandField;
-
-/** @deprecated Use aggregateHtmlEditorUiCommandValues. */
-export const aggregateHtmlEditorInspectorValues = aggregateHtmlEditorUiCommandValues;
-
-export type HtmlEditorUiCommandFieldDefinition = HtmlEditorUiCommandField;

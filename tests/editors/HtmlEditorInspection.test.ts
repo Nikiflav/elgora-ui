@@ -17,7 +17,7 @@ function setup(html = "<p>First</p><p>Second</p>") {
 function property(id: string, resolveTargets: (context: HtmlEditorUiCommandTargetContext) => readonly string[],
     execute: HtmlEditorUiCommand["execute"] = () => true): HtmlEditorUiCommand {
     return { id, label: id, execute,
-        field: { type: "data", group: "block", field: { dataType: "string" },
+        field: { type: "data", group: "block", visibleIn: ["basic"], field: { dataType: "string" },
             resolveTargets: context => ({ kind: "nodes", nodeInfos: context.nodeInfos.filter(info => resolveTargets(context).includes(info.id)) }),
             getValue: () => ({ kind: "unset" }) } };
 }
@@ -33,7 +33,7 @@ describe("HtmlEditor inspector framework", () => {
         const text = surface.content.querySelector("p")!.firstChild!;
         document.getSelection()!.setBaseAndExtent(text, 0, text, 3);
         document.dispatchEvent(new Event("selectionchange"));
-        const field = registry.getInspectorFields(registry.inspectionContext(ids.slice(0, 1)))
+        const field = registry.getUiCommandFields(registry.uiCommandTargetContext(ids.slice(0, 1)))
             .find(field => field.command.id === "text.color")!;
         surface.content.scrollTop = 210; surface.content.scrollLeft = 35;
         const focus = surface.content.focus.bind(surface.content);
@@ -42,7 +42,7 @@ describe("HtmlEditor inspector framework", () => {
             // Model the browser scrolling during native focus/selection restoration.
             surface.content.scrollTop = 0; surface.content.scrollLeft = 0;
         });
-        expect(registry.executeInspectorField(field, "primary")).toBe(true);
+        expect(registry.executeUiCommandField(field, "primary")).toBe(true);
         expect(surface.content.scrollTop).toBe(210);
         expect(surface.content.scrollLeft).toBe(35);
         expect(surface.html).toContain("var(--elg-primary-color)");
@@ -52,14 +52,14 @@ describe("HtmlEditor inspector framework", () => {
         const paragraphs = surface.content.querySelectorAll("p");
         document.getSelection()!.setBaseAndExtent(paragraphs[0].firstChild!, 1, paragraphs[1].firstChild!, 3);
         document.dispatchEvent(new Event("selectionchange"));
-        const context = registry.inspectionContext(ids);
-        const fields = registry.getInspectorFields(context);
+        const context = registry.uiCommandTargetContext(ids);
+        const fields = registry.getUiCommandFields(context);
         expect(fields.map(field => field.command.id)).toEqual(expect.arrayContaining(["bold", "italic", "underline", "strikethrough", "block.heading", "block.align"]));
         expect(fields.map(field => field.command.id).filter(id => ["bold", "italic", "underline", "strikethrough"].includes(id)))
             .toEqual(["bold", "italic", "underline", "strikethrough"]);
         const alignment = fields.find(field => field.command.id === "block.align")!;
         const saved = surface.html;
-        expect(registry.executeInspectorField(alignment, "center")).toBe(true);
+        expect(registry.executeUiCommandField(alignment, "center")).toBe(true);
         expect([...surface.content.querySelectorAll("p")].every(p => p.style.textAlign === "center")).toBe(true);
         expect(surface.execute({ type: "undo" })).toBe(true);
         expect(surface.html).toBe(saved);
@@ -76,13 +76,13 @@ describe("HtmlEditor inspector framework", () => {
             && surface.document.children[0].children[1].type === "element"
             && surface.document.children[0].children[1].children[0].type === "element")
             ? surface.document.children[0].children[1].children[0].id : "";
-        const context = registry.inspectionContext([strongId]);
-        const fields = registry.getInspectorFields(context);
+        const context = registry.uiCommandTargetContext([strongId]);
+        const fields = registry.getUiCommandFields(context);
         const alignment = fields.find(field => field.command.id === "block.align")!;
         const heading = fields.find(field => field.command.id === "block.heading")!;
         expect(alignment.context.resolution.targets).toEqual({ kind: "nodes", complete: true, nodeInfos: [expect.objectContaining({ id: paragraphId })] });
         expect(heading.context.resolution.targets).toEqual({ kind: "nodes", complete: true, nodeInfos: [expect.objectContaining({ id: paragraphId })] });
-        expect(registry.executeInspectorField(alignment, "center")).toBe(true);
+        expect(registry.executeUiCommandField(alignment, "center")).toBe(true);
         expect(surface.content.querySelector("p")!.style.textAlign).toBe("center");
         expect(surface.content.querySelector("strong")!.style.textAlign).toBe("");
     });
@@ -102,8 +102,8 @@ describe("HtmlEditor inspector framework", () => {
             };
             return visit(surface.document.children)!;
         })();
-        const context = registry.inspectionContext([surface.document.children[0].id, image]);
-        const fields = registry.getInspectorFields(context);
+        const context = registry.uiCommandTargetContext([surface.document.children[0].id, image]);
+        const fields = registry.getUiCommandFields(context);
         expect(fields.some(field => field.command.id === "block.heading")).toBe(false);
         expect(fields.some(field => field.command.id === "text.color")).toBe(true);
         expect(fields.some(field => field.command.id === "bold")).toBe(true);
@@ -113,7 +113,7 @@ describe("HtmlEditor inspector framework", () => {
     it("aggregates mixed alignment and accepts an unchanged property without adding history", () => {
         const { surface, registry, ids } = setup();
         surface.updateElements([{ nodeId: ids[0], patch: { styles: [{ name: "text-align", value: "center" }] } }]);
-        const fields = registry.getInspectorFields(registry.inspectionContext(ids));
+        const fields = registry.getUiCommandFields(registry.uiCommandTargetContext(ids));
         expect(fields.find(field => field.command.id === "block.align")!.value).toEqual({ kind: "mixed" });
         const version = surface.modelVersion;
         expect(surface.updateElement(ids[0], { styles: [{ name: "text-align", value: "center" }] })).toBe(true);
@@ -133,21 +133,21 @@ describe("HtmlEditor inspector framework", () => {
             expect(aggregateHtmlEditorUiCommandValues([value, value])).toEqual({ kind: "value", value });
     });
 
-    it("captures explicit inspection intent without changing the remembered text selection", () => {
+    it("captures explicit UI command targets without changing the remembered text selection", () => {
         const { surface, registry, ids } = setup();
         const text = surface.content.querySelector("p")!.firstChild!;
         document.getSelection()!.setBaseAndExtent(text, 0, text, 2);
         document.dispatchEvent(new Event("selectionchange"));
         const saved = surface.selection;
         const snapshot = vi.spyOn(surface, "document", "get");
-        const context = registry.inspectionContext([ids[1], ids[1]]);
+        const context = registry.uiCommandTargetContext([ids[1], ids[1]]);
         expect(context.nodeInfos.map(info => info.id)).toEqual([ids[1]]);
         expect(context.targetId).toBe(ids[1]);
         expect(context.selection).toEqual(saved);
         expect(surface.selection).toEqual(saved);
         expect(snapshot).not.toHaveBeenCalled();
         expect(surface.canUndo).toBe(false);
-        expect(registry.inspectionContext().nodeInfos).toEqual([]);
+        expect(registry.uiCommandTargetContext().nodeInfos).toEqual([]);
     });
 
     it("resolves a union of fields with distinct target sets and omits inapplicable fields", () => {
@@ -155,7 +155,7 @@ describe("HtmlEditor inspector framework", () => {
         registry.register(property("first-only", () => [ids[0]]));
         registry.register(property("both", () => ids));
         registry.register(property("inapplicable", () => []));
-        const fields = registry.getInspectorFields(registry.inspectionContext(ids))
+        const fields = registry.getUiCommandFields(registry.uiCommandTargetContext(ids))
             .filter(field => ["first-only", "both"].includes(field.command.id));
         expect(fields.map(field => field.command.id)).toEqual(["first-only", "both"]);
         expect(fields[0].context.resolution.targets).toEqual({ kind: "nodes", nodeInfos: [expect.objectContaining({ id: ids[0] })] });
@@ -166,16 +166,16 @@ describe("HtmlEditor inspector framework", () => {
         const { registry, ids } = setup();
         const contexts: HtmlEditorUiCommandExecutionContext[] = [];
         registry.register({ id: "captured", label: "Captured",
-            field: { type: "data", group: "block", resolveTargets: context => ({ kind: "nodes", nodeInfos: context.nodeInfos.filter(info => ids.includes(info.id)) }),
+            field: { type: "data", group: "block", visibleIn: ["basic"], resolveTargets: context => ({ kind: "nodes", nodeInfos: context.nodeInfos.filter(info => ids.includes(info.id)) }),
                 getValue: context => { contexts.push(context); return { kind: "mixed" }; } },
             isEnabled: context => { contexts.push(context as HtmlEditorUiCommandExecutionContext); return true; },
             execute: (context, value) => {
                 contexts.push(context as HtmlEditorUiCommandExecutionContext);
                 expect(value).toBe(12); return true;
             } });
-        const field = registry.getInspectorFields(registry.inspectionContext(ids)).find(item => item.command.id === "captured")!;
+        const field = registry.getUiCommandFields(registry.uiCommandTargetContext(ids)).find(item => item.command.id === "captured")!;
         expect(field.value).toEqual({ kind: "mixed" });
-        expect(registry.executeInspectorField(field, 12)).toBe(true);
+        expect(registry.executeUiCommandField(field, 12)).toBe(true);
         expect(contexts.every(context => context === field.context)).toBe(true);
     });
 
@@ -186,11 +186,11 @@ describe("HtmlEditor inspector framework", () => {
         const range = { anchor: { nodeId: text.children[0].id, offset: 0 }, focus: { nodeId: text.children[0].id, offset: 2 } };
         const action = (id: string, group: string, order: number): HtmlEditorUiCommand => ({
             id, label: id, execute: () => true,
-            field: { type: "buttons", group, order, resolveTargets: () => ({ kind: "text", ranges: [range] }) }
+            field: { type: "buttons", group, order, visibleIn: ["basic"], resolveTargets: () => ({ kind: "text", ranges: [range] }) }
         });
         registry.register(action("late", "text", 2)); registry.register(action("other", "block", 0));
         registry.register(action("early", "text", 1));
-        const fields = registry.getInspectorFields().filter(field => ["early", "late", "other"].includes(field.command.id));
+        const fields = registry.getUiCommandFields().filter(field => ["early", "late", "other"].includes(field.command.id));
         expect(fields.map(field => field.command.id)).toEqual(["early", "late", "other"]);
         expect(fields[0].value).toBeUndefined();
         expect(fields[0].context.resolution.targets).toEqual({ kind: "text", ranges: [range] });
@@ -201,11 +201,11 @@ describe("HtmlEditor inspector framework", () => {
         const execute = vi.fn(() => true), failed = vi.fn();
         registry.commandFailed.subscribe(failed);
         registry.register(property("pinned", () => ids, execute));
-        const context = registry.inspectionContext(ids), field = registry.getInspectorFields(context).find(item => item.command.id === "pinned")!;
+        const context = registry.uiCommandTargetContext(ids), field = registry.getUiCommandFields(context).find(item => item.command.id === "pinned")!;
         surface.setHtml("<p>Replacement</p>");
         expect(surface.modelVersion).toBeGreaterThan(context.modelVersion);
-        expect(registry.getInspectorFields(context)).toEqual([]);
-        expect(registry.executeInspectorField(field, "center")).toBe(false);
+        expect(registry.getUiCommandFields(context)).toEqual([]);
+        expect(registry.executeUiCommandField(field, "center")).toBe(false);
         expect(registry.execute("pinned", field.context, "center")).toBe(false);
         expect(execute).not.toHaveBeenCalled(); expect(failed).toHaveBeenCalledWith("pinned");
     });
@@ -213,27 +213,27 @@ describe("HtmlEditor inspector framework", () => {
     it("rejects contexts from a different or disposed surface", () => {
         const first = setup(), second = setup();
         first.registry.register(property("pinned", () => first.ids));
-        expect(first.registry.getInspectorFields(second.registry.inspectionContext())).toEqual([]);
-        const field = first.registry.getInspectorFields(first.registry.inspectionContext(first.ids)).find(item => item.command.id === "pinned")!;
+        expect(first.registry.getUiCommandFields(second.registry.uiCommandTargetContext())).toEqual([]);
+        const field = first.registry.getUiCommandFields(first.registry.uiCommandTargetContext(first.ids)).find(item => item.command.id === "pinned")!;
         first.surface.dispose();
-        expect(first.registry.getInspectorFields(field.context)).toEqual([]);
-        expect(first.registry.executeInspectorField(field, "center")).toBe(false);
+        expect(first.registry.getUiCommandFields(field.context)).toEqual([]);
+        expect(first.registry.executeUiCommandField(field, "center")).toBe(false);
     });
 
     it("keeps captured context valid on focus/selection changes but rejects changed permissions and registrations", () => {
         const { surface, registry, ids } = setup();
         const execute = vi.fn(() => true);
         registry.register(property("pinned", () => ids, execute));
-        const field = registry.getInspectorFields(registry.inspectionContext(ids)).find(item => item.command.id === "pinned")!, version = surface.modelVersion;
+        const field = registry.getUiCommandFields(registry.uiCommandTargetContext(ids)).find(item => item.command.id === "pinned")!, version = surface.modelVersion;
         document.dispatchEvent(new Event("selectionchange"));
         expect(surface.modelVersion).toBe(version);
-        expect(registry.executeInspectorField(field, "center")).toBe(true);
+        expect(registry.executeUiCommandField(field, "center")).toBe(true);
         surface.setInteractionState(true, false);
-        expect(registry.getInspectorFields(registry.inspectionContext(ids))[0].enabled).toBe(false);
-        expect(registry.executeInspectorField(field, "center")).toBe(false);
+        expect(registry.getUiCommandFields(registry.uiCommandTargetContext(ids))[0].enabled).toBe(false);
+        expect(registry.executeUiCommandField(field, "center")).toBe(false);
         surface.setInteractionState(false, false);
         registry.register(property("pinned", () => ids));
-        expect(registry.executeInspectorField(field, "center")).toBe(false);
+        expect(registry.executeUiCommandField(field, "center")).toBe(false);
         expect(execute).toHaveBeenCalledTimes(1);
     });
 

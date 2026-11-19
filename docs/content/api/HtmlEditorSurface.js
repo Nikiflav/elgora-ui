@@ -172,7 +172,7 @@ export default {
     },
     {
       "name": "getMarkState",
-      "type": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorMarkState",
+      "type": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorUiCommandState",
       "description": "Returns the aggregate inline-mark state for the current selected fragments.",
       "tags": [],
       "topics": [],
@@ -194,11 +194,11 @@ export default {
         }
       ],
       "returns": {
-        "type": "HtmlEditorMarkState",
+        "type": "HtmlEditorUiCommandState",
         "description": ""
       },
       "kind": "method",
-      "signature": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorMarkState"
+      "signature": "(mark: HtmlEditorTextMark, selection?: HtmlEditorSelectionRange | undefined) => HtmlEditorUiCommandState"
     },
     {
       "name": "getTextStyleValues",
@@ -229,6 +229,32 @@ export default {
       },
       "kind": "method",
       "signature": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]"
+    },
+    {
+      "name": "selectAllContent",
+      "type": "() => boolean",
+      "description": "Selects all document content without selecting the editor's root element.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => boolean"
+    },
+    {
+      "name": "allContentSelected",
+      "type": "boolean",
+      "description": "Whether the remembered selection covers the entire document.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "kind": "property"
     },
     {
       "name": "selectNode",

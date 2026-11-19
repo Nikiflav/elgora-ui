@@ -6,7 +6,7 @@ import { ObservableEvent } from "../../../core/ElgoraUI";
 import type { HtmlEditorDocument, HtmlEditorElement, HtmlEditorNode, HtmlEditorSelectionRange, HtmlEditorStyle } from "./HtmlEditorModel";
 import { HtmlEditorDom } from "./HtmlEditorDom";
 import { readHtmlEditorSelection, restoreHtmlEditorSelection } from "./HtmlEditorSelection";
-import { applyHtmlEditorCommand, getHtmlEditorMarkState, getHtmlEditorTextStyleValues, type HtmlEditorCommand, type HtmlEditorMarkState, type HtmlEditorState, type HtmlEditorTextMark } from "./HtmlEditorCommands";
+import { applyHtmlEditorCommand, getHtmlEditorMarkState, getHtmlEditorTextStyleValues, type HtmlEditorCommand, type HtmlEditorUiCommandState, type HtmlEditorState, type HtmlEditorTextMark } from "./HtmlEditorCommands";
 import { normalizeHtmlEditorState } from "./HtmlEditorNormalize";
 import { extractHtmlEditorRange, getHtmlEditorRangeCoverage, type HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { htmlEditorFragmentText } from "./HtmlEditorClipboard";
@@ -202,12 +202,25 @@ export class HtmlEditorSurface extends Component {
         return selection ? getHtmlEditorRangeCoverage(this.documentModel, this.domMap.rootId, selection) : new Map();
     }
     /** Returns the aggregate inline-mark state for the current selected fragments. */
-    getMarkState(mark: HtmlEditorTextMark, selection: HtmlEditorSelectionRange | undefined = this.selection): HtmlEditorMarkState {
+    getMarkState(mark: HtmlEditorTextMark, selection: HtmlEditorSelectionRange | undefined = this.selection): HtmlEditorUiCommandState {
         return getHtmlEditorMarkState(this.documentModel, this.domMap.rootId, selection, mark, this.typingMarks);
     }
     /** Reads authored text style values over the same fragments used by text formatting. */
     getTextStyleValues(property: string, selection = this.selection): (string | undefined)[] {
         return getHtmlEditorTextStyleValues(this.documentModel, this.domMap.rootId, selection, property, this.typingMarks);
+    }
+    /** Selects all document content without selecting the editor's root element. */
+    selectAllContent(): boolean {
+        if (this.disposed.Value || !this.documentModel.children.length) return false;
+        return this.restoreSelection({ anchor: { nodeId: this.domMap.rootId, offset: 0 },
+            focus: { nodeId: this.domMap.rootId, offset: this.documentModel.children.length } });
+    }
+    /** Whether the remembered selection covers the entire document. */
+    get allContentSelected(): boolean {
+        const selection = this.selection;
+        return !!selection && selection.anchor.nodeId === this.domMap.rootId && selection.focus.nodeId === this.domMap.rootId
+            && Math.min(selection.anchor.offset, selection.focus.offset) === 0
+            && Math.max(selection.anchor.offset, selection.focus.offset) === this.documentModel.children.length;
     }
     /** Selects a complete model node while retaining the same model/history contract as text selection. */
     selectNode(nodeId: string | undefined, extend = false): boolean {
@@ -382,7 +395,7 @@ export class HtmlEditorSurface extends Component {
         };
         const state = this.selectionState;
         const collapsed = state && state.anchor.nodeId === state.focus.nodeId && state.anchor.offset === state.focus.offset;
-        (collapsed ? [] : this.selectedNodeIds).forEach(nodeId => {
+        this.selectedNodeIds.forEach(nodeId => {
             const node = this.domMap.resolve({ nodeId, offset: 0 })?.node;
             if (node instanceof Element) {
                 add(node, "selected");
@@ -413,6 +426,11 @@ export class HtmlEditorSurface extends Component {
                 }
             } catch { /* A stale DOM node is ignored until the next render. */ }
             current = walker.nextNode();
+        }
+        if (collapsed) {
+            const node = this.domMap.resolve(state.anchor)?.node;
+            const parent = node instanceof Element ? node : node?.parentElement;
+            if (parent && parent !== this.content && this.content.contains(parent)) add(parent, "selected");
         }
         return [...result.values()];
     }
