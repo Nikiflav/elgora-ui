@@ -18,6 +18,7 @@ export const deMessages = {
     "htmlEditorInspector.formatCategory": "Format",
     "htmlEditorInspector.linkCategory": "Link",
     "htmlEditorInspector.imageCategory": "Bild",
+    "htmlEditorBasic.clearProvider": "Entfernen",
     "htmlEditorBasic.imageSource": "Quelle",
     "htmlEditorBasic.imageAlt": "Alternativtext",
     "htmlEditorBasic.imageWidth": "Breite (px)",

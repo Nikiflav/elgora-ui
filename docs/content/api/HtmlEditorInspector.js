@@ -21,6 +21,36 @@ export default {
       "kind": "property"
     },
     {
+      "name": "advancedActive",
+      "type": "boolean",
+      "description": "Active inspector tab and its changes, for selection previews.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "kind": "property"
+    },
+    {
+      "name": "tabSelectionChanged",
+      "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<string>",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "kind": "property"
+    },
+    {
+      "name": "advancedPreviewElements",
+      "type": "readonly string[]",
+      "description": "",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "kind": "property"
+    },
+    {
       "name": "stateVersion",
       "type": "number",
       "description": "Monotonic version for consumers that render snapshot-based field states.",
@@ -107,6 +137,22 @@ export default {
       },
       "kind": "method",
       "signature": "(ids: readonly string[]) => void"
+    },
+    {
+      "name": "expandSelection",
+      "type": "() => boolean",
+      "description": "Expands the current selection exactly as the inspector button does.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+      "parameters": [],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "() => boolean"
     },
     {
       "name": "expandedSelectionPreview",

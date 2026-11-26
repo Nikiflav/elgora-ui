@@ -68,6 +68,8 @@ export { LookupEditor, type LookupEditorOptions, type LookupQuery, type LookupRe
 export { ValueEditor, TextEditor, NumberEditor, CheckboxEditor, ToggleEditor,
     type ValueEditorOptions, type TextEditorOptions, type NumberEditorOptions, type BooleanEditorOptions } from './components/editors/ValueEditor';
 export { HtmlEditor, type HtmlEditorOptions } from './components/editors/htmleditor/HtmlEditor';
+export { createHtmlEditorInlineStyleProvider, createHtmlEditorClassProvider, createHtmlEditorFreeStyleProvider, createHtmlEditorPaletteProvider, type HtmlEditorPropertyProvider,
+    type HtmlEditorPropertyDefinition, type HtmlEditorPropertyControl, type HtmlEditorPropertyOption } from './components/editors/htmleditor/HtmlEditorPropertyProvider';
 export { HtmlEditorCommandMenu } from './components/editors/htmleditor/HtmlEditorCommandMenu';
 export { HtmlEditorCommandRegistry, type HtmlEditorUiCommandContext,
     type HtmlEditorUiCommand, type HtmlEditorUiCommandOption } from './components/editors/htmleditor/HtmlEditorCommandRegistry';

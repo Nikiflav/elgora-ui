@@ -12,6 +12,7 @@ import type { HtmlEditorNodeCoverage } from "./HtmlEditorRange";
 import { isAtomic } from "./HtmlEditorStructure";
 import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
 import { HtmlEditorUiCommandFieldService } from "./HtmlEditorUiCommandFieldService";
+import { renderHtmlEditorAdvanced } from "./HtmlEditorAdvanced";
 import type { HtmlEditorUiCommandTargetContext, HtmlEditorUiCommandFormRow, HtmlEditorUiCommandTargets, HtmlEditorResolvedUiCommandField } from "./HtmlEditorInspection";
 
 
@@ -41,9 +42,18 @@ export class HtmlEditorInspector extends Component {
     private readonly fieldService: HtmlEditorUiCommandFieldService;
     /** User choices survive selection changes, including temporarily absent groups. */
     private readonly categoryState = new Map<string, boolean>();
+    private advancedKey = "";
 
     /** Current property targets, derived from the remembered editor selection. */
     get inspectedElements(): readonly string[] { return [...this.inspectedIds]; }
+    /** Active inspector tab and its changes, for selection previews. */
+    get advancedActive(): boolean { return this.tabView.selectedId === "advanced"; }
+    get tabSelectionChanged() { return this.tabView.selectionChanged; }
+    get advancedPreviewElements(): readonly string[] {
+        const selection = this.surface.selection;
+        const collapsed = !!selection && selection.anchor.nodeId === selection.focus.nodeId && selection.anchor.offset === selection.focus.offset;
+        return !this.mixed && this.targetId && (collapsed || this.coverage.get(this.targetId) === "full") ? [this.targetId] : [];
+    }
     /** Monotonic version for consumers that render snapshot-based field states. */
     get stateVersion(): number { return this.inspectionVersion; }
     /** Resolves the same command-specific targets used by the inspector field. */
@@ -56,7 +66,9 @@ export class HtmlEditorInspector extends Component {
         private readonly messages: LocalizedMessages,
         private readonly commands: HtmlEditorCommandRegistry,
         private readonly localeOptions: LocaleOptions = {},
-        fieldService?: HtmlEditorUiCommandFieldService) {
+        fieldService?: HtmlEditorUiCommandFieldService,
+        private readonly classOptions: readonly { name: string; text: string }[] = [],
+        private readonly allowCustomClasses = true) {
         super({ class: "elg-html-editor-inspector", role: "complementary" });
         this.fieldService = fieldService ?? new HtmlEditorUiCommandFieldService(commands, messages, localeOptions);
         this.selector = e("button", { type: "button", class: "elg-html-editor-node-selector",
@@ -67,12 +79,7 @@ export class HtmlEditorInspector extends Component {
             onpointerdown: event => event.preventDefault(), onmousedown: event => event.preventDefault(),
             onclick: event => {
                 event.stopPropagation();
-                if (!this.selectorCoverage.disabled) {
-                    const target = this.expandedSelectionTarget();
-                    if (target === null) this.surface.selectAllContent();
-                    else if (target) this.surface.selectNode(target);
-                    this.selectorCoverage.focus();
-                }
+                if (this.expandSelection()) this.selectorCoverage.focus();
             } }, e("i", { class: "ri-corner-left-up-line", ariaHidden: "true" }));
         this.selectorRow = e("div", { class: "elg-html-editor-selector-row" }, this.selectorCoverage, this.selector);
         this.basicPanel = e("div", { class: "elg-html-editor-basic-commands" });
@@ -81,6 +88,7 @@ export class HtmlEditorInspector extends Component {
             { id: "advanced", text: this.messages.text("htmlEditorInspector.advanced") }
         ] });
         this.panels = [this.tabView.getPanel("basic")!, this.tabView.getPanel("advanced")!];
+        this.panels[1].classList.add("elg-html-editor-advanced-panel");
         this.append([this.selectorRow, this.tabView]);
         this.refreshDocument();
     }
@@ -107,6 +115,9 @@ export class HtmlEditorInspector extends Component {
     /** Rebuilds the node index after the shared command-surface coordinator observes a model change. */
     refreshDocument(): void {
         this.inspectionVersion++;
+        // Selection events can render against the previous node snapshot before
+        // documentChanged arrives with the same model version.
+        this.advancedKey = "";
         this.popup?.hide();
         this.nodes.clear(); this.parents.clear();
         const snapshot = this.surface.document;
@@ -211,6 +222,13 @@ export class HtmlEditorInspector extends Component {
         if (!this.targetId) return undefined;
         return this.coverage.get(this.targetId) === "full"
             ? this.parents.get(this.targetId)?.id ?? null : this.targetId;
+    }
+
+    /** Expands the current selection exactly as the inspector button does. */
+    expandSelection(): boolean {
+        if (this.selectorCoverage.disabled) return false;
+        const target = this.expandedSelectionTarget();
+        return target === null ? this.surface.selectAllContent() : target ? this.surface.selectNode(target) : false;
     }
 
     /** Target preview for the selection expansion button; null denotes the document contents. */
@@ -395,7 +413,8 @@ export class HtmlEditorInspector extends Component {
         this.selectorCoverage.disabled = this.selector.disabled || nextTarget === undefined;
         const hint = this.messages.text(nextTarget === null ? "htmlEditorInspector.selectAllContent"
             : this.mixed || coverage === "full" ? "htmlEditorInspector.selectParent" : "htmlEditorInspector.expandSelectElement");
-        this.selectorCoverage.title = hint;
+        const mac = /Mac|iPhone|iPad|iPod/i.test(this.dom.ownerDocument.defaultView?.navigator.platform ?? "");
+        this.selectorCoverage.title = mac ? hint : `${hint} (Alt+↑)`;
         this.selectorCoverage.setAttribute("aria-label", hint);
         if (this.selector.disabled) this.popup?.hide();
         this.tabView.setTabText("basic", this.messages.text("htmlEditorInspector.properties"));
@@ -408,7 +427,14 @@ export class HtmlEditorInspector extends Component {
             }
         }
         this.panels[0].replaceChildren(this.basicPanel);
-        this.panels[1].textContent = this.messages.text("htmlEditorInspector.advancedHint");
+        const selection = this.surface.selection;
+        const collapsed = !!selection && selection.anchor.nodeId === selection.focus.nodeId && selection.anchor.offset === selection.focus.offset;
+        const advancedKey = `${this.targetId}|${this.mixed}|${coverage}|${collapsed}|${this.surface.modelVersion}|${this.surface.editable}`;
+        if (advancedKey !== this.advancedKey) {
+            this.advancedKey = advancedKey;
+            const node = !this.mixed && (coverage === "full" || collapsed) && target?.type === "element" ? target : undefined;
+            renderHtmlEditorAdvanced(this.panels[1], this.surface, node, this.classOptions, this.allowCustomClasses);
+        }
     }
 
     /** Opens a lazy model tree. Choosing a node previews it without changing caret, HTML or history. */

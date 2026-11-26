@@ -11,6 +11,8 @@ import { HtmlEditorUiCommandFieldService } from "./HtmlEditorUiCommandFieldServi
 export interface HtmlEditorUiCommandControllerOptions extends LocaleOptions {
     toolbar?: boolean;
     inspector?: boolean;
+    classOptions?: readonly { name: string; text: string }[];
+    allowCustomClasses?: boolean;
 }
 
 /**
@@ -31,7 +33,7 @@ export class HtmlEditorUiCommandController implements Disposable {
         registry: HtmlEditorCommandRegistry, options: HtmlEditorUiCommandControllerOptions = {}) {
         this.fields = new HtmlEditorUiCommandFieldService(registry, messages, options);
         if (options.inspector) {
-            this.inspector = new HtmlEditorInspector(surface, messages, registry, options, this.fields);
+            this.inspector = new HtmlEditorInspector(surface, messages, registry, options, this.fields, options.classOptions, options.allowCustomClasses);
         }
         if (options.toolbar) {
             this.toolbar = new HtmlEditorToolbar(registry, messages, this.fields);

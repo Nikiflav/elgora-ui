@@ -5,7 +5,7 @@ export default {
   "group": "html-editor",
   "order": 50,
   "description": "Explore structural editing rules, keyboard behavior, lists, quotes and history.",
-  "prev": "/components/html-editor/commands",
+  "prev": "/components/html-editor/providers",
   "next": "/components/html-editor/selection",
   "toc": true,
   "api": [

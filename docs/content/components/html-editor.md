@@ -72,6 +72,7 @@ and establishes a new accepted baseline; `cancel()` restores that baseline.
 - [Document model](?!=/components/html-editor/model): nodes, attributes and authored styles.
 - [Selection and focus](?!=/components/html-editor/selection): text ranges, inspector targets and overlays.
 - [Commands and formatting](?!=/components/html-editor/commands): command definitions and target resolution.
+- [Property providers](?!=/components/html-editor/providers): configure palettes, custom values and CSS classes.
 - [Editing behavior](?!=/components/html-editor/editing): structural rules, keyboard behavior and history.
 - [Inspector and toolbar](?!=/components/html-editor/ui-surfaces): DataForm surfaces, tree navigation and link editing.
 - [HTML insertion and clipboard](?!=/components/html-editor/insertion-and-clipboard): paste, copy and cut.

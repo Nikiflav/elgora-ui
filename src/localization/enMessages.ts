@@ -16,6 +16,7 @@ export const enMessages = {
     "htmlEditorInspector.formatCategory": "Format",
     "htmlEditorInspector.linkCategory": "Link",
     "htmlEditorInspector.imageCategory": "Image",
+    "htmlEditorBasic.clearProvider": "Clear",
     "htmlEditorBasic.imageSource": "Source",
     "htmlEditorBasic.imageAlt": "Alternative text",
     "htmlEditorBasic.imageWidth": "Width (px)",

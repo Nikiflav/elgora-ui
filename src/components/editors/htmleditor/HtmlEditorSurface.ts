@@ -69,6 +69,7 @@ export class HtmlEditorSurface extends Component {
     private undoStack: HtmlEditorState[] = [];
     private redoStack: HtmlEditorState[] = [];
     private nativeBefore?: HtmlEditorState;
+    private nativeTextInsertion = false;
     private nativeInputTimer?: ReturnType<typeof setTimeout>;
     private typingMarks?: HtmlEditorState["marks"];
     private modelVersionValue = 0;
@@ -115,6 +116,7 @@ export class HtmlEditorSurface extends Component {
         this.listen(this.content, "compositionstart", () => {
             if (!this.canEdit()) return;
             this.nativeBefore ??= this.snapshot();
+            this.nativeTextInsertion = true;
             this.composing = true;
             this.interactionChanged.invoke(undefined);
         });
@@ -208,6 +210,20 @@ export class HtmlEditorSurface extends Component {
     /** Reads authored text style values over the same fragments used by text formatting. */
     getTextStyleValues(property: string, selection = this.selection): (string | undefined)[] {
         return getHtmlEditorTextStyleValues(this.documentModel, this.domMap.rootId, selection, property, this.typingMarks);
+    }
+    /** Pending provider choice at the remembered caret, if one was explicitly selected. */
+    pendingProperty(id: string): { providerId: string; value: string } | undefined {
+        const mark = this.typingMarks?.properties?.[id];
+        return mark ? { providerId: mark.provider.id, value: mark.value } : undefined;
+    }
+    /** Reads the browser's computed value for one model element or the element containing a caret. */
+    computedProperty(property: string, selection: HtmlEditorSelectionRange, nodeId?: string): string | undefined {
+        const position = nodeId ? { nodeId, offset: 0 } : selection.focus;
+        const node = this.domMap.resolve(position)?.node;
+        const element = node instanceof Element ? node : node?.parentElement;
+        if (!element || element === this.content || !this.content.contains(element) || !element.isConnected) return undefined;
+        const value = this.content.ownerDocument.defaultView?.getComputedStyle(element).getPropertyValue(property).trim();
+        return value || undefined;
     }
     /** Aspect ratio from authored dimensions or the loaded image's intrinsic size. */
     imageAspectRatio(nodeId: string): number | undefined {
@@ -488,6 +504,7 @@ export class HtmlEditorSurface extends Component {
         this.undoStack = [];
         this.redoStack = [];
         this.nativeBefore = undefined;
+        this.nativeTextInsertion = false;
         this.clearNativeInputTimer();
         this.composing = false;
         this.compositionPending = false;
@@ -521,15 +538,69 @@ export class HtmlEditorSurface extends Component {
         const before = this.nativeBefore;
         if (!before) return;
         this.nativeBefore = undefined;
+        const textInsertion = this.nativeTextInsertion;
+        this.nativeTextInsertion = false;
         this.clearNativeInputTimer();
         const document = this.domMap.synchronize(this.parser);
         const selection = readHtmlEditorSelection(this.domMap);
-        this.acceptTransaction(before, { document, selection });
+        const formatted = textInsertion && Object.keys(before.marks?.properties ?? {}).length
+            ? this.reconcileNativeTextInsertion(before, document) : undefined;
+        this.acceptTransaction(before, formatted ?? { document, selection, marks: before.marks });
+    }
+
+    /** Replay only a proven single text-node replacement; never guess across native structural edits. */
+    private reconcileNativeTextInsertion(before: HtmlEditorState, after: HtmlEditorDocument): HtmlEditorState | undefined {
+        const oldDocument = structuredClone(before.document), newDocument = structuredClone(after);
+        const texts = (document: HtmlEditorDocument) => {
+            const result = new Map<string, string>();
+            const visit = (nodes: HtmlEditorNode[]) => nodes.forEach(node => {
+                if (node.type === "text") { result.set(node.id, node.text); node.text = ""; }
+                else visit(node.children);
+            });
+            visit(document.children); return result;
+        };
+        const oldTexts = texts(oldDocument), newTexts = texts(newDocument);
+        if (JSON.stringify(oldDocument) !== JSON.stringify(newDocument)) {
+            // Native insertion in an empty block creates a new text node. Accept
+            // this case only when removing that node exactly restores the old tree.
+            const added = [...newTexts.keys()].filter(id => !oldTexts.has(id));
+            if (added.length !== 1 || [...oldTexts.keys()].some(id => !newTexts.has(id))) return;
+            const selection = before.selection;
+            if (!selection || selection.anchor.nodeId !== selection.focus.nodeId || selection.anchor.offset !== selection.focus.offset) return;
+            let parentId: string | undefined, childIndex = -1;
+            const remove = (nodes: HtmlEditorNode[], parent?: string): boolean => {
+                const index = nodes.findIndex(node => node.id === added[0] && node.type === "text");
+                if (index >= 0) { parentId = parent ?? this.domMap.rootId; childIndex = index; nodes.splice(index, 1); return true; }
+                return nodes.some(node => node.type === "element" && remove(node.children, node.id));
+            };
+            if (!remove(newDocument.children) || JSON.stringify(oldDocument) !== JSON.stringify(newDocument)
+                || parentId !== selection.anchor.nodeId || childIndex !== selection.anchor.offset) return;
+            const inserted = newTexts.get(added[0]);
+            if (!inserted) return;
+            return applyHtmlEditorCommand(before, this.domMap.rootId, { type: "insertText", text: inserted }, this.domMap.createId);
+        }
+        const changed = [...oldTexts].filter(([id, value]) => newTexts.get(id) !== value);
+        if (changed.length !== 1) return;
+        const [nodeId, oldText] = changed[0], newText = newTexts.get(nodeId);
+        if (newText === undefined) return;
+        let start = 0, endOld = oldText.length, endNew = newText.length;
+        while (start < endOld && start < endNew && oldText[start] === newText[start]) start++;
+        // Never split UTF-16 surrogate pairs when two characters share a high surrogate.
+        if (start > 0 && /[\uD800-\uDBFF]/.test(oldText[start - 1])) start--;
+        while (endOld > start && endNew > start && oldText[endOld - 1] === newText[endNew - 1]) { endOld--; endNew--; }
+        if (endOld < oldText.length && /[\uDC00-\uDFFF]/.test(oldText[endOld])) { endOld++; endNew++; }
+        const inserted = newText.slice(start, endNew);
+        if (!inserted) return;
+        const replacement: HtmlEditorState = { ...before, selection: {
+            anchor: { nodeId, offset: start }, focus: { nodeId, offset: endOld }
+        } };
+        return applyHtmlEditorCommand(replacement, this.domMap.rootId, { type: "insertText", text: inserted }, this.domMap.createId);
     }
 
     /** Unannounced DOM changes are not user commands and must never enter history. */
     private rejectNativeInput(): void {
         this.nativeBefore = undefined;
+        this.nativeTextInsertion = false;
         this.clearNativeInputTimer();
         this.renderModel(this.selectionState);
         this.interactionChanged.invoke(undefined);
@@ -616,6 +687,7 @@ export class HtmlEditorSurface extends Component {
         if (event.isComposing) {
             // Some platforms omit compositionstart. Scope this edit without leaving
             // the editor stuck in a composition that may never emit compositionend.
+            this.nativeTextInsertion = true;
             this.allowNativeInput();
             return;
         }
@@ -636,6 +708,7 @@ export class HtmlEditorSurface extends Component {
             if (anchor && focus) targetSelection = { anchor, focus };
         }
         if (!event.cancelable) {
+            this.nativeTextInsertion = ["insertText", "insertReplacementText", "insertCompositionText"].includes(event.inputType);
             this.allowNativeInput(targetSelection);
             return;
         }

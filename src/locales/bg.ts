@@ -18,6 +18,7 @@ export const bgMessages = {
     "htmlEditorInspector.formatCategory": "Форматиране",
     "htmlEditorInspector.linkCategory": "Връзка",
     "htmlEditorInspector.imageCategory": "Картинка",
+    "htmlEditorBasic.clearProvider": "Премахване",
     "htmlEditorBasic.imageSource": "Адрес",
     "htmlEditorBasic.imageAlt": "Алтернативен текст",
     "htmlEditorBasic.imageWidth": "Ширина (px)",

@@ -173,6 +173,42 @@
       "module": "./content/api/createFieldEditor.js"
     },
     {
+      "name": "createHtmlEditorClassProvider",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorClassProvider",
+      "description": "A provider owns only its configured classes; unrelated classes are preserved.",
+      "module": "./content/api/createHtmlEditorClassProvider.js"
+    },
+    {
+      "name": "createHtmlEditorFreeStyleProvider",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorFreeStyleProvider",
+      "description": "A free-form inline value, validated against the editor's CSS policy and browser CSS support.",
+      "module": "./content/api/createHtmlEditorFreeStyleProvider.js"
+    },
+    {
+      "name": "createHtmlEditorInlineStyleProvider",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorInlineStyleProvider",
+      "description": "Maps stable option IDs to inline CSS values without touching unrelated declarations.",
+      "module": "./content/api/createHtmlEditorInlineStyleProvider.js"
+    },
+    {
+      "name": "createHtmlEditorPaletteProvider",
+      "kind": "function",
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorPaletteProvider",
+      "description": "Choice provider with swatches; storage remains the same as the inline choice provider.",
+      "module": "./content/api/createHtmlEditorPaletteProvider.js"
+    },
+    {
       "name": "DataCell",
       "kind": "type",
       "group": "types",
@@ -1044,6 +1080,42 @@
       "path": "/api-reference/HtmlEditorPositionState",
       "description": "Text offsets count UTF-16 units; element/root offsets count supported model children.",
       "module": "./content/api/HtmlEditorPositionState.js"
+    },
+    {
+      "name": "HtmlEditorPropertyControl",
+      "kind": "type",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyControl",
+      "description": "The host presents the control; providers never own a popup or editor selection.",
+      "module": "./content/api/HtmlEditorPropertyControl.js"
+    },
+    {
+      "name": "HtmlEditorPropertyDefinition",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyDefinition",
+      "description": "Semantic property shared by the toolbar, inspector and its providers.",
+      "module": "./content/api/HtmlEditorPropertyDefinition.js"
+    },
+    {
+      "name": "HtmlEditorPropertyOption",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyOption",
+      "description": "One option's stable value and its user-facing label.",
+      "module": "./content/api/HtmlEditorPropertyOption.js"
+    },
+    {
+      "name": "HtmlEditorPropertyProvider",
+      "kind": "interface",
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyProvider",
+      "description": "Operates only on an editable model copy inside an editor transaction.",
+      "module": "./content/api/HtmlEditorPropertyProvider.js"
     },
     {
       "name": "HtmlEditorResolvedUiCommandField",

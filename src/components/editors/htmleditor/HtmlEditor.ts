@@ -10,6 +10,7 @@ import { HtmlEditorCommandRegistry, type HtmlEditorUiCommand } from "./HtmlEdito
 import { HtmlEditorCommandMenu } from "./HtmlEditorCommandMenu";
 import { HtmlEditorSelectionOverlay } from "./HtmlEditorSelectionOverlay";
 import "./HtmlEditor.css";
+import type { HtmlEditorPropertyDefinition } from "./HtmlEditorPropertyProvider";
 
 /** Configuration for the HTML value editor and its optional surrounding tools. */
 export interface HtmlEditorOptions extends ValueEditorOptions<string> {
@@ -23,6 +24,12 @@ export interface HtmlEditorOptions extends ValueEditorOptions<string> {
     inspector?: boolean;
     /** Additional commands exposed by the toolbar, context menu and inspector actions. */
     commands?: HtmlEditorUiCommand[];
+    /** Suggested CSS classes for the Advanced inspector. */
+    classOptions?: readonly { name: string; text: string }[];
+    /** Allows entering classes outside classOptions. Defaults to true. */
+    allowCustomClasses?: boolean;
+    /** Optional providers for semantic properties such as text.color and text.size. */
+    properties?: readonly HtmlEditorPropertyDefinition[];
 }
 
 /** Orchestrates one editing surface and optional tools; owns the sole commit/cancel lifecycle. */
@@ -49,7 +56,7 @@ export class HtmlEditor extends ValueEditor<string> {
 
     /** Creates and connects the surface and requested tools. */
     constructor(options: HtmlEditorOptions) {
-        const { toolbar, inspector, placeholder, minHeight, commands, ...valueOptions } = options;
+        const { toolbar, inspector, placeholder, minHeight, commands, classOptions, allowCustomClasses, properties, ...valueOptions } = options;
         super(valueOptions);
         this.dom.classList.add("elg-html-editor");
         this.surface = new HtmlEditorSurface({ html: options.value, label: options.label,
@@ -65,7 +72,7 @@ export class HtmlEditor extends ValueEditor<string> {
         this.selectionOverlay = new HtmlEditorSelectionOverlay(this.surface);
         this.selectionOverlay.attach(surfaceHost);
         this.addCleanup(this.selectionOverlay);
-        this.commandRegistry = new HtmlEditorCommandRegistry(this.surface, this.messages, commands);
+        this.commandRegistry = new HtmlEditorCommandRegistry(this.surface, this.messages, commands, properties);
         this.subscribe(this.commandRegistry.commandFailed, () => this.showCommandFailure());
         this.listen(this.content, "contextmenu", event => {
             const menuEvent = event as MouseEvent;
@@ -83,16 +90,34 @@ export class HtmlEditor extends ValueEditor<string> {
         });
         if (toolbar || inspector) {
             this.commandController = new HtmlEditorUiCommandController(this.surface, this.messages, this.commandRegistry,
-                { toolbar, inspector, locale: this.locale, localization: options.localization });
+                { toolbar, inspector, classOptions, allowCustomClasses, locale: this.locale, localization: options.localization });
             this.commandController.mountSurfaces(this.dom, body);
             this.addCleanup(this.commandController);
             this.toolbar = this.commandController.toolbar;
             this.inspector = this.commandController.inspector;
         }
         if (this.inspector) {
+            const mac = /Mac|iPhone|iPad|iPod/i.test(this.dom.ownerDocument.defaultView?.navigator.platform ?? "");
+            if (!mac) {
+                const button = this.inspector.dom.querySelector<HTMLButtonElement>(".elg-html-editor-expand-selection");
+                button?.setAttribute("aria-keyshortcuts", "Alt+ArrowUp");
+                this.listen(this.dom, "keydown", event => {
+                    const key = event as KeyboardEvent;
+                    if (key.defaultPrevented || key.isComposing || !key.altKey || key.ctrlKey || key.metaKey || key.shiftKey || key.key !== "ArrowUp") return;
+                    const target = key.target;
+                    if (!(target instanceof Element) || target !== this.content && (!this.inspector!.dom.contains(target)
+                        || !!target.closest("input, textarea, select, [contenteditable], [popover], [role=menu], [role=dialog]"))) return;
+                    if (this.dom.querySelector(":popover-open")) return;
+                    if (this.inspector!.expandSelection()) {
+                        key.preventDefault();
+                        if (target instanceof HTMLElement && target !== this.content) target.focus({ preventScroll: true });
+                    }
+                });
+            }
             this.selectionOverlay.connectInspector(this.inspector.dom, () => this.inspector!.inspectedElements,
                 this.toolbar?.dom, commandId => this.inspector?.getCommandPreviewTargets(commandId),
-                () => this.inspector?.expandedSelectionPreview);
+                () => this.inspector?.expandedSelectionPreview, () => this.inspector?.advancedActive ? this.inspector.advancedPreviewElements : undefined);
+            this.selectionOverlay.addCleanup(this.inspector.tabSelectionChanged.subscribe(() => this.selectionOverlay.refresh()));
         }
         this.baselineHtml = this.html;
         this.syncControl();

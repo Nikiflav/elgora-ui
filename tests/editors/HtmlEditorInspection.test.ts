@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HtmlEditorSurface } from "../../src/components/editors/htmleditor/HtmlEditorSurface";
+import { HtmlEditor } from "../../src/components/editors/htmleditor/HtmlEditor";
 import { HtmlEditorCommandRegistry, type HtmlEditorUiCommand } from "../../src/components/editors/htmleditor/HtmlEditorCommandRegistry";
 import { aggregateHtmlEditorUiCommandValues, type HtmlEditorUiCommandTargetContext,
     type HtmlEditorUiCommandExecutionContext } from "../../src/components/editors/htmleditor/HtmlEditorInspection";
 import { Localization } from "../../src/localization/Localization";
+import { createHtmlEditorClassProvider, createHtmlEditorInlineStyleProvider } from "../../src/components/editors/htmleditor/HtmlEditorPropertyProvider";
 
 const surfaces: HtmlEditorSurface[] = [];
 function setup(html = "<p>First</p><p>Second</p>") {
@@ -28,6 +30,119 @@ afterEach(() => {
 });
 
 describe("HtmlEditor inspector framework", () => {
+    it("keeps toolbar color icons visible for partial selections and transparent backgrounds", () => {
+        const editor = new HtmlEditor({ value: "<p>Some text</p>", toolbar: true, inspector: true });
+        editor.mount(document.body);
+        try {
+            const text = editor.content.querySelector("p")!.firstChild!;
+            document.getSelection()!.setBaseAndExtent(text, 1, text, 4);
+            document.dispatchEvent(new Event("selectionchange"));
+            const toolbar = editor.toolbar!.dom;
+            const color = toolbar.querySelector<HTMLElement>('[data-field="text.color"] .ri-font-color');
+            const background = toolbar.querySelector<HTMLElement>('[data-field="element.backgroundColor"] .ri-paint-fill');
+            expect(color?.style.color.toLowerCase()).toBe("currentcolor");
+            expect(background?.style.color.toLowerCase()).toBe("currentcolor");
+            document.getSelection()!.setBaseAndExtent(text, 1, text, 1);
+            document.dispatchEvent(new Event("selectionchange"));
+            const transparent = toolbar.querySelector<HTMLElement>('[data-field="element.backgroundColor"] .ri-paint-fill');
+            expect(transparent?.style.color.toLowerCase()).toBe("currentcolor");
+        } finally { editor.dispose(); }
+    });
+    it("shows computed text properties at a caret or a fully selected element, but not for partial or mixed selections", () => {
+        const { surface, registry, ids } = setup('<p style="color: red; font-size: 18px">First</p><p style="color: blue">Second</p>');
+        const first = surface.content.querySelector("p")!;
+        const text = first.firstChild!;
+        const state = (id: string) => registry.getUiCommandFields(registry.uiCommandTargetContext([ids[0]])).find(field => field.command.id === id)?.value;
+        document.getSelection()!.setBaseAndExtent(text, 2, text, 2);
+        document.dispatchEvent(new Event("selectionchange"));
+        expect(state("text.color")).toEqual({ kind: "value", value: "rgb(255, 0, 0)" });
+        expect(state("text.size")).toEqual({ kind: "value", value: "18px" });
+        expect(surface.selectNode(ids[0])).toBe(true);
+        expect(state("text.color")).toEqual({ kind: "value", value: "rgb(255, 0, 0)" });
+        document.getSelection()!.setBaseAndExtent(text, 0, text, 3);
+        document.dispatchEvent(new Event("selectionchange"));
+        expect(state("text.color")).toEqual({ kind: "unset" });
+        const last = surface.content.querySelectorAll("p")[1].firstChild!;
+        document.getSelection()!.setBaseAndExtent(text, 1, last, 2);
+        document.dispatchEvent(new Event("selectionchange"));
+        const mixed = registry.getUiCommandFields(registry.uiCommandTargetContext(ids)).find(field => field.command.id === "text.color");
+        expect(mixed?.value).toEqual({ kind: "unset" });
+    });
+
+    it("reads computed color from a stylesheet without modifying the authored class", () => {
+        const style = document.createElement("style");
+        style.textContent = ".computed-provider-test { color: rgb(1, 2, 3); }";
+        document.head.append(style);
+        try {
+            const { surface, registry, ids } = setup('<p class="computed-provider-test">Text</p>');
+            const text = surface.content.querySelector("p")!.firstChild!;
+            document.getSelection()!.setBaseAndExtent(text, 1, text, 1);
+            document.dispatchEvent(new Event("selectionchange"));
+            const field = registry.getUiCommandFields(registry.uiCommandTargetContext(ids)).find(item => item.command.id === "text.color");
+            expect(field?.value).toEqual({ kind: "value", value: "rgb(1, 2, 3)" });
+            expect(surface.content.querySelector("p")?.className).toBe("computed-provider-test");
+        } finally { style.remove(); }
+    });
+    it("offers default background providers and applies them to selected text with undo", () => {
+        const { surface, registry, ids } = setup("<p>First text</p>");
+        const text = surface.content.querySelector("p")!.firstChild!;
+        document.getSelection()!.setBaseAndExtent(text, 0, text, 5);
+        document.dispatchEvent(new Event("selectionchange"));
+        const field = registry.getUiCommandFields(registry.uiCommandTargetContext([ids[0]]))
+            .find(item => item.command.id === "element.backgroundColor")!;
+        expect(registry.propertyDefinition(field.command.id)?.providers.map(provider => provider.id)).toEqual(["palette", "custom"]);
+        expect(registry.applyProperty(field, "palette", "blue")).toBe(true);
+        expect(surface.content.querySelector("span")?.style.backgroundColor).toBe("rgb(13, 110, 253)");
+        expect(surface.execute({ type: "undo" })).toBe(true);
+        expect(surface.content.querySelector("span")).toBeNull();
+    });
+
+    it("applies the background provider to an entirely selected element", () => {
+        const { surface, registry, ids } = setup("<p>First text</p>");
+        expect(surface.selectNode(ids[0])).toBe(true);
+        const field = registry.getUiCommandFields(registry.uiCommandTargetContext([ids[0]]))
+            .find(item => item.command.id === "element.backgroundColor")!;
+        expect(registry.applyProperty(field, "custom", "#ff0000")).toBe(true);
+        expect(surface.content.querySelector("p")?.style.backgroundColor).toBe("rgb(255, 0, 0)");
+    });
+    it("refreshes Advanced style values after undo and redo", () => {
+        const editor = new HtmlEditor({ value: '<p style="color: red">Hello</p>', inspector: true });
+        editor.mount(document.body);
+        try {
+            const text = editor.content.querySelector("p")!.firstChild!;
+            document.getSelection()!.setBaseAndExtent(text, 2, text, 2);
+            document.dispatchEvent(new Event("selectionchange"));
+            const panel = () => editor.inspector!.dom.querySelector<HTMLElement>(".elg-html-editor-advanced-panel")!;
+            const styleValue = () => panel().querySelector<HTMLInputElement>('input[aria-label="CSS value"]')!;
+            expect(styleValue().value).toBe("red");
+            styleValue().value = "blue";
+            styleValue().dispatchEvent(new Event("change", { bubbles: true }));
+            expect(styleValue().value).toBe("blue");
+            expect(editor.execute({ type: "undo" })).toBe(true);
+            expect(styleValue().value).toBe("red");
+            expect(editor.execute({ type: "redo" })).toBe(true);
+            expect(styleValue().value).toBe("blue");
+        } finally { editor.dispose(); }
+    });
+    it("applies a configured class provider to a selection in one undoable transaction", () => {
+        const surface = new HtmlEditorSurface({ html: '<p>Before <span style="color: red">middle</span> after</p>' });
+        surfaces.push(surface); surface.mount(document.body);
+        const options = [{ id: "blue", text: "Blue" }];
+        const css = createHtmlEditorInlineStyleProvider("css", "CSS", "color", options, { blue: "blue" });
+        const classes = createHtmlEditorClassProvider("class", "Class", options, { blue: "text-blue" });
+        const registry = new HtmlEditorCommandRegistry(surface, Localization.resolveMessages(), [],
+            [{ id: "text.color", cssProperty: "color", providers: [css, classes] }]);
+        const p = surface.content.querySelector("p")!;
+        document.getSelection()!.setBaseAndExtent(p.firstChild!, 0, p.lastChild!, p.lastChild!.textContent!.length);
+        document.dispatchEvent(new Event("selectionchange"));
+        const field = registry.getUiCommandFields(registry.uiCommandTargetContext([surface.document.children[0].id]))
+            .find(item => item.command.id === "text.color")!;
+        expect(registry.applyProperty(field, "class", "blue")).toBe(true);
+        expect(surface.content.querySelector(".text-blue")).not.toBeNull();
+        expect(surface.content.querySelector('[style*="red"]')).toBeNull();
+        expect(surface.execute({ type: "undo" })).toBe(true);
+        expect(surface.content.querySelector("span")?.style.color).toBe("red");
+    });
     it("restores both surface scroll offsets after an inspector formatting command", () => {
         const { surface, registry, ids } = setup();
         const text = surface.content.querySelector("p")!.firstChild!;
@@ -72,10 +187,8 @@ describe("HtmlEditor inspector framework", () => {
         document.getSelection()!.setBaseAndExtent(strongText, 2, strongText, 2);
         document.dispatchEvent(new Event("selectionchange"));
         const paragraphId = surface.document.children[0].id;
-        const strongId = (surface.document.children[0].type === "element"
-            && surface.document.children[0].children[1].type === "element"
-            && surface.document.children[0].children[1].children[0].type === "element")
-            ? surface.document.children[0].children[1].children[0].id : "";
+        const paragraph = surface.document.children[0];
+        const strongId = paragraph.type === "element" ? paragraph.children.find(node => node.type === "element" && node.tag === "strong")?.id ?? "" : "";
         const context = registry.uiCommandTargetContext([strongId]);
         const fields = registry.getUiCommandFields(context);
         const alignment = fields.find(field => field.command.id === "block.align")!;

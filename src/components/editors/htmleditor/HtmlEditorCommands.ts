@@ -4,9 +4,13 @@ import { getHtmlEditorElementBehavior as behavior, isAtomic, nodeSize as size, l
     validPosition, prepareEditingSelection, editableEdge, joinListBoundary, structuralNeighbor, isStructuralWhitespace, isInline, sliceInline as slice } from "./HtmlEditorStructure";
 import { insertHtmlEditorFragment } from "./HtmlEditorFragment";
 import { deleteHtmlEditorRange } from "./HtmlEditorRange";
+import { applyHtmlEditorPropertyToSubtree, createHtmlEditorInlineStyleProvider } from "./HtmlEditorPropertyProvider";
+import type { HtmlEditorPropertyProvider } from "./HtmlEditorPropertyProvider";
 
 /** Operations currently supported by the rich-text command layer. */
 export type HtmlEditorCommand =
+    | { type: "applyProperty"; propertyId: string; cssProperty: string; providers: readonly HtmlEditorPropertyProvider[]; provider: HtmlEditorPropertyProvider; value: string; nodeIds?: readonly string[] }
+    | { type: "clearProperty"; propertyId: string; provider: HtmlEditorPropertyProvider; nodeIds?: readonly string[] }
     | { type: "textStyle"; property: "color" | "background-color" | "font-size"; value: string; nodeIds?: readonly string[] }
     | { type: "insertText"; text: string }
     | { type: "insertHtml"; html: string }
@@ -34,7 +38,9 @@ export interface HtmlEditorState {
     /** Explicit typing-format overrides at a collapsed caret. */
     marks?: Partial<Record<HtmlEditorTextMark, boolean>> & {
         /** Explicit text styles for subsequent typing; empty values remove inline overrides. */
-        styles?: Partial<Record<"color" | "background-color" | "font-size", string>> };
+        styles?: Partial<Record<"color" | "background-color" | "font-size", string>>;
+        /** Provider choice retained with the selection for subsequent text input. */
+        properties?: Readonly<Record<string, { cssProperty: string; providers: readonly HtmlEditorPropertyProvider[]; provider: HtmlEditorPropertyProvider; value: string }>> };
 }
 
 /** Aggregate formatting state used by toolbar and menu controls. */
@@ -203,10 +209,19 @@ export function fragmentSelection(selection: FormattingSelection, tagName: strin
 
 /** Applies one authored style declaration to the fragment roots only. */
 function applyFragmentStyle(document: HtmlEditorDocument, fragmentIds: readonly string[], property: string, value: string): void {
+    // Color and font size must also clear explicit descendant declarations;
+    // otherwise a selected child can override the new inherited value.
+    const inheritedProperty = property === "color" || property === "font-size";
+    const provider = createHtmlEditorInlineStyleProvider("inline", "Inline style", property,
+        [{ id: value, text: value }], { [value]: value });
     for (const nodeId of fragmentIds) {
         const location = find(document, nodeId);
         if (location?.node.type !== "element") continue;
-        location.node.styles = location.node.styles.filter(style => style.name !== property);
+        if (value && inheritedProperty) {
+            applyHtmlEditorPropertyToSubtree([location.node], [provider], provider, value);
+            continue;
+        }
+        location.node.styles = location.node.styles.filter(style => style.disabled || style.comment || style.name !== property);
         if (value) location.node.styles.push({ name: property, value });
     }
 }
@@ -225,20 +240,20 @@ export function getHtmlEditorTextStyleValues(document: HtmlEditorDocument, rootI
         if (!location) return [];
         let value: string | undefined;
         for (const parent of [...location.ancestors, ...(location.node.type === "element" ? [location.node] : [])])
-            value = [...parent.styles].reverse().find(style => style.name === property)?.value ?? value;
+            value = [...parent.styles].reverse().find(style => !style.disabled && !style.comment && style.name === property)?.value ?? value;
         return [value];
     }
     const values: (string | undefined)[] = [];
     const visit = (node: HtmlEditorNode, inherited?: string): void => {
         if (node.type === "text") { if (node.text) values.push(inherited); return; }
-        const value = [...node.styles].reverse().find(style => style.name === property)?.value ?? inherited;
+        const value = [...node.styles].reverse().find(style => !style.disabled && !style.comment && style.name === property)?.value ?? inherited;
         node.children.forEach(child => visit(child, value));
     };
     for (const range of prepared.ranges) {
         const location = find(prepared.document, range.block.id);
         let inherited: string | undefined;
         for (const parent of [...location?.ancestors ?? [], range.block])
-            inherited = [...parent.styles].reverse().find(style => style.name === property)?.value ?? inherited;
+            inherited = [...parent.styles].reverse().find(style => !style.disabled && !style.comment && style.name === property)?.value ?? inherited;
         slice(range.block.children, range.from, range.to, false, () => `style-piece-${next++}`)
             .forEach(node => visit(node, inherited));
     }
@@ -352,7 +367,7 @@ function clearFormatting(selection: FormattingSelection, id: () => string, nodeI
         if (node.type === "text" || isAtomic(node)) return [node];
         const children = node.children.flatMap(strip);
         if (marks.has(node.tag)) return children;
-        const styles = node.styles.filter(style => !textStyles.has(style.name));
+        const styles = node.styles.filter(style => style.disabled || style.comment || !textStyles.has(style.name));
         if (node.tag === "span" && !styles.length && !node.classes.length && !Object.keys(node.attributes).length)
             return children;
         return [{ ...node, styles, children }];
@@ -376,7 +391,7 @@ function clearFormatting(selection: FormattingSelection, id: () => string, nodeI
     const first = selection.ranges[0], last = selection.ranges[selection.ranges.length - 1];
     const left = positionAt(first.block, first.from), right = positionAt(last.block, last.to);
     return { document, selection: { anchor: selection.reversed ? right : left, focus: selection.reversed ? left : right },
-        marks: { ...typingMarks, bold: false, italic: false, underline: false, strikethrough: false,
+        marks: { ...typingMarks, bold: false, italic: false, underline: false, strikethrough: false, properties: {},
             styles: { ...typingMarks?.styles, color: "", "background-color": "", "font-size": "" } } };
 }
 
@@ -668,23 +683,62 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
     if (!validPosition(state.document, rootId, state.selection.anchor) || !validPosition(state.document, rootId, state.selection.focus)) return;
     const document = structuredClone(state.document);
     let selection = prepareEditingSelection(document, state.selection, id);
+    if (command.type === "clearProperty") {
+        const formatting = formattingSelection(document, rootId, selection, id);
+        if (!formatting) return;
+        if (formatting.collapsed) {
+            // Clear only this provider's pending choice; other providers and
+            // the surrounding authored content remain untouched.
+            const properties = { ...state.marks?.properties };
+            if (properties[command.propertyId]?.provider.id === command.provider.id) delete properties[command.propertyId];
+            return { document, selection, marks: { ...state.marks, properties } };
+        }
+        const fragmented = fragmentSelection(formatting, "span", id, { preserveIds: new Set(command.nodeIds ?? []) });
+        const roots = fragmented.fragmentIds.map(nodeId => find(fragmented.document, nodeId)?.node)
+            .filter((node): node is HtmlEditorElement => node?.type === "element");
+        if (!roots.length) return;
+        const clear = (node: HtmlEditorElement): void => {
+            command.provider.clear(node);
+            node.children.forEach(child => { if (child.type === "element") clear(child); });
+        };
+        roots.forEach(clear);
+        return { document: fragmented.document, selection: fragmented.selection, marks: state.marks };
+    }
+    if (command.type === "applyProperty") {
+        const formatting = formattingSelection(document, rootId, selection, id);
+        if (!formatting || !command.provider.accepts(command.value) || !command.providers.includes(command.provider)) return;
+        if (formatting.collapsed) {
+            const styles = { ...state.marks?.styles };
+            delete styles[command.cssProperty as keyof typeof styles];
+            return { document, selection, marks: { ...state.marks, styles,
+                properties: { ...state.marks?.properties, [command.propertyId]: { cssProperty: command.cssProperty,
+                    providers: command.providers, provider: command.provider, value: command.value } } } };
+        }
+        const fragmented = fragmentSelection(formatting, "span", id, { preserveIds: new Set(command.nodeIds ?? []) });
+        const roots = fragmented.fragmentIds.map(nodeId => find(fragmented.document, nodeId)?.node)
+            .filter((node): node is HtmlEditorElement => node?.type === "element");
+        if (!roots.length || !applyHtmlEditorPropertyToSubtree(roots, command.providers, command.provider, command.value)) return;
+        return { document: fragmented.document, selection: fragmented.selection };
+    }
     if (command.type === "textStyle") {
         const formatting = formattingSelection(document, rootId, selection, id);
         if (!formatting) return;
+        const properties = Object.fromEntries(Object.entries(state.marks?.properties ?? {}).filter(([, mark]) => mark.cssProperty !== command.property));
         if (formatting.collapsed) return { document, selection, marks: { ...state.marks,
-            styles: { ...state.marks?.styles, [command.property]: command.value } } };
+            properties, styles: { ...state.marks?.styles, [command.property]: command.value } } };
         if (!formatting.ranges.some(range => range.to > range.from)) return;
         const fullStyleNodes = new Set(command.nodeIds ?? []);
         const fragmented = fragmentSelection(formatting, "span", id, { preserveIds: fullStyleNodes });
         applyFragmentStyle(fragmented.document, fragmented.fragmentIds, command.property, command.value);
         return { document: fragmented.document, selection: fragmented.selection, marks: { ...state.marks,
-            styles: { ...state.marks?.styles, [command.property]: command.value } } };
+            properties, styles: { ...state.marks?.styles, [command.property]: command.value } } };
     }
     if (command.type === "clearFormatting") {
         const formatting = formattingSelection(document, rootId, selection, id);
         if (!formatting) return;
         if (formatting.collapsed) return { document, selection,
             marks: { ...state.marks, bold: false, italic: false, underline: false, strikethrough: false,
+                properties: {},
                 styles: { ...state.marks?.styles, color: "", "background-color": "", "font-size": "" } } };
         if (!formatting.ranges.some(range => range.to > range.from)) return;
         return clearFormatting(formatting, id, command.nodeIds, state.marks);
@@ -816,10 +870,11 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
                 const requested = state.marks?.[mark];
                 return requested === undefined || requested === tags.some(tag => markDefinition(mark).aliases.includes(tag));
             })
+                && !Object.keys(state.marks?.properties ?? {}).length
                 && Object.entries(state.marks?.styles ?? {}).every(([property, value]) => {
                     let inherited: string | undefined;
                     for (const parent of location.ancestors)
-                        inherited = [...parent.styles].reverse().find(style => style.name === property)?.value ?? inherited;
+                        inherited = [...parent.styles].reverse().find(style => !style.disabled && !style.comment && style.name === property)?.value ?? inherited;
                     return (inherited ?? "") === value;
                 });
             if (matches) {
@@ -837,9 +892,14 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         if (start < 0 || end > document.children.length || !["insertText", "insertHtml", "deleteBackward", "deleteForward", "insertParagraph", "insertLineBreak"].includes(command.type)) return;
         if (collapsed && !["insertText", "insertHtml", "insertParagraph", "insertLineBreak"].includes(command.type)) return;
         const block = element("p", id, command.type === "insertText" ? textContent(command.text, id) : command.type === "insertLineBreak" ? [element("br", id)] : []);
+        if (command.type === "insertText" && Object.keys(state.marks?.properties ?? {}).length) {
+            const wrapper = element("span", id, block.children);
+            Object.values(state.marks?.properties ?? {}).forEach(mark => mark.provider.apply(wrapper, mark.value));
+            block.children = [wrapper];
+        }
         document.children.splice(start, end - start, block);
         const caret = positionAt(block, length(block.children));
-        return { document, selection: { anchor: caret, focus: caret } };
+        return { document, selection: { anchor: caret, focus: caret }, marks: state.marks };
     }
     if (collapsed && !blockAt(document, selection.anchor) && ["insertText", "insertHtml", "insertParagraph", "insertLineBreak"].includes(command.type)) {
         const location = find(document, selection.anchor.nodeId);
@@ -982,7 +1042,9 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
             state.marks?.[mark] === false && markDefinition(mark).aliases.includes(node.tag)));
         for (const wrapper of wrappers.reverse()) {
             const copy = { ...structuredClone(wrapper), id: id(), children: inserted };
-            copy.styles = copy.styles.filter(style => state.marks?.styles?.[style.name as "color" | "background-color" | "font-size"] === undefined);
+            copy.styles = copy.styles.filter(style => style.disabled || style.comment || state.marks?.styles?.[style.name as "color" | "background-color" | "font-size"] === undefined);
+            // Remove provider-owned overrides from copied inline ancestors; the pending choice is applied below.
+            Object.values(state.marks?.properties ?? {}).forEach(mark => mark.providers.forEach(provider => provider.clear(copy)));
             delete copy.attributes.id;
             inserted = [copy];
         }
@@ -998,6 +1060,12 @@ export function applyHtmlEditorCommand(state: HtmlEditorState, rootId: string, c
         if (styles.length) {
             const wrapper = element("span", id, inserted);
             wrapper.styles = styles;
+            inserted = [wrapper];
+        }
+        const properties = Object.values(state.marks?.properties ?? {});
+        if (properties.length) {
+            const wrapper = element("span", id, inserted);
+            properties.forEach(mark => mark.provider.apply(wrapper, mark.value));
             inserted = [wrapper];
         }
     } else if (command.type === "insertLineBreak") inserted = [element("br", id)];

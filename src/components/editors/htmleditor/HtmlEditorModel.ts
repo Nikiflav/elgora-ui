@@ -15,6 +15,10 @@ export interface HtmlEditorStyle {
     /** CSS value without the trailing !important priority. */
     value: string;
     important?: true;
+    /** Disabled declarations remain serialized as CSS comments. */
+    disabled?: true;
+    /** An ordinary authored CSS comment, preserved verbatim in value. */
+    comment?: true;
 }
 
 /** HTML element content, with a single canonical location for each authored property. */

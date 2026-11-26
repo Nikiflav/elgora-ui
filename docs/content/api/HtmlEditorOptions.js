@@ -59,6 +59,36 @@ export default {
       "optional": true,
       "source": "src/components/editors/htmleditor/HtmlEditor.ts",
       "kind": "property"
+    },
+    {
+      "name": "classOptions",
+      "type": "readonly { name: string; text: string; }[] | undefined",
+      "description": "Suggested CSS classes for the Advanced inspector.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "kind": "property"
+    },
+    {
+      "name": "allowCustomClasses",
+      "type": "boolean | undefined",
+      "description": "Allows entering classes outside classOptions. Defaults to true.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "kind": "property"
+    },
+    {
+      "name": "properties",
+      "type": "readonly HtmlEditorPropertyDefinition[] | undefined",
+      "description": "Optional providers for semantic properties such as text.color and text.size.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+      "kind": "property"
     }
   ]
 };

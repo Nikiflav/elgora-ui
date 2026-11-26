@@ -11,6 +11,7 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
     const textPoints = new Map<string, HtmlEditorPositionState>();
     const elementRemaps = new Map<string, HtmlEditorPositionState>();
     const elementBoundaries = new Map<string, number[]>();
+    const unwrappedBoundaries = new Map<string, HtmlEditorPositionState[]>();
     const sameArray = <T>(left: T[], right: T[], equal: (a: T, b: T) => boolean): boolean => left.length === right.length
         && left.every((item, index) => equal(item, right[index]));
     const sameAttributes = (left: Record<string, string>, right: Record<string, string>): boolean => {
@@ -18,7 +19,10 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
         return leftKeys.length === rightKeys.length && leftKeys.every(key => Object.prototype.hasOwnProperty.call(right, key) && left[key] === right[key]);
     };
     const sameStyles = (left: HtmlEditorElement["styles"], right: HtmlEditorElement["styles"]): boolean => sameArray(left, right,
-        (a, b) => a.name === b.name && a.value === b.value && a.important === b.important);
+        // Disabled declarations and ordinary comments serialize differently and
+        // must never be merged with an active declaration or with each other.
+        (a, b) => a.name === b.name && a.value === b.value && a.important === b.important
+            && a.disabled === b.disabled && a.comment === b.comment);
     const canMergeInline = (left: HtmlEditorElement, right: HtmlEditorElement): boolean =>
         !isAtomic(left) && !isAtomic(right)
         && getHtmlEditorElementBehavior(left).kind === "inline"
@@ -38,14 +42,14 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
     };
     const normalizeChildren = (parent: HtmlEditorDocument | HtmlEditorElement): void => {
         const original = parent.children, children: HtmlEditorNode[] = [], boundaries = [0];
+        const parentId = parent.type === "document" ? rootId : parent.id;
         const hasStructuralChild = original.some(node => node.type === "element"
             && !isAtomic(node) && getHtmlEditorElementBehavior(node).kind !== "inline");
-        original.forEach(node => {
-            if (node.type === "element") normalizeChildren(node);
+        const append = (node: HtmlEditorNode): void => {
             if (node.type === "text" && (node.text.length === 0 || (hasStructuralChild && isStructuralWhitespace(node)))) {
                 // Empty leaves and indentation between structural children have
                 // no authored text position. Preserve a caret at the parent gap.
-                textPoints.set(node.id, { nodeId: parent.type === "document" ? rootId : parent.id, offset: children.length });
+                textPoints.set(node.id, { nodeId: parentId, offset: children.length });
             } else {
                 const previous = children[children.length - 1];
                 if (previous?.type === "text" && node.type === "text") {
@@ -58,6 +62,29 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
                     node.children.forEach(child => appendToInline(previous, child));
                 } else children.push(node);
             }
+        };
+        const boundary = (next?: HtmlEditorNode): HtmlEditorPositionState => {
+            const last = children[children.length - 1];
+            if (last?.type === "text" && (!next || next.type === "text")) return { nodeId: last.id, offset: last.text.length };
+            if (last?.type === "element" && (!next || next.type === "element" && canMergeInline(last, next))) {
+                const tail = last.children[last.children.length - 1];
+                const nextHead = next?.type === "element" ? next.children[0] : undefined;
+                if (tail?.type === "text" && (!next || nextHead?.type === "text")) return { nodeId: tail.id, offset: tail.text.length };
+                return { nodeId: last.id, offset: last.children.length };
+            }
+            return { nodeId: parentId, offset: children.length };
+        };
+        original.forEach(node => {
+            if (node.type === "element") normalizeChildren(node);
+            if (node.type === "element" && node.tag === "span" && !node.classes.length && !node.styles.length
+                && !Object.keys(node.attributes).length) {
+                // Remember each gap inside the removed wrapper, including gaps
+                // that become offsets inside an adjacent merged text node.
+                const points: HtmlEditorPositionState[] = [];
+                node.children.forEach(child => { points.push(boundary(child)); append(child); });
+                points.push(boundary());
+                unwrappedBoundaries.set(node.id, points);
+            } else append(node);
             boundaries.push(children.length);
         });
         parent.children = children;
@@ -104,8 +131,17 @@ export function normalizeHtmlEditorState(state: HtmlEditorState, rootId: string,
     state.document.children = children;
     if (state.selection) {
         const map = (point: HtmlEditorPositionState): HtmlEditorPositionState => {
+            const unwrapped = unwrappedBoundaries.get(point.nodeId);
+            if (unwrapped) {
+                const mapped = elementBoundaries.get(point.nodeId);
+                const offset = mapped?.[point.offset] ?? mapped?.[mapped.length - 1] ?? point.offset;
+                return map(unwrapped[offset] ?? unwrapped[unwrapped.length - 1]);
+            }
             const textPoint = textPoints.get(point.nodeId);
-            if (textPoint) return { nodeId: textPoint.nodeId, offset: textPoint.offset + point.offset };
+            if (textPoint) {
+                const next = { nodeId: textPoint.nodeId, offset: textPoint.offset + point.offset };
+                return textPoints.has(next.nodeId) || unwrappedBoundaries.has(next.nodeId) ? map(next) : next;
+            }
             const elementRemap = elementRemaps.get(point.nodeId);
             if (elementRemap) {
                 const mappedBoundaries = elementBoundaries.get(point.nodeId);

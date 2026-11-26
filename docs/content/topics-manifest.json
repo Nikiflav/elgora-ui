@@ -1586,7 +1586,7 @@
       "order": 40,
       "description": "Understand command definitions, target resolution, formatting and command execution.",
       "prev": "/components/html-editor/model",
-      "next": "/components/html-editor/editing",
+      "next": "/components/html-editor/providers",
       "toc": true,
       "api": [
         "HtmlEditorCommand",
@@ -1614,6 +1614,10 @@
         {
           "id": "applying-inline-formatting-and-styles",
           "title": "Applying inline formatting and styles"
+        },
+        {
+          "id": "property-providers",
+          "title": "Property providers"
         },
         {
           "id": "core-operations-and-history",
@@ -1849,6 +1853,41 @@
       "module": "./content/topics/filter-text.js"
     },
     {
+      "id": "html-editor-providers",
+      "title": "Property providers",
+      "path": "/components/html-editor/providers",
+      "group": "html-editor",
+      "order": 45,
+      "description": "Configure reusable providers for text color and size.",
+      "prev": "/components/html-editor/commands",
+      "next": "/components/html-editor/editing",
+      "toc": true,
+      "api": [
+        "HtmlEditorOptions",
+        "HtmlEditorPropertyProvider",
+        "HtmlEditorPropertyDefinition"
+      ],
+      "keywords": [
+        "providers",
+        "palette",
+        "class",
+        "text color",
+        "font size"
+      ],
+      "sectionRedirects": [],
+      "headings": [
+        {
+          "id": "try-providers",
+          "title": "Try providers"
+        },
+        {
+          "id": "configuration",
+          "title": "Configuration"
+        }
+      ],
+      "module": "./content/topics/html-editor-providers.js"
+    },
+    {
       "id": "dataset",
       "title": "DataSet overview",
       "navTitle": "Overview",
@@ -1902,7 +1941,7 @@
       "group": "html-editor",
       "order": 50,
       "description": "Explore structural editing rules, keyboard behavior, lists, quotes and history.",
-      "prev": "/components/html-editor/commands",
+      "prev": "/components/html-editor/providers",
       "next": "/components/html-editor/selection",
       "toc": true,
       "api": [

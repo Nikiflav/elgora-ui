@@ -1484,6 +1484,186 @@
       }
     },
     {
+      "name": "createHtmlEditorClassProvider",
+      "kind": "function",
+      "type": "(id: string, text: string, options: readonly HtmlEditorPropertyOption[], classes: Readonly<Record<string, string>>) => HtmlEditorPropertyProvider",
+      "description": "A provider owns only its configured classes; unrelated classes are preserved.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorClassProvider",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "options",
+          "type": "readonly HtmlEditorPropertyOption[]",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "classes",
+          "type": "Readonly<Record<string, string>>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorPropertyProvider",
+        "description": ""
+      }
+    },
+    {
+      "name": "createHtmlEditorFreeStyleProvider",
+      "kind": "function",
+      "type": "(id: string, text: string, property: string, control: Extract<HtmlEditorPropertyControl, { type: \"color\" | \"length\" | \"text\"; }>) => HtmlEditorPropertyProvider",
+      "description": "A free-form inline value, validated against the editor's CSS policy and browser CSS support.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorFreeStyleProvider",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "property",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "control",
+          "type": "{ type: \"color\"; } | { type: \"length\"; units: readonly string[]; min?: number; max?: number; } | { type: \"text\"; }",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorPropertyProvider",
+        "description": ""
+      }
+    },
+    {
+      "name": "createHtmlEditorInlineStyleProvider",
+      "kind": "function",
+      "type": "(id: string, text: string, property: string, options: readonly HtmlEditorPropertyOption[], values: Readonly<Record<string, string>>) => HtmlEditorPropertyProvider",
+      "description": "Maps stable option IDs to inline CSS values without touching unrelated declarations.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorInlineStyleProvider",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "property",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "options",
+          "type": "readonly HtmlEditorPropertyOption[]",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "values",
+          "type": "Readonly<Record<string, string>>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorPropertyProvider",
+        "description": ""
+      }
+    },
+    {
+      "name": "createHtmlEditorPaletteProvider",
+      "kind": "function",
+      "type": "(id: string, text: string, property: string, options: readonly HtmlEditorPropertyOption[], values: Readonly<Record<string, string>>) => HtmlEditorPropertyProvider",
+      "description": "Choice provider with swatches; storage remains the same as the inline choice provider.",
+      "tags": [],
+      "topics": [],
+      "group": "components",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/createHtmlEditorPaletteProvider",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "property",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "options",
+          "type": "readonly HtmlEditorPropertyOption[]",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "values",
+          "type": "Readonly<Record<string, string>>",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorPropertyProvider",
+        "description": ""
+      }
+    },
+    {
       "name": "DataCell",
       "kind": "type",
       "type": "any",
@@ -7609,7 +7789,7 @@
     {
       "name": "enMessages",
       "kind": "variable",
-      "type": "{ readonly \"htmlEditorToolbar.label\": \"HTML editing commands\"; readonly \"htmlEditorToolbar.bold\": \"Bold\"; readonly \"htmlEditorToolbar.italic\": \"Italic\"; readonly \"htmlEditorToolbar.underline\": \"Underline\"; readonly \"htmlEditorToolbar.strikethrough\": \"Strikethrough\"; readonly \"htmlEditorToolbar.clearFormatting\": \"Clear formatting\"; readonly \"htmlEditorToolbar.link\": \"Link\"; readonly \"htmlEditorToolbar.undo\": \"Undo\"; readonly \"htmlEditorToolbar.redo\": \"Redo\"; readonly \"htmlEditorCommand.failed\": \"This command cannot be executed in the current context.\"; readonly \"htmlEditorInspector.label\": \"Element inspector\"; readonly \"htmlEditorInspector.elementsArea\": \"Elements\"; readonly \"htmlEditorInspector.textArea\": \"Text selection\"; readonly \"htmlEditorInspector.formatCategory\": \"Format\"; readonly \"htmlEditorInspector.linkCategory\": \"Link\"; readonly \"htmlEditorInspector.imageCategory\": \"Image\"; readonly \"htmlEditorBasic.imageSource\": \"Source\"; readonly \"htmlEditorBasic.imageAlt\": \"Alternative text\"; readonly \"htmlEditorBasic.imageWidth\": \"Width (px)\"; readonly \"htmlEditorBasic.imageHeight\": \"Height (px)\"; readonly \"htmlEditorBasic.imageLockAspect\": \"Lock aspect ratio\"; readonly \"htmlEditorBasic.imageTitle\": \"Title\"; readonly \"htmlEditorBasic.invalidImageValue\": \"Enter a valid URL or a positive whole number.\"; readonly \"htmlEditorInspector.typographyCategory\": \"Typography\"; readonly \"htmlEditorInspector.paragraphCategory\": \"Paragraph\"; readonly \"htmlEditorInspector.appearanceCategory\": \"Appearance\"; readonly \"htmlEditorInspector.chooseElement\": \"Choose an element…\"; readonly \"htmlEditorInspector.elements\": \"HTML elements\"; readonly \"htmlEditorInspector.properties\": \"Properties\"; readonly \"htmlEditorInspector.advanced\": \"Advanced\"; readonly \"htmlEditorInspector.propertiesHint\": \"Choose a Basic command for the selected element.\"; readonly \"htmlEditorInspector.advancedHint\": \"Advanced attributes, classes and styles will be grouped here. This panel does not modify HTML yet.\"; readonly \"htmlEditorBasic.heading\": \"Block\"; readonly \"htmlEditorBasic.textColor\": \"Text color\"; readonly \"htmlEditorBasic.backgroundColor\": \"Background\"; readonly \"htmlEditorBasic.textSize\": \"Text size\"; readonly \"htmlEditorBasic.align\": \"Alignment\"; readonly \"htmlEditorBasic.linkUrl\": \"URL\"; readonly \"htmlEditorBasic.linkTarget\": \"Target\"; readonly \"htmlEditorBasic.linkTitle\": \"Title\"; readonly \"htmlEditorBasic.unlink\": \"Unlink\"; readonly \"htmlEditorBasic.unlinkTooltip\": \"Remove link\"; readonly \"htmlEditorBasic.linkTargetSelf\": \"Same window\"; readonly \"htmlEditorBasic.linkTargetBlank\": \"New tab\"; readonly \"htmlEditorBasic.linkApply\": \"Set link\"; readonly \"htmlEditorBasic.invalidUrl\": \"Enter a valid URL (http, https, mailto, tel or a relative path).\"; readonly \"htmlEditorInspector.empty\": \"Empty\"; readonly \"htmlEditorInspector.ancestors\": \"Element ancestors\"; readonly \"htmlEditorInspector.moreAncestors\": \"More ancestors\"; readonly \"htmlEditorInspector.inspectAncestor\": \"Inspect {tag}\"; readonly \"htmlEditorInspector.mixed\": \"Mixed\"; readonly \"htmlEditorInspector.fullySelected\": \"Fully selected\"; readonly \"htmlEditorInspector.expandSelectElement\": \"Select element\"; readonly \"htmlEditorInspector.selectParent\": \"Select parent element\"; readonly \"htmlEditorInspector.selectAllContent\": \"Select all content\"; readonly \"htmlEditorInspector.partiallySelected\": \"Partially selected\"; readonly \"htmlEditorInspector.notSelected\": \"Not selected\"; readonly \"htmlEditorInspector.keyboardFocus\": \"Keyboard focus\"; readonly \"htmlEditorInspector.selectElement\": \"Select element\"; readonly \"htmlEditorInspector.moreActions\": \"More actions\"; readonly \"htmlEditorInspector.notSelectedHint\": \"Not selected — click to select element\"; readonly \"htmlEditorInspector.partiallySelectedHint\": \"Partially selected — click to select the entire element\"; readonly \"treeView.loading\": \"Loading…\"; readonly \"treeView.loadError\": \"Could not load this branch.\"; readonly \"treeView.retry\": \"Retry\"; readonly \"datePicker.today\": \"Today\"; readonly \"datePicker.selectToday\": \"Select today\"; readonly \"datePicker.chooseMonth\": \"Choose month\"; readonly \"datePicker.chooseYear\": \"Choose year\"; readonly \"datePicker.previousPeriod\": \"Previous period\"; readonly \"datePicker.nextPeriod\": \"Next period\"; readonly \"datePicker.chooseDate\": \"Choose date\"; readonly \"datePicker.invalidDate\": \"Failed to read calendar date. Use a valid YYYY-MM-DD date.\"; readonly \"datePicker.outOfRange\": \"Failed to set calendar date. The date is outside the allowed range.\"; readonly \"valueEditor.required\": \"A value is required.\"; readonly \"valueEditor.validationError\": \"Validation error: {message}\"; readonly \"numberEditor.invalidNumber\": \"Failed to confirm number. Enter a valid number.\"; readonly \"numberEditor.finiteNumber\": \"Failed to confirm number. Enter a finite number.\"; readonly \"booleanEditor.invalidBoolean\": \"Failed to resolve boolean text. Enter true/false, yes/no or 1/0.\"; readonly \"toggleEditor.label\": \"Toggle\"; readonly \"dateEditor.open\": \"Open date picker\"; readonly \"dateEditor.popup\": \"{label} calendar\"; readonly \"dateEditor.label\": \"Date\"; readonly \"dateEditor.outOfRange\": \"Failed to resolve date. The date is outside the allowed range.\"; readonly \"dateFormatter.invalidDate\": \"Failed to parse date. Use a valid {pattern} date.\"; readonly \"dateFormatter.invalidValue\": \"Failed to format date. Use a valid YYYY-MM-DD value.\"; readonly \"timeEditor.open\": \"Open time picker\"; readonly \"timeEditor.label\": \"Time\"; readonly \"timeEditor.popup\": \"{label} picker\"; readonly \"timeFormatter.invalidTime\": \"Failed to parse time. Use a valid {pattern} value.\"; readonly \"timeFormatter.invalidValue\": \"Failed to format time. Use a valid HH:mm or HH:mm:ss value.\"; readonly \"dateTimeEditor.open\": \"Open date and time picker\"; readonly \"dateTimeEditor.label\": \"Date and time\"; readonly \"dateTimeEditor.popup\": \"{label} picker\"; readonly \"dateTimeEditor.invalidInput\": \"Failed to parse date-time. Use {pattern}.\"; readonly \"dateTimeEditor.invalidValue\": \"Failed to resolve date-time. Use a canonical date-time value.\"; readonly \"lookupEditor.open\": \"Open lookup\"; readonly \"lookupEditor.label\": \"Lookup\"; readonly \"lookupEditor.popup\": \"{label} results\"; readonly \"lookupEditor.loading\": \"Loading…\"; readonly \"lookupEditor.noResults\": \"No matching items\"; readonly \"lookupEditor.matches.one\": \"{count} match\"; readonly \"lookupEditor.matches.other\": \"{count} matches\"; readonly \"lookupEditor.loadFailed\": \"Failed to load lookup items.\"; readonly \"lookupEditor.notFound\": \"Failed to resolve lookup text. No matching item was found.\"; readonly \"lookupEditor.ambiguous\": \"Failed to resolve lookup text. More than one item matches.\"; readonly \"lookupEditor.missingItem\": \"Failed to resolve lookup text. The matching item was not returned.\"; readonly \"dataGrid.newRow\": \"New row\"; readonly \"dataGrid.groupPanelEmpty\": \"Drag a column here to group\"; readonly \"dataGrid.sortAscending\": \"Sort Ascending\"; readonly \"dataGrid.sortDescending\": \"Sort Descending\"; readonly \"dataGrid.clearSorting\": \"Clear sorting\"; readonly \"dataGrid.pinColumn\": \"Pin Column\"; readonly \"dataGrid.noPin\": \"No Pin\"; readonly \"dataGrid.pinLeft\": \"Pin Left\"; readonly \"dataGrid.pinRight\": \"Pin Right\"; readonly \"dataGrid.autosizeColumn\": \"Autosize This Column\"; readonly \"dataGrid.autosizeAll\": \"Autosize All Columns\"; readonly \"dataGrid.groupBy\": \"Group by {column}\"; readonly \"dataGrid.ungroup\": \"Ungroup {column}\"; readonly \"dataGrid.grouping\": \"Grouping\"; readonly \"dataGrid.interval\": \"Interval\"; readonly \"dataGrid.exactValue\": \"Exact value\"; readonly \"dataGrid.expandToLevel\": \"Expand to this level\"; readonly \"dataGrid.collapseLevel\": \"Collapse this level\"; readonly \"dataGrid.summary\": \"Summary\"; readonly \"dataGrid.summary.none\": \"None\"; readonly \"dataGrid.summary.count\": \"Count\"; readonly \"dataGrid.summary.sum\": \"Sum\"; readonly \"dataGrid.summary.avg\": \"Average\"; readonly \"dataGrid.summary.min\": \"Minimum\"; readonly \"dataGrid.summary.max\": \"Maximum\"; readonly \"dataGrid.summary.distinct\": \"Distinct\"; readonly \"dataGrid.cancelNewRow\": \"Cancel new row\"; readonly \"dataGrid.copy\": \"Copy selected cells\"; readonly \"dataGrid.copyWithHeaders\": \"Copy selected cells with headers\"; readonly \"dataGrid.paste\": \"Paste\"; readonly \"dataGrid.selectRow\": \"Select row\"; readonly \"dataGrid.clearSelection\": \"Clear selection\"; readonly \"dataGrid.sortPriority\": \"Sort priority {priority}\"; readonly \"dataGrid.sortedAscending\": \"Sorted ascending\"; readonly \"dataGrid.sortedDescending\": \"Sorted descending\"; readonly \"dataGrid.editFilter\": \"Edit filter\"; readonly \"dataGrid.addFilter\": \"Add filter\"; readonly \"dataGrid.editFilterExpression\": \"Edit filter: {filter}\"; readonly \"dataGrid.filterColumn\": \"Filter {column}\"; readonly \"dataGrid.clearColumnFilter\": \"Clear filter {column}\"; readonly \"dataGrid.acceptFailed\": \"Failed to accept cell input.\"; readonly \"dataGrid.displayValueFailed\": \"Could not format cell value: {message}\"; readonly \"dataGrid.clipboardUnavailable\": \"Clipboard reading is unavailable.\"; readonly \"dataGrid.clipboardFailed\": \"Failed to read clipboard. {message}\"; readonly \"dataGrid.pastePrompt\": \"Paste text below, then choose Paste.\"; readonly \"dataGrid.pasteText\": \"Paste tabular text\"; readonly \"dataGrid.cancel\": \"Cancel\"; readonly \"dataGrid.interval.year\": \"Year\"; readonly \"dataGrid.interval.yearQuarter\": \"Year-quarter\"; readonly \"dataGrid.interval.quarter\": \"Quarter\"; readonly \"dataGrid.interval.yearMonth\": \"Year-month\"; readonly \"dataGrid.interval.month\": \"Month\"; readonly \"dataGrid.interval.week\": \"ISO week\"; readonly \"dataGrid.interval.day\": \"Day\"; readonly \"dataGrid.interval.dayOfWeek\": \"Day of week\"; readonly \"dataGrid.interval.hour\": \"Hour\"; readonly \"dataGrid.interval.minute\": \"Minute\"; readonly \"dataGrid.interval.second\": \"Second\"; readonly \"dataGrid.interval.firstChar\": \"First character\"; readonly \"filterEditor.apply\": \"Apply Filter\"; readonly \"filterEditor.clear\": \"Clear\"; readonly \"filterEditor.and\": \"And\"; readonly \"filterEditor.or\": \"Or\"; readonly \"filterEditor.addCondition\": \"Add condition\"; readonly \"filterEditor.addGroup\": \"Add group\"; readonly \"filterEditor.removeCondition\": \"Remove condition\"; readonly \"filterEditor.removeGroup\": \"Remove group\"; readonly \"filterEditor.empty\": \"(empty)\"; readonly \"filterEditor.value\": \"Value\"; readonly \"filterEditor.operator.contains\": \"contains\"; readonly \"filterEditor.operator.notcontains\": \"notcontains\"; readonly \"filterEditor.operator.startswith\": \"startswith\"; readonly \"filterEditor.operator.endswith\": \"endswith\"; readonly \"numberFormatter.invalidNumber\": \"Failed to parse number. Use the '{pattern}' format.\"; readonly \"dataGrid.clipboardHint\": \"Return to grid and press Ctrl+V / Command+V\"; readonly \"dataGrid.clipboardMalformed\": \"The pasted text contains an unterminated quoted value.\"; readonly \"dataGrid.pasteBlocked\": \"Pasting is unavailable while editing is disabled or another row operation is running.\"; readonly \"dataGrid.pasteEditInProgress\": \"Finish or cancel the active cell edit before pasting.\"; readonly \"dataGrid.pasteReadOnlyRow\": \"The pasted range includes a group or summary row that cannot be edited.\"; readonly \"dataGrid.pasteCreateUnavailable\": \"The data source does not support creating rows for the pasted data.\"; readonly \"dataGrid.newRowOperationInProgress\": \"Finish the current editing operation before creating a new row.\"; readonly \"dataGrid.newRowUnavailable\": \"Row creation is unavailable because grid editing or source row creation is disabled.\"; readonly \"dataGrid.newRowCreationInProgress\": \"A new row is already being created.\"; readonly \"dataGrid.pasteRowFailed\": \"Failed to create pasted row {row}. {message}\"; readonly \"dataGrid.summaryLabel.count\": \"count\"; readonly \"dataGrid.summaryLabel.sum\": \"sum\"; readonly \"dataGrid.summaryLabel.avg\": \"avg\"; readonly \"dataGrid.summaryLabel.min\": \"min\"; readonly \"dataGrid.summaryLabel.max\": \"max\"; readonly \"dataGrid.summaryLabel.distinct\": \"distinct\"; }",
+      "type": "{ readonly \"htmlEditorToolbar.label\": \"HTML editing commands\"; readonly \"htmlEditorToolbar.bold\": \"Bold\"; readonly \"htmlEditorToolbar.italic\": \"Italic\"; readonly \"htmlEditorToolbar.underline\": \"Underline\"; readonly \"htmlEditorToolbar.strikethrough\": \"Strikethrough\"; readonly \"htmlEditorToolbar.clearFormatting\": \"Clear formatting\"; readonly \"htmlEditorToolbar.link\": \"Link\"; readonly \"htmlEditorToolbar.undo\": \"Undo\"; readonly \"htmlEditorToolbar.redo\": \"Redo\"; readonly \"htmlEditorCommand.failed\": \"This command cannot be executed in the current context.\"; readonly \"htmlEditorInspector.label\": \"Element inspector\"; readonly \"htmlEditorInspector.elementsArea\": \"Elements\"; readonly \"htmlEditorInspector.textArea\": \"Text selection\"; readonly \"htmlEditorInspector.formatCategory\": \"Format\"; readonly \"htmlEditorInspector.linkCategory\": \"Link\"; readonly \"htmlEditorInspector.imageCategory\": \"Image\"; readonly \"htmlEditorBasic.clearProvider\": \"Clear\"; readonly \"htmlEditorBasic.imageSource\": \"Source\"; readonly \"htmlEditorBasic.imageAlt\": \"Alternative text\"; readonly \"htmlEditorBasic.imageWidth\": \"Width (px)\"; readonly \"htmlEditorBasic.imageHeight\": \"Height (px)\"; readonly \"htmlEditorBasic.imageLockAspect\": \"Lock aspect ratio\"; readonly \"htmlEditorBasic.imageTitle\": \"Title\"; readonly \"htmlEditorBasic.invalidImageValue\": \"Enter a valid URL or a positive whole number.\"; readonly \"htmlEditorInspector.typographyCategory\": \"Typography\"; readonly \"htmlEditorInspector.paragraphCategory\": \"Paragraph\"; readonly \"htmlEditorInspector.appearanceCategory\": \"Appearance\"; readonly \"htmlEditorInspector.chooseElement\": \"Choose an element…\"; readonly \"htmlEditorInspector.elements\": \"HTML elements\"; readonly \"htmlEditorInspector.properties\": \"Properties\"; readonly \"htmlEditorInspector.advanced\": \"Advanced\"; readonly \"htmlEditorInspector.propertiesHint\": \"Choose a Basic command for the selected element.\"; readonly \"htmlEditorInspector.advancedHint\": \"Advanced attributes, classes and styles will be grouped here. This panel does not modify HTML yet.\"; readonly \"htmlEditorBasic.heading\": \"Block\"; readonly \"htmlEditorBasic.textColor\": \"Text color\"; readonly \"htmlEditorBasic.backgroundColor\": \"Background\"; readonly \"htmlEditorBasic.textSize\": \"Text size\"; readonly \"htmlEditorBasic.align\": \"Alignment\"; readonly \"htmlEditorBasic.linkUrl\": \"URL\"; readonly \"htmlEditorBasic.linkTarget\": \"Target\"; readonly \"htmlEditorBasic.linkTitle\": \"Title\"; readonly \"htmlEditorBasic.unlink\": \"Unlink\"; readonly \"htmlEditorBasic.unlinkTooltip\": \"Remove link\"; readonly \"htmlEditorBasic.linkTargetSelf\": \"Same window\"; readonly \"htmlEditorBasic.linkTargetBlank\": \"New tab\"; readonly \"htmlEditorBasic.linkApply\": \"Set link\"; readonly \"htmlEditorBasic.invalidUrl\": \"Enter a valid URL (http, https, mailto, tel or a relative path).\"; readonly \"htmlEditorInspector.empty\": \"Empty\"; readonly \"htmlEditorInspector.ancestors\": \"Element ancestors\"; readonly \"htmlEditorInspector.moreAncestors\": \"More ancestors\"; readonly \"htmlEditorInspector.inspectAncestor\": \"Inspect {tag}\"; readonly \"htmlEditorInspector.mixed\": \"Mixed\"; readonly \"htmlEditorInspector.fullySelected\": \"Fully selected\"; readonly \"htmlEditorInspector.expandSelectElement\": \"Select element\"; readonly \"htmlEditorInspector.selectParent\": \"Select parent element\"; readonly \"htmlEditorInspector.selectAllContent\": \"Select all content\"; readonly \"htmlEditorInspector.partiallySelected\": \"Partially selected\"; readonly \"htmlEditorInspector.notSelected\": \"Not selected\"; readonly \"htmlEditorInspector.keyboardFocus\": \"Keyboard focus\"; readonly \"htmlEditorInspector.selectElement\": \"Select element\"; readonly \"htmlEditorInspector.moreActions\": \"More actions\"; readonly \"htmlEditorInspector.notSelectedHint\": \"Not selected — click to select element\"; readonly \"htmlEditorInspector.partiallySelectedHint\": \"Partially selected — click to select the entire element\"; readonly \"treeView.loading\": \"Loading…\"; readonly \"treeView.loadError\": \"Could not load this branch.\"; readonly \"treeView.retry\": \"Retry\"; readonly \"datePicker.today\": \"Today\"; readonly \"datePicker.selectToday\": \"Select today\"; readonly \"datePicker.chooseMonth\": \"Choose month\"; readonly \"datePicker.chooseYear\": \"Choose year\"; readonly \"datePicker.previousPeriod\": \"Previous period\"; readonly \"datePicker.nextPeriod\": \"Next period\"; readonly \"datePicker.chooseDate\": \"Choose date\"; readonly \"datePicker.invalidDate\": \"Failed to read calendar date. Use a valid YYYY-MM-DD date.\"; readonly \"datePicker.outOfRange\": \"Failed to set calendar date. The date is outside the allowed range.\"; readonly \"valueEditor.required\": \"A value is required.\"; readonly \"valueEditor.validationError\": \"Validation error: {message}\"; readonly \"numberEditor.invalidNumber\": \"Failed to confirm number. Enter a valid number.\"; readonly \"numberEditor.finiteNumber\": \"Failed to confirm number. Enter a finite number.\"; readonly \"booleanEditor.invalidBoolean\": \"Failed to resolve boolean text. Enter true/false, yes/no or 1/0.\"; readonly \"toggleEditor.label\": \"Toggle\"; readonly \"dateEditor.open\": \"Open date picker\"; readonly \"dateEditor.popup\": \"{label} calendar\"; readonly \"dateEditor.label\": \"Date\"; readonly \"dateEditor.outOfRange\": \"Failed to resolve date. The date is outside the allowed range.\"; readonly \"dateFormatter.invalidDate\": \"Failed to parse date. Use a valid {pattern} date.\"; readonly \"dateFormatter.invalidValue\": \"Failed to format date. Use a valid YYYY-MM-DD value.\"; readonly \"timeEditor.open\": \"Open time picker\"; readonly \"timeEditor.label\": \"Time\"; readonly \"timeEditor.popup\": \"{label} picker\"; readonly \"timeFormatter.invalidTime\": \"Failed to parse time. Use a valid {pattern} value.\"; readonly \"timeFormatter.invalidValue\": \"Failed to format time. Use a valid HH:mm or HH:mm:ss value.\"; readonly \"dateTimeEditor.open\": \"Open date and time picker\"; readonly \"dateTimeEditor.label\": \"Date and time\"; readonly \"dateTimeEditor.popup\": \"{label} picker\"; readonly \"dateTimeEditor.invalidInput\": \"Failed to parse date-time. Use {pattern}.\"; readonly \"dateTimeEditor.invalidValue\": \"Failed to resolve date-time. Use a canonical date-time value.\"; readonly \"lookupEditor.open\": \"Open lookup\"; readonly \"lookupEditor.label\": \"Lookup\"; readonly \"lookupEditor.popup\": \"{label} results\"; readonly \"lookupEditor.loading\": \"Loading…\"; readonly \"lookupEditor.noResults\": \"No matching items\"; readonly \"lookupEditor.matches.one\": \"{count} match\"; readonly \"lookupEditor.matches.other\": \"{count} matches\"; readonly \"lookupEditor.loadFailed\": \"Failed to load lookup items.\"; readonly \"lookupEditor.notFound\": \"Failed to resolve lookup text. No matching item was found.\"; readonly \"lookupEditor.ambiguous\": \"Failed to resolve lookup text. More than one item matches.\"; readonly \"lookupEditor.missingItem\": \"Failed to resolve lookup text. The matching item was not returned.\"; readonly \"dataGrid.newRow\": \"New row\"; readonly \"dataGrid.groupPanelEmpty\": \"Drag a column here to group\"; readonly \"dataGrid.sortAscending\": \"Sort Ascending\"; readonly \"dataGrid.sortDescending\": \"Sort Descending\"; readonly \"dataGrid.clearSorting\": \"Clear sorting\"; readonly \"dataGrid.pinColumn\": \"Pin Column\"; readonly \"dataGrid.noPin\": \"No Pin\"; readonly \"dataGrid.pinLeft\": \"Pin Left\"; readonly \"dataGrid.pinRight\": \"Pin Right\"; readonly \"dataGrid.autosizeColumn\": \"Autosize This Column\"; readonly \"dataGrid.autosizeAll\": \"Autosize All Columns\"; readonly \"dataGrid.groupBy\": \"Group by {column}\"; readonly \"dataGrid.ungroup\": \"Ungroup {column}\"; readonly \"dataGrid.grouping\": \"Grouping\"; readonly \"dataGrid.interval\": \"Interval\"; readonly \"dataGrid.exactValue\": \"Exact value\"; readonly \"dataGrid.expandToLevel\": \"Expand to this level\"; readonly \"dataGrid.collapseLevel\": \"Collapse this level\"; readonly \"dataGrid.summary\": \"Summary\"; readonly \"dataGrid.summary.none\": \"None\"; readonly \"dataGrid.summary.count\": \"Count\"; readonly \"dataGrid.summary.sum\": \"Sum\"; readonly \"dataGrid.summary.avg\": \"Average\"; readonly \"dataGrid.summary.min\": \"Minimum\"; readonly \"dataGrid.summary.max\": \"Maximum\"; readonly \"dataGrid.summary.distinct\": \"Distinct\"; readonly \"dataGrid.cancelNewRow\": \"Cancel new row\"; readonly \"dataGrid.copy\": \"Copy selected cells\"; readonly \"dataGrid.copyWithHeaders\": \"Copy selected cells with headers\"; readonly \"dataGrid.paste\": \"Paste\"; readonly \"dataGrid.selectRow\": \"Select row\"; readonly \"dataGrid.clearSelection\": \"Clear selection\"; readonly \"dataGrid.sortPriority\": \"Sort priority {priority}\"; readonly \"dataGrid.sortedAscending\": \"Sorted ascending\"; readonly \"dataGrid.sortedDescending\": \"Sorted descending\"; readonly \"dataGrid.editFilter\": \"Edit filter\"; readonly \"dataGrid.addFilter\": \"Add filter\"; readonly \"dataGrid.editFilterExpression\": \"Edit filter: {filter}\"; readonly \"dataGrid.filterColumn\": \"Filter {column}\"; readonly \"dataGrid.clearColumnFilter\": \"Clear filter {column}\"; readonly \"dataGrid.acceptFailed\": \"Failed to accept cell input.\"; readonly \"dataGrid.displayValueFailed\": \"Could not format cell value: {message}\"; readonly \"dataGrid.clipboardUnavailable\": \"Clipboard reading is unavailable.\"; readonly \"dataGrid.clipboardFailed\": \"Failed to read clipboard. {message}\"; readonly \"dataGrid.pastePrompt\": \"Paste text below, then choose Paste.\"; readonly \"dataGrid.pasteText\": \"Paste tabular text\"; readonly \"dataGrid.cancel\": \"Cancel\"; readonly \"dataGrid.interval.year\": \"Year\"; readonly \"dataGrid.interval.yearQuarter\": \"Year-quarter\"; readonly \"dataGrid.interval.quarter\": \"Quarter\"; readonly \"dataGrid.interval.yearMonth\": \"Year-month\"; readonly \"dataGrid.interval.month\": \"Month\"; readonly \"dataGrid.interval.week\": \"ISO week\"; readonly \"dataGrid.interval.day\": \"Day\"; readonly \"dataGrid.interval.dayOfWeek\": \"Day of week\"; readonly \"dataGrid.interval.hour\": \"Hour\"; readonly \"dataGrid.interval.minute\": \"Minute\"; readonly \"dataGrid.interval.second\": \"Second\"; readonly \"dataGrid.interval.firstChar\": \"First character\"; readonly \"filterEditor.apply\": \"Apply Filter\"; readonly \"filterEditor.clear\": \"Clear\"; readonly \"filterEditor.and\": \"And\"; readonly \"filterEditor.or\": \"Or\"; readonly \"filterEditor.addCondition\": \"Add condition\"; readonly \"filterEditor.addGroup\": \"Add group\"; readonly \"filterEditor.removeCondition\": \"Remove condition\"; readonly \"filterEditor.removeGroup\": \"Remove group\"; readonly \"filterEditor.empty\": \"(empty)\"; readonly \"filterEditor.value\": \"Value\"; readonly \"filterEditor.operator.contains\": \"contains\"; readonly \"filterEditor.operator.notcontains\": \"notcontains\"; readonly \"filterEditor.operator.startswith\": \"startswith\"; readonly \"filterEditor.operator.endswith\": \"endswith\"; readonly \"numberFormatter.invalidNumber\": \"Failed to parse number. Use the '{pattern}' format.\"; readonly \"dataGrid.clipboardHint\": \"Return to grid and press Ctrl+V / Command+V\"; readonly \"dataGrid.clipboardMalformed\": \"The pasted text contains an unterminated quoted value.\"; readonly \"dataGrid.pasteBlocked\": \"Pasting is unavailable while editing is disabled or another row operation is running.\"; readonly \"dataGrid.pasteEditInProgress\": \"Finish or cancel the active cell edit before pasting.\"; readonly \"dataGrid.pasteReadOnlyRow\": \"The pasted range includes a group or summary row that cannot be edited.\"; readonly \"dataGrid.pasteCreateUnavailable\": \"The data source does not support creating rows for the pasted data.\"; readonly \"dataGrid.newRowOperationInProgress\": \"Finish the current editing operation before creating a new row.\"; readonly \"dataGrid.newRowUnavailable\": \"Row creation is unavailable because grid editing or source row creation is disabled.\"; readonly \"dataGrid.newRowCreationInProgress\": \"A new row is already being created.\"; readonly \"dataGrid.pasteRowFailed\": \"Failed to create pasted row {row}. {message}\"; readonly \"dataGrid.summaryLabel.count\": \"count\"; readonly \"dataGrid.summaryLabel.sum\": \"sum\"; readonly \"dataGrid.summaryLabel.avg\": \"avg\"; readonly \"dataGrid.summaryLabel.min\": \"min\"; readonly \"dataGrid.summaryLabel.max\": \"max\"; readonly \"dataGrid.summaryLabel.distinct\": \"distinct\"; }",
       "description": "Canonical English messages; the source of key and named-parameter types.",
       "tags": [],
       "topics": [],
@@ -8792,7 +8972,7 @@
       "namespace": "Components.Editors",
       "path": "/api-reference/HtmlEditorCommand",
       "source": "src/components/editors/htmleditor/HtmlEditorCommands.ts",
-      "definition": "| { type: \"textStyle\"; property: \"color\" | \"background-color\" | \"font-size\"; value: string; nodeIds?: readonly string[] }\n    | { type: \"insertText\"; text: string }\n    | { type: \"insertHtml\"; html: string }\n    | { type: \"link\"; property: \"href\" | \"target\" | \"title\" | \"remove\"; value?: string }\n    | { type: \"link\"; property: \"update\"; href: string; target: string; title: string }\n    | { type: \"deleteBackward\" | \"deleteForward\" | \"insertParagraph\" | \"insertLineBreak\" | \"indent\" | \"outdent\" | \"bold\" | \"italic\" | \"underline\" | \"strikethrough\" | \"undo\" | \"redo\" }\n    | { type: \"clearFormatting\"; nodeIds?: readonly string[] }"
+      "definition": "| { type: \"applyProperty\"; propertyId: string; cssProperty: string; providers: readonly HtmlEditorPropertyProvider[]; provider: HtmlEditorPropertyProvider; value: string; nodeIds?: readonly string[] }\n    | { type: \"clearProperty\"; propertyId: string; provider: HtmlEditorPropertyProvider; nodeIds?: readonly string[] }\n    | { type: \"textStyle\"; property: \"color\" | \"background-color\" | \"font-size\"; value: string; nodeIds?: readonly string[] }\n    | { type: \"insertText\"; text: string }\n    | { type: \"insertHtml\"; html: string }\n    | { type: \"link\"; property: \"href\" | \"target\" | \"title\" | \"remove\"; value?: string }\n    | { type: \"link\"; property: \"update\"; href: string; target: string; title: string }\n    | { type: \"deleteBackward\" | \"deleteForward\" | \"insertParagraph\" | \"insertLineBreak\" | \"indent\" | \"outdent\" | \"bold\" | \"italic\" | \"underline\" | \"strikethrough\" | \"undo\" | \"redo\" }\n    | { type: \"clearFormatting\"; nodeIds?: readonly string[] }"
     },
     {
       "name": "HtmlEditorCommandMenu",
@@ -8901,6 +9081,93 @@
           "optional": false,
           "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
           "kind": "property"
+        },
+        {
+          "name": "propertyDefinition",
+          "type": "(id: string) => HtmlEditorPropertyDefinition | undefined",
+          "description": "Returns host-provided presentations for a semantic command, if configured.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "id",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "HtmlEditorPropertyDefinition | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(id: string) => HtmlEditorPropertyDefinition | undefined"
+        },
+        {
+          "name": "applyProperty",
+          "type": "(binding: HtmlEditorResolvedUiCommandField, providerId: string, value: string) => boolean",
+          "description": "Applies provider settings in one model transaction to the captured selection.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "binding",
+              "type": "HtmlEditorResolvedUiCommandField",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "providerId",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(binding: HtmlEditorResolvedUiCommandField, providerId: string, value: string) => boolean"
+        },
+        {
+          "name": "clearProperty",
+          "type": "(binding: HtmlEditorResolvedUiCommandField, providerId: string) => boolean",
+          "description": "Clears only the selected provider's authored or pending setting.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+          "parameters": [
+            {
+              "name": "binding",
+              "type": "HtmlEditorResolvedUiCommandField",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "providerId",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(binding: HtmlEditorResolvedUiCommandField, providerId: string) => boolean"
         },
         {
           "name": "register",
@@ -9438,6 +9705,36 @@
           "kind": "property"
         },
         {
+          "name": "advancedActive",
+          "type": "boolean",
+          "description": "Active inspector tab and its changes, for selection previews.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+          "kind": "property"
+        },
+        {
+          "name": "tabSelectionChanged",
+          "type": "import(\"D:/Dev/github/elgora-ui/src/index\").ObservableEvent<string>",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+          "kind": "property"
+        },
+        {
+          "name": "advancedPreviewElements",
+          "type": "readonly string[]",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+          "kind": "property"
+        },
+        {
           "name": "stateVersion",
           "type": "number",
           "description": "Monotonic version for consumers that render snapshot-based field states.",
@@ -9524,6 +9821,22 @@
           },
           "kind": "method",
           "signature": "(ids: readonly string[]) => void"
+        },
+        {
+          "name": "expandSelection",
+          "type": "() => boolean",
+          "description": "Expands the current selection exactly as the inspector button does.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorInspector.ts",
+          "parameters": [],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "() => boolean"
         },
         {
           "name": "expandedSelectionPreview",
@@ -9685,6 +9998,36 @@
           "optional": true,
           "source": "src/components/editors/htmleditor/HtmlEditor.ts",
           "kind": "property"
+        },
+        {
+          "name": "classOptions",
+          "type": "readonly { name: string; text: string; }[] | undefined",
+          "description": "Suggested CSS classes for the Advanced inspector.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "allowCustomClasses",
+          "type": "boolean | undefined",
+          "description": "Allows entering classes outside classOptions. Defaults to true.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
+        },
+        {
+          "name": "properties",
+          "type": "readonly HtmlEditorPropertyDefinition[] | undefined",
+          "description": "Optional providers for semantic properties such as text.color and text.size.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditor.ts",
+          "kind": "property"
         }
       ]
     },
@@ -9719,6 +10062,249 @@
           "optional": false,
           "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
           "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorPropertyControl",
+      "kind": "type",
+      "type": "any",
+      "description": "The host presents the control; providers never own a popup or editor selection.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyControl",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "definition": "| { type: \"choices\"; options: readonly HtmlEditorPropertyOption[] }\n    | { type: \"palette\"; options: readonly HtmlEditorPropertyOption[] }\n    | { type: \"color\" }\n    | { type: \"length\"; units: readonly string[]; min?: number; max?: number }\n    | { type: \"text\" }"
+    },
+    {
+      "name": "HtmlEditorPropertyDefinition",
+      "kind": "interface",
+      "type": "HtmlEditorPropertyDefinition",
+      "description": "Semantic property shared by the toolbar, inspector and its providers.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyDefinition",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "members": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        },
+        {
+          "name": "cssProperty",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        },
+        {
+          "name": "providers",
+          "type": "readonly HtmlEditorPropertyProvider[]",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorPropertyOption",
+      "kind": "interface",
+      "type": "HtmlEditorPropertyOption",
+      "description": "One option's stable value and its user-facing label.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyOption",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "members": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        },
+        {
+          "name": "color",
+          "type": "string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        }
+      ]
+    },
+    {
+      "name": "HtmlEditorPropertyProvider",
+      "kind": "interface",
+      "type": "HtmlEditorPropertyProvider",
+      "description": "Operates only on an editable model copy inside an editor transaction.",
+      "tags": [],
+      "topics": [],
+      "group": "types",
+      "namespace": "Components.Editors",
+      "path": "/api-reference/HtmlEditorPropertyProvider",
+      "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+      "members": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        },
+        {
+          "name": "control",
+          "type": "HtmlEditorPropertyControl",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "kind": "property"
+        },
+        {
+          "name": "read",
+          "type": "(element: HtmlEditorElement) => string | undefined",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "parameters": [
+            {
+              "name": "element",
+              "type": "HtmlEditorElement",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(element: HtmlEditorElement) => string | undefined"
+        },
+        {
+          "name": "accepts",
+          "type": "(value: string) => boolean",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(value: string) => boolean"
+        },
+        {
+          "name": "apply",
+          "type": "(element: HtmlEditorElement, value: string) => void",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "parameters": [
+            {
+              "name": "element",
+              "type": "HtmlEditorElement",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "value",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(element: HtmlEditorElement, value: string) => void"
+        },
+        {
+          "name": "clear",
+          "type": "(element: HtmlEditorElement) => void",
+          "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorPropertyProvider.ts",
+          "parameters": [
+            {
+              "name": "element",
+              "type": "HtmlEditorElement",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(element: HtmlEditorElement) => void"
         }
       ]
     },
@@ -9854,7 +10440,7 @@
         },
         {
           "name": "marks",
-          "type": "(Partial<Record<HtmlEditorTextMark, boolean>> & { styles?: Partial<Record<\"color\" | \"background-color\" | \"font-size\", string>>; }) | undefined",
+          "type": "(Partial<Record<HtmlEditorTextMark, boolean>> & { styles?: Partial<Record<\"color\" | \"background-color\" | \"font-size\", string>>; properties?: Readonly<Record<string, { cssProperty: string; providers: readonly HtmlEditorPropertyProvider[]; provider: HtmlEditorPropertyProvider; value: string; }>>; }) | undefined",
           "description": "Explicit typing-format overrides at a collapsed caret.",
           "tags": [],
           "topics": [],
@@ -9900,6 +10486,26 @@
           "name": "important",
           "type": "true | undefined",
           "description": "",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
+          "kind": "property"
+        },
+        {
+          "name": "disabled",
+          "type": "true | undefined",
+          "description": "Disabled declarations remain serialized as CSS comments.",
+          "tags": [],
+          "topics": [],
+          "optional": true,
+          "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
+          "kind": "property"
+        },
+        {
+          "name": "comment",
+          "type": "true | undefined",
+          "description": "An ordinary authored CSS comment, preserved verbatim in value.",
           "tags": [],
           "topics": [],
           "optional": true,
@@ -10139,6 +10745,64 @@
           },
           "kind": "method",
           "signature": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]"
+        },
+        {
+          "name": "pendingProperty",
+          "type": "(id: string) => { providerId: string; value: string; } | undefined",
+          "description": "Pending provider choice at the remembered caret, if one was explicitly selected.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "id",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "{ providerId: string; value: string } | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(id: string) => { providerId: string; value: string; } | undefined"
+        },
+        {
+          "name": "computedProperty",
+          "type": "(property: string, selection: HtmlEditorSelectionRange, nodeId?: string) => string | undefined",
+          "description": "Reads the browser's computed value for one model element or the element containing a caret.",
+          "tags": [],
+          "topics": [],
+          "optional": false,
+          "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+          "parameters": [
+            {
+              "name": "property",
+              "type": "string",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "selection",
+              "type": "HtmlEditorSelectionRange",
+              "optional": false,
+              "description": ""
+            },
+            {
+              "name": "nodeId",
+              "type": "string | undefined",
+              "optional": true,
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "string | undefined",
+            "description": ""
+          },
+          "kind": "method",
+          "signature": "(property: string, selection: HtmlEditorSelectionRange, nodeId?: string) => string | undefined"
         },
         {
           "name": "imageAspectRatio",
@@ -12629,7 +13293,7 @@
             },
             {
               "name": "args",
-              "type": "MessageArguments<Extract<`${N}.${K}`, \"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.link\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.linkCategory\" | \"htmlEditorInspector.imageCategory\" | \"htmlEditorBasic.imageSource\" | \"htmlEditorBasic.imageAlt\" | \"htmlEditorBasic.imageWidth\" | \"htmlEditorBasic.imageHeight\" | \"htmlEditorBasic.imageLockAspect\" | \"htmlEditorBasic.imageTitle\" | \"htmlEditorBasic.invalidImageValue\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorBasic.linkUrl\" | \"htmlEditorBasic.linkTarget\" | \"htmlEditorBasic.linkTitle\" | \"htmlEditorBasic.unlink\" | \"htmlEditorBasic.unlinkTooltip\" | \"htmlEditorBasic.linkTargetSelf\" | \"htmlEditorBasic.linkTargetBlank\" | \"htmlEditorBasic.linkApply\" | \"htmlEditorBasic.invalidUrl\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.expandSelectElement\" | \"htmlEditorInspector.selectParent\" | \"htmlEditorInspector.selectAllContent\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\">>",
+              "type": "MessageArguments<Extract<`${N}.${K}`, \"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.link\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.linkCategory\" | \"htmlEditorInspector.imageCategory\" | \"htmlEditorBasic.clearProvider\" | \"htmlEditorBasic.imageSource\" | \"htmlEditorBasic.imageAlt\" | \"htmlEditorBasic.imageWidth\" | \"htmlEditorBasic.imageHeight\" | \"htmlEditorBasic.imageLockAspect\" | \"htmlEditorBasic.imageTitle\" | \"htmlEditorBasic.invalidImageValue\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorBasic.linkUrl\" | \"htmlEditorBasic.linkTarget\" | \"htmlEditorBasic.linkTitle\" | \"htmlEditorBasic.unlink\" | \"htmlEditorBasic.unlinkTooltip\" | \"htmlEditorBasic.linkTargetSelf\" | \"htmlEditorBasic.linkTargetBlank\" | \"htmlEditorBasic.linkApply\" | \"htmlEditorBasic.invalidUrl\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.expandSelectElement\" | \"htmlEditorInspector.selectParent\" | \"htmlEditorInspector.selectAllContent\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\">>",
               "optional": false,
               "description": ""
             }
@@ -13733,7 +14397,7 @@
         },
         {
           "name": "triggerMessage",
-          "type": "\"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.link\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.linkCategory\" | \"htmlEditorInspector.imageCategory\" | \"htmlEditorBasic.imageSource\" | \"htmlEditorBasic.imageAlt\" | \"htmlEditorBasic.imageWidth\" | \"htmlEditorBasic.imageHeight\" | \"htmlEditorBasic.imageLockAspect\" | \"htmlEditorBasic.imageTitle\" | \"htmlEditorBasic.invalidImageValue\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorBasic.linkUrl\" | \"htmlEditorBasic.linkTarget\" | \"htmlEditorBasic.linkTitle\" | \"htmlEditorBasic.unlink\" | \"htmlEditorBasic.unlinkTooltip\" | \"htmlEditorBasic.linkTargetSelf\" | \"htmlEditorBasic.linkTargetBlank\" | \"htmlEditorBasic.linkApply\" | \"htmlEditorBasic.invalidUrl\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.expandSelectElement\" | \"htmlEditorInspector.selectParent\" | \"htmlEditorInspector.selectAllContent\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\" | undefined",
+          "type": "\"htmlEditorToolbar.label\" | \"htmlEditorToolbar.bold\" | \"htmlEditorToolbar.italic\" | \"htmlEditorToolbar.underline\" | \"htmlEditorToolbar.strikethrough\" | \"htmlEditorToolbar.clearFormatting\" | \"htmlEditorToolbar.link\" | \"htmlEditorToolbar.undo\" | \"htmlEditorToolbar.redo\" | \"htmlEditorCommand.failed\" | \"htmlEditorInspector.label\" | \"htmlEditorInspector.elementsArea\" | \"htmlEditorInspector.textArea\" | \"htmlEditorInspector.formatCategory\" | \"htmlEditorInspector.linkCategory\" | \"htmlEditorInspector.imageCategory\" | \"htmlEditorBasic.clearProvider\" | \"htmlEditorBasic.imageSource\" | \"htmlEditorBasic.imageAlt\" | \"htmlEditorBasic.imageWidth\" | \"htmlEditorBasic.imageHeight\" | \"htmlEditorBasic.imageLockAspect\" | \"htmlEditorBasic.imageTitle\" | \"htmlEditorBasic.invalidImageValue\" | \"htmlEditorInspector.typographyCategory\" | \"htmlEditorInspector.paragraphCategory\" | \"htmlEditorInspector.appearanceCategory\" | \"htmlEditorInspector.chooseElement\" | \"htmlEditorInspector.elements\" | \"htmlEditorInspector.properties\" | \"htmlEditorInspector.advanced\" | \"htmlEditorInspector.propertiesHint\" | \"htmlEditorInspector.advancedHint\" | \"htmlEditorBasic.heading\" | \"htmlEditorBasic.textColor\" | \"htmlEditorBasic.backgroundColor\" | \"htmlEditorBasic.textSize\" | \"htmlEditorBasic.align\" | \"htmlEditorBasic.linkUrl\" | \"htmlEditorBasic.linkTarget\" | \"htmlEditorBasic.linkTitle\" | \"htmlEditorBasic.unlink\" | \"htmlEditorBasic.unlinkTooltip\" | \"htmlEditorBasic.linkTargetSelf\" | \"htmlEditorBasic.linkTargetBlank\" | \"htmlEditorBasic.linkApply\" | \"htmlEditorBasic.invalidUrl\" | \"htmlEditorInspector.empty\" | \"htmlEditorInspector.ancestors\" | \"htmlEditorInspector.moreAncestors\" | \"htmlEditorInspector.inspectAncestor\" | \"htmlEditorInspector.mixed\" | \"htmlEditorInspector.fullySelected\" | \"htmlEditorInspector.expandSelectElement\" | \"htmlEditorInspector.selectParent\" | \"htmlEditorInspector.selectAllContent\" | \"htmlEditorInspector.partiallySelected\" | \"htmlEditorInspector.notSelected\" | \"htmlEditorInspector.keyboardFocus\" | \"htmlEditorInspector.selectElement\" | \"htmlEditorInspector.moreActions\" | \"htmlEditorInspector.notSelectedHint\" | \"htmlEditorInspector.partiallySelectedHint\" | \"treeView.loading\" | \"treeView.loadError\" | \"treeView.retry\" | \"datePicker.today\" | \"datePicker.selectToday\" | \"datePicker.chooseMonth\" | \"datePicker.chooseYear\" | \"datePicker.previousPeriod\" | \"datePicker.nextPeriod\" | \"datePicker.chooseDate\" | \"datePicker.invalidDate\" | \"datePicker.outOfRange\" | \"valueEditor.required\" | \"valueEditor.validationError\" | \"numberEditor.invalidNumber\" | \"numberEditor.finiteNumber\" | \"booleanEditor.invalidBoolean\" | \"toggleEditor.label\" | \"dateEditor.open\" | \"dateEditor.popup\" | \"dateEditor.label\" | \"dateEditor.outOfRange\" | \"dateFormatter.invalidDate\" | \"dateFormatter.invalidValue\" | \"timeEditor.open\" | \"timeEditor.label\" | \"timeEditor.popup\" | \"timeFormatter.invalidTime\" | \"timeFormatter.invalidValue\" | \"dateTimeEditor.open\" | \"dateTimeEditor.label\" | \"dateTimeEditor.popup\" | \"dateTimeEditor.invalidInput\" | \"dateTimeEditor.invalidValue\" | \"lookupEditor.open\" | \"lookupEditor.label\" | \"lookupEditor.popup\" | \"lookupEditor.loading\" | \"lookupEditor.noResults\" | \"lookupEditor.matches.one\" | \"lookupEditor.matches.other\" | \"lookupEditor.loadFailed\" | \"lookupEditor.notFound\" | \"lookupEditor.ambiguous\" | \"lookupEditor.missingItem\" | \"dataGrid.newRow\" | \"dataGrid.groupPanelEmpty\" | \"dataGrid.sortAscending\" | \"dataGrid.sortDescending\" | \"dataGrid.clearSorting\" | \"dataGrid.pinColumn\" | \"dataGrid.noPin\" | \"dataGrid.pinLeft\" | \"dataGrid.pinRight\" | \"dataGrid.autosizeColumn\" | \"dataGrid.autosizeAll\" | \"dataGrid.groupBy\" | \"dataGrid.ungroup\" | \"dataGrid.grouping\" | \"dataGrid.interval\" | \"dataGrid.exactValue\" | \"dataGrid.expandToLevel\" | \"dataGrid.collapseLevel\" | \"dataGrid.summary\" | \"dataGrid.summary.none\" | \"dataGrid.summary.count\" | \"dataGrid.summary.sum\" | \"dataGrid.summary.avg\" | \"dataGrid.summary.min\" | \"dataGrid.summary.max\" | \"dataGrid.summary.distinct\" | \"dataGrid.cancelNewRow\" | \"dataGrid.copy\" | \"dataGrid.copyWithHeaders\" | \"dataGrid.paste\" | \"dataGrid.selectRow\" | \"dataGrid.clearSelection\" | \"dataGrid.sortPriority\" | \"dataGrid.sortedAscending\" | \"dataGrid.sortedDescending\" | \"dataGrid.editFilter\" | \"dataGrid.addFilter\" | \"dataGrid.editFilterExpression\" | \"dataGrid.filterColumn\" | \"dataGrid.clearColumnFilter\" | \"dataGrid.acceptFailed\" | \"dataGrid.displayValueFailed\" | \"dataGrid.clipboardUnavailable\" | \"dataGrid.clipboardFailed\" | \"dataGrid.pastePrompt\" | \"dataGrid.pasteText\" | \"dataGrid.cancel\" | \"dataGrid.interval.year\" | \"dataGrid.interval.yearQuarter\" | \"dataGrid.interval.quarter\" | \"dataGrid.interval.yearMonth\" | \"dataGrid.interval.month\" | \"dataGrid.interval.week\" | \"dataGrid.interval.day\" | \"dataGrid.interval.dayOfWeek\" | \"dataGrid.interval.hour\" | \"dataGrid.interval.minute\" | \"dataGrid.interval.second\" | \"dataGrid.interval.firstChar\" | \"filterEditor.apply\" | \"filterEditor.clear\" | \"filterEditor.and\" | \"filterEditor.or\" | \"filterEditor.addCondition\" | \"filterEditor.addGroup\" | \"filterEditor.removeCondition\" | \"filterEditor.removeGroup\" | \"filterEditor.empty\" | \"filterEditor.value\" | \"filterEditor.operator.contains\" | \"filterEditor.operator.notcontains\" | \"filterEditor.operator.startswith\" | \"filterEditor.operator.endswith\" | \"numberFormatter.invalidNumber\" | \"dataGrid.clipboardHint\" | \"dataGrid.clipboardMalformed\" | \"dataGrid.pasteBlocked\" | \"dataGrid.pasteEditInProgress\" | \"dataGrid.pasteReadOnlyRow\" | \"dataGrid.pasteCreateUnavailable\" | \"dataGrid.newRowOperationInProgress\" | \"dataGrid.newRowUnavailable\" | \"dataGrid.newRowCreationInProgress\" | \"dataGrid.pasteRowFailed\" | \"dataGrid.summaryLabel.count\" | \"dataGrid.summaryLabel.sum\" | \"dataGrid.summaryLabel.avg\" | \"dataGrid.summaryLabel.min\" | \"dataGrid.summaryLabel.max\" | \"dataGrid.summaryLabel.distinct\" | undefined",
           "description": "Optional built-in message key; custom triggerLabel is otherwise retained verbatim.",
           "tags": [],
           "topics": [],

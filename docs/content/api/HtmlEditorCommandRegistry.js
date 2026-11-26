@@ -31,6 +31,93 @@ export default {
       "kind": "property"
     },
     {
+      "name": "propertyDefinition",
+      "type": "(id: string) => HtmlEditorPropertyDefinition | undefined",
+      "description": "Returns host-provided presentations for a semantic command, if configured.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "HtmlEditorPropertyDefinition | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(id: string) => HtmlEditorPropertyDefinition | undefined"
+    },
+    {
+      "name": "applyProperty",
+      "type": "(binding: HtmlEditorResolvedUiCommandField, providerId: string, value: string) => boolean",
+      "description": "Applies provider settings in one model transaction to the captured selection.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "parameters": [
+        {
+          "name": "binding",
+          "type": "HtmlEditorResolvedUiCommandField",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "providerId",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(binding: HtmlEditorResolvedUiCommandField, providerId: string, value: string) => boolean"
+    },
+    {
+      "name": "clearProperty",
+      "type": "(binding: HtmlEditorResolvedUiCommandField, providerId: string) => boolean",
+      "description": "Clears only the selected provider's authored or pending setting.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorCommandRegistry.ts",
+      "parameters": [
+        {
+          "name": "binding",
+          "type": "HtmlEditorResolvedUiCommandField",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "providerId",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "boolean",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(binding: HtmlEditorResolvedUiCommandField, providerId: string) => boolean"
+    },
+    {
       "name": "register",
       "type": "(command: HtmlEditorUiCommand) => void",
       "description": "Adds or replaces an application command by its stable identifier.",

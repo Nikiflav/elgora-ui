@@ -6,6 +6,9 @@ import type { HtmlEditorSurface } from "./HtmlEditorSurface";
 import type { HtmlEditorElement } from "./HtmlEditorModel";
 import { ObservableEvent } from "../../../core/ElgoraUI";
 import { getHtmlEditorStyle } from "./HtmlEditorStyles";
+import { applyHtmlEditorPropertyToSubtree, createHtmlEditorInlineStyleProvider, createHtmlEditorPaletteProvider, createHtmlEditorFreeStyleProvider } from "./HtmlEditorPropertyProvider";
+import type { HtmlEditorPropertyDefinition } from "./HtmlEditorPropertyProvider";
+import { htmlEditorDefaultPalette } from "./HtmlEditorDefaultPalette";
 import { getHtmlEditorElementBehavior, isAtomic } from "./HtmlEditorStructure";
 import { aggregateHtmlEditorUiCommandValues, type HtmlEditorUiCommandTargetContext, type HtmlEditorUiCommandExecutionContext,
     type HtmlEditorUiCommandField, type HtmlEditorUiCommandValue, type HtmlEditorUiCommandValueState, type HtmlEditorUiCommandResolution,
@@ -75,11 +78,55 @@ export class HtmlEditorCommandRegistry {
     /** Emitted when a requested command cannot be executed in its current context. */
     readonly commandFailed = new ObservableEvent<string>();
     private readonly commands = new Map<string, HtmlEditorUiCommand>();
+    private readonly properties: readonly HtmlEditorPropertyDefinition[];
 
     constructor(private readonly surface: HtmlEditorSurface, private readonly messages: LocalizedMessages,
-        commands: HtmlEditorUiCommand[] = []) {
+        commands: HtmlEditorUiCommand[] = [], properties: readonly HtmlEditorPropertyDefinition[] = []) {
+        const colors = htmlEditorDefaultPalette();
+        const percentages = [60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 200];
+        const sizes = percentages.map(value => ({ id: `${value}%`, text: `${value}%` }));
+        const defaults: HtmlEditorPropertyDefinition[] = [
+            { id: "text.color", cssProperty: "color", providers: [
+                createHtmlEditorPaletteProvider("palette", "Palette", "color", colors, Object.fromEntries(colors.map(item => [item.id, item.color!]))),
+                createHtmlEditorFreeStyleProvider("custom", "Custom", "color", { type: "color" })
+            ] },
+            { id: "element.backgroundColor", cssProperty: "background-color", providers: [
+                createHtmlEditorPaletteProvider("palette", "Palette", "background-color", colors, Object.fromEntries(colors.map(item => [item.id, item.color!]))),
+                createHtmlEditorFreeStyleProvider("custom", "Custom", "background-color", { type: "color" })
+            ] },
+            { id: "text.size", cssProperty: "font-size", providers: [
+                createHtmlEditorInlineStyleProvider("sizes", "Sizes", "font-size", sizes, Object.fromEntries(sizes.map(item => [item.id, item.id]))),
+                createHtmlEditorFreeStyleProvider("custom", "Custom", "font-size", { type: "length", units: ["px", "em", "rem", "%"], min: 0.01 })
+            ] }
+        ];
+        this.properties = [...defaults.filter(item => !properties.some(property => property.id === item.id)), ...properties];
         this.registerBuiltIns();
         commands.forEach(command => this.register(command));
+    }
+
+    /** Returns host-provided presentations for a semantic command, if configured. */
+    propertyDefinition(id: string): HtmlEditorPropertyDefinition | undefined { return this.properties.find(property => property.id === id); }
+
+    /** Applies provider settings in one model transaction to the captured selection. */
+    applyProperty(binding: HtmlEditorResolvedUiCommandField, providerId: string, value: string): boolean {
+        const definition = this.propertyDefinition(binding.command.id);
+        const provider = definition?.providers.find(item => item.id === providerId);
+        if (!definition || !provider || !this.validUiCommandTargetContext(binding.context) || !this.surface.editable) return false;
+        const ids = binding.context.resolution.targets.kind === "nodes" ? binding.context.resolution.targets.nodeInfos.map(info => info.id) : [];
+        const { scrollTop, scrollLeft } = this.surface.content;
+        try { return this.surface.execute({ type: "applyProperty", propertyId: definition.id, cssProperty: definition.cssProperty,
+            providers: definition.providers, provider, value, nodeIds: ids }, binding.context.selection); }
+        finally { this.surface.content.scrollTop = scrollTop; this.surface.content.scrollLeft = scrollLeft; }
+    }
+    /** Clears only the selected provider's authored or pending setting. */
+    clearProperty(binding: HtmlEditorResolvedUiCommandField, providerId: string): boolean {
+        const definition = this.propertyDefinition(binding.command.id);
+        const provider = definition?.providers.find(item => item.id === providerId);
+        if (!definition || !provider || !this.validUiCommandTargetContext(binding.context) || !this.surface.editable) return false;
+        const ids = binding.context.resolution.targets.kind === "nodes" ? binding.context.resolution.targets.nodeInfos.map(info => info.id) : [];
+        const { scrollTop, scrollLeft } = this.surface.content;
+        try { return this.surface.execute({ type: "clearProperty", propertyId: definition.id, provider, nodeIds: ids }, binding.context.selection); }
+        finally { this.surface.content.scrollTop = scrollTop; this.surface.content.scrollLeft = scrollLeft; }
     }
 
     /** Adds or replaces an application command by its stable identifier. */
@@ -464,6 +511,22 @@ export class HtmlEditorCommandRegistry {
                 });
                 return aggregateHtmlEditorUiCommandValues(states);
             };
+            const displayState = (context: HtmlEditorUiCommandExecutionContext): HtmlEditorUiCommandValueState => {
+                // Computed values are meaningful here only for a caret or one
+                // wholly selected element. Never infer a value for partial ranges.
+                if (!this.propertyDefinition(id)) return readState(context) ?? { kind: "unset" };
+                const selection = context.selection;
+                if (!selection) return { kind: "unset" };
+                const collapsed = selection.anchor.nodeId === selection.focus.nodeId && selection.anchor.offset === selection.focus.offset;
+                let nodeId: string | undefined;
+                if (!collapsed) {
+                    const infos = context.resolution.context.nodeInfos;
+                    if (infos.length !== 1 || context.surface.getSelectionCoverage(selection).get(infos[0].id) !== "full") return { kind: "unset" };
+                    nodeId = infos[0].id;
+                }
+                const value = context.surface.computedProperty(property, selection, nodeId);
+                return value ? { kind: "value", value } : { kind: "unset" };
+            };
             return {
                 id, label, options,
                 isVisible: context => context.resolution ? !!context.resolution.targets : !!target(context),
@@ -493,6 +556,19 @@ export class HtmlEditorCommandRegistry {
                         const item = context.surface.findElement(nodeId);
                         return !!item && getHtmlEditorStyle(item.styles, property)?.value === values[value];
                     });
+                    if (!clear && (property === "color" || property === "font-size")) {
+                        // Build patches for every selected descendant in one model transaction.
+                        const provider = createHtmlEditorInlineStyleProvider("inline", "Inline style", property, options, values);
+                        const roots = ids.map(nodeId => context.surface.findElement(nodeId)).filter((item): item is HtmlEditorElement => !!item).map(item => structuredClone(item));
+                        if (!roots.length || !applyHtmlEditorPropertyToSubtree(roots, [provider], provider, value)) return false;
+                        const patches = new Map<string, { nodeId: string; patch: { styles: HtmlEditorElement["styles"] } }>();
+                        const visit = (item: HtmlEditorElement) => {
+                            patches.set(item.id, { nodeId: item.id, patch: { styles: item.styles } });
+                            item.children.forEach(child => { if (child.type === "element") visit(child); });
+                        };
+                        roots.forEach(visit);
+                        return context.surface.updateElements([...patches.values()]);
+                    }
                     const updates: { nodeId: string; patch: { styles: { name: string; value: string }[] } }[] = [];
                     ids.forEach(nodeId => {
                         const item = context.surface.findElement(nodeId); if (!item) return;
@@ -514,7 +590,7 @@ export class HtmlEditorCommandRegistry {
                     field: { dataType: "string" },
                     resolveTargets: context => textStyle ? textStyleTargets(context)
                         : property === "text-align" ? blockTargets(context) : elementTargets(context, item => item.tag !== "img"),
-                    getValue: context => readState(context) ?? { kind: "unset" }
+                    getValue: context => displayState(context)
                     }
             };
         };

@@ -41,14 +41,16 @@ export class HtmlEditorSelectionOverlay extends Component {
     private commandSurfaces: HTMLElement[] = [];
     private expansionPreview?: () => string | null | undefined;
     private expansionHovered = false;
+    private advancedTargets?: () => readonly string[] | undefined;
 
     /** Outlines property targets while controls edit a collapsed selection, without changing its range. */
     connectInspector(inspector: HTMLElement, targets: () => readonly string[], toolbar?: HTMLElement,
         commandPreviewTargets?: (commandId: string) => HtmlEditorUiCommandTargets | undefined,
-        expansionPreview?: () => string | null | undefined): void {
+        expansionPreview?: () => string | null | undefined, advancedTargets?: () => readonly string[] | undefined): void {
         this.inspectionTargets = targets;
         this.commandPreviewTargets = commandPreviewTargets;
         this.expansionPreview = expansionPreview;
+        this.advancedTargets = advancedTargets;
         const expansionButton = inspector.querySelector<HTMLButtonElement>(".elg-html-editor-expand-selection");
         if (expansionButton) {
             this.listen(expansionButton, "pointerenter", () => { this.expansionHovered = true; this.schedule(); });
@@ -150,6 +152,8 @@ export class HtmlEditorSelectionOverlay extends Component {
             this.paint();
         });
     }
+    /** Repaints after a presentation state change. */
+    refresh(): void { this.schedule(); }
 
     private paint(): void {
         const host = this.host;
@@ -171,6 +175,19 @@ export class HtmlEditorSelectionOverlay extends Component {
             })));
             this.dom.append(containerLayer, textLayer);
             this.dom.hidden = rects.length === 0;
+            return;
+        }
+        const advancedTargets = this.advancedTargets?.();
+        if (advancedTargets !== undefined) {
+            const targets = this.surface.selectedNodeClientRects(advancedTargets);
+            targets.forEach(({ rect }) => containerLayer.append(e("span", {
+                class: "elg-html-editor-container-selection-rect", "data-inspection-target": "true", style: {
+                    left: `${rect.left - hostRect.left}px`, top: `${rect.top - hostRect.top}px`,
+                    width: `${rect.width}px`, height: `${rect.height}px`
+                }
+            })));
+            this.dom.append(containerLayer, textLayer);
+            this.dom.hidden = targets.length === 0;
             return;
         }
         const inspectionActive = this.inspectorFocused || this.commandSurfaceHovered || this.commandSurfaceFocused;

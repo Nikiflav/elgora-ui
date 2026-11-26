@@ -231,6 +231,64 @@ export default {
       "signature": "(property: string, selection?: HtmlEditorSelectionRange | undefined) => (string | undefined)[]"
     },
     {
+      "name": "pendingProperty",
+      "type": "(id: string) => { providerId: string; value: string; } | undefined",
+      "description": "Pending provider choice at the remembered caret, if one was explicitly selected.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "{ providerId: string; value: string } | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(id: string) => { providerId: string; value: string; } | undefined"
+    },
+    {
+      "name": "computedProperty",
+      "type": "(property: string, selection: HtmlEditorSelectionRange, nodeId?: string) => string | undefined",
+      "description": "Reads the browser's computed value for one model element or the element containing a caret.",
+      "tags": [],
+      "topics": [],
+      "optional": false,
+      "source": "src/components/editors/htmleditor/HtmlEditorSurface.ts",
+      "parameters": [
+        {
+          "name": "property",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "selection",
+          "type": "HtmlEditorSelectionRange",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "nodeId",
+          "type": "string | undefined",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": {
+        "type": "string | undefined",
+        "description": ""
+      },
+      "kind": "method",
+      "signature": "(property: string, selection: HtmlEditorSelectionRange, nodeId?: string) => string | undefined"
+    },
+    {
       "name": "imageAspectRatio",
       "type": "(nodeId: string) => number | undefined",
       "description": "Aspect ratio from authored dimensions or the loaded image's intrinsic size.",

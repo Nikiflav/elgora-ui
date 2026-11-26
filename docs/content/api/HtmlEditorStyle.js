@@ -39,6 +39,26 @@ export default {
       "optional": true,
       "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
       "kind": "property"
+    },
+    {
+      "name": "disabled",
+      "type": "true | undefined",
+      "description": "Disabled declarations remain serialized as CSS comments.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
+      "kind": "property"
+    },
+    {
+      "name": "comment",
+      "type": "true | undefined",
+      "description": "An ordinary authored CSS comment, preserved verbatim in value.",
+      "tags": [],
+      "topics": [],
+      "optional": true,
+      "source": "src/components/editors/htmleditor/HtmlEditorModel.ts",
+      "kind": "property"
     }
   ]
 };

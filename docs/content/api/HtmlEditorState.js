@@ -32,7 +32,7 @@ export default {
     },
     {
       "name": "marks",
-      "type": "(Partial<Record<HtmlEditorTextMark, boolean>> & { styles?: Partial<Record<\"color\" | \"background-color\" | \"font-size\", string>>; }) | undefined",
+      "type": "(Partial<Record<HtmlEditorTextMark, boolean>> & { styles?: Partial<Record<\"color\" | \"background-color\" | \"font-size\", string>>; properties?: Readonly<Record<string, { cssProperty: string; providers: readonly HtmlEditorPropertyProvider[]; provider: HtmlEditorPropertyProvider; value: string; }>>; }) | undefined",
       "description": "Explicit typing-format overrides at a collapsed caret.",
       "tags": [],
       "topics": [],

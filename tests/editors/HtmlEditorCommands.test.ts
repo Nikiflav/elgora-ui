@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HtmlEditor } from "../../src/components/editors/htmleditor/HtmlEditor";
+import { createHtmlEditorClassProvider, createHtmlEditorInlineStyleProvider } from "../../src/components/editors/htmleditor/HtmlEditorPropertyProvider";
 
 describe("HtmlEditor transactions", () => {
     let editor: HtmlEditor;
@@ -515,6 +516,101 @@ describe("HtmlEditor transactions", () => {
         expect(editor.content.innerHTML).toBe('<p>before <span style="color: red;">replacement</span> after</p>');
     });
 
+    it("applies a pending class provider only to subsequently typed text and keeps it across undo/redo", () => {
+        create('<p>Before <span class="red other" style="color: red">middle</span> after</p>');
+        const text = editor.content.querySelector("span")!.firstChild!;
+        select(text, 3);
+        const options = [{ id: "blue", text: "Blue" }, { id: "red", text: "Red" }];
+        const css = createHtmlEditorInlineStyleProvider("css", "Inline", "color", options, { blue: "blue", red: "red" });
+        const classes = createHtmlEditorClassProvider("class", "Class", options, { blue: "blue", red: "red" });
+        const before = editor.html;
+        expect(editor.execute({ type: "applyProperty", propertyId: "text.color", cssProperty: "color", providers: [css, classes], provider: classes, value: "blue" })).toBe(true);
+        expect(editor.html).toBe(before);
+        input("insertText", "X");
+        expect(editor.content.querySelector(".blue")?.textContent).toBe("X");
+        expect(editor.content.querySelector(".blue .red")).toBeNull();
+        input("insertText", "Y");
+        expect(editor.content.textContent).toBe("Before midXYdle after");
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.textContent).toBe("Before midXdle after");
+        expect(editor.execute({ type: "redo" })).toBe(true);
+        expect(editor.content.textContent).toBe("Before midXYdle after");
+    });
+
+    it("replaces a pending class choice with an inline provider for the same property", () => {
+        create("<p>Hello</p>");
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(text, 5);
+        const options = [{ id: "blue", text: "Blue" }];
+        const css = createHtmlEditorInlineStyleProvider("css", "Inline", "color", options, { blue: "blue" });
+        const classes = createHtmlEditorClassProvider("class", "Class", options, { blue: "blue" });
+        const command = { type: "applyProperty" as const, propertyId: "text.color", cssProperty: "color", providers: [css, classes], value: "blue" };
+        expect(editor.execute({ ...command, provider: classes })).toBe(true);
+        expect(editor.execute({ ...command, provider: css })).toBe(true);
+        input("insertText", "!");
+        expect(editor.content.querySelector("span")?.style.color).toBe("blue");
+        expect(editor.content.querySelector(".blue")).toBeNull();
+    });
+
+    it("clears pending provider formatting on caret movement and clear formatting", () => {
+        create("<p>Hello</p>");
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(text, 1);
+        const options = [{ id: "blue", text: "Blue" }];
+        const provider = createHtmlEditorClassProvider("class", "Class", options, { blue: "blue" });
+        const command = { type: "applyProperty" as const, propertyId: "text.color", cssProperty: "color", providers: [provider], provider, value: "blue" };
+        expect(editor.execute(command)).toBe(true);
+        select(editor.content.querySelector("p")!.firstChild!, 3);
+        input("insertText", "X");
+        expect(editor.content.querySelector(".blue")).toBeNull();
+        expect(editor.execute(command)).toBe(true);
+        expect(editor.execute({ type: "clearFormatting" })).toBe(true);
+        input("insertText", "Y");
+        expect(editor.content.querySelector(".blue")).toBeNull();
+    });
+
+    it("clears only the chosen provider in a partial selection and supports undo", () => {
+        create('<p><span class="red keep" style="color: red">abcdef</span></p>');
+        const text = editor.content.querySelector("span")!.firstChild!;
+        select(text, 2, text, 4);
+        const options = [{ id: "red", text: "Red" }];
+        const classes = createHtmlEditorClassProvider("class", "Class", options, { red: "red" });
+        expect(editor.execute({ type: "clearProperty", propertyId: "text.color", provider: classes })).toBe(true);
+        expect(editor.content.textContent).toBe("abcdef");
+        const selected = [...editor.content.querySelectorAll("span")].find(item => item.textContent === "cd")!;
+        expect(selected.classList.contains("red")).toBe(false);
+        expect(selected.classList.contains("keep")).toBe(true);
+        expect(selected.style.color).toBe("red");
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.querySelector("span")?.className).toBe("red keep");
+    });
+
+    it("clears only the matching provider's pending value at a caret", () => {
+        create("<p>Hello</p>");
+        select(editor.content.querySelector("p")!.firstChild!, 5);
+        const options = [{ id: "blue", text: "Blue" }];
+        const inline = createHtmlEditorInlineStyleProvider("inline", "Inline", "color", options, { blue: "blue" });
+        const classes = createHtmlEditorClassProvider("class", "Class", options, { blue: "blue" });
+        expect(editor.execute({ type: "applyProperty", propertyId: "text.color", cssProperty: "color", providers: [inline, classes], provider: classes, value: "blue" })).toBe(true);
+        expect(editor.execute({ type: "clearProperty", propertyId: "text.color", provider: inline })).toBe(true);
+        expect(editor.surface.pendingProperty("text.color")).toEqual({ providerId: "class", value: "blue" });
+        expect(editor.execute({ type: "clearProperty", propertyId: "text.color", provider: classes })).toBe(true);
+        expect(editor.surface.pendingProperty("text.color")).toBeUndefined();
+        input("insertText", "!");
+        expect(editor.content.querySelector(".blue")).toBeNull();
+    });
+
+    it("clears nested selected color overrides and restores them with undo", () => {
+        create('<p>before <span style="color: red">colored</span> after</p>');
+        const paragraph = editor.content.firstElementChild!;
+        select(paragraph.firstChild!, 0, paragraph.lastChild!, paragraph.lastChild!.textContent!.length);
+        expect(editor.execute({ type: "textStyle", property: "color", value: "blue" })).toBe(true);
+        expect(editor.content.querySelector('[style*="red"]')).toBeNull();
+        expect(editor.content.textContent).toBe("before colored after");
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.querySelector("span")?.style.color).toBe("red");
+    });
+
     it.each(["deleteBackward", "deleteForward"] as const)("deletes a structurally selected formatted fragment: %s", type => {
         create("<p>before middle after</p>");
         const text = editor.content.firstElementChild!.firstChild!;
@@ -614,6 +710,69 @@ describe("HtmlEditor transactions", () => {
         editor.execute({ type: "undo" });
         expect(editor.content.textContent).toBe("Old");
         expect(editor.canUndo).toBe(false);
+    });
+
+    it.each(["composition", "noncancelable"] as const)("applies pending class provider to native %s insertion with undo and redo", async mode => {
+        create('<p><span class="red other" style="color: red">Hello</span></p>');
+        const original = editor.content.querySelector("span")!.firstChild!;
+        select(original, 2);
+        const choices = [{ id: "blue", text: "Blue" }, { id: "red", text: "Red" }];
+        const css = createHtmlEditorInlineStyleProvider("inline", "Inline", "color", choices, { blue: "blue", red: "red" });
+        const classes = createHtmlEditorClassProvider("class", "Class", choices, { blue: "blue", red: "red" });
+        expect(editor.execute({ type: "applyProperty", propertyId: "text.color", cssProperty: "color", providers: [css, classes], provider: classes, value: "blue" })).toBe(true);
+        if (mode === "composition") editor.content.dispatchEvent(new Event("compositionstart"));
+        else input("insertText", "新", false);
+        const text = editor.content.querySelector("span")!.firstChild!;
+        text.textContent = "He新llo";
+        document.getSelection()!.setBaseAndExtent(text, 3, text, 3);
+        editor.content.dispatchEvent(new InputEvent("input", { inputType: mode === "composition" ? "insertCompositionText" : "insertText", data: "新", bubbles: true }));
+        if (mode === "composition") {
+            editor.content.dispatchEvent(new Event("compositionend"));
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+        expect(editor.content.textContent).toBe("He新llo");
+        expect(editor.content.querySelector(".blue")?.textContent).toBe("新");
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.textContent).toBe("Hello");
+        expect(editor.execute({ type: "redo" })).toBe(true);
+        expect(editor.content.querySelector(".blue")?.textContent).toBe("新");
+    });
+
+    it("applies pending inline provider to native replacement without splitting a surrogate pair", () => {
+        create("<p>A😀B</p>");
+        const text = editor.content.querySelector("p")!.firstChild!;
+        select(text, 3);
+        const choices = [{ id: "blue", text: "Blue" }];
+        const provider = createHtmlEditorInlineStyleProvider("inline", "Inline", "color", choices, { blue: "blue" });
+        // Native autocorrect may replace text before the caret.
+        expect(editor.execute({ type: "applyProperty", propertyId: "text.color", cssProperty: "color", providers: [provider], provider, value: "blue" })).toBe(true);
+        input("insertReplacementText", "😁", false);
+        const current = editor.content.querySelector("p")!.firstChild!;
+        current.textContent = "A😁B";
+        document.getSelection()!.setBaseAndExtent(current, 3, current, 3);
+        editor.content.dispatchEvent(new InputEvent("input", { inputType: "insertReplacementText", data: "😁", bubbles: true }));
+        expect(editor.content.textContent).toBe("A😁B");
+        expect(editor.content.querySelector("span")?.style.color).toBe("blue");
+        expect(editor.content.querySelector("span")?.textContent).toBe("😁");
+    });
+
+    it("applies a pending provider when IME creates a text node in an empty paragraph", async () => {
+        create("<p></p>");
+        const paragraph = editor.content.querySelector("p")!;
+        select(paragraph, 0);
+        const options = [{ id: "blue", text: "Blue" }];
+        const provider = createHtmlEditorClassProvider("class", "Class", options, { blue: "blue" });
+        expect(editor.execute({ type: "applyProperty", propertyId: "text.color", cssProperty: "color", providers: [provider], provider, value: "blue" })).toBe(true);
+        editor.content.dispatchEvent(new Event("compositionstart"));
+        const current = editor.content.querySelector("p")!;
+        current.replaceChildren(document.createTextNode("新"));
+        document.getSelection()!.setBaseAndExtent(current.firstChild!, 1, current.firstChild!, 1);
+        editor.content.dispatchEvent(new InputEvent("input", { inputType: "insertCompositionText", data: "新", bubbles: true }));
+        editor.content.dispatchEvent(new Event("compositionend"));
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(editor.content.querySelector(".blue")?.textContent).toBe("新");
+        expect(editor.execute({ type: "undo" })).toBe(true);
+        expect(editor.content.textContent).toBe("");
     });
 
     it("clears redo after a new edit and resets history at an accepted baseline", async () => {

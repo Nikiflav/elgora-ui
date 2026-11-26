@@ -58,6 +58,29 @@ describe("HtmlEditor authored HTML model", () => {
         expect(root().children).toHaveLength(6);
     });
 
+    it("does not merge active and disabled declarations, but merges identical disabled declarations", () => {
+        create('<p><span style="color: red">A</span><span style="/* color: red; */">B</span><span style="/* color: red; */">C</span><span style="/* color: red !important; */">D</span></p>');
+        const spans = root().children as HtmlEditorElement[];
+        expect(spans).toHaveLength(3);
+        expect(spans.map(span => span.children.map(child => child.type === "text" ? child.text : "").join(""))).toEqual(["A", "BC", "D"]);
+        expect(spans[1].styles).toEqual([{ name: "color", value: "red", disabled: true }]);
+    });
+
+    it("merges only identical authored CSS comments and preserves their distinction from declarations", () => {
+        const span = (id: string, style: HtmlEditorStyle): HtmlEditorElement => ({ id, type: "element", tag: "span", classes: [], attributes: {}, styles: [style],
+            children: [{ id: `${id}-text`, type: "text", text: id }] });
+        const document: HtmlEditorDocument = { type: "document", children: [{ id: "p", type: "element", tag: "p", classes: [], attributes: {}, styles: [], children: [
+            span("a", { name: "", value: " note ", comment: true }), span("b", { name: "", value: " note ", comment: true }),
+            span("c", { name: "", value: " note " }), span("d", { name: "", value: " other ", comment: true })
+        ] }] };
+        normalizeHtmlEditorState({ document }, "root", () => "generated");
+        const children = (document.children[0] as HtmlEditorElement).children as HtmlEditorElement[];
+        expect(children).toHaveLength(3);
+        expect(children[0].children[0]).toMatchObject({ type: "text", text: "ab" });
+        expect(children[1].styles[0].comment).toBeUndefined();
+        expect(children[2].styles[0]).toMatchObject({ comment: true, value: " other " });
+    });
+
     it("remaps a selection from a merged inline element and its text leaf", () => {
         const document: HtmlEditorDocument = { type: "document", children: [{ id: "p", type: "element", tag: "p",
             classes: [], attributes: {}, styles: [], children: [
@@ -72,6 +95,42 @@ describe("HtmlEditor authored HTML model", () => {
             id: "first", type: "element", tag: "strong", classes: [], attributes: {}, styles: [], children: [{ id: "first-text", type: "text", text: "AB" }]
         }]);
         expect(state.selection).toEqual({ anchor: { nodeId: "first-text", offset: 2 }, focus: { nodeId: "first", offset: 2 } });
+    });
+
+    it("unwraps nested plain spans and preserves directed selection across merged text", () => {
+        const document: HtmlEditorDocument = { type: "document", children: [{ id: "p", type: "element", tag: "p", classes: [], attributes: {}, styles: [], children: [
+            { id: "before", type: "text", text: "A" },
+            { id: "outer", type: "element", tag: "span", classes: [], attributes: {}, styles: [], children: [
+                { id: "inner", type: "element", tag: "span", classes: [], attributes: {}, styles: [], children: [
+                    { id: "inside", type: "text", text: "BC" }
+                ] }
+            ] },
+            { id: "after", type: "text", text: "D" }
+        ] }] };
+        const state: HtmlEditorState = { document, selection: { anchor: { nodeId: "inside", offset: 1 }, focus: { nodeId: "outer", offset: 0 } } };
+        normalizeHtmlEditorState(state, "root", () => "generated");
+        expect((document.children[0] as HtmlEditorElement).children).toEqual([{ id: "before", type: "text", text: "ABCD" }]);
+        expect(state.selection).toEqual({ anchor: { nodeId: "before", offset: 2 }, focus: { nodeId: "before", offset: 1 } });
+    });
+
+    it("retains spans with attributes, classes, active or disabled styles, and CSS comments", () => {
+        create('<p><span title="x">A</span><span class="x">B</span><span style="color: red">C</span><span style="/* color: red; */">D</span><span style="/* note */">E</span><span>F</span></p>');
+        const children = root().children;
+        expect(children).toHaveLength(6);
+        expect(children.slice(0, 5).every(node => node.type === "element" && node.tag === "span")).toBe(true);
+        expect(children[5]).toMatchObject({ type: "text", text: "F" });
+    });
+
+    it("keeps removed span boundaries inside adjacent inline elements that merge", () => {
+        const strong = (id: string, value: string): HtmlEditorElement => ({ id, type: "element", tag: "strong", classes: [], attributes: {}, styles: [],
+            children: [{ id: `${id}-text`, type: "text", text: value }] });
+        const document: HtmlEditorDocument = { type: "document", children: [{ id: "p", type: "element", tag: "p", classes: [], attributes: {}, styles: [], children: [
+            strong("a", "A"), { id: "wrapper", type: "element", tag: "span", classes: [], attributes: {}, styles: [], children: [strong("b", "B")] }, strong("c", "C")
+        ] }] };
+        const state: HtmlEditorState = { document, selection: { anchor: { nodeId: "wrapper", offset: 0 }, focus: { nodeId: "wrapper", offset: 1 } } };
+        normalizeHtmlEditorState(state, "root", () => "generated");
+        expect((document.children[0] as HtmlEditorElement).children).toHaveLength(1);
+        expect(state.selection).toEqual({ anchor: { nodeId: "a-text", offset: 1 }, focus: { nodeId: "a-text", offset: 2 } });
     });
 
     it("retains shorthand order, duplicate declarations and priorities through HTML round trips", () => {
@@ -92,15 +151,36 @@ describe("HtmlEditor authored HTML model", () => {
         expect(root().attributes).not.toHaveProperty("class");
     });
 
-    it("preserves custom-property case and quoted semicolons/colons without treating comments as declarations", () => {
+    it("preserves custom-property case, quoted values and disabled declarations", () => {
         create(`<div style="--Gap: 8px; --gap: 4px; --label: 'a;b:c'; /* color:red; */ COLOR: blue !important">Text</div>`);
         expect(root().styles).toEqual([
             { name: "--Gap", value: "8px" }, { name: "--gap", value: "4px" },
-            { name: "--label", value: "'a;b:c'" }, { name: "color", value: "blue", important: true }
+            { name: "--label", value: "'a;b:c'" }, { name: "color", value: "red", disabled: true }, { name: "color", value: "blue", important: true }
         ]);
         editor.setHtml(editor.html);
         expect(getHtmlEditorStyle(root().styles, "--Gap")?.value).toBe("8px");
         expect(getHtmlEditorStyle(root().styles, "--gap")?.value).toBe("4px");
+    });
+
+    it("round trips disabled attributes and strictly recognized commented styles in order", () => {
+        create('<p data-elg-disabled-title="hello" style="color: red; /* font-size: 18px !important; */ /* note */ /* width: 1px; height: 2px; */ color: blue">Text</p>');
+        expect(root().attributes["data-elg-disabled-title"]).toBe("hello");
+        expect(root().styles).toEqual([
+            { name: "color", value: "red" }, { name: "font-size", value: "18px", important: true, disabled: true },
+            { name: "", value: " note ", comment: true }, { name: "", value: " width: 1px; height: 2px; ", comment: true },
+            { name: "color", value: "blue" }
+        ]);
+        const before = structuredClone(root().styles);
+        editor.setHtml(editor.html);
+        expect(root().styles).toEqual(before);
+        expect(root().attributes["data-elg-disabled-title"]).toBe("hello");
+        expect(getHtmlEditorStyle(root().styles, "font-size")).toBeUndefined();
+    });
+
+    it("keeps disabled declarations when active values are changed or cleared", () => {
+        const styles: HtmlEditorStyle[] = [{ name: "color", value: "red", disabled: true }, { name: "color", value: "blue" }];
+        expect(setHtmlEditorStyle(styles, "color", "green")).toEqual([styles[0], { name: "color", value: "green" }]);
+        expect(removeHtmlEditorStyle(styles, "color")).toEqual([styles[0]]);
     });
 
     it("preserves safe fallback values and custom-property blocks independently of browser CSS support", () => {

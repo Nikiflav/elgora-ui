@@ -1,9 +1,11 @@
-import { v } from "../../../core/e";
+import { e, v } from "../../../core/e";
 import type { LocalizedMessages } from "../../../localization/Messages";
 import type { LocaleOptions } from "../../../localization/Localization";
 import type { DataViewButton, DataViewField, FieldLookup } from "../../../data/DataViewField";
 import type { LookupQuery } from "../LookupEditor";
 import { PopupMenu } from "../../popup/PopupMenu";
+import { Popover } from "../../popup/popover";
+import { TabView } from "../../tab-view/TabView";
 import { DataForm, type DataFormAdapter } from "../../dataform/DataForm";
 import type { HtmlEditorCommandRegistry } from "./HtmlEditorCommandRegistry";
 import type { HtmlEditorUiCommandTargetContext, HtmlEditorUiCommandFormRow, HtmlEditorResolvedUiCommandField,
@@ -13,12 +15,13 @@ export type { HtmlEditorUiCommandPresentationKind } from "./HtmlEditorInspection
 /** Shared field projection used by every HtmlEditor DataForm surface. */
 export class HtmlEditorUiCommandFieldService {
     private choiceMenu?: PopupMenu;
+    private propertyPopup?: Popover;
 
     constructor(private readonly registry: HtmlEditorCommandRegistry,
         private readonly messages: LocalizedMessages, private readonly localeOptions: LocaleOptions = {}) { }
 
     /** Closes the active option menu without ending its current form lifecycle. */
-    hideMenus(): void { this.choiceMenu?.hide(); }
+    hideMenus(): void { this.choiceMenu?.hide(); this.propertyPopup?.hide(); }
 
     /**
      * Releases the option menu before its owning DataForm is disposed.
@@ -31,6 +34,8 @@ export class HtmlEditorUiCommandFieldService {
     disposeMenus(): void {
         this.choiceMenu?.dispose();
         this.choiceMenu = undefined;
+        this.propertyPopup?.dispose();
+        this.propertyPopup = undefined;
     }
 
     /** Resolves fields for a presentation slot; surfaces may then choose a subset/order. */
@@ -97,13 +102,18 @@ export class HtmlEditorUiCommandFieldService {
                 const showArrow = visual?.showArrow !== false;
                 const appearance = visual?.appearance ?? "textAndIcon";
                 const icon = visual?.icon ?? selected?.icon ?? (isColor ? "ri-font-color" : "ri-font-size");
+                const displayColor = selected?.color ?? (typeof value === "string" ? value : undefined);
+                // Transparent backgrounds and unset selections must not make the
+                // toolbar glyph itself transparent; inherit the button color instead.
+                const iconColor = !displayColor || /^(?:transparent|rgba\([^)]*,\s*0(?:\.0+)?\s*\)|(?:rgba?|color)\([^)]*\/\s*0(?:\.0+)?%?\s*\))$/i.test(displayColor)
+                    ? "currentColor" : displayColor;
                 field.buttons = [{ id: command.id, text: binding.value?.kind === "mixed"
                     ? this.messages.text("htmlEditorInspector.mixed") : selected?.text ?? String(value ?? "—"),
                     icon, appearance, tooltip: visual?.tooltip === "caption" ? field.caption : visual?.tooltip ?? field.tooltip,
                     render: isColor ? () => v("span", { class: "elg-html-editor-color-choice" },
-                        showValue ? v("span", { class: "elg-menu-color-swatch", "data-empty": !selected?.color,
-                            ariaHidden: "true", style: { backgroundColor: selected?.color ?? (typeof value === "string" ? value : "transparent") } })
-                            : v("i", { class: icon, ariaHidden: "true", style: { color: selected?.color || undefined } }),
+                        showValue ? v("span", { class: "elg-menu-color-swatch", "data-empty": !displayColor,
+                            ariaHidden: "true", style: { backgroundColor: displayColor ?? "transparent" } })
+                            : v("i", { class: icon, ariaHidden: "true", style: { color: iconColor } }),
                         showValue ? v("span", binding.value?.kind === "mixed" ? this.messages.text("htmlEditorInspector.mixed")
                             : selected?.text ?? String(value ?? "—")) : undefined,
                         showArrow ? v("i", { class: "ri-arrow-down-s-line", ariaHidden: "true" }) : undefined) : undefined,
@@ -113,6 +123,11 @@ export class HtmlEditorUiCommandFieldService {
                             .find(host => host.dataset.field === command.id)?.querySelector<HTMLButtonElement>("button");
                         if (!anchor) return;
                         if (presentation === "toolbar" && action?.(command.id, anchor)) return;
+                        const property = this.registry.propertyDefinition(command.id);
+                        if (property?.providers.length) {
+                            this.showPropertyPopup(form, anchor, binding, presentation);
+                            return;
+                        }
                         this.choiceMenu ??= new PopupMenu({ density: "compact" });
                         if (this.choiceMenu.dom.parentElement !== form.dom) {
                             this.choiceMenu.hide();
@@ -146,6 +161,73 @@ export class HtmlEditorUiCommandFieldService {
             field.buttons = [button];
         }
         return field;
+    }
+
+    /** Provider panels share one popover and a captured selection; they never claim CSS precedence. */
+    private showPropertyPopup(form: DataForm<HtmlEditorUiCommandFormRow>, anchor: HTMLElement,
+        binding: HtmlEditorResolvedUiCommandField, presentation: HtmlEditorUiCommandPresentationKind): void {
+        const definition = this.registry.propertyDefinition(binding.command.id);
+        if (!definition?.providers.length) return;
+        this.propertyPopup?.dispose();
+        const popup = new Popover({ anchorElement: anchor, bindAnchorTarget: false, role: "dialog",
+            class: "elg-html-editor-property-popup", ui: presentation === "toolbar" ? ["fs-80"] : undefined });
+        this.propertyPopup = popup;
+        const panels = definition.providers.map(provider => {
+            const targetInfos = binding.context.resolution.targets.kind === "nodes"
+                ? binding.context.resolution.targets.nodeInfos : binding.context.nodeInfos;
+            const values = targetInfos.map(info => binding.context.surface.findElement(info.id))
+                .filter((item): item is NonNullable<typeof item> => !!item).map(item => provider.read(item));
+            const pending = binding.context.surface.pendingProperty(definition.id);
+            const current = pending ? pending.providerId === provider.id ? pending.value : undefined
+                : values.length && values.every(value => value === values[0]) ? values[0] : undefined;
+            const panel = e("div", { class: "elg-html-editor-property-provider" });
+            const apply = (value: string) => {
+                if (!provider.accepts(value)) { status.textContent = "Invalid value"; return; }
+                popup.hide();
+                this.registry.applyProperty(binding, provider.id, value);
+            };
+            const status = e("div", { role: "status" });
+            if (provider.control.type === "palette") {
+                const grid = e("div", { class: "elg-html-editor-palette", role: "group", ariaLabel: provider.text });
+                provider.control.options.forEach(option => grid.append(e("button", { type: "button", class: "elg-html-editor-palette-swatch",
+                    title: option.color ? `${option.text} (${option.color})` : option.text, ariaLabel: option.color ? `${option.text} (${option.color})` : option.text, ariaPressed: String(option.id === current),
+                    style: { backgroundColor: option.color ?? "transparent" }, onclick: () => apply(option.id) })));
+                panel.append(grid);
+            } else if (provider.control.type === "choices") {
+                provider.control.options.forEach(option => panel.append(e("button", { type: "button", class: "elg btn neutral btn-ghost",
+                    ariaPressed: String(option.id === current), onclick: () => apply(option.id) },
+                    option.color ? e("span", { class: "elg-menu-color-swatch", style: { backgroundColor: option.color }, ariaHidden: "true" }) : undefined,
+                    option.text)));
+            } else if (provider.control.type === "length") {
+                const config = provider.control;
+                const parsed = current?.match(/^([+-]?(?:\d+(?:\.\d+)?|\.\d+))([a-z%]+)$/i);
+                const number = e("input", { class: "elg elg-field", type: "text", inputMode: "decimal",
+                    value: parsed && config.units.includes(parsed[2]) ? parsed[1] : "", ariaLabel: `${provider.text} value` });
+                const units = e("select", { class: "elg", ariaLabel: `${provider.text} unit` },
+                    ...config.units.map(unit => e("option", { value: unit }, unit)));
+                if (parsed && config.units.includes(parsed[2])) units.value = parsed[2];
+                panel.append(number, units, e("button", { type: "button", class: "elg btn neutral",
+                    onclick: () => apply(number.value.trim().replace(",", ".") + units.value) }, "Apply"));
+            } else {
+                const input = e("input", { class: "elg elg-field", type: "text", value: current ?? "", ariaLabel: provider.text });
+                if (provider.control.type === "color") {
+                    const picker = e("input", { type: "color", ariaLabel: `${provider.text} color picker`, value: /^#[0-9a-f]{6}$/i.test(current ?? "") ? current : "#000000",
+                        oninput: (_event, control) => { input.value = control.value; } });
+                    input.addEventListener("input", () => { if (/^#[0-9a-f]{6}$/i.test(input.value)) picker.value = input.value; });
+                    panel.append(picker);
+                }
+                panel.append(input, e("button", { type: "button", class: "elg btn neutral", onclick: () => apply(input.value.trim()) }, "Apply"));
+            }
+            panel.append(e("button", { type: "button", class: "elg btn neutral btn-ghost", onclick: () => {
+                popup.hide();
+                this.registry.clearProperty(binding, provider.id);
+            } }, this.messages.text("htmlEditorBasic.clearProvider")), status);
+            return { id: provider.id, text: provider.text, content: panel };
+        });
+        if (panels.length === 1) popup.setContent(panels[0].content);
+        else popup.setContent(new TabView({ items: panels, label: definition.id }));
+        popup.mount(form.dom);
+        popup.show();
     }
 
     /** Creates the horizontal toolbar form from the same command field service. */

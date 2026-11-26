@@ -59,8 +59,8 @@ Style commands apply the authored property to the fragment roots. A fully
 selected element can remain a target itself and receive the property without
 wrapping descendants.
 
-The fragmentation step creates complete element targets; the property step edits
-those targets without recursively applying the property to every descendant.
+The fragmentation step creates complete element targets. Color and font size
+clear recognized descendant overrides before applying the chosen value to roots.
 Normalization merges adjacent text nodes and equivalent neighboring inline marks
 where possible. With a collapsed caret, inline formatting and text styles update
 the typing override for subsequent input.
@@ -74,6 +74,36 @@ acts on text, a block or an element.
 See [Inspector and toolbar](?!=/components/html-editor/ui-surfaces) for field
 presentation and [Selection](?!=/components/html-editor/selection) for text and
 node target behavior.
+
+## Property providers
+
+Provide alternative choices for text color or size through `properties`. A
+provider tab shows the value it recognizes in authored HTML; it does not claim
+that this value wins the CSS cascade. Applying a value clears settings owned by
+the configured providers inside the selected subtree and is one undoable edit.
+
+```ts
+const choices = [{ id: "primary", text: "Primary" }, { id: "danger", text: "Danger" }];
+const editor = new HtmlEditor({
+    value: "<p>Example</p>", toolbar: true, inspector: true,
+    properties: [{ id: "text.color", cssProperty: "color", providers: [
+        createHtmlEditorInlineStyleProvider("inline", "Inline", "color", choices,
+            { primary: "#0d6efd", danger: "#dc3545" }),
+        createHtmlEditorClassProvider("classes", "Classes", choices,
+            { primary: "text-primary", danger: "text-danger" })
+    ] }]
+});
+```
+
+At a collapsed caret, a provider choice applies to subsequent typing without
+changing existing content. The provider tab retains this pending choice. The
+main field displays the computed value for a caret or one fully selected
+element. Partial and multiple selections show a dash; conflicts are not reported.
+
+IME composition and non-cancelable text input retain pending provider choices
+when the native edit is identifiable as a single text-node replacement or a
+new text node at the caret. More complex native structural edits are adopted
+without guessing which content should receive the provider formatting.
 
 ## Core operations and history
 ```ts
